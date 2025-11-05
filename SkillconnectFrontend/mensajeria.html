@@ -281,6 +281,18 @@
             // Event listener para enviar mensajes
             const form = document.getElementById('chat-form');
             form.addEventListener('submit', enviarMensaje);
+            
+            // Event listener delegado para el botón "Ver Perfil"
+            // Este listener se activa en CUALQUIER click en el documento
+            document.addEventListener('click', (e) => {
+                // Log en CADA click para debug
+                if (e.target.id === 'verPerfilBtn' || e.target.closest('#verPerfilBtn')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Click en botón Ver Perfil capturado');
+                    verPerfilContacto();
+                }
+            }, true); // Agregamos 'true' para usar capture phase
         });
 
         // Obtener ID de la persona actual
@@ -349,16 +361,24 @@
             }
 
             container.innerHTML = conversaciones.map(conv => {
-                const initials = getInitials(conv.nombre_contacto);
+                const nombreContacto = conv.nombre_contacto || 'Usuario';
+                const initials = getInitials(nombreContacto);
                 const colorClass = getColorClass(conv.id_conversacion);
                 const mensajesNoLeidos = conv.mensajes_no_leidos || 0;
+                const tieneImagen = conv.imagenUrl_contacto && conv.imagenUrl_contacto.trim() !== '';
                 
                 return `
                     <div class="contact-item p-4 flex items-center space-x-3 cursor-pointer border-b border-gray-100"
                          onclick="seleccionarConversacion(${conv.id_conversacion})">
                         <div class="relative flex-shrink-0">
-                            ${conv.imagenUrl_contacto ? 
-                                `<img src="${conv.imagenUrl_contacto}" class="w-12 h-12 rounded-full object-cover shadow-md" alt="${conv.nombre_contacto}">` :
+                            ${tieneImagen ? 
+                                `<img src="${conv.imagenUrl_contacto}" 
+                                     class="w-12 h-12 rounded-full object-cover shadow-md" 
+                                     alt="${nombreContacto}"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                 <div class="w-12 h-12 bg-gradient-to-br ${colorClass} rounded-full items-center justify-center text-white font-bold shadow-md hidden">
+                                    ${initials}
+                                 </div>` :
                                 `<div class="w-12 h-12 bg-gradient-to-br ${colorClass} rounded-full flex items-center justify-center text-white font-bold shadow-md">
                                     ${initials}
                                 </div>`
@@ -367,7 +387,7 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-gray-900 truncate">${conv.nombre_contacto}</p>
+                                <p class="text-sm font-semibold text-gray-900 truncate">${nombreContacto}</p>
                                 <span class="text-xs text-gray-500">${formatearFecha(conv.fecha_ultimo_mensaje)}</span>
                             </div>
                             <p class="text-xs text-gray-600 truncate mt-1">${conv.ultimo_mensaje || 'Sin mensajes aún'}</p>
@@ -382,6 +402,8 @@
             currentConversation = conversations.find(c => c.id_conversacion === idConversacion);
             
             if (!currentConversation) return;
+            
+            console.log('Conversación seleccionada:', currentConversation); // Debug
 
             // Marcar como activa visualmente
             document.querySelectorAll('.contact-item').forEach(item => {
@@ -403,17 +425,24 @@
 
         // Actualizar header del chat
         function actualizarHeaderChat(conv) {
-            const initials = getInitials(conv.nombre_contacto);
+            const nombreContacto = conv.nombre_contacto || 'Usuario';
+            const initials = getInitials(nombreContacto);
             const colorClass = getColorClass(conv.id_conversacion);
+            const tieneImagen = conv.imagenUrl_contacto && conv.imagenUrl_contacto.trim() !== '' && !conv.imagenUrl_contacto.includes('ui-avatars.com');
+            
+            // Guardar el ID del contacto en currentConversation para usarlo en el botón Ver Perfil
+            if (!currentConversation.id_contacto && conv.id_contacto) {
+                currentConversation.id_contacto = conv.id_contacto;
+            }
             
             document.getElementById('chat-header').innerHTML = `
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
                         <div class="relative">
-                            ${conv.imagenUrl_contacto ? 
+                            ${tieneImagen ? 
                                 `<img src="${conv.imagenUrl_contacto}" 
                                      class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-lg" 
-                                     alt="${conv.nombre_contacto}"
+                                     alt="${nombreContacto}"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                  <div class="w-12 h-12 bg-gradient-to-br ${colorClass} rounded-full items-center justify-center text-white font-bold shadow-lg hidden">
                                     ${initials}
@@ -424,7 +453,7 @@
                             }
                         </div>
                         <div>
-                            <h2 class="text-base font-bold text-gray-800">${conv.nombre_contacto}</h2>
+                            <h2 class="text-base font-bold text-gray-800">${nombreContacto}</h2>
                             <p class="text-xs text-green-600 flex items-center">
                                 <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
                                 Activo en SkillConnect
@@ -432,13 +461,39 @@
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <button class="px-4 py-2 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition flex items-center space-x-1">
+                        <button id="verPerfilBtn" class="px-4 py-2 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition flex items-center space-x-1">
                             <span class="iconify" data-icon="mdi:account" data-width="18"></span>
                             <span>Ver Perfil</span>
                         </button>
                     </div>
                 </div>
             `;
+        }
+        
+        // Función para ver el perfil del contacto
+        function verPerfilContacto() {
+            console.log('Ver perfil - currentConversation:', currentConversation); // Debug
+            
+            // Intentar obtener el id_contacto de diferentes formas
+            let idContacto = null;
+            
+            if (currentConversation) {
+                idContacto = currentConversation.id_contacto || 
+                             currentConversation.idContacto || 
+                             currentConversation.id_persona_contacto;
+            }
+            
+            console.log('ID del contacto:', idContacto); // Debug
+            
+            if (idContacto) {
+                // Navegar al Dashboard con el perfil del contacto (en la misma pestaña)
+                const url = `Dashboard.html?verPerfil=${idContacto}`;
+                console.log('Navegando a:', url); // Debug
+                window.location.href = url; // Cambiar a navegación en la misma pestaña
+            } else {
+                alert('No se pudo obtener el ID del contacto. Revisa la consola para más detalles.');
+                console.error('currentConversation completo:', JSON.stringify(currentConversation, null, 2));
+            }
         }
 
         // Cargar mensajes

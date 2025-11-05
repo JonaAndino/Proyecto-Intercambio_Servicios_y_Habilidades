@@ -263,7 +263,8 @@ router.get('/recibidas/:id', async (req, res) => {
     try {
         const personaId = req.params.id;
 
-        // Consulta directa con JOIN para obtener datos del solicitante
+        // Consulta directa con JOIN para obtener datos del solicitante y detalles de la solicitud
+        // Sin JOIN de habilidades por ahora, se pueden agregar después si la tabla existe
         const [solicitudesRecibidas] = await pool.query(
             `SELECT 
                 si.id_solicitud,
@@ -271,6 +272,13 @@ router.get('/recibidas/:id', async (req, res) => {
                 si.id_persona_receptor,
                 si.fecha_solicitud,
                 si.estado,
+                si.fecha_propuesta,
+                si.hora_propuesta,
+                si.duracion_estimada,
+                si.mensaje_adicional,
+                si.modalidad,
+                si.id_habilidad_solicitada,
+                si.id_habilidad_ofrecida,
                 p_sol.nombre_Persona AS nombre_solicitante,
                 p_sol.apellido_Persona AS apellido_solicitante,
                 p_sol.imagenUrl_Persona AS foto_solicitante
@@ -280,6 +288,37 @@ router.get('/recibidas/:id', async (req, res) => {
             ORDER BY si.fecha_solicitud DESC`,
             [personaId]
         );
+
+        // Si hay habilidades, obtenerlas por separado
+        for (let solicitud of solicitudesRecibidas) {
+            if (solicitud.id_habilidad_ofrecida) {
+                try {
+                    const [habilidadOfrecida] = await pool.query(
+                        'SELECT nombre_Habilidad FROM Habilidades_Ofrecidas_Necesitadas WHERE id_Habilidad = ?',
+                        [solicitud.id_habilidad_ofrecida]
+                    );
+                    if (habilidadOfrecida.length > 0) {
+                        solicitud.habilidad_ofrecida = habilidadOfrecida[0].nombre_Habilidad;
+                    }
+                } catch (error) {
+                    console.log('No se pudo cargar habilidad ofrecida:', error.message);
+                }
+            }
+
+            if (solicitud.id_habilidad_solicitada) {
+                try {
+                    const [habilidadSolicitada] = await pool.query(
+                        'SELECT nombre_Habilidad FROM Habilidades_Ofrecidas_Necesitadas WHERE id_Habilidad = ?',
+                        [solicitud.id_habilidad_solicitada]
+                    );
+                    if (habilidadSolicitada.length > 0) {
+                        solicitud.habilidad_solicitada = habilidadSolicitada[0].nombre_Habilidad;
+                    }
+                } catch (error) {
+                    console.log('No se pudo cargar habilidad solicitada:', error.message);
+                }
+            }
+        }
 
         res.json({
             success: true,
@@ -339,6 +378,185 @@ router.get('/enviadas/:id', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error al obtener solicitudes enviadas',
+            error: error.message
+        });
+    }
+});
+
+
+// 9. ENVIAR SOLICITUD DETALLADA CON CAMPOS OPCIONALES
+// POST /solicitudes-intercambio/enviar-detallada
+router.post('/enviar-detallada', async (req, res) => {
+    try {
+        const { 
+            solicitanteId, 
+            receptorId,
+            fechaPropuesta,
+            horaPropuesta,
+            duracionEstimada,
+            idHabilidadSolicitada,
+            idHabilidadOfrecida,
+            mensajeAdicional,
+            modalidad
+        } = req.body;
+
+        console.log('📩 Solicitud detallada recibida:', {
+            solicitanteId,
+            receptorId,
+            fechaPropuesta,
+            horaPropuesta,
+            duracionEstimada,
+            idHabilidadSolicitada,
+            idHabilidadOfrecida,
+            modalidad
+        });
+
+        // Validación básica
+        if (!solicitanteId || !receptorId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Se requieren solicitanteId y receptorId'
+            });
+        }
+
+        // Evitar auto-solicitud
+        if (solicitanteId === receptorId) {
+            return res.status(400).json({
+                success: false,
+                message: 'No puedes enviarte una solicitud a ti mismo'
+            });
+        }
+
+        // Verificar si ya existe una solicitud pendiente
+        const [solicitudesExistentes] = await pool.query(
+            `SELECT id_solicitud, estado 
+             FROM solicitudes_intercambio 
+             WHERE ((id_persona_solicitante = ? AND id_persona_receptor = ?) 
+                OR (id_persona_solicitante = ? AND id_persona_receptor = ?))
+             AND estado IN ('Pendiente', 'Aceptada')`,
+            [solicitanteId, receptorId, receptorId, solicitanteId]
+        );
+
+        if (solicitudesExistentes.length > 0) {
+            const solicitud = solicitudesExistentes[0];
+            if (solicitud.estado === 'Aceptada') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Ya tienes una conexión establecida con este usuario'
+                });
+            } else {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Ya existe una solicitud pendiente con este usuario'
+                });
+            }
+        }
+
+        // Convertir valores vacíos a null
+        const habilidadSolicitada = idHabilidadSolicitada && idHabilidadSolicitada !== '' ? idHabilidadSolicitada : null;
+        const habilidadOfrecida = idHabilidadOfrecida && idHabilidadOfrecida !== '' ? idHabilidadOfrecida : null;
+
+        // Insertar solicitud con detalles
+        const [result] = await pool.query(
+            `INSERT INTO solicitudes_intercambio (
+                id_persona_solicitante,
+                id_persona_receptor,
+                fecha_solicitud,
+                estado,
+                fecha_propuesta,
+                hora_propuesta,
+                duracion_estimada,
+                id_habilidad_solicitada,
+                id_habilidad_ofrecida,
+                mensaje_adicional,
+                modalidad
+            ) VALUES (?, ?, NOW(), 'Pendiente', ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                solicitanteId, 
+                receptorId,
+                fechaPropuesta || null,
+                horaPropuesta || null,
+                duracionEstimada || null,
+                habilidadSolicitada,
+                habilidadOfrecida,
+                mensajeAdicional || null,
+                modalidad || null
+            ]
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Solicitud de intercambio enviada exitosamente',
+            data: {
+                id_solicitud: result.insertId
+            }
+        });
+
+    } catch (error) {
+        console.error('Error al enviar solicitud detallada:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al enviar la solicitud',
+            error: error.message
+        });
+    }
+});
+
+// =========================================================
+// VERIFICAR SI EXISTE SOLICITUD ACTIVA ENTRE DOS USUARIOS
+// GET /solicitudes-intercambio/verificar/:solicitanteId/:receptorId
+// =========================================================
+router.get('/verificar/:solicitanteId/:receptorId', async (req, res) => {
+    try {
+        const { solicitanteId, receptorId } = req.params;
+
+        const [solicitudes] = await pool.query(
+            `SELECT id_solicitud, estado, id_persona_solicitante, id_persona_receptor,
+                    fecha_solicitud
+             FROM solicitudes_intercambio 
+             WHERE ((id_persona_solicitante = ? AND id_persona_receptor = ?) 
+                OR (id_persona_solicitante = ? AND id_persona_receptor = ?))
+             AND estado IN ('Pendiente', 'Aceptada')
+             ORDER BY fecha_solicitud DESC
+             LIMIT 1`,
+            [solicitanteId, receptorId, receptorId, solicitanteId]
+        );
+
+        if (solicitudes.length > 0) {
+            const solicitud = solicitudes[0];
+            let mensaje = '';
+            let esMiSolicitud = solicitud.id_persona_solicitante == solicitanteId;
+            
+            if (solicitud.estado === 'Aceptada') {
+                mensaje = 'Ya tienes una conexión establecida con este usuario';
+            } else if (esMiSolicitud) {
+                mensaje = 'Ya enviaste una solicitud a este usuario';
+            } else {
+                mensaje = 'Este usuario ya te envió una solicitud. Revisa tus notificaciones.';
+            }
+
+            return res.json({
+                success: true,
+                existeSolicitud: true,
+                solicitud: {
+                    id: solicitud.id_solicitud,
+                    estado: solicitud.estado,
+                    esMiSolicitud: esMiSolicitud,
+                    mensaje: mensaje
+                }
+            });
+        }
+
+        res.json({
+            success: true,
+            existeSolicitud: false,
+            mensaje: 'No hay solicitudes activas con este usuario'
+        });
+
+    } catch (error) {
+        console.error('Error al verificar solicitud:', error);
+        res.status(500).json({
+            success: false,
             error: error.message
         });
     }

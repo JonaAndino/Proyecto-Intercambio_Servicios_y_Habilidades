@@ -16,7 +16,29 @@ router.get('/conversaciones/:idPersona', async (req, res) => {
             [personaId]
         );
 
-        const conversaciones = results[0];
+        let conversaciones = results[0];
+        
+        // Procesar los datos para asegurar valores por defecto
+        conversaciones = conversaciones.map(conv => {
+            const nombreContacto = conv.nombre_contacto || 'Usuario';
+            const imagenUrl = conv.imagenUrl_contacto;
+            
+            // Si no hay imagen o es una cadena vacía, generar avatar por defecto
+            let imagenFinal = imagenUrl;
+            if (!imagenUrl || imagenUrl.trim() === '') {
+                const iniciales = nombreContacto.charAt(0).toUpperCase() || 'U';
+                const colors = ['4F46E5', '10B981', '8B5CF6', '14B8A6', 'F59E0B', 'EF4444'];
+                const colorIndex = (nombreContacto.length || 0) % colors.length;
+                const bgColor = colors[colorIndex];
+                imagenFinal = `https://ui-avatars.com/api/?name=${iniciales}&background=${bgColor}&color=ffffff&size=200&bold=true&rounded=true`;
+            }
+            
+            return {
+                ...conv,
+                nombre_contacto: nombreContacto,
+                imagenUrl_contacto: imagenFinal
+            };
+        });
 
         res.json({
             success: true,

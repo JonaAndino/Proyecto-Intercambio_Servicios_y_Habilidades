@@ -1534,6 +1534,9 @@
         // ========================================
         const API_BASE = 'http://localhost:3001/api';
         
+        // Variable global para el usuario actual
+        let miPerfilIdGlobal = null;
+        
         // Variable global para almacenar usuarios
         let usuariosReales = [];
         
@@ -2246,6 +2249,17 @@
                     }
                 });
             }
+            
+            // Verificar si se debe abrir el perfil de un usuario desde un enlace externo
+            const urlParams = new URLSearchParams(window.location.search);
+            const verPerfilId = urlParams.get('verPerfil');
+            if (verPerfilId) {
+                // Esperar a que todo el Dashboard se cargue completamente
+                setTimeout(() => {
+                    console.log('Abriendo perfil desde URL, ID:', verPerfilId);
+                    viewProfile(parseInt(verPerfilId));
+                }, 1500); // Aumentado a 1.5 segundos para asegurar que todo esté cargado
+            }
         });
 
         // ========================================
@@ -2525,12 +2539,15 @@
                     ` : ''}
                     
                     <!-- Botón de solicitud -->
-                    <div class="profile-modal-section">
-                        <button onclick="sendRequest(${perfilId}, '${nombreCompleto}')" class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition shadow-lg">
-                            Enviar solicitud de intercambio
-                        </button>
+                    <div class="profile-modal-section" id="request-button-section">
+                        <div class="flex items-center justify-center py-4">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        </div>
                     </div>
                 `;
+                
+                // Verificar si existe una solicitud activa DESPUÉS de cargar el perfil
+                await verificarYMostrarBotonSolicitud(perfilId, nombreCompleto);
                 
             } catch (error) {
                 console.error('Error al cargar el perfil:', error);
@@ -2545,6 +2562,96 @@
                             Cerrar
                         </button>
                     </div>
+                `;
+            }
+        }
+
+        // Verificar si existe solicitud y mostrar el botón correspondiente
+        async function verificarYMostrarBotonSolicitud(perfilId, nombreCompleto) {
+            const buttonSection = document.getElementById('request-button-section');
+            
+            try {
+                // Intentar usar la variable global primero
+                let miPerfilId = miPerfilIdGlobal;
+                
+                // Si no está en la variable global, intentar obtenerla
+                if (!miPerfilId) {
+                    console.log('Variable global no disponible, obteniendo del servidor...');
+                    miPerfilId = await obtenerPersonaIdActual();
+                }
+                
+                // Si aún no tenemos el ID, esperar y reintentar
+                if (!miPerfilId) {
+                    console.log('No se pudo obtener el ID, esperando y reintentando...');
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    miPerfilId = miPerfilIdGlobal || await obtenerPersonaIdActual();
+                }
+                
+                if (!miPerfilId) {
+                    console.error('No se pudo obtener el ID del usuario actual');
+                    buttonSection.innerHTML = `
+                        <div class="p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg text-center">
+                            <p class="text-yellow-800 font-semibold">Inicia sesión para enviar solicitudes de intercambio</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                console.log('Mi perfil ID:', miPerfilId, 'Perfil a verificar:', perfilId);
+                
+                // Verificar si existe una solicitud activa
+                const resVerificar = await fetch(`${API_BASE}/solicitudes-intercambio/verificar/${miPerfilId}/${perfilId}`);
+                const dataVerificar = await resVerificar.json();
+                
+                if (!resVerificar.ok || !dataVerificar.success) {
+                    throw new Error('Error al verificar solicitud');
+                }
+                
+                if (dataVerificar.existeSolicitud) {
+                    // Ya existe una solicitud - mostrar mensaje informativo
+                    const solicitud = dataVerificar.solicitud;
+                    let iconoHTML = '';
+                    let colorClase = '';
+                    let mensajeTexto = solicitud.mensaje;
+                    
+                    if (solicitud.estado === 'Aceptada') {
+                        iconoHTML = '<span class="iconify text-green-600" data-icon="mdi:check-circle" data-width="24"></span>';
+                        colorClase = 'bg-green-50 border-green-200 text-green-800';
+                    } else if (solicitud.esMiSolicitud) {
+                        iconoHTML = '<span class="iconify text-blue-600" data-icon="mdi:clock-outline" data-width="24"></span>';
+                        colorClase = 'bg-blue-50 border-blue-200 text-blue-800';
+                    } else {
+                        iconoHTML = '<span class="iconify text-purple-600" data-icon="mdi:email-outline" data-width="24"></span>';
+                        colorClase = 'bg-purple-50 border-purple-200 text-purple-800';
+                    }
+                    
+                    buttonSection.innerHTML = `
+                        <div class="p-4 ${colorClase} border-2 rounded-lg flex items-center space-x-3">
+                            ${iconoHTML}
+                            <div class="flex-1">
+                                <p class="font-semibold">${mensajeTexto}</p>
+                                ${solicitud.estado === 'Pendiente' && !solicitud.esMiSolicitud ? 
+                                    '<p class="text-sm mt-1">Ve a la sección de notificaciones para responder.</p>' : ''}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // No existe solicitud - mostrar botón para enviar
+                    buttonSection.innerHTML = `
+                        <button onclick="sendRequest(${perfilId}, '${nombreCompleto}')" class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition shadow-lg flex items-center justify-center space-x-2">
+                            <span class="iconify" data-icon="mdi:hand-heart" data-width="20"></span>
+                            <span>Enviar solicitud de intercambio</span>
+                        </button>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error al verificar solicitud:', error);
+                // En caso de error, mostrar botón por defecto
+                buttonSection.innerHTML = `
+                    <button onclick="sendRequest(${perfilId}, '${nombreCompleto}')" class="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition shadow-lg">
+                        Enviar solicitud de intercambio
+                    </button>
                 `;
             }
         }
@@ -2648,9 +2755,11 @@
                 // Verificar estructura de respuesta
                 if (data && data.id_Perfil_Persona) {
                     usuarioActualPersonaId = data.id_Perfil_Persona;
+                    miPerfilIdGlobal = data.id_Perfil_Persona; // Guardar en variable global
                     return usuarioActualPersonaId;
                 } else if (data.success && data.data && data.data.id_Perfil_Persona) {
                     usuarioActualPersonaId = data.data.id_Perfil_Persona;
+                    miPerfilIdGlobal = data.data.id_Perfil_Persona; // Guardar en variable global
                     return usuarioActualPersonaId;
                 }
                 
@@ -2664,6 +2773,12 @@
         // Enviar solicitud de intercambio
         async function sendRequest(receptorId, nombreReceptor) {
             try {
+                // Cerrar el modal del perfil si está abierto
+                const profileModal = document.getElementById('profileModal');
+                if (profileModal && profileModal.style.display !== 'none') {
+                    closeProfileModal();
+                }
+                
                 const solicitanteId = await obtenerPersonaIdActual();
                 
                 if (!solicitanteId) {
@@ -2676,19 +2791,148 @@
                     return;
                 }
 
-                // Confirmar antes de enviar
-                const result = await Swal.fire({
-                    title: '¿Enviar solicitud?',
-                    html: `¿Deseas enviar una solicitud de intercambio a <strong>${nombreReceptor}</strong>?`,
-                    icon: 'question',
+                // Mostrar formulario detallado de solicitud
+                await mostrarFormularioSolicitudDetallada(solicitanteId, receptorId, nombreReceptor);
+
+            } catch (error) {
+                console.error('Error al enviar solicitud:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Ocurrió un error al procesar la solicitud',
+                    confirmButtonColor: '#3b82f6'
+                });
+            }
+        }
+
+        // NUEVA FUNCIÓN: Formulario detallado de solicitud
+        async function mostrarFormularioSolicitudDetallada(solicitanteId, receptorId, nombreReceptor) {
+            try {
+                // Cargar habilidades del solicitante (lo que ofrece)
+                const habilidadesOfrecidasResp = await fetch(`http://localhost:3001/api/habilidades/persona/${solicitanteId}`);
+                const habilidadesOfrecidasData = await habilidadesOfrecidasResp.json();
+                const todasHabilidadesSolicitante = habilidadesOfrecidasData.success ? habilidadesOfrecidasData.data : [];
+                const habilidadesOfrecidas = todasHabilidadesSolicitante.filter(h => h.tipoEstado_Habilidad === 'Ofrece');
+
+                // Cargar habilidades del receptor (lo que busca)
+                const habilidadesBuscadasResp = await fetch(`http://localhost:3001/api/habilidades/persona/${receptorId}`);
+                const habilidadesBuscadasData = await habilidadesBuscadasResp.json();
+                const todasHabilidadesReceptor = habilidadesBuscadasData.success ? habilidadesBuscadasData.data : [];
+                const habilidadesBuscadas = todasHabilidadesReceptor.filter(h => h.tipoEstado_Habilidad === 'Necesita');
+
+                // Construir opciones para los selects
+                const opcionesOfrecidas = habilidadesOfrecidas.length > 0
+                    ? habilidadesOfrecidas.map(h => `<option value="${h.id_Habilidad}">${h.nombre_Habilidad}</option>`).join('')
+                    : '<option value="">No tienes habilidades para ofrecer</option>';
+
+                const opcionesBuscadas = habilidadesBuscadas.length > 0
+                    ? habilidadesBuscadas.map(h => `<option value="${h.id_Habilidad}">${h.nombre_Habilidad}</option>`).join('')
+                    : '<option value="">Esta persona no busca habilidades específicas</option>';
+
+                // Obtener fecha mínima (hoy)
+                const hoy = new Date().toISOString().split('T')[0];
+
+                // Mostrar formulario con SweetAlert2
+                const { value: formValues } = await Swal.fire({
+                    title: `Solicitud de Intercambio`,
+                    html: `
+                        <div style="text-align: left; padding: 10px;">
+                            <p style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">
+                                Enviando solicitud a <strong style="color: #1e40af;">${nombreReceptor}</strong>
+                            </p>
+                            
+                            <!-- Habilidad que ofreces -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
+                                    Habilidad que ofreces
+                                </label>
+                                <select id="habilidadOfrecida" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; background-color: white;">
+                                    <option value="">Selecciona una habilidad (opcional)</option>
+                                    ${opcionesOfrecidas}
+                                </select>
+                            </div>
+
+                            <!-- Habilidad que solicitas -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
+                                    Habilidad que te interesa
+                                </label>
+                                <select id="habilidadSolicitada" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; background-color: white;">
+                                    <option value="">Selecciona una habilidad (opcional)</option>
+                                    ${opcionesBuscadas}
+                                </select>
+                            </div>
+
+                            <!-- Fecha y hora en la misma fila -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                                <div>
+                                    <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
+                                        Fecha propuesta
+                                    </label>
+                                    <input type="date" id="fechaPropuesta" min="${hoy}" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151;">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
+                                        Hora propuesta
+                                    </label>
+                                    <input type="time" id="horaPropuesta" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151;">
+                                </div>
+                            </div>
+
+                            <!-- Duración y modalidad en la misma fila -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                                <div>
+                                    <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
+                                        Duración (minutos)
+                                    </label>
+                                    <input type="number" id="duracionEstimada" min="15" step="15" placeholder="Ej: 60" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151;">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
+                                        Modalidad
+                                    </label>
+                                    <select id="modalidad" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; background-color: white;">
+                                        <option value="">Selecciona (opcional)</option>
+                                        <option value="Virtual">Virtual</option>
+                                        <option value="Presencial">Presencial</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Mensaje adicional -->
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
+                                    Mensaje adicional
+                                </label>
+                                <textarea id="mensajeAdicional" rows="3" placeholder="Escribe un mensaje personalizado (opcional)" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; resize: vertical; font-family: inherit;"></textarea>
+                            </div>
+                        </div>
+                    `,
+                    width: '650px',
                     showCancelButton: true,
+                    confirmButtonText: 'Enviar Solicitud',
+                    cancelButtonText: 'Cancelar',
                     confirmButtonColor: '#3b82f6',
                     cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'Sí, enviar',
-                    cancelButtonText: 'Cancelar'
+                    customClass: {
+                        popup: 'rounded-xl',
+                        confirmButton: 'px-6 py-3 rounded-lg font-semibold',
+                        cancelButton: 'px-6 py-3 rounded-lg font-semibold'
+                    },
+                    preConfirm: () => {
+                        return {
+                            habilidadOfrecida: document.getElementById('habilidadOfrecida').value || null,
+                            habilidadSolicitada: document.getElementById('habilidadSolicitada').value || null,
+                            fechaPropuesta: document.getElementById('fechaPropuesta').value || null,
+                            horaPropuesta: document.getElementById('horaPropuesta').value || null,
+                            duracionEstimada: document.getElementById('duracionEstimada').value || null,
+                            modalidad: document.getElementById('modalidad').value || null,
+                            mensajeAdicional: document.getElementById('mensajeAdicional').value || null
+                        };
+                    }
                 });
 
-                if (!result.isConfirmed) return;
+                if (!formValues) return; // Usuario canceló
 
                 // Mostrar loading
                 Swal.fire({
@@ -2699,14 +2943,22 @@
                     }
                 });
 
-                const response = await fetch('http://localhost:3001/api/solicitudes-intercambio/enviar', {
+                // Enviar solicitud detallada
+                const response = await fetch('http://localhost:3001/api/solicitudes-intercambio/enviar-detallada', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         solicitanteId: solicitanteId,
-                        receptorId: receptorId
+                        receptorId: receptorId,
+                        fechaPropuesta: formValues.fechaPropuesta,
+                        horaPropuesta: formValues.horaPropuesta,
+                        duracionEstimada: formValues.duracionEstimada ? parseInt(formValues.duracionEstimada) : null,
+                        idHabilidadSolicitada: formValues.habilidadSolicitada,
+                        idHabilidadOfrecida: formValues.habilidadOfrecida,
+                        mensajeAdicional: formValues.mensajeAdicional,
+                        modalidad: formValues.modalidad
                     })
                 });
 
@@ -2751,11 +3003,11 @@
                 }
 
             } catch (error) {
-                console.error('Error al enviar solicitud:', error);
+                console.error('Error en formulario solicitud detallada:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Ocurrió un error al enviar la solicitud',
+                    text: 'Ocurrió un error al procesar la solicitud',
                     confirmButtonColor: '#3b82f6'
                 });
             }
@@ -2835,8 +3087,100 @@
                     ? solicitud.nombre_solicitante.charAt(0).toUpperCase() 
                     : '?';
                 
+                // Construir detalles adicionales si existen
+                let detallesHTML = '';
+                
+                if (solicitud.fecha_propuesta || solicitud.hora_propuesta || solicitud.duracion_estimada || 
+                    solicitud.modalidad || solicitud.mensaje_adicional || solicitud.habilidad_ofrecida || solicitud.habilidad_solicitada) {
+                    
+                    detallesHTML = '<div class="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-100 text-xs space-y-1">';
+                    
+                    // Habilidades
+                    if (solicitud.habilidad_ofrecida) {
+                        detallesHTML += `
+                            <div class="flex items-center gap-1.5 text-gray-700">
+                                <span class="iconify text-blue-700" data-icon="mdi:briefcase-outline" data-width="16" data-height="16"></span>
+                                <span class="font-semibold text-blue-700">Ofrece:</span>
+                                <span class="text-blue-700 font-medium">${solicitud.habilidad_ofrecida}</span>
+                            </div>`;
+                    }
+                    
+                    if (solicitud.habilidad_solicitada) {
+                        detallesHTML += `
+                            <div class="flex items-center gap-1.5 text-gray-700">
+                                <span class="iconify text-purple-700" data-icon="mdi:target" data-width="16" data-height="16"></span>
+                                <span class="font-semibold text-purple-700">Busca:</span>
+                                <span class="text-purple-700 font-medium">${solicitud.habilidad_solicitada}</span>
+                            </div>`;
+                    }
+                    
+                    if (solicitud.fecha_propuesta) {
+                        const fechaPropuesta = new Date(solicitud.fecha_propuesta);
+                        detallesHTML += `
+                            <div class="flex items-center gap-1.5 text-gray-700">
+                                <span class="iconify text-gray-700" data-icon="mdi:calendar" data-width="16" data-height="16"></span>
+                                <span class="font-semibold">Fecha:</span>
+                                <span>${fechaPropuesta.toLocaleDateString('es-HN', { 
+                                    weekday: 'short', 
+                                    year: 'numeric', 
+                                    month: 'short', 
+                                    day: 'numeric' 
+                                })}</span>
+                            </div>`;
+                    }
+                    
+                    if (solicitud.hora_propuesta) {
+                        detallesHTML += `
+                            <div class="flex items-center gap-1.5 text-gray-700">
+                                <span class="iconify text-gray-700" data-icon="mdi:clock-outline" data-width="16" data-height="16"></span>
+                                <span class="font-semibold">Hora:</span>
+                                <span>${solicitud.hora_propuesta}</span>
+                            </div>`;
+                    }
+                    
+                    if (solicitud.duracion_estimada) {
+                        const horas = Math.floor(solicitud.duracion_estimada / 60);
+                        const minutos = solicitud.duracion_estimada % 60;
+                        let duracionTexto = '';
+                        if (horas > 0) duracionTexto += `${horas}h `;
+                        if (minutos > 0) duracionTexto += `${minutos}min`;
+                        
+                        detallesHTML += `
+                            <div class="flex items-center gap-1.5 text-gray-700">
+                                <span class="iconify text-gray-700" data-icon="mdi:timer-outline" data-width="16" data-height="16"></span>
+                                <span class="font-semibold">Duración:</span>
+                                <span>${duracionTexto}</span>
+                            </div>`;
+                    }
+                    
+                    if (solicitud.modalidad) {
+                        const iconoModalidad = solicitud.modalidad === 'Virtual' 
+                            ? '<span class="iconify text-gray-700" data-icon="mdi:laptop" data-width="16" data-height="16"></span>' 
+                            : '<span class="iconify text-gray-700" data-icon="mdi:office-building" data-width="16" data-height="16"></span>';
+                        detallesHTML += `
+                            <div class="flex items-center gap-1.5 text-gray-700">
+                                ${iconoModalidad}
+                                <span class="font-semibold">Modalidad:</span>
+                                <span>${solicitud.modalidad}</span>
+                            </div>`;
+                    }
+                    
+                    if (solicitud.mensaje_adicional) {
+                        detallesHTML += `
+                            <div class="mt-1.5 pt-1.5 border-t border-blue-200">
+                                <div class="flex items-center gap-1.5 mb-1">
+                                    <span class="iconify text-gray-700" data-icon="mdi:message-text-outline" data-width="16" data-height="16"></span>
+                                    <p class="font-semibold text-gray-700">Mensaje:</p>
+                                </div>
+                                <p class="text-gray-600 italic">"${solicitud.mensaje_adicional}"</p>
+                            </div>`;
+                    }
+                    
+                    detallesHTML += '</div>';
+                }
+                
                 return `
-                    <div class="p-4 hover:bg-gray-50 transition">
+                    <div class="p-4 hover:bg-gray-50 transition border-b border-gray-100 last:border-b-0">
                         <div class="flex items-start gap-3">
                             ${solicitud.foto_solicitante 
                                 ? `<img src="${solicitud.foto_solicitante}" alt="${nombreCompleto}" class="w-12 h-12 rounded-full object-cover flex-shrink-0" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
@@ -2849,23 +3193,27 @@
                             }
                             <div class="flex-1 min-w-0">
                                 <p class="font-semibold text-gray-800 truncate">${nombreCompleto || 'Usuario'}</p>
-                                <p class="text-sm text-gray-600 mb-2">Quiere intercambiar habilidades contigo</p>
-                                <p class="text-xs text-gray-400 mb-3">${new Date(solicitud.fecha_solicitud).toLocaleString('es-ES', { 
+                                <p class="text-sm text-gray-600 mb-1">Quiere intercambiar habilidades contigo</p>
+                                <p class="text-xs text-gray-400 mb-2">${new Date(solicitud.fecha_solicitud).toLocaleString('es-HN', { 
                                     month: 'short', 
                                     day: 'numeric',
                                     hour: '2-digit',
-                                    minute: '2-digit'
+                                    minute: '2-digit',
+                                    hour12: true,
+                                    timeZone: 'America/Tegucigalpa'
                                 })}</p>
                                 
-                                <div class="flex gap-2">
+                                ${detallesHTML}
+                                
+                                <div class="flex gap-2 mt-3">
                                     <button 
                                         onclick="aceptarSolicitud(${solicitud.id_solicitud}, '${nombreCompleto.replace(/'/g, "\\'")}')"
-                                        class="flex-1 px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm rounded-lg hover:from-green-600 hover:to-green-700 transition font-semibold">
+                                        class="flex-1 px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm rounded-lg hover:from-green-600 hover:to-green-700 transition font-semibold shadow-sm">
                                         Aceptar
                                     </button>
                                     <button 
-                                        onclick="rechazarSolicitud(${solicitud.id_solicitud})"
-                                        class="flex-1 px-3 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm rounded-lg hover:from-red-600 hover:to-red-700 transition font-semibold">
+                                        onclick="rechazarSolicitud(${solicitud.id_solicitud}, '${nombreCompleto.replace(/'/g, "\\'")}')"
+                                        class="flex-1 px-3 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm rounded-lg hover:from-red-600 hover:to-red-700 transition font-semibold shadow-sm">
                                         Rechazar
                                     </button>
                                 </div>
@@ -3246,6 +3594,15 @@
             if (formDashboard) {
                 formDashboard.addEventListener('submit', enviarMensajeDashboard);
             }
+
+            // Event delegation para el botón "Ver Perfil" en el chat del Dashboard
+            document.addEventListener('click', (e) => {
+                if (e.target.id === 'verPerfilBtnDashboard' || e.target.closest('#verPerfilBtnDashboard')) {
+                    e.preventDefault();
+                    console.log('Click capturado en botón Ver Perfil Dashboard');
+                    verPerfilContactoDashboard();
+                }
+            });
         });
 
         // Cargar conversaciones
@@ -3293,19 +3650,21 @@
             }
 
             container.innerHTML = conversaciones.map((conv, index) => {
-                const initials = getInitialsDashboard(conv.nombre_contacto);
+                const nombreContacto = conv.nombre_contacto || 'Usuario';
+                const initials = getInitialsDashboard(nombreContacto);
                 const colorClass = getColorClassDashboard(index);
                 const mensajesNoLeidos = conv.mensajes_no_leidos || 0;
                 const isActive = conversacionActivaDashboard && conversacionActivaDashboard.id_conversacion === conv.id_conversacion;
+                const tieneImagen = conv.imagenUrl_contacto && conv.imagenUrl_contacto.trim() !== '';
                 
                 return `
                     <div class="p-3 flex items-center space-x-3 ${isActive ? 'bg-indigo-100 border-l-4 border-indigo-600' : 'hover:bg-gray-100'} cursor-pointer transition-all"
                          onclick="seleccionarConversacionDashboard(${conv.id_conversacion})">
                         <div class="relative flex-shrink-0">
-                            ${conv.imagenUrl_contacto ? 
+                            ${tieneImagen ? 
                                 `<img src="${conv.imagenUrl_contacto}" 
                                      class="w-12 h-12 rounded-full object-cover border-2 border-white shadow" 
-                                     alt="${conv.nombre_contacto}"
+                                     alt="${nombreContacto}"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                  <div class="w-12 h-12 ${colorClass} rounded-full items-center justify-center text-white font-semibold shadow hidden">
                                     ${initials}
@@ -3316,7 +3675,7 @@
                             }
                         </div>
                         <div class="flex-grow min-w-0">
-                            <p class="text-sm font-semibold text-gray-900 truncate">${conv.nombre_contacto}</p>
+                            <p class="text-sm font-semibold text-gray-900 truncate">${nombreContacto}</p>
                             <p class="text-xs ${isActive ? 'text-indigo-700' : 'text-gray-500'} truncate">
                                 ${conv.ultimo_mensaje || 'Sin mensajes aún'}
                             </p>
@@ -3373,30 +3732,61 @@
 
         // Actualizar header del chat
         function actualizarHeaderChatDashboard(conv) {
-            const initials = getInitialsDashboard(conv.nombre_contacto);
+            const nombreContacto = conv.nombre_contacto || 'Usuario';
+            const initials = getInitialsDashboard(nombreContacto);
             const colorClass = getColorClassDashboard(conv.id_conversacion);
+            const tieneImagen = conv.imagenUrl_contacto && conv.imagenUrl_contacto.trim() !== '';
+            
+            // Guardar el ID del contacto
+            if (!conversacionActivaDashboard.id_contacto && conv.id_contacto) {
+                conversacionActivaDashboard.id_contacto = conv.id_contacto;
+            }
             
             document.getElementById('chat-header-dashboard').innerHTML = `
                 <div class="flex items-center space-x-3">
                     <div class="relative">
-                        ${conv.imagenUrl_contacto ? 
+                        ${tieneImagen ? 
                             `<img src="${conv.imagenUrl_contacto}" 
                                   class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md" 
-                                  alt="${conv.nombre_contacto}">` :
+                                  alt="${nombreContacto}"
+                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                             <div class="w-12 h-12 ${colorClass} rounded-full items-center justify-center text-white font-bold text-base shadow-md hidden">
+                                ${initials}
+                             </div>` :
                             `<div class="w-12 h-12 ${colorClass} rounded-full flex items-center justify-center text-white font-bold text-base shadow-md">
                                 ${initials}
                             </div>`
                         }
                     </div>
                     <div>
-                        <h2 class="text-lg font-semibold text-gray-800">${conv.nombre_contacto}</h2>
+                        <h2 class="text-lg font-semibold text-gray-800">${nombreContacto}</h2>
                         <p class="text-xs text-gray-500">Conversación activa</p>
                     </div>
                 </div>
-                <button class="text-sm text-indigo-600 hover:text-indigo-800 font-semibold px-4 py-2 rounded-lg hover:bg-indigo-50 transition">
-                    Ver Perfil
+                <button id="verPerfilBtnDashboard" class="text-sm text-indigo-600 hover:text-indigo-800 font-semibold px-4 py-2 rounded-lg hover:bg-indigo-50 transition flex items-center space-x-1">
+                    <span class="iconify" data-icon="mdi:account" data-width="18"></span>
+                    <span>Ver Perfil</span>
                 </button>
             `;
+        }
+
+        // Función para ver el perfil del contacto desde el chat
+        // Función para ver el perfil del contacto desde el chat
+        function verPerfilContactoDashboard() {
+            console.log('Función verPerfilContactoDashboard llamada');
+            console.log('Conversación activa:', conversacionActivaDashboard);
+            
+            const idContacto = conversacionActivaDashboard?.id_contacto || 
+                             conversacionActivaDashboard?.idContacto || 
+                             conversacionActivaDashboard?.id_persona_contacto;
+            
+            if (idContacto) {
+                console.log('Abriendo perfil para ID:', idContacto);
+                viewProfile(parseInt(idContacto)); // Usar la función existente viewProfile
+            } else {
+                console.error('No se encontró el ID del contacto');
+                alert('No se pudo cargar el perfil del contacto');
+            }
         }
 
         // Cargar mensajes
