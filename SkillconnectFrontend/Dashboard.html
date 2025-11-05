@@ -946,11 +946,15 @@
                     <span class="font-medium">Mi Perfil</span>
                 </a>
 
-                <a href="#" onclick="navigateTo('mensajes'); return false;" data-view="mensajes" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z"></path>
-                    </svg>
-                    <span class="font-medium">Solicitudes y Mensajes</span>
+                <a href="#" onclick="navigateTo('mensajes'); return false;" data-view="mensajes" class="sidebar-item flex items-center justify-between p-3 rounded-lg text-gray-700">
+                    <div class="flex items-center space-x-3">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z"></path>
+                        </svg>
+                        <span class="font-medium">Solicitudes y Mensajes</span>
+                    </div>
+                    <!-- Badge de mensajes no leídos -->
+                    <span id="sidebarMessagesBadge" class="hidden min-w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5"></span>
                 </a>
 
                 <a href="#" onclick="navigateTo('busqueda'); return false;" data-view="busqueda" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
@@ -1111,9 +1115,44 @@
 
                 <h3 class="text-2xl font-bold text-gray-800 mb-6 max-w-6xl mx-auto">Usuarios Recomendados</h3>
 
+                <!-- Controles de Ordenamiento y Filtros -->
+                <div class="max-w-6xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
+                    <!-- Ordenamiento -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm font-medium text-gray-700">Ordenar por:</label>
+                        <select id="sortSelect" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="recent">Más recientes</option>
+                            <option value="name">Nombre (A-Z)</option>
+                            <option value="skills">Más habilidades</option>
+                            <option value="location">Ubicación</option>
+                        </select>
+                    </div>
+
+                    <!-- Resultados por página -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm font-medium text-gray-700">Mostrar:</label>
+                        <select id="perPageSelect" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="6">6 usuarios</option>
+                            <option value="9" selected>9 usuarios</option>
+                            <option value="12">12 usuarios</option>
+                            <option value="18">18 usuarios</option>
+                        </select>
+                    </div>
+
+                    <!-- Contador de resultados -->
+                    <div class="text-sm text-gray-600">
+                        <span id="resultsCount">Cargando...</span>
+                    </div>
+                </div>
+
                 <!-- Grid de Tarjetas de Usuarios -->
                 <div id="usersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     <!-- Las tarjetas se generarán dinámicamente con JavaScript -->
+                </div>
+
+                <!-- Controles de Paginación -->
+                <div id="paginationControls" class="max-w-6xl mx-auto mt-8 flex items-center justify-center gap-2">
+                    <!-- Los botones se generarán dinámicamente -->
                 </div>
             </main>
         </div>
@@ -1497,6 +1536,14 @@
         
         // Variable global para almacenar usuarios
         let usuariosReales = [];
+        
+        // Variables de paginación y ordenamiento
+        let currentPage = 1;
+        let usersPerPage = 9;
+        let currentSort = 'recent';
+        let allUsers = []; // Copia completa de usuarios para ordenamiento
+        let currentCategoryFilter = null; // Filtro de categoría activo
+        let currentSearchFilter = ''; // Filtro de búsqueda activo
 
         async function cargarDatosUsuario() {
             try {
@@ -1610,7 +1657,9 @@
         }
         
         async function filtrarPorCategoria(idCategoria, event) {
-            categoriaActiva = idCategoria;
+            // Guardar el filtro de categoría activo
+            currentCategoryFilter = idCategoria;
+            currentPage = 1; // Resetear a primera página
             
             // Actualizar estilos de botones
             const buttons = document.querySelectorAll('#categoryFilters .filter-button');
@@ -1628,84 +1677,96 @@
                 }
             }
             
-            // Si es null, mostrar todos
-            if (idCategoria === null) {
-                cargarUsuariosReales();
-                return;
-            }
-            
-            // Filtrar por categoría
+            // Aplicar todos los filtros
+            await aplicarFiltros();
+        }
+
+        // ========================================
+        // FUNCIÓN PARA APLICAR FILTROS COMBINADOS
+        // ========================================
+        async function aplicarFiltros() {
             try {
-                console.log('Filtrando por categoría:', idCategoria);
+                mostrarSkeletonLoaders(usersPerPage);
                 
                 const usuarioActualId = localStorage.getItem('usuarioId');
+                let personas = [];
                 
-                // Obtener personas filtradas por categoría
-                const resPersonas = await fetch(`${API_BASE}/personas/categoria/${idCategoria}`);
-                
-                if (!resPersonas.ok) {
-                    const errorData = await resPersonas.json().catch(() => ({}));
-                    console.error('Error del servidor:', resPersonas.status, errorData);
-                    usersGrid.innerHTML = `<p class="col-span-full text-center text-red-500">Error al filtrar: ${errorData.error || 'Error del servidor'}</p>`;
-                    return;
-                }
-                
-                const dataPersonas = await resPersonas.json();
-                
-                if (!dataPersonas.success) {
-                    console.error('Error al filtrar personas:', dataPersonas);
-                    usersGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">No se encontraron usuarios en esta categoría</p>';
-                    return;
-                }
-                
-                const personas = dataPersonas.data;
-                usuariosReales = [];
-                
-                // Procesar cada persona (igual que cargarUsuariosReales)
-                for (const persona of personas) {
-                    // Filtrar perfil propio
-                    if (usuarioActualId && persona.id_Usuario === parseInt(usuarioActualId)) {
-                        continue;
+                // 1. Obtener personas según el filtro de categoría
+                if (currentCategoryFilter === null) {
+                    // Sin filtro de categoría - obtener todos
+                    const resPersonas = await fetch(`${API_BASE}/personas`);
+                    const dataPersonas = await resPersonas.json();
+                    
+                    if (!resPersonas.ok || !dataPersonas.success) {
+                        console.error('Error al obtener personas');
+                        usersGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">Error al cargar usuarios</p>';
+                        return;
+                    }
+                    personas = dataPersonas.data;
+                } else {
+                    // Con filtro de categoría
+                    const resPersonas = await fetch(`${API_BASE}/personas/categoria/${currentCategoryFilter}`);
+                    
+                    if (!resPersonas.ok) {
+                        const errorData = await resPersonas.json().catch(() => ({}));
+                        console.error('Error del servidor:', resPersonas.status, errorData);
+                        usersGrid.innerHTML = `<p class="col-span-full text-center text-red-500">Error al filtrar: ${errorData.error || 'Error del servidor'}</p>`;
+                        return;
                     }
                     
+                    const dataPersonas = await resPersonas.json();
+                    
+                    if (!dataPersonas.success) {
+                        console.error('Error al filtrar personas:', dataPersonas);
+                        usersGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">No se encontraron usuarios en esta categoría</p>';
+                        return;
+                    }
+                    
+                    personas = dataPersonas.data;
+                }
+                
+                // 2. Filtrar usuario actual
+                const personasFiltradas = personas.filter(persona => {
+                    return !usuarioActualId || persona.id_Usuario !== parseInt(usuarioActualId);
+                });
+                
+                // 3. Procesar usuarios en paralelo
+                const usuariosPromises = personasFiltradas.map(async (persona) => {
                     try {
-                        // Obtener habilidades
-                        const resHabilidades = await fetch(`${API_BASE}/habilidades/persona/${persona.id_Perfil_Persona}`);
-                        const dataHabilidades = await resHabilidades.json();
+                        const [resHabilidades, resDireccion] = await Promise.all([
+                            fetch(`${API_BASE}/habilidades/persona/${persona.id_Perfil_Persona}`).catch(() => null),
+                            fetch(`${API_BASE}/direcciones/persona/${persona.id_Perfil_Persona}`).catch(() => null)
+                        ]);
                         
-                        // Obtener dirección
-                        let direccion = null;
-                        try {
-                            const resDireccion = await fetch(`${API_BASE}/direcciones/persona/${persona.id_Perfil_Persona}`);
-                            if (resDireccion.ok) {
-                                const dataDireccion = await resDireccion.json();
-                                if (dataDireccion.success && dataDireccion.data) {
-                                    direccion = Array.isArray(dataDireccion.data) ? dataDireccion.data[0] : dataDireccion.data;
-                                }
+                        let habilidades = [];
+                        if (resHabilidades && resHabilidades.ok) {
+                            const dataHabilidades = await resHabilidades.json();
+                            if (dataHabilidades.success && dataHabilidades.data) {
+                                habilidades = dataHabilidades.data
+                                    .filter(h => h.tipoEstado_Habilidad === 'Ofrece')
+                                    .map(h => h.nombre_Habilidad)
+                                    .slice(0, 4);
                             }
-                        } catch (e) {}
-                        
-                        // Formatear habilidades
-                        const habilidades = dataHabilidades.success && dataHabilidades.data 
-                            ? dataHabilidades.data
-                                .filter(h => h.tipoEstado_Habilidad === 'Ofrece')
-                                .map(h => h.nombre_Habilidad)
-                                .slice(0, 4)
-                            : [];
-                        
-                        // Formatear ubicación
-                        let location = 'Sin ubicación';
-                        if (direccion) {
-                            const ciudad = direccion.ciudad_Direccion || direccion.ciudad || '';
-                            const pais = direccion.pais_Direccion || direccion.pais || '';
-                            location = [ciudad, pais].filter(Boolean).join(', ');
                         }
                         
-                        // Crear objeto de usuario
-                        const usuario = {
+                        let location = 'Sin ubicación';
+                        if (resDireccion && resDireccion.ok) {
+                            const dataDireccion = await resDireccion.json();
+                            if (dataDireccion.success && dataDireccion.data) {
+                                const direccion = Array.isArray(dataDireccion.data) 
+                                    ? dataDireccion.data[0] 
+                                    : dataDireccion.data;
+                                    
+                                const ciudad = direccion.ciudad_Direccion || direccion.ciudad || '';
+                                const pais = direccion.pais_Direccion || direccion.pais || '';
+                                location = [ciudad, pais].filter(Boolean).join(', ') || 'Sin ubicación';
+                            }
+                        }
+                        
+                        return {
                             id: persona.id_Perfil_Persona,
                             usuarioId: persona.id_Usuario,
-                            name: `${persona.nombre_Persona || ''} ${persona.apellido_Persona || ''}`.trim(),
+                            name: `${persona.nombre_Persona || ''} ${persona.apellido_Persona || ''}`.trim() || 'Usuario',
                             profession: persona.descripcionPerfil_Persona || 'Usuario SkillConnect',
                             location: location,
                             skills: habilidades,
@@ -1717,19 +1778,36 @@
                             avatarInitials: `${(persona.nombre_Persona || 'U')[0]}${(persona.apellido_Persona || 'S')[0]}`
                         };
                         
-                        usuariosReales.push(usuario);
-                        
                     } catch (error) {
                         console.error(`Error al procesar persona ${persona.id_Perfil_Persona}:`, error);
+                        return null;
                     }
+                });
+                
+                const resultados = await Promise.all(usuariosPromises);
+                let usuariosFiltrados = resultados.filter(u => u !== null);
+                
+                // 4. Aplicar filtro de búsqueda si existe
+                if (currentSearchFilter && currentSearchFilter.trim() !== '') {
+                    const searchTerm = currentSearchFilter.toLowerCase().trim();
+                    usuariosFiltrados = usuariosFiltrados.filter(user => {
+                        return (
+                            user.name.toLowerCase().includes(searchTerm) ||
+                            user.location.toLowerCase().includes(searchTerm) ||
+                            user.skills.some(skill => skill.toLowerCase().includes(searchTerm))
+                        );
+                    });
                 }
                 
-                console.log(`Usuarios filtrados por categoría: ${usuariosReales.length}`);
+                // 5. Actualizar allUsers y renderizar
+                allUsers = usuariosFiltrados;
+                console.log(`✅ ${allUsers.length} usuarios después de aplicar filtros`);
+                
                 renderUserCardsReal();
                 
             } catch (error) {
-                console.error('Error al filtrar por categoría:', error);
-                usersGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">Error al filtrar usuarios</p>';
+                console.error('Error al aplicar filtros:', error);
+                usersGrid.innerHTML = '<p class="col-span-full text-center text-red-500">Error al filtrar usuarios</p>';
             }
         }
         
@@ -1823,11 +1901,12 @@
                 
                 // Filtrar nulos y asignar
                 usuariosReales = resultados.filter(u => u !== null);
+                allUsers = [...usuariosReales]; // Guardar copia completa
                 
                 console.timeEnd('Carga de usuarios');
                 console.log(`✅ ${usuariosReales.length} usuarios cargados exitosamente`);
                 
-                // 3. Renderizar usuarios reales
+                // 3. Renderizar usuarios reales con paginación
                 renderUserCardsReal();
                 
             } catch (error) {
@@ -1836,14 +1915,158 @@
             }
         }
 
-        // Función para renderizar las tarjetas con datos reales
-        function renderUserCardsReal() {
-            if (usuariosReales.length === 0) {
-                usersGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">No hay usuarios disponibles</p>';
+        // ========================================
+        // FUNCIONES DE ORDENAMIENTO
+        // ========================================
+        function sortUsers(users, sortType) {
+            const sorted = [...users];
+            
+            switch(sortType) {
+                case 'recent':
+                    // Ordenar por ID descendente (más recientes primero)
+                    return sorted.sort((a, b) => b.id - a.id);
+                    
+                case 'name':
+                    // Ordenar alfabéticamente por nombre
+                    return sorted.sort((a, b) => a.name.localeCompare(b.name));
+                    
+                case 'skills':
+                    // Ordenar por cantidad de habilidades (más primero)
+                    return sorted.sort((a, b) => b.skills.length - a.skills.length);
+                    
+                case 'location':
+                    // Ordenar por ubicación alfabéticamente
+                    return sorted.sort((a, b) => a.location.localeCompare(b.location));
+                    
+                default:
+                    return sorted;
+            }
+        }
+
+        // ========================================
+        // FUNCIONES DE PAGINACIÓN
+        // ========================================
+        function renderPagination() {
+            const totalPages = Math.ceil(allUsers.length / usersPerPage);
+            const paginationContainer = document.getElementById('paginationControls');
+            
+            if (totalPages <= 1) {
+                paginationContainer.innerHTML = '';
                 return;
             }
+            
+            let buttons = '';
+            
+            // Botón anterior
+            buttons += `
+                <button 
+                    onclick="changePage(${currentPage - 1})" 
+                    ${currentPage === 1 ? 'disabled' : ''}
+                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+            `;
+            
+            // Botones de páginas
+            const maxButtons = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+            let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+            
+            if (endPage - startPage < maxButtons - 1) {
+                startPage = Math.max(1, endPage - maxButtons + 1);
+            }
+            
+            if (startPage > 1) {
+                buttons += `
+                    <button onclick="changePage(1)" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        1
+                    </button>
+                `;
+                if (startPage > 2) {
+                    buttons += `<span class="px-2 py-2">...</span>`;
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                buttons += `
+                    <button 
+                        onclick="changePage(${i})" 
+                        class="px-4 py-2 border rounded-lg transition ${i === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 hover:bg-gray-50'}">
+                        ${i}
+                    </button>
+                `;
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    buttons += `<span class="px-2 py-2">...</span>`;
+                }
+                buttons += `
+                    <button onclick="changePage(${totalPages})" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        ${totalPages}
+                    </button>
+                `;
+            }
+            
+            // Botón siguiente
+            buttons += `
+                <button 
+                    onclick="changePage(${currentPage + 1})" 
+                    ${currentPage === totalPages ? 'disabled' : ''}
+                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            `;
+            
+            paginationContainer.innerHTML = buttons;
+        }
 
-            usersGrid.innerHTML = usuariosReales.map(user => `
+        function changePage(page) {
+            const totalPages = Math.ceil(allUsers.length / usersPerPage);
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            renderUserCardsReal();
+            
+            // Scroll suave al inicio del grid
+            document.getElementById('usersGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function updateResultsCount() {
+            const start = (currentPage - 1) * usersPerPage + 1;
+            const end = Math.min(currentPage * usersPerPage, allUsers.length);
+            const total = allUsers.length;
+            
+            document.getElementById('resultsCount').textContent = 
+                `Mostrando ${start}-${end} de ${total} usuarios`;
+        }
+
+        // Función para renderizar las tarjetas con datos reales
+        function renderUserCardsReal() {
+            if (allUsers.length === 0) {
+                usersGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">No hay usuarios disponibles</p>';
+                document.getElementById('resultsCount').textContent = '0 usuarios encontrados';
+                document.getElementById('paginationControls').innerHTML = '';
+                return;
+            }
+            
+            // Aplicar ordenamiento
+            const sortedUsers = sortUsers(allUsers, currentSort);
+            
+            // Calcular indices de paginación
+            const startIndex = (currentPage - 1) * usersPerPage;
+            const endIndex = startIndex + usersPerPage;
+            const paginatedUsers = sortedUsers.slice(startIndex, endIndex);
+            
+            // Actualizar contador
+            updateResultsCount();
+            
+            // Renderizar tarjetas
+            usersGrid.innerHTML = paginatedUsers.map(user => `
                 <div class="user-card">
                     <!-- Banner superior con gradiente -->
                     <div class="user-card-banner bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
@@ -1914,6 +2137,9 @@
                     </div>
                 </div>
             `).join('');
+            
+            // Renderizar controles de paginación
+            renderPagination();
         }
 
         // ========================================
@@ -1963,6 +2189,64 @@
 
         // Llamar a la función de inicialización optimizada
         inicializarDashboard();
+
+        // ========================================
+        // EVENT LISTENERS PARA PAGINACIÓN Y ORDENAMIENTO
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Selector de ordenamiento
+            const sortSelect = document.getElementById('sortSelect');
+            if (sortSelect) {
+                sortSelect.addEventListener('change', (e) => {
+                    currentSort = e.target.value;
+                    currentPage = 1; // Resetear a primera página
+                    renderUserCardsReal();
+                });
+            }
+            
+            // Selector de resultados por página
+            const perPageSelect = document.getElementById('perPageSelect');
+            if (perPageSelect) {
+                perPageSelect.addEventListener('change', (e) => {
+                    usersPerPage = parseInt(e.target.value);
+                    currentPage = 1; // Resetear a primera página
+                    renderUserCardsReal();
+                });
+            }
+            
+            // Búsqueda
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = searchInput?.nextElementSibling?.nextElementSibling; // El botón "Buscar"
+            
+            if (searchInput && searchButton) {
+                // Búsqueda al hacer clic en el botón
+                searchButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentSearchFilter = searchInput.value;
+                    currentPage = 1;
+                    aplicarFiltros();
+                });
+                
+                // Búsqueda al presionar Enter
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        currentSearchFilter = searchInput.value;
+                        currentPage = 1;
+                        aplicarFiltros();
+                    }
+                });
+                
+                // Limpiar búsqueda si el input está vacío y pierde el foco
+                searchInput.addEventListener('blur', () => {
+                    if (searchInput.value.trim() === '' && currentSearchFilter !== '') {
+                        currentSearchFilter = '';
+                        currentPage = 1;
+                        aplicarFiltros();
+                    }
+                });
+            }
+        });
 
         // ========================================
         // FUNCIONALIDAD DEL CHAT
@@ -2708,9 +2992,37 @@
         // Cargar solicitudes cada 30 segundos
         setInterval(cargarSolicitudesRecibidas, 30000);
         
+        // Actualizar badge de mensajes del sidebar cada 30 segundos
+        setInterval(async () => {
+            try {
+                const personaId = await obtenerPersonaIdActual();
+                const response = await fetch(`http://localhost:3001/api/mensajeria/conversaciones/${personaId}`);
+                if (response.ok) {
+                    const resultado = await response.json();
+                    actualizarBadgeSidebarMensajes(resultado.data || []);
+                }
+            } catch (error) {
+                console.warn('Error al actualizar badge de mensajes:', error);
+            }
+        }, 30000);
+        
         // Cargar solicitudes al iniciar
         document.addEventListener('DOMContentLoaded', () => {
             cargarSolicitudesRecibidas();
+            
+            // Cargar badge de mensajes al iniciar
+            (async () => {
+                try {
+                    const personaId = await obtenerPersonaIdActual();
+                    const response = await fetch(`http://localhost:3001/api/mensajeria/conversaciones/${personaId}`);
+                    if (response.ok) {
+                        const resultado = await response.json();
+                        actualizarBadgeSidebarMensajes(resultado.data || []);
+                    }
+                } catch (error) {
+                    console.warn('Error al cargar badge inicial de mensajes:', error);
+                }
+            })();
         });
 
         // ============================================
@@ -2949,6 +3261,7 @@
                 // La API devuelve { success: true, data: [...] }
                 conversacionesDashboard = resultado.data || [];
                 mostrarConversacionesDashboard(conversacionesDashboard);
+                actualizarBadgeSidebarMensajes(conversacionesDashboard);
             } catch (error) {
                 console.error('Error:', error);
                 document.getElementById('conversaciones-list').innerHTML = `
@@ -2959,6 +3272,7 @@
                         </div>
                     </div>
                 `;
+                actualizarBadgeSidebarMensajes([]);
             }
         }
 
@@ -3015,6 +3329,25 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        // Actualizar badge de mensajes no leídos en el sidebar
+        function actualizarBadgeSidebarMensajes(conversaciones) {
+            const badge = document.getElementById('sidebarMessagesBadge');
+            
+            if (!badge) return;
+            
+            // Calcular el total de mensajes no leídos de todas las conversaciones
+            const totalNoLeidos = conversaciones.reduce((total, conv) => {
+                return total + (conv.mensajes_no_leidos || 0);
+            }, 0);
+            
+            if (totalNoLeidos > 0) {
+                badge.classList.remove('hidden');
+                badge.textContent = totalNoLeidos > 99 ? '99+' : totalNoLeidos;
+            } else {
+                badge.classList.add('hidden');
+            }
         }
 
         // Seleccionar conversación
