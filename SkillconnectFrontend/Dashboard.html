@@ -967,6 +967,15 @@
                     <span class="font-medium">Solicitud de Intercambio</span>
                 </a>
 
+                <!-- Nueva opción: Solicitudes Enviadas -->
+                <a href="#" onclick="navigateTo('solicitudesEnviadas'); return false;" data-view="solicitudesEnviadas" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700 relative">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                    <span class="font-medium">Solicitudes Enviadas</span>
+                    <span id="badge-solicitudes-enviadas" class="hidden absolute right-2 bg-yellow-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                </a>
+
                 <div class="my-4 border-t border-gray-200"></div>
 
                 <a href="#" onclick="navigateTo('configuracion'); return false;" data-view="configuracion" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
@@ -1213,6 +1222,31 @@
                 style="width: 100%; height: calc(100vh - 80px); border: none; display: block;"
                 title="Solicitud de Intercambio">
             </iframe>
+        </div>
+
+        <!-- Vista: Solicitudes Enviadas -->
+        <div id="solicitudesEnviadasView" class="view-section">
+            <div class="w-full px-6 lg:px-12 py-8">
+                <div class="max-w-6xl mx-auto">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Solicitudes Enviadas</h2>
+                        <p class="text-gray-600">Aquí puedes ver las solicitudes que has enviado y que están pendientes de respuesta</p>
+                    </div>
+
+                    <!-- Grid de Solicitudes Enviadas -->
+                    <div id="solicitudesEnviadasGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Se cargarán dinámicamente -->
+                        <div class="col-span-full flex items-center justify-center py-12">
+                            <div class="text-center">
+                                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                                <p class="text-gray-500">Cargando solicitudes enviadas...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Vista: Configuración -->
@@ -2402,13 +2436,34 @@
                         confirmButtonColor: '#3b82f6',
                         timer: 3000
                     });
+                    
+                    // Recargar usuarios y solicitudes enviadas
+                    cargarUsuariosReales();
+                    cargarSolicitudesEnviadas();
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message || 'No se pudo enviar la solicitud',
-                        confirmButtonColor: '#3b82f6'
-                    });
+                    // Mensaje más amigable si ya existe una solicitud
+                    const esYaEnviada = data.message && (
+                        data.message.includes('ya existe') || 
+                        data.message.includes('pendiente') ||
+                        data.message.includes('conexión establecida')
+                    );
+                    
+                    if (esYaEnviada) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Solicitud ya enviada',
+                            html: `Ya has enviado una solicitud a <strong>${nombreReceptor}</strong>.<br><br>Puedes ver tus solicitudes pendientes en el menú lateral.`,
+                            confirmButtonColor: '#3b82f6',
+                            confirmButtonText: 'Entendido'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'No se pudo enviar',
+                            text: data.message || 'No se pudo enviar la solicitud',
+                            confirmButtonColor: '#3b82f6'
+                        });
+                    }
                 }
 
             } catch (error) {
@@ -2491,20 +2546,25 @@
             emptyState?.classList.add('hidden');
             
             notificationList.innerHTML = solicitudes.map(solicitud => {
-                const nombreCompleto = `${solicitud.nombre_solicitante} ${solicitud.apellido_solicitante || ''}`.trim();
-                const inicial = solicitud.nombre_solicitante.charAt(0).toUpperCase();
+                const nombreCompleto = `${solicitud.nombre_solicitante || ''} ${solicitud.apellido_solicitante || ''}`.trim();
+                const inicial = (solicitud.nombre_solicitante && solicitud.nombre_solicitante.length > 0) 
+                    ? solicitud.nombre_solicitante.charAt(0).toUpperCase() 
+                    : '?';
                 
                 return `
                     <div class="p-4 hover:bg-gray-50 transition">
                         <div class="flex items-start gap-3">
                             ${solicitud.foto_solicitante 
-                                ? `<img src="${solicitud.foto_solicitante}" alt="${nombreCompleto}" class="w-12 h-12 rounded-full object-cover flex-shrink-0" />`
+                                ? `<img src="${solicitud.foto_solicitante}" alt="${nombreCompleto}" class="w-12 h-12 rounded-full object-cover flex-shrink-0" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                   <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 items-center justify-center text-white font-bold text-lg flex-shrink-0" style="display:none;">
+                                    ${inicial}
+                                   </div>`
                                 : `<div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                                     ${inicial}
                                    </div>`
                             }
                             <div class="flex-1 min-w-0">
-                                <p class="font-semibold text-gray-800 truncate">${nombreCompleto}</p>
+                                <p class="font-semibold text-gray-800 truncate">${nombreCompleto || 'Usuario'}</p>
                                 <p class="text-sm text-gray-600 mb-2">Quiere intercambiar habilidades contigo</p>
                                 <p class="text-xs text-gray-400 mb-3">${new Date(solicitud.fecha_solicitud).toLocaleString('es-ES', { 
                                     month: 'short', 
@@ -2652,6 +2712,199 @@
         document.addEventListener('DOMContentLoaded', () => {
             cargarSolicitudesRecibidas();
         });
+
+        // ============================================
+        // SOLICITUDES ENVIADAS
+        // ============================================
+        
+        // Cargar solicitudes enviadas
+        async function cargarSolicitudesEnviadas() {
+            try {
+                const personaId = await obtenerPersonaIdActual();
+                if (!personaId) return;
+
+                const response = await fetch(`http://localhost:3001/api/solicitudes-intercambio/enviadas/${personaId}`);
+                if (!response.ok) throw new Error('Error al cargar solicitudes enviadas');
+
+                const data = await response.json();
+                mostrarSolicitudesEnviadas(data.data || []);
+                
+                // Actualizar badge
+                const badge = document.getElementById('badge-solicitudes-enviadas');
+                if (badge) {
+                    if (data.count > 0) {
+                        badge.textContent = data.count;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error al cargar solicitudes enviadas:', error);
+                mostrarEstadoVacioEnviadas();
+            }
+        }
+
+        // Mostrar solicitudes enviadas
+        function mostrarSolicitudesEnviadas(solicitudes) {
+            const grid = document.getElementById('solicitudesEnviadasGrid');
+            
+            if (!solicitudes || solicitudes.length === 0) {
+                mostrarEstadoVacioEnviadas();
+                return;
+            }
+
+            grid.innerHTML = solicitudes.map(solicitud => {
+                const nombreCompleto = `${solicitud.nombre_receptor || 'Usuario'} ${solicitud.apellido_receptor || ''}`.trim();
+                const imagenUrl = solicitud.imagenUrl_receptor || solicitud.imagenUrl_Persona_receptor || '';
+                const initials = nombreCompleto.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                
+                return `
+                    <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100">
+                        <div class="p-6">
+                            <div class="flex items-center space-x-4 mb-4">
+                                ${imagenUrl ? 
+                                    `<img src="${imagenUrl}" 
+                                         class="w-16 h-16 rounded-full object-cover border-2 border-blue-500 shadow-md" 
+                                         alt="${nombreCompleto}"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                     <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full items-center justify-center text-white font-bold text-xl shadow-md hidden">
+                                        ${initials}
+                                     </div>` :
+                                    `<div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">
+                                        ${initials}
+                                    </div>`
+                                }
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-800">${nombreCompleto}</p>
+                                    <p class="text-sm text-gray-600">Solicitud pendiente</p>
+                                    <p class="text-xs text-gray-400 mt-1">${new Date(solicitud.fecha_solicitud).toLocaleString('es-ES', { 
+                                        month: 'short', 
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                                <span class="flex items-center text-xs text-yellow-600 font-medium">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                                    </svg>
+                                    Esperando respuesta
+                                </span>
+                                <button 
+                                    onclick="cancelarSolicitud(${solicitud.id_solicitud})"
+                                    class="px-3 py-1 text-xs text-red-600 hover:bg-red-50 rounded-lg transition font-semibold">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Mostrar estado vacío
+        function mostrarEstadoVacioEnviadas() {
+            const grid = document.getElementById('solicitudesEnviadasGrid');
+            grid.innerHTML = `
+                <div class="col-span-full flex items-center justify-center py-16">
+                    <div class="text-center">
+                        <svg class="w-20 h-20 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-2">No tienes solicitudes enviadas</h3>
+                        <p class="text-gray-500 mb-4">Busca usuarios y envíales solicitudes de intercambio</p>
+                        <button onclick="navigateTo('inicio')" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            Explorar Usuarios
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Cancelar solicitud
+        async function cancelarSolicitud(solicitudId) {
+            try {
+                const result = await Swal.fire({
+                    title: '¿Cancelar solicitud?',
+                    text: 'Esta acción eliminará la solicitud enviada',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Sí, cancelar',
+                    cancelButtonText: 'No'
+                });
+
+                if (!result.isConfirmed) return;
+
+                Swal.fire({
+                    title: 'Cancelando...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch(`http://localhost:3001/api/solicitudes-intercambio/${solicitudId}/cancelar`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Solicitud cancelada',
+                        text: 'La solicitud ha sido cancelada exitosamente',
+                        confirmButtonColor: '#3b82f6',
+                        timer: 2000
+                    });
+
+                    // Recargar solicitudes
+                    await cargarSolicitudesEnviadas();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'No se pudo cancelar la solicitud',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error al cancelar solicitud:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Ocurrió un error al cancelar la solicitud',
+                    confirmButtonColor: '#3b82f6'
+                });
+            }
+        }
+
+        // Cargar solicitudes enviadas cuando se abra la vista
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuEnviadas = document.querySelector('[data-view="solicitudesEnviadas"]');
+            if (menuEnviadas) {
+                menuEnviadas.addEventListener('click', () => {
+                    cargarSolicitudesEnviadas();
+                });
+            }
+            
+            // Cargar badge inicial
+            cargarSolicitudesEnviadas();
+        });
+
+        // Actualizar solicitudes enviadas cada 30 segundos
+        setInterval(cargarSolicitudesEnviadas, 30000);
 
         // ============================================
         // SISTEMA DE MENSAJERÍA DEL DASHBOARD
@@ -2831,12 +3084,17 @@
                     scrollToBottomDashboard();
                 }
 
-                // Marcar mensajes como leídos
-                await fetch(`http://localhost:3001/api/mensajeria/conversacion/${idConversacion}/marcar-leidos`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ personaId: personaId })
-                });
+                // Marcar mensajes como leídos (con manejo de errores silencioso)
+                try {
+                    await fetch(`http://localhost:3001/api/mensajeria/conversacion/${idConversacion}/marcar-leidos`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ personaId: personaId })
+                    });
+                } catch (error) {
+                    // Error silencioso - no afecta la carga de mensajes
+                    console.warn('No se pudieron marcar mensajes como leídos:', error);
+                }
 
                 // Actualizar lista de conversaciones
                 await cargarConversacionesDashboard();
@@ -2865,7 +3123,10 @@
                     // Mensaje enviado por mí (derecha, azul/morado)
                     return `
                         <div class="flex justify-end">
-                            <div class="bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-3 rounded-xl rounded-tr-none max-w-md text-sm shadow-lg">
+                            <div class="bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-3 rounded-xl rounded-tr-none max-w-md text-sm shadow-lg cursor-pointer relative message-item" 
+                                 data-message-id="${msg.id_mensaje}" 
+                                 data-message-content="${msg.contenido.replace(/"/g, '&quot;')}"
+                                 oncontextmenu="mostrarMenuContextual(event, ${msg.id_mensaje}, '${msg.contenido.replace(/'/g, "\\'")}'); return false;">
                                 ${msg.contenido}
                                 <span class="block text-right text-xs text-indigo-200 mt-1">${formatearHoraDashboard(msg.fecha_envio)}</span>
                             </div>
@@ -2883,6 +3144,9 @@
                     `;
                 }
             }).join('');
+
+            // Agregar soporte para long-press en móvil
+            agregarLongPressListeners();
         }
 
         // Enviar mensaje
@@ -2940,7 +3204,11 @@
 
         function formatearHoraDashboard(fecha) {
             if (!fecha) return '';
-            return new Date(fecha).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            return new Date(fecha).toLocaleTimeString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
         }
 
         function scrollToBottomDashboard() {
@@ -2950,6 +3218,181 @@
             }, 100);
         }
 
+        // ============================================
+        // MENÚ CONTEXTUAL PARA MENSAJES
+        // ============================================
+        let mensajeSeleccionadoId = null;
+        let mensajeSeleccionadoContenido = '';
+
+        function mostrarMenuContextual(event, messageId, messageContent) {
+            event.preventDefault();
+            
+            const menu = document.getElementById('messageContextMenu');
+            mensajeSeleccionadoId = messageId;
+            mensajeSeleccionadoContenido = messageContent;
+            
+            // Posicionar el menú
+            menu.style.left = event.pageX + 'px';
+            menu.style.top = event.pageY + 'px';
+            menu.classList.remove('hidden');
+            
+            return false;
+        }
+
+        // Cerrar menú contextual al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('messageContextMenu');
+            if (menu && !menu.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Long-press para móvil
+        function agregarLongPressListeners() {
+            const messages = document.querySelectorAll('.message-item');
+            let longPressTimer;
+            
+            messages.forEach(msg => {
+                // Touch events para móvil
+                msg.addEventListener('touchstart', function(e) {
+                    const messageId = this.getAttribute('data-message-id');
+                    const messageContent = this.getAttribute('data-message-content');
+                    
+                    longPressTimer = setTimeout(() => {
+                        const touch = e.touches[0];
+                        mostrarMenuContextual({
+                            preventDefault: () => {},
+                            pageX: touch.pageX,
+                            pageY: touch.pageY
+                        }, messageId, messageContent);
+                    }, 500); // 500ms para activar long-press
+                });
+                
+                msg.addEventListener('touchend', function() {
+                    clearTimeout(longPressTimer);
+                });
+                
+                msg.addEventListener('touchmove', function() {
+                    clearTimeout(longPressTimer);
+                });
+            });
+        }
+
+        // Editar mensaje
+        async function editarMensaje() {
+            const menu = document.getElementById('messageContextMenu');
+            menu.classList.add('hidden');
+            
+            const { value: nuevoContenido } = await Swal.fire({
+                title: 'Editar Mensaje',
+                input: 'textarea',
+                inputValue: mensajeSeleccionadoContenido,
+                inputPlaceholder: 'Escribe tu mensaje...',
+                inputAttributes: {
+                    'aria-label': 'Escribe tu mensaje'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Guardar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#3b82f6',
+                inputValidator: (value) => {
+                    if (!value || !value.trim()) {
+                        return 'El mensaje no puede estar vacío';
+                    }
+                }
+            });
+            
+            if (nuevoContenido && nuevoContenido.trim() !== mensajeSeleccionadoContenido) {
+                try {
+                    const response = await fetch(`http://localhost:3001/api/mensajeria/mensajes/${mensajeSeleccionadoId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            contenido: nuevoContenido.trim()
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Mensaje editado',
+                            text: 'El mensaje se actualizó correctamente',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        
+                        // Recargar mensajes
+                        if (conversacionActivaDashboard && conversacionActivaDashboard.id_conversacion) {
+                            await cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion);
+                        }
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo editar el mensaje',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                }
+            }
+        }
+
+        // Eliminar mensaje
+        async function eliminarMensaje() {
+            const menu = document.getElementById('messageContextMenu');
+            menu.classList.add('hidden');
+            
+            const result = await Swal.fire({
+                title: '¿Eliminar mensaje?',
+                text: 'Esta acción no se puede deshacer',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+            
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`http://localhost:3001/api/mensajeria/mensajes/${mensajeSeleccionadoId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Mensaje eliminado',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        
+                        // Recargar mensajes
+                        if (conversacionActivaDashboard && conversacionActivaDashboard.id_conversacion) {
+                            await cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion);
+                        }
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo eliminar el mensaje',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                }
+            }
+        }
+
         // Limpiar intervalo al cambiar de vista
         window.addEventListener('beforeunload', () => {
             if (mensajeriaInterval) {
@@ -2957,6 +3400,22 @@
             }
         });
     </script>
+
+    <!-- Menú Contextual para Mensajes -->
+    <div id="messageContextMenu" class="hidden fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50" style="min-width: 150px;">
+        <button onclick="editarMensaje()" class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-gray-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Editar
+        </button>
+        <button onclick="eliminarMensaje()" class="w-full px-4 py-2 text-left hover:bg-red-50 flex items-center gap-2 text-red-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+            Eliminar
+        </button>
+    </div>
 
     <!-- Protección de sesión -->
     <script src="js/auth-guard.js"></script>

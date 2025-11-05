@@ -263,16 +263,22 @@ router.get('/recibidas/:id', async (req, res) => {
     try {
         const personaId = req.params.id;
 
-        const [results] = await pool.query(
-            'CALL sp_ObtenerSolicitudesPorPersona(?)',
+        // Consulta directa con JOIN para obtener datos del solicitante
+        const [solicitudesRecibidas] = await pool.query(
+            `SELECT 
+                si.id_solicitud,
+                si.id_persona_solicitante,
+                si.id_persona_receptor,
+                si.fecha_solicitud,
+                si.estado,
+                p_sol.nombre_Persona AS nombre_solicitante,
+                p_sol.apellido_Persona AS apellido_solicitante,
+                p_sol.imagenUrl_Persona AS foto_solicitante
+            FROM solicitudes_intercambio si
+            INNER JOIN Personas p_sol ON si.id_persona_solicitante = p_sol.id_Perfil_Persona
+            WHERE si.id_persona_receptor = ? AND si.estado = 'Pendiente'
+            ORDER BY si.fecha_solicitud DESC`,
             [personaId]
-        );
-
-        const todasSolicitudes = results[0];
-
-        // Filtrar solo las recibidas y pendientes
-        const solicitudesRecibidas = todasSolicitudes.filter(
-            s => s.id_receptor === parseInt(personaId) && s.estado === 'Pendiente'
         );
 
         res.json({
@@ -301,16 +307,25 @@ router.get('/enviadas/:id', async (req, res) => {
     try {
         const personaId = req.params.id;
 
-        const [results] = await pool.query(
-            'CALL sp_ObtenerSolicitudesPorPersona(?)',
+        // Query directa con JOIN para obtener todos los datos incluyendo imágenes
+        const [solicitudesEnviadas] = await pool.query(
+            `SELECT 
+                si.id_solicitud,
+                si.id_persona_solicitante AS id_solicitante,
+                si.id_persona_receptor AS id_receptor,
+                si.estado,
+                si.fecha_solicitud,
+                
+                p_rec.nombre_Persona AS nombre_receptor,
+                p_rec.apellido_Persona AS apellido_receptor,
+                p_rec.imagenUrl_Persona AS imagenUrl_receptor
+                
+            FROM solicitudes_intercambio si
+            INNER JOIN Personas p_rec ON si.id_persona_receptor = p_rec.id_Perfil_Persona
+            WHERE si.id_persona_solicitante = ?
+              AND si.estado = 'Pendiente'
+            ORDER BY si.fecha_solicitud DESC`,
             [personaId]
-        );
-
-        const todasSolicitudes = results[0];
-
-        // Filtrar solo las enviadas y pendientes
-        const solicitudesEnviadas = todasSolicitudes.filter(
-            s => s.id_solicitante === parseInt(personaId) && s.estado === 'Pendiente'
         );
 
         res.json({

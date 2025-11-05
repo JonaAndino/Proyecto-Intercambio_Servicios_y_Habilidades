@@ -141,17 +141,20 @@ router.put('/conversacion/:idConversacion/marcar-leidos', async (req, res) => {
             });
         }
 
-        const [results] = await pool.query(
-            'CALL sp_MarcarMensajesComoLeidos(?, ?)',
+        // Marcar como leídos todos los mensajes de esta conversación que no fueron enviados por mí
+        const [result] = await pool.query(
+            `UPDATE mensajes 
+             SET leido = 1 
+             WHERE id_conversacion = ? 
+             AND id_persona_envia != ? 
+             AND leido = 0`,
             [conversacionId, personaId]
         );
-
-        const resultado = results[0][0];
 
         res.json({
             success: true,
             message: 'Mensajes marcados como leídos',
-            mensajes_marcados: resultado.mensajes_marcados
+            mensajes_marcados: result.affectedRows
         });
 
     } catch (error) {
@@ -159,6 +162,90 @@ router.put('/conversacion/:idConversacion/marcar-leidos', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error al marcar mensajes como leídos',
+            error: error.message
+        });
+    }
+});
+
+
+// =========================================================
+// 5. EDITAR MENSAJE
+// PUT /mensajeria/mensajes/:idMensaje
+// Body: { contenido }
+// =========================================================
+router.put('/mensajes/:idMensaje', async (req, res) => {
+    try {
+        const mensajeId = req.params.idMensaje;
+        const { contenido } = req.body;
+
+        // Validación
+        if (!contenido || contenido.trim().length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'El contenido del mensaje no puede estar vacío'
+            });
+        }
+
+        // Actualizar el mensaje
+        const [result] = await pool.query(
+            'UPDATE mensajes SET contenido = ? WHERE id_mensaje = ?',
+            [contenido.trim(), mensajeId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Mensaje no encontrado'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Mensaje actualizado exitosamente'
+        });
+
+    } catch (error) {
+        console.error('Error al editar mensaje:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al editar el mensaje',
+            error: error.message
+        });
+    }
+});
+
+
+// =========================================================
+// 6. ELIMINAR MENSAJE
+// DELETE /mensajeria/mensajes/:idMensaje
+// =========================================================
+router.delete('/mensajes/:idMensaje', async (req, res) => {
+    try {
+        const mensajeId = req.params.idMensaje;
+
+        // Eliminar el mensaje
+        const [result] = await pool.query(
+            'DELETE FROM mensajes WHERE id_mensaje = ?',
+            [mensajeId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Mensaje no encontrado'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Mensaje eliminado exitosamente'
+        });
+
+    } catch (error) {
+        console.error('Error al eliminar mensaje:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al eliminar el mensaje',
             error: error.message
         });
     }
