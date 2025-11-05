@@ -194,265 +194,420 @@
                 </div>
 
                 <!-- Lista de Contactos -->
-                <div class="contact-list flex-1 overflow-y-auto">
-                    
-                    <!-- Contacto Activo -->
-                    <div class="contact-item active p-4 flex items-center space-x-3 cursor-pointer border-b border-gray-100">
-                        <div class="relative flex-shrink-0">
-                            <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
-                                JD
-                            </div>
-                            <span class="status-dot status-online"></span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-gray-900 truncate">Juan Delgado</p>
-                                <span class="text-xs text-gray-500">10:10</span>
-                            </div>
-                            <div class="flex items-center space-x-1 mt-1">
-                                <div class="typing-indicator flex space-x-1">
-                                    <span class="w-2 h-2 bg-blue-600 rounded-full"></span>
-                                    <span class="w-2 h-2 bg-blue-600 rounded-full"></span>
-                                    <span class="w-2 h-2 bg-blue-600 rounded-full"></span>
-                                </div>
-                                <p class="text-xs text-blue-600 font-medium ml-2">Escribiendo...</p>
-                            </div>
+                <div id="contact-list" class="contact-list flex-1 overflow-y-auto">
+                    <!-- Se cargarán dinámicamente -->
+                    <div class="flex items-center justify-center h-full text-gray-400">
+                        <div class="text-center">
+                            <span class="iconify mb-2" data-icon="mdi:message-outline" data-width="48"></span>
+                            <p class="text-sm">Cargando conversaciones...</p>
                         </div>
                     </div>
-
-                    <!-- Contacto con Notificación -->
-                    <div class="contact-item p-4 flex items-center space-x-3 cursor-pointer border-b border-gray-100">
-                        <div class="relative flex-shrink-0">
-                            <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold shadow-md">
-                                MP
-                            </div>
-                            <span class="status-dot status-offline"></span>
-                            <span class="notification-badge">2</span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-gray-900 truncate">María Pérez</p>
-                                <span class="text-xs text-gray-500">Ayer</span>
-                            </div>
-                            <p class="text-xs text-gray-600 truncate mt-1">Claro, lo reviso mañana.</p>
-                        </div>
-                    </div>
-
-                    <!-- Contacto Normal -->
-                    <div class="contact-item p-4 flex items-center space-x-3 cursor-pointer border-b border-gray-100">
-                        <div class="relative flex-shrink-0">
-                            <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
-                                CG
-                            </div>
-                            <span class="status-dot status-online"></span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-gray-900 truncate">Carlos Gómez</p>
-                                <span class="text-xs text-gray-500">Lun</span>
-                            </div>
-                            <p class="text-xs text-gray-600 truncate mt-1">¿Aceptas el intercambio?</p>
-                        </div>
-                    </div>
-
-                    <!-- Más contactos ejemplo -->
-                    <div class="contact-item p-4 flex items-center space-x-3 cursor-pointer border-b border-gray-100">
-                        <div class="relative flex-shrink-0">
-                            <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
-                                AS
-                            </div>
-                            <span class="status-dot status-online"></span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between">
-                                <p class="text-sm font-semibold text-gray-900 truncate">Ana Silva</p>
-                                <span class="text-xs text-gray-500">Dom</span>
-                            </div>
-                            <p class="text-xs text-gray-600 truncate mt-1">Perfecto, nos vemos entonces</p>
-                        </div>
-                    </div>
-
                 </div>
             </aside>
 
             <!-- Panel Derecho: Conversación -->
-            <main class="flex-1 flex flex-col bg-white">
+            <main id="chat-panel" class="flex-1 flex flex-col bg-white">
                 
-                <!-- Header de Conversación -->
-                <header class="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <div class="relative">
-                                <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold shadow">
-                                    JD
-                                </div>
-                                <span class="status-dot status-online"></span>
-                            </div>
-                            <div>
-                                <h2 class="text-base font-bold text-gray-800">Juan Delgado</h2>
-                                <p class="text-xs text-green-600 flex items-center">
-                                    <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
-                                    En línea
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <button class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition">
-                                <span class="iconify" data-icon="mdi:phone" data-width="20"></span>
-                            </button>
-                            <button class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition">
-                                <span class="iconify" data-icon="mdi:video" data-width="20"></span>
-                            </button>
-                            <button onclick="window.location.href='perfil.html'" class="px-4 py-2 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition flex items-center space-x-1">
-                                <span class="iconify" data-icon="mdi:account" data-width="18"></span>
-                                <span>Ver Perfil</span>
-                            </button>
-                        </div>
+                <!-- Estado inicial: Sin conversación seleccionada -->
+                <div id="no-chat-selected" class="flex-1 flex items-center justify-center text-gray-400">
+                    <div class="text-center">
+                        <span class="iconify mb-4" data-icon="mdi:message-text-outline" data-width="80"></span>
+                        <h3 class="text-xl font-semibold text-gray-600 mb-2">Selecciona una conversación</h3>
+                        <p class="text-sm">Elige un contacto para empezar a chatear</p>
                     </div>
-                </header>
-
-                <!-- Área de Mensajes -->
-                <div id="message-container" class="flex-1 p-6 overflow-y-auto space-y-4 bg-gradient-to-b from-gray-50 to-white">
-                    
-                    <!-- Mensaje Recibido -->
-                    <div class="flex justify-start message-received">
-                        <div class="flex items-end space-x-2 max-w-md">
-                            <div class="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                                JD
-                            </div>
-                            <div>
-                                <div class="message-bubble bg-white p-4 rounded-2xl rounded-bl-none shadow-md border border-gray-100">
-                                    <p class="text-sm text-gray-800">Hola, ¿te parece bien que hagamos el intercambio de Python por Diseño la próxima semana?</p>
-                                </div>
-                                <span class="block text-xs text-gray-500 mt-1 ml-2">10:05 AM</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Mensaje Enviado -->
-                    <div class="flex justify-end message-sent">
-                        <div class="flex items-end space-x-2 max-w-md">
-                            <div>
-                                <div class="message-bubble bg-gradient-to-br from-blue-600 to-purple-600 text-white p-4 rounded-2xl rounded-br-none shadow-lg">
-                                    <p class="text-sm">Sí, perfecto. ¿Martes a las 4 PM te funciona?</p>
-                                </div>
-                                <span class="block text-xs text-gray-500 mt-1 mr-2 text-right">10:07 AM</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Mensaje Recibido -->
-                    <div class="flex justify-start message-received">
-                        <div class="flex items-end space-x-2 max-w-md">
-                            <div class="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                                JD
-                            </div>
-                            <div>
-                                <div class="message-bubble bg-white p-4 rounded-2xl rounded-bl-none shadow-md border border-gray-100">
-                                    <p class="text-sm text-gray-800">Sí, martes a las 4 PM me va genial. ¡Nos vemos!</p>
-                                </div>
-                                <span class="block text-xs text-gray-500 mt-1 ml-2">10:10 AM</span>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
 
-                <!-- Input de Mensaje -->
-                <footer class="p-4 border-t border-gray-200 bg-white">
-                    <form id="chat-form" class="flex items-center space-x-3">
-                        <button type="button" class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition">
-                            <span class="iconify" data-icon="mdi:emoticon-happy-outline" data-width="24"></span>
-                        </button>
-                        <button type="button" class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition">
-                            <span class="iconify" data-icon="mdi:attachment" data-width="24"></span>
-                        </button>
-                        <input 
-                            type="text" 
-                            id="message-input"
-                            placeholder="Escribe un mensaje..."
-                            required
-                            class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition"
-                        >
-                        <button 
-                            type="submit" 
-                            class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-full transition duration-200 ease-in-out shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
-                        >
-                            <span class="iconify" data-icon="mdi:send" data-width="20"></span>
-                            <span>Enviar</span>
-                        </button>
-                    </form>
-                </footer>
+                <!-- Chat activo (oculto por defecto) -->
+                <div id="active-chat" class="flex-1 flex-col hidden">
+                    <!-- Header de Conversación -->
+                    <header id="chat-header" class="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+                        <!-- Se llenará dinámicamente -->
+                    </header>
+
+                    <!-- Área de Mensajes -->
+                    <div id="message-container" class="flex-1 p-6 overflow-y-auto space-y-4 bg-gradient-to-b from-gray-50 to-white">
+                        <!-- Se cargarán dinámicamente -->
+                    </div>
+
+                    <!-- Input de Mensaje -->
+                    <footer class="p-4 border-t border-gray-200 bg-white">
+                        <form id="chat-form" class="flex items-center space-x-3">
+                            <button type="button" class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition">
+                                <span class="iconify" data-icon="mdi:emoticon-happy-outline" data-width="24"></span>
+                            </button>
+                            <button type="button" class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition">
+                                <span class="iconify" data-icon="mdi:attachment" data-width="24"></span>
+                            </button>
+                            <input 
+                                type="text" 
+                                id="message-input"
+                                placeholder="Escribe un mensaje..."
+                                required
+                                class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition"
+                            >
+                            <button 
+                                type="submit" 
+                                class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-full transition duration-200 ease-in-out shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
+                            >
+                                <span class="iconify" data-icon="mdi:send" data-width="20"></span>
+                                <span>Enviar</span>
+                            </button>
+                        </form>
+                    </footer>
+                </div>
             </main>
 
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('chat-form');
-            const input = document.getElementById('message-input');
-            const container = document.getElementById('message-container');
+        const API_URL = 'http://localhost:3001/api';
+        let currentUser = null;
+        let currentConversation = null;
+        let conversations = [];
+        let refreshInterval = null;
 
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const messageText = input.value.trim();
-
-                if (messageText) {
-                    addMessageToChat(messageText, 'sent');
-                    input.value = '';
-                    scrollToBottom();
-
-                    // Simular respuesta automática
-                    setTimeout(() => {
-                        addMessageToChat("Mensaje recibido. Gracias por escribir ✅", 'received');
-                        scrollToBottom();
-                    }, 1500);
+        document.addEventListener('DOMContentLoaded', async () => {
+            await obtenerPersonaIdActual();
+            await cargarConversaciones();
+            
+            // Actualizar mensajes cada 3 segundos si hay conversación activa
+            refreshInterval = setInterval(() => {
+                if (currentConversation) {
+                    cargarMensajes(currentConversation.id_conversacion, false);
                 }
+            }, 3000);
+
+            // Event listener para enviar mensajes
+            const form = document.getElementById('chat-form');
+            form.addEventListener('submit', enviarMensaje);
+        });
+
+        // Obtener ID de la persona actual
+        async function obtenerPersonaIdActual() {
+            try {
+                const id_usuario = localStorage.getItem('id_usuario');
+                if (!id_usuario) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const response = await fetch(`${API_URL}/personas/by-usuario/${id_usuario}`);
+                if (!response.ok) throw new Error('Error al obtener datos del usuario');
+                
+                const data = await response.json();
+                currentUser = {
+                    id_Perfil_Persona: data.id_Perfil_Persona,
+                    nombre_Persona: data.nombre_Persona,
+                    apellido_Persona: data.apellido_Persona,
+                    imagenUrl_Persona: data.imagenUrl_Persona
+                };
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al cargar datos del usuario');
+            }
+        }
+
+        // Cargar lista de conversaciones
+        async function cargarConversaciones() {
+            try {
+                const response = await fetch(`${API_URL}/mensajeria/conversaciones/${currentUser.id_Perfil_Persona}`);
+                if (!response.ok) throw new Error('Error al cargar conversaciones');
+
+                const resultado = await response.json();
+                conversations = resultado.data || [];
+                mostrarConversaciones(conversations);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('contact-list').innerHTML = `
+                    <div class="flex items-center justify-center h-full text-gray-400">
+                        <div class="text-center">
+                            <span class="iconify mb-2" data-icon="mdi:alert-circle" data-width="48"></span>
+                            <p class="text-sm">No tienes conversaciones activas</p>
+                            <p class="text-xs mt-1">Acepta solicitudes de intercambio para chatear</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Mostrar conversaciones en la lista
+        function mostrarConversaciones(conversaciones) {
+            const container = document.getElementById('contact-list');
+            
+            if (!conversaciones || conversaciones.length === 0) {
+                container.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-gray-400">
+                        <div class="text-center p-6">
+                            <span class="iconify mb-2" data-icon="mdi:message-outline" data-width="48"></span>
+                            <p class="text-sm">No tienes conversaciones activas</p>
+                            <p class="text-xs mt-1">Acepta solicitudes de intercambio para chatear</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = conversaciones.map(conv => {
+                const initials = getInitials(conv.nombre_contacto);
+                const colorClass = getColorClass(conv.id_conversacion);
+                const mensajesNoLeidos = conv.mensajes_no_leidos || 0;
+                
+                return `
+                    <div class="contact-item p-4 flex items-center space-x-3 cursor-pointer border-b border-gray-100"
+                         onclick="seleccionarConversacion(${conv.id_conversacion})">
+                        <div class="relative flex-shrink-0">
+                            ${conv.imagenUrl_contacto ? 
+                                `<img src="${conv.imagenUrl_contacto}" class="w-12 h-12 rounded-full object-cover shadow-md" alt="${conv.nombre_contacto}">` :
+                                `<div class="w-12 h-12 bg-gradient-to-br ${colorClass} rounded-full flex items-center justify-center text-white font-bold shadow-md">
+                                    ${initials}
+                                </div>`
+                            }
+                            ${mensajesNoLeidos > 0 ? `<span class="notification-badge">${mensajesNoLeidos}</span>` : ''}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-semibold text-gray-900 truncate">${conv.nombre_contacto}</p>
+                                <span class="text-xs text-gray-500">${formatearFecha(conv.fecha_ultimo_mensaje)}</span>
+                            </div>
+                            <p class="text-xs text-gray-600 truncate mt-1">${conv.ultimo_mensaje || 'Sin mensajes aún'}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Seleccionar conversación
+        async function seleccionarConversacion(idConversacion) {
+            currentConversation = conversations.find(c => c.id_conversacion === idConversacion);
+            
+            if (!currentConversation) return;
+
+            // Marcar como activa visualmente
+            document.querySelectorAll('.contact-item').forEach(item => {
+                item.classList.remove('active');
             });
+            event.currentTarget.classList.add('active');
 
-            function addMessageToChat(text, type) {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            // Mostrar panel de chat
+            document.getElementById('no-chat-selected').classList.add('hidden');
+            document.getElementById('active-chat').classList.remove('hidden');
+            document.getElementById('active-chat').classList.add('flex');
 
-                const messageDiv = document.createElement('div');
-                messageDiv.className = 'flex ' + (type === 'sent' ? 'justify-end message-sent' : 'justify-start message-received');
+            // Actualizar header del chat
+            actualizarHeaderChat(currentConversation);
 
-                if (type === 'sent') {
-                    messageDiv.innerHTML = `
-                        <div class="flex items-end space-x-2 max-w-md">
-                            <div>
-                                <div class="message-bubble bg-gradient-to-br from-blue-600 to-purple-600 text-white p-4 rounded-2xl rounded-br-none shadow-lg">
-                                    <p class="text-sm">${text}</p>
+            // Cargar mensajes
+            await cargarMensajes(idConversacion, true);
+        }
+
+        // Actualizar header del chat
+        function actualizarHeaderChat(conv) {
+            const initials = getInitials(conv.nombre_contacto);
+            const colorClass = getColorClass(conv.id_conversacion);
+            
+            document.getElementById('chat-header').innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="relative">
+                            ${conv.imagenUrl_contacto ? 
+                                `<img src="${conv.imagenUrl_contacto}" 
+                                     class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-lg" 
+                                     alt="${conv.nombre_contacto}"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                 <div class="w-12 h-12 bg-gradient-to-br ${colorClass} rounded-full items-center justify-center text-white font-bold shadow-lg hidden">
+                                    ${initials}
+                                 </div>` :
+                                `<div class="w-12 h-12 bg-gradient-to-br ${colorClass} rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                                    ${initials}
+                                </div>`
+                            }
+                        </div>
+                        <div>
+                            <h2 class="text-base font-bold text-gray-800">${conv.nombre_contacto}</h2>
+                            <p class="text-xs text-green-600 flex items-center">
+                                <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                                Activo en SkillConnect
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="px-4 py-2 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition flex items-center space-x-1">
+                            <span class="iconify" data-icon="mdi:account" data-width="18"></span>
+                            <span>Ver Perfil</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Cargar mensajes
+        async function cargarMensajes(idConversacion, scrollToEnd = true) {
+            try {
+                const response = await fetch(`${API_URL}/mensajeria/conversacion/${idConversacion}/mensajes?personaId=${currentUser.id_Perfil_Persona}`);
+                if (!response.ok) throw new Error('Error al cargar mensajes');
+
+                const resultado = await response.json();
+                const mensajes = resultado.data || [];
+                mostrarMensajes(mensajes);
+
+                if (scrollToEnd) {
+                    scrollToBottom();
+                }
+
+                // Marcar mensajes como leídos
+                await fetch(`${API_URL}/mensajeria/conversacion/${idConversacion}/marcar-leidos`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ personaId: currentUser.id_Perfil_Persona })
+                });
+
+                // Actualizar badge en la lista
+                await cargarConversaciones();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Mostrar mensajes en el chat
+        function mostrarMensajes(mensajes) {
+            const container = document.getElementById('message-container');
+            
+            if (!mensajes || mensajes.length === 0) {
+                container.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-gray-400">
+                        <p class="text-sm">No hay mensajes aún. ¡Envía el primero!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = mensajes.map(msg => {
+                const esMio = msg.id_persona_envia === currentUser.id_Perfil_Persona;
+                const initials = getInitials(msg.nombre_remitente);
+                const colorClass = getColorClass(msg.id_persona_envia);
+                
+                if (esMio) {
+                    return `
+                        <div class="flex justify-end message-sent">
+                            <div class="flex items-end space-x-2 max-w-md">
+                                <div>
+                                    <div class="message-bubble bg-gradient-to-br from-blue-600 to-purple-600 text-white p-4 rounded-2xl rounded-br-none shadow-lg">
+                                        <p class="text-sm">${msg.contenido}</p>
+                                    </div>
+                                    <span class="block text-xs text-gray-500 mt-1 mr-2 text-right">${formatearHora(msg.fecha_envio)}</span>
                                 </div>
-                                <span class="block text-xs text-gray-500 mt-1 mr-2 text-right">${timeString}</span>
                             </div>
                         </div>
                     `;
                 } else {
-                    messageDiv.innerHTML = `
-                        <div class="flex items-end space-x-2 max-w-md">
-                            <div class="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                                JD
-                            </div>
-                            <div>
-                                <div class="message-bubble bg-white p-4 rounded-2xl rounded-bl-none shadow-md border border-gray-100">
-                                    <p class="text-sm text-gray-800">${text}</p>
+                    return `
+                        <div class="flex justify-start message-received">
+                            <div class="flex items-end space-x-2 max-w-md">
+                                ${msg.imagenUrl_remitente ? 
+                                    `<img src="${msg.imagenUrl_remitente}" class="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="${msg.nombre_remitente}">` :
+                                    `<div class="w-8 h-8 bg-gradient-to-br ${colorClass} rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                        ${initials}
+                                    </div>`
+                                }
+                                <div>
+                                    <div class="message-bubble bg-white p-4 rounded-2xl rounded-bl-none shadow-md border border-gray-100">
+                                        <p class="text-sm text-gray-800">${msg.contenido}</p>
+                                    </div>
+                                    <span class="block text-xs text-gray-500 mt-1 ml-2">${formatearHora(msg.fecha_envio)}</span>
                                 </div>
-                                <span class="block text-xs text-gray-500 mt-1 ml-2">${timeString}</span>
                             </div>
                         </div>
                     `;
                 }
-                
-                container.appendChild(messageDiv);
-            }
+            }).join('');
+        }
 
-            function scrollToBottom() {
-                container.scrollTop = container.scrollHeight;
-            }
+        // Enviar mensaje
+        async function enviarMensaje(e) {
+            e.preventDefault();
             
-            scrollToBottom();
+            const input = document.getElementById('message-input');
+            const contenido = input.value.trim();
+
+            if (!contenido || !currentConversation) return;
+
+            try {
+                const response = await fetch(`${API_URL}/mensajeria/enviar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        conversacionId: currentConversation.id_conversacion,
+                        personaEnviaId: currentUser.id_Perfil_Persona,
+                        contenido: contenido
+                    })
+                });
+
+                if (!response.ok) throw new Error('Error al enviar mensaje');
+
+                input.value = '';
+                await cargarMensajes(currentConversation.id_conversacion, true);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al enviar el mensaje');
+            }
+        }
+
+        // Utilidades
+        function getInitials(nombre) {
+            if (!nombre) return '??';
+            const parts = nombre.split(' ');
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[1][0]).toUpperCase();
+            }
+            return nombre.substring(0, 2).toUpperCase();
+        }
+
+        function getColorClass(id) {
+            const colors = [
+                'from-green-400 to-green-600',
+                'from-blue-400 to-blue-600',
+                'from-purple-400 to-purple-600',
+                'from-amber-400 to-orange-500',
+                'from-pink-400 to-pink-600',
+                'from-indigo-400 to-indigo-600'
+            ];
+            return colors[id % colors.length];
+        }
+
+        function formatearFecha(fecha) {
+            if (!fecha) return '';
+            const date = new Date(fecha);
+            const hoy = new Date();
+            const ayer = new Date(hoy);
+            ayer.setDate(ayer.getDate() - 1);
+
+            if (date.toDateString() === hoy.toDateString()) {
+                return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            } else if (date.toDateString() === ayer.toDateString()) {
+                return 'Ayer';
+            } else {
+                return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+            }
+        }
+
+        function formatearHora(fecha) {
+            if (!fecha) return '';
+            return new Date(fecha).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('message-container');
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);
+        }
+
+        // Limpiar intervalo al salir
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
         });
     </script>
 

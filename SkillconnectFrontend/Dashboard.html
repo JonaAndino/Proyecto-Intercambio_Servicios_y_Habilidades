@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Iconify -->
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <style>
         body {
@@ -231,6 +233,21 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .animate-slideIn {
+            animation: slideIn 0.4s ease-out;
         }
 
         .modal-header {
@@ -855,6 +872,30 @@
         #message-container::-webkit-scrollbar {
             display: none; /* Chrome, Safari, Opera */
         }
+
+        /* Dropdown de notificaciones */
+        #notificationDropdown {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+
+        #notificationDropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #notificationDropdown::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        #notificationDropdown::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        #notificationDropdown::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
     </style>
 </head>
 <body>
@@ -975,12 +1016,32 @@
                 </div>
 
                 <!-- Lado derecho: Notificaciones -->
-                <button class="p-2 rounded-lg hover:bg-gray-100 transition relative">
-                    <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                    </svg>
-                    <span class="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
-                </button>
+                <div class="relative">
+                    <button id="notificationBtn" class="p-2 rounded-lg hover:bg-gray-100 transition relative">
+                        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        </svg>
+                        <!-- Badge contador (oculto por defecto) -->
+                        <span id="notificationBadge" class="hidden absolute -top-1 -right-1 min-w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5"></span>
+                    </button>
+                    
+                    <!-- Dropdown de notificaciones -->
+                    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
+                        <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-gray-800">Solicitudes de Intercambio</h3>
+                            <span id="notificationCount" class="text-sm text-gray-500"></span>
+                        </div>
+                        <div id="notificationList" class="divide-y divide-gray-200">
+                            <!-- Las solicitudes se cargarán aquí dinámicamente -->
+                        </div>
+                        <div id="emptyNotifications" class="hidden p-8 text-center">
+                            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                            </svg>
+                            <p class="text-gray-500 font-medium">No tienes solicitudes pendientes</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -1073,96 +1134,58 @@
                                     <h2 class="text-xl font-bold text-gray-800">Mensajes</h2>
                                 </header>
                                 
-                                <!-- Conversación activa -->
-                                <div class="p-3 flex items-center space-x-3 bg-indigo-100 border-l-4 border-indigo-600 cursor-pointer">
-                                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-semibold">
-                                        JD
-                                    </div>
-                                    <div class="flex-grow">
-                                        <p class="text-sm font-semibold text-gray-900 truncate">Juan Delgado</p>
-                                        <p class="text-xs text-indigo-700 truncate">Escribiendo un mensaje...</p>
-                                    </div>
-                                </div>
-
-                                <!-- Otras conversaciones -->
-                                <div class="p-3 flex items-center space-x-3 hover:bg-gray-100 cursor-pointer">
-                                    <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-white font-semibold">
-                                        MP
-                                    </div>
-                                    <div class="flex-grow">
-                                        <p class="text-sm font-semibold text-gray-900">María Pérez</p>
-                                        <p class="text-xs text-gray-500 truncate">Claro, lo reviso mañana.</p>
+                                <!-- Lista de conversaciones dinámicas -->
+                                <div id="conversaciones-list" class="flex-grow overflow-y-auto">
+                                    <!-- Se cargarán dinámicamente -->
+                                    <div class="flex items-center justify-center h-full text-gray-400">
+                                        <div class="text-center p-4">
+                                            <p class="text-sm">Cargando conversaciones...</p>
+                                        </div>
                                     </div>
                                 </div>
-                                
-                                <div class="p-3 flex items-center space-x-3 hover:bg-gray-100 cursor-pointer">
-                                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-                                        CG
-                                    </div>
-                                    <div class="flex-grow">
-                                        <p class="text-sm font-semibold text-gray-900">Carlos Gómez</p>
-                                        <p class="text-xs text-gray-500 truncate">¿Aceptas el intercambio?</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex-grow overflow-y-auto"></div>
                             </div>
 
                             <!-- Área de Chat (Derecha) -->
                             <div class="md:w-2/3 flex flex-col">
                                 
-                                <!-- Header del Chat -->
-                                <header class="p-4 border-b bg-white flex justify-between items-center">
-                                    <h2 class="text-lg font-semibold text-gray-800">Conversando con Juan Delgado</h2>
-                                    <button class="text-sm text-indigo-600 hover:text-indigo-800">Ver Perfil</button>
-                                </header>
-
-                                <!-- Contenedor de Mensajes -->
-                                <div id="message-container" class="flex-grow p-4 overflow-y-auto space-y-4 bg-gray-50">
-                                    
-                                    <!-- Mensaje recibido -->
-                                    <div class="flex justify-start">
-                                        <div class="bg-gray-200 p-3 rounded-xl rounded-tl-none max-w-xs text-sm shadow">
-                                            Hola, ¿te parece bien que hagamos el intercambio de Python por Diseño la próxima semana?
-                                            <span class="block text-right text-xs text-gray-500 mt-1">10:05 AM</span>
-                                        </div>
+                                <!-- Estado inicial: Sin conversación seleccionada -->
+                                <div id="chat-vacio-dashboard" class="flex-grow flex items-center justify-center text-gray-400">
+                                    <div class="text-center">
+                                        <p class="text-lg font-semibold text-gray-600 mb-2">Selecciona una conversación</p>
+                                        <p class="text-sm">Elige un contacto para empezar a chatear</p>
                                     </div>
-
-                                    <!-- Mensaje enviado -->
-                                    <div class="flex justify-end">
-                                        <div class="bg-indigo-600 text-white p-3 rounded-xl rounded-tr-none max-w-xs text-sm shadow">
-                                            Sí, perfecto. ¿Martes a las 4 PM te funciona?
-                                            <span class="block text-right text-xs text-indigo-300 mt-1">10:07 AM</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Mensaje recibido -->
-                                    <div class="flex justify-start">
-                                        <div class="bg-gray-200 p-3 rounded-xl rounded-tl-none max-w-xs text-sm shadow">
-                                            Sí, martes a las 4 PM me va genial. ¡Nos vemos!
-                                            <span class="block text-right text-xs text-gray-500 mt-1">10:10 AM</span>
-                                        </div>
-                                    </div>
-
                                 </div>
 
-                                <!-- Input de Mensaje -->
-                                <div class="p-4 border-t bg-white">
-                                    <form id="chat-form" class="flex space-x-3">
-                                        <input 
-                                            type="text" 
-                                            id="message-input"
-                                            placeholder="Escribe un mensaje..."
-                                            required
-                                            class="flex-grow px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                        >
-                                        <button 
-                                            type="submit" 
-                                            class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-full transition duration-150 ease-in-out shadow-lg"
-                                        >
-                                            Enviar
-                                        </button>
-                                    </form>
+                                <!-- Chat activo (oculto por defecto) -->
+                                <div id="chat-activo-dashboard" class="flex flex-col h-full hidden">
+                                    <!-- Header del Chat -->
+                                    <header id="chat-header-dashboard" class="p-4 border-b bg-white flex justify-between items-center">
+                                        <!-- Se llenará dinámicamente -->
+                                    </header>
+
+                                    <!-- Contenedor de Mensajes -->
+                                    <div id="mensajes-container-dashboard" class="flex-grow p-4 overflow-y-auto space-y-4 bg-gray-50">
+                                        <!-- Se cargarán dinámicamente -->
+                                    </div>
+
+                                    <!-- Input de Mensaje -->
+                                    <div class="p-4 border-t bg-white">
+                                        <form id="chat-form-dashboard" class="flex space-x-3">
+                                            <input 
+                                                type="text" 
+                                                id="message-input-dashboard"
+                                                placeholder="Escribe un mensaje..."
+                                                required
+                                                class="flex-grow px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            >
+                                            <button 
+                                                type="submit" 
+                                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-full transition duration-150 ease-in-out shadow-lg"
+                                            >
+                                                Enviar
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2278,6 +2301,661 @@
             `;
             detailDiv.style.display = 'block';
         }
+
+        // ========================================
+        // SISTEMA DE SOLICITUDES DE INTERCAMBIO
+        // ========================================
+        
+        // Variable global para almacenar ID_Persona del usuario actual
+        let usuarioActualPersonaId = null;
+
+        // Función para obtener el ID_Persona del usuario actual
+        async function obtenerPersonaIdActual() {
+            if (usuarioActualPersonaId) {
+                return usuarioActualPersonaId;
+            }
+
+            try {
+                // Intentar con ambos nombres de clave por compatibilidad
+                const usuarioId = localStorage.getItem('id_usuario') || localStorage.getItem('usuarioId');
+                
+                if (!usuarioId) {
+                    console.error('No hay usuario logueado');
+                    return null;
+                }
+
+                const response = await fetch(`${API_BASE}/personas/by-usuario/${usuarioId}`);
+                const data = await response.json();
+                
+                // Verificar estructura de respuesta
+                if (data && data.id_Perfil_Persona) {
+                    usuarioActualPersonaId = data.id_Perfil_Persona;
+                    return usuarioActualPersonaId;
+                } else if (data.success && data.data && data.data.id_Perfil_Persona) {
+                    usuarioActualPersonaId = data.data.id_Perfil_Persona;
+                    return usuarioActualPersonaId;
+                }
+                
+                return null;
+            } catch (error) {
+                console.error('Error al obtener id_Perfil_Persona:', error);
+                return null;
+            }
+        }
+        
+        // Enviar solicitud de intercambio
+        async function sendRequest(receptorId, nombreReceptor) {
+            try {
+                const solicitanteId = await obtenerPersonaIdActual();
+                
+                if (!solicitanteId) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo identificar al usuario actual',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                    return;
+                }
+
+                // Confirmar antes de enviar
+                const result = await Swal.fire({
+                    title: '¿Enviar solicitud?',
+                    html: `¿Deseas enviar una solicitud de intercambio a <strong>${nombreReceptor}</strong>?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3b82f6',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Sí, enviar',
+                    cancelButtonText: 'Cancelar'
+                });
+
+                if (!result.isConfirmed) return;
+
+                // Mostrar loading
+                Swal.fire({
+                    title: 'Enviando solicitud...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch('http://localhost:3001/api/solicitudes-intercambio/enviar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        solicitanteId: solicitanteId,
+                        receptorId: receptorId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Solicitud enviada!',
+                        text: `Tu solicitud ha sido enviada a ${nombreReceptor}`,
+                        confirmButtonColor: '#3b82f6',
+                        timer: 3000
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'No se pudo enviar la solicitud',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error al enviar solicitud:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Ocurrió un error al enviar la solicitud',
+                    confirmButtonColor: '#3b82f6'
+                });
+            }
+        }
+
+        // Cargar y mostrar solicitudes recibidas
+        async function cargarSolicitudesRecibidas() {
+            try {
+                const personaId = await obtenerPersonaIdActual();
+                
+                if (!personaId) {
+                    return;
+                }
+
+                const response = await fetch(`http://localhost:3001/api/solicitudes-intercambio/recibidas/${personaId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    actualizarBadgeNotificaciones(data.count);
+                    
+                    if (data.count > 0) {
+                        mostrarSolicitudesEnDropdown(data.data);
+                    } else {
+                        mostrarDropdownVacio();
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error al cargar solicitudes:', error);
+            }
+        }
+
+        // Actualizar el badge de notificaciones
+        function actualizarBadgeNotificaciones(count) {
+            const badge = document.getElementById('notificationBadge');
+            const countText = document.getElementById('notificationCount');
+            
+            if (count > 0) {
+                badge.classList.remove('hidden');
+                badge.textContent = count > 99 ? '99+' : count;
+                countText.textContent = `${count} pendiente${count > 1 ? 's' : ''}`;
+            } else {
+                badge.classList.add('hidden');
+                countText.textContent = '';
+            }
+        }
+
+        // Toggle dropdown de notificaciones
+        document.getElementById('notificationBtn')?.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('hidden');
+        });
+
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('notificationDropdown');
+            const btn = document.getElementById('notificationBtn');
+            
+            if (!dropdown?.contains(e.target) && !btn?.contains(e.target)) {
+                dropdown?.classList.add('hidden');
+            }
+        });
+
+        // Mostrar solicitudes en el dropdown
+        function mostrarSolicitudesEnDropdown(solicitudes) {
+            const notificationList = document.getElementById('notificationList');
+            const emptyState = document.getElementById('emptyNotifications');
+            
+            if (!notificationList) return;
+            
+            emptyState?.classList.add('hidden');
+            
+            notificationList.innerHTML = solicitudes.map(solicitud => {
+                const nombreCompleto = `${solicitud.nombre_solicitante} ${solicitud.apellido_solicitante || ''}`.trim();
+                const inicial = solicitud.nombre_solicitante.charAt(0).toUpperCase();
+                
+                return `
+                    <div class="p-4 hover:bg-gray-50 transition">
+                        <div class="flex items-start gap-3">
+                            ${solicitud.foto_solicitante 
+                                ? `<img src="${solicitud.foto_solicitante}" alt="${nombreCompleto}" class="w-12 h-12 rounded-full object-cover flex-shrink-0" />`
+                                : `<div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                                    ${inicial}
+                                   </div>`
+                            }
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-800 truncate">${nombreCompleto}</p>
+                                <p class="text-sm text-gray-600 mb-2">Quiere intercambiar habilidades contigo</p>
+                                <p class="text-xs text-gray-400 mb-3">${new Date(solicitud.fecha_solicitud).toLocaleString('es-ES', { 
+                                    month: 'short', 
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                })}</p>
+                                
+                                <div class="flex gap-2">
+                                    <button 
+                                        onclick="aceptarSolicitud(${solicitud.id_solicitud}, '${nombreCompleto.replace(/'/g, "\\'")}')"
+                                        class="flex-1 px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm rounded-lg hover:from-green-600 hover:to-green-700 transition font-semibold">
+                                        Aceptar
+                                    </button>
+                                    <button 
+                                        onclick="rechazarSolicitud(${solicitud.id_solicitud})"
+                                        class="flex-1 px-3 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm rounded-lg hover:from-red-600 hover:to-red-700 transition font-semibold">
+                                        Rechazar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Mostrar estado vacío
+        function mostrarDropdownVacio() {
+            const notificationList = document.getElementById('notificationList');
+            const emptyState = document.getElementById('emptyNotifications');
+            
+            if (notificationList && emptyState) {
+                notificationList.innerHTML = '';
+                emptyState.classList.remove('hidden');
+            }
+        }
+
+        // Aceptar solicitud
+        async function aceptarSolicitud(solicitudId, nombreSolicitante) {
+            try {
+                Swal.fire({
+                    title: 'Procesando...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch(`http://localhost:3001/api/solicitudes-intercambio/${solicitudId}/aceptar`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Solicitud aceptada!',
+                        text: `Ahora puedes intercambiar con ${nombreSolicitante}`,
+                        confirmButtonColor: '#3b82f6',
+                        timer: 3000
+                    });
+
+                    // Recargar solicitudes
+                    await cargarSolicitudesRecibidas();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'No se pudo aceptar la solicitud',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error al aceptar solicitud:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Ocurrió un error al aceptar la solicitud',
+                    confirmButtonColor: '#3b82f6'
+                });
+            }
+        }
+
+        // Rechazar solicitud
+        async function rechazarSolicitud(solicitudId) {
+            try {
+                Swal.fire({
+                    title: 'Procesando...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch(`http://localhost:3001/api/solicitudes-intercambio/${solicitudId}/rechazar`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Solicitud rechazada',
+                        text: 'La solicitud ha sido rechazada',
+                        confirmButtonColor: '#3b82f6',
+                        timer: 2000
+                    });
+
+                    // Recargar solicitudes
+                    await cargarSolicitudesRecibidas();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'No se pudo rechazar la solicitud',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error al rechazar solicitud:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Ocurrió un error al rechazar la solicitud',
+                    confirmButtonColor: '#3b82f6'
+                });
+            }
+        }
+
+        // Cargar solicitudes cada 30 segundos
+        setInterval(cargarSolicitudesRecibidas, 30000);
+        
+        // Cargar solicitudes al iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarSolicitudesRecibidas();
+        });
+
+        // ============================================
+        // SISTEMA DE MENSAJERÍA DEL DASHBOARD
+        // ============================================
+        let conversacionesDashboard = [];
+        let conversacionActivaDashboard = null;
+        let mensajeriaInterval = null;
+
+        // Inicializar mensajería cuando se abra la vista de mensajes
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuMensajes = document.querySelector('[data-view="mensajes"]');
+            if (menuMensajes) {
+                menuMensajes.addEventListener('click', () => {
+                    cargarConversacionesDashboard();
+                    // Iniciar actualización automática
+                    if (mensajeriaInterval) clearInterval(mensajeriaInterval);
+                    mensajeriaInterval = setInterval(() => {
+                        if (conversacionActivaDashboard) {
+                            cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion, false);
+                        }
+                    }, 3000);
+                });
+            }
+
+            // Event listener para enviar mensajes
+            const formDashboard = document.getElementById('chat-form-dashboard');
+            if (formDashboard) {
+                formDashboard.addEventListener('submit', enviarMensajeDashboard);
+            }
+        });
+
+        // Cargar conversaciones
+        async function cargarConversacionesDashboard() {
+            try {
+                const personaId = await obtenerPersonaIdActual();
+                const response = await fetch(`http://localhost:3001/api/mensajeria/conversaciones/${personaId}`);
+                
+                if (!response.ok) throw new Error('Error al cargar conversaciones');
+
+                const resultado = await response.json();
+                
+                // La API devuelve { success: true, data: [...] }
+                conversacionesDashboard = resultado.data || [];
+                mostrarConversacionesDashboard(conversacionesDashboard);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('conversaciones-list').innerHTML = `
+                    <div class="flex items-center justify-center h-full text-gray-400">
+                        <div class="text-center p-4">
+                            <p class="text-sm">No tienes conversaciones activas</p>
+                            <p class="text-xs mt-1">Acepta solicitudes de intercambio para chatear</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Mostrar conversaciones
+        function mostrarConversacionesDashboard(conversaciones) {
+            const container = document.getElementById('conversaciones-list');
+            
+            if (!conversaciones || conversaciones.length === 0) {
+                container.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-gray-400">
+                        <div class="text-center p-4">
+                            <p class="text-sm">No tienes conversaciones activas</p>
+                            <p class="text-xs mt-1">Acepta solicitudes de intercambio para chatear</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = conversaciones.map((conv, index) => {
+                const initials = getInitialsDashboard(conv.nombre_contacto);
+                const colorClass = getColorClassDashboard(index);
+                const mensajesNoLeidos = conv.mensajes_no_leidos || 0;
+                const isActive = conversacionActivaDashboard && conversacionActivaDashboard.id_conversacion === conv.id_conversacion;
+                
+                return `
+                    <div class="p-3 flex items-center space-x-3 ${isActive ? 'bg-indigo-100 border-l-4 border-indigo-600' : 'hover:bg-gray-100'} cursor-pointer transition-all"
+                         onclick="seleccionarConversacionDashboard(${conv.id_conversacion})">
+                        <div class="relative flex-shrink-0">
+                            ${conv.imagenUrl_contacto ? 
+                                `<img src="${conv.imagenUrl_contacto}" 
+                                     class="w-12 h-12 rounded-full object-cover border-2 border-white shadow" 
+                                     alt="${conv.nombre_contacto}"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                 <div class="w-12 h-12 ${colorClass} rounded-full items-center justify-center text-white font-semibold shadow hidden">
+                                    ${initials}
+                                 </div>` :
+                                `<div class="w-12 h-12 ${colorClass} rounded-full flex items-center justify-center text-white font-semibold shadow">
+                                    ${initials}
+                                </div>`
+                            }
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <p class="text-sm font-semibold text-gray-900 truncate">${conv.nombre_contacto}</p>
+                            <p class="text-xs ${isActive ? 'text-indigo-700' : 'text-gray-500'} truncate">
+                                ${conv.ultimo_mensaje || 'Sin mensajes aún'}
+                            </p>
+                        </div>
+                        ${mensajesNoLeidos > 0 ? `
+                            <div class="bg-indigo-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                                ${mensajesNoLeidos}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Seleccionar conversación
+        async function seleccionarConversacionDashboard(idConversacion) {
+            conversacionActivaDashboard = conversacionesDashboard.find(c => c.id_conversacion === idConversacion);
+            
+            if (!conversacionActivaDashboard) return;
+
+            // Mostrar panel de chat
+            document.getElementById('chat-vacio-dashboard').classList.add('hidden');
+            document.getElementById('chat-activo-dashboard').classList.remove('hidden');
+            document.getElementById('chat-activo-dashboard').classList.add('flex');
+
+            // Actualizar header del chat
+            actualizarHeaderChatDashboard(conversacionActivaDashboard);
+
+            // Cargar mensajes
+            await cargarMensajesDashboard(idConversacion, true);
+
+            // Actualizar lista para mostrar cual está activa
+            mostrarConversacionesDashboard(conversacionesDashboard);
+        }
+
+        // Actualizar header del chat
+        function actualizarHeaderChatDashboard(conv) {
+            const initials = getInitialsDashboard(conv.nombre_contacto);
+            const colorClass = getColorClassDashboard(conv.id_conversacion);
+            
+            document.getElementById('chat-header-dashboard').innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        ${conv.imagenUrl_contacto ? 
+                            `<img src="${conv.imagenUrl_contacto}" 
+                                  class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md" 
+                                  alt="${conv.nombre_contacto}">` :
+                            `<div class="w-12 h-12 ${colorClass} rounded-full flex items-center justify-center text-white font-bold text-base shadow-md">
+                                ${initials}
+                            </div>`
+                        }
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-800">${conv.nombre_contacto}</h2>
+                        <p class="text-xs text-gray-500">Conversación activa</p>
+                    </div>
+                </div>
+                <button class="text-sm text-indigo-600 hover:text-indigo-800 font-semibold px-4 py-2 rounded-lg hover:bg-indigo-50 transition">
+                    Ver Perfil
+                </button>
+            `;
+        }
+
+        // Cargar mensajes
+        async function cargarMensajesDashboard(idConversacion, scrollToEnd = true) {
+            try {
+                const personaId = await obtenerPersonaIdActual();
+                const response = await fetch(`http://localhost:3001/api/mensajeria/conversacion/${idConversacion}/mensajes?personaId=${personaId}`);
+                
+                if (!response.ok) throw new Error('Error al cargar mensajes');
+
+                const resultado = await response.json();
+                
+                // La API devuelve { success: true, data: [...] }
+                const mensajes = resultado.data || [];
+                mostrarMensajesDashboard(mensajes);
+
+                if (scrollToEnd) {
+                    scrollToBottomDashboard();
+                }
+
+                // Marcar mensajes como leídos
+                await fetch(`http://localhost:3001/api/mensajeria/conversacion/${idConversacion}/marcar-leidos`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ personaId: personaId })
+                });
+
+                // Actualizar lista de conversaciones
+                await cargarConversacionesDashboard();
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Mostrar mensajes
+        function mostrarMensajesDashboard(mensajes) {
+            const container = document.getElementById('mensajes-container-dashboard');
+            
+            if (!mensajes || mensajes.length === 0) {
+                container.innerHTML = `
+                    <div class="flex items-center justify-center h-full text-gray-400">
+                        <p class="text-sm">No hay mensajes aún. ¡Envía el primero!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = mensajes.map(msg => {
+                const esMio = msg.es_remitente_actual === 1 || msg.es_remitente_actual === true;
+                
+                if (esMio) {
+                    // Mensaje enviado por mí (derecha, azul/morado)
+                    return `
+                        <div class="flex justify-end">
+                            <div class="bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-3 rounded-xl rounded-tr-none max-w-md text-sm shadow-lg">
+                                ${msg.contenido}
+                                <span class="block text-right text-xs text-indigo-200 mt-1">${formatearHoraDashboard(msg.fecha_envio)}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Mensaje recibido (izquierda, blanco/gris)
+                    return `
+                        <div class="flex justify-start">
+                            <div class="bg-white border border-gray-200 p-3 rounded-xl rounded-tl-none max-w-md text-sm shadow-md">
+                                <p class="text-gray-800">${msg.contenido}</p>
+                                <span class="block text-left text-xs text-gray-400 mt-1">${formatearHoraDashboard(msg.fecha_envio)}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        // Enviar mensaje
+        async function enviarMensajeDashboard(e) {
+            e.preventDefault();
+            
+            const input = document.getElementById('message-input-dashboard');
+            const contenido = input.value.trim();
+
+            if (!contenido || !conversacionActivaDashboard) return;
+
+            try {
+                const personaId = await obtenerPersonaIdActual();
+                const response = await fetch('http://localhost:3001/api/mensajeria/enviar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        conversacionId: conversacionActivaDashboard.id_conversacion,
+                        personaEnviaId: personaId,
+                        contenido: contenido
+                    })
+                });
+
+                if (!response.ok) throw new Error('Error al enviar mensaje');
+
+                input.value = '';
+                await cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion, true);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al enviar el mensaje');
+            }
+        }
+
+        // Utilidades para Dashboard
+        function getInitialsDashboard(nombre) {
+            if (!nombre) return '??';
+            const parts = nombre.split(' ');
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[1][0]).toUpperCase();
+            }
+            return nombre.substring(0, 2).toUpperCase();
+        }
+
+        function getColorClassDashboard(index) {
+            const colors = [
+                'bg-green-500',
+                'bg-blue-500',
+                'bg-purple-500',
+                'bg-yellow-500',
+                'bg-pink-500',
+                'bg-indigo-500'
+            ];
+            return colors[index % colors.length];
+        }
+
+        function formatearHoraDashboard(fecha) {
+            if (!fecha) return '';
+            return new Date(fecha).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function scrollToBottomDashboard() {
+            const container = document.getElementById('mensajes-container-dashboard');
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);
+        }
+
+        // Limpiar intervalo al cambiar de vista
+        window.addEventListener('beforeunload', () => {
+            if (mensajeriaInterval) {
+                clearInterval(mensajeriaInterval);
+            }
+        });
     </script>
 
     <!-- Protección de sesión -->

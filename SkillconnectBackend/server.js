@@ -16,6 +16,8 @@ const habilidadesRoutes = require('./routes/HabilidadesYServicios_Persona');
 const direccionesRoutes = require('./routes/Direcciones');
 const categoriasRoutes = require('./routes/CategoriasGeneralesHabilidades');
 const geolocalizacionRoutes = require('./routes/Geolocalizacion');
+const solicitudesRoutes = require('./routes/SolicitudesIntercambio');
+const mensajeriaRoutes = require('./routes/Mensajeria');
 
 const app = express();
 // Obtiene el puerto del .env o usa 3001 por defecto
@@ -41,6 +43,8 @@ app.use('/api/habilidades', habilidadesRoutes);
 app.use('/api/direcciones', direccionesRoutes);
 app.use('/api/categorias', categoriasRoutes);
 app.use('/api/geolocalizacion', geolocalizacionRoutes);
+app.use('/api/solicitudes-intercambio', solicitudesRoutes);
+app.use('/api/mensajeria', mensajeriaRoutes);
 
 // Prueba básica de que el servidor Express funciona
 app.get('/', (req, res) => {
