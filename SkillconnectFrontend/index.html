@@ -1,148 +1,149 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SkillConnect - Encuentra tu talento</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #dfe9f3, #ffffff);
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      height: 100vh;
-    }
-
-    .container {
-      display: flex;
-      background-color: #fff;
-      width: 90%;
-      max-width: 1100px;
-      margin-top: 60px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-
-    /* Sección izquierda */
-    .search-section {
-      flex: 1;
-      padding: 40px;
-      background-color: #fff;
-      text-align: center;
-    }
-
-    .search-section img {
-      width: 160px;
-      margin-bottom: 10px;
-    }
-
-    .search-section h2 {
-      margin-bottom: 20px;
-      color: #1b1b1b;
-    }
-
-    .form-group {
-      margin-bottom: 15px;
-      text-align: left;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 15px;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #007bff;
-    }
-
-    button {
-      width: 100%;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    /* Sección derecha */
-    .results-section {
-      flex: 1;
-      background-color: #f5f7fa;
-      padding: 40px;
-      border-left: 1px solid #ddd;
-    }
-
-    .results-section h3 {
-      color: #1b1b1b;
-      margin-bottom: 20px;
-    }
-
-    .no-results {
-      color: #666;
-      font-size: 15px;
-      background: #fff;
-      border-radius: 8px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
-      .results-section {
-        border-left: none;
-        border-top: 1px solid #ddd;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>SkillConnect</title>
+    <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
+    
+    <header>
+        <h1>SkillConnect</h1>
+        <div id="notificaciones-widget">
+            <button id="campana">
+                🔔 Notificaciones 
+                <span id="contador-campana" class="contador-bagde"></span>
+            </button>
 
-  <div class="container">
-    <!-- Sección de búsqueda -->
-     <!-- Para guardar -->
-    <div class="search-section">
-      <img src="tx.jpeg" alt="Logo SkillConnect"> 
-      <h2>Encuentra tu talento</h2>
-      <div class="form-group">
-        <input type="text" placeholder="Habilidad Principal">
-      </div>
-      <div class="form-group">
-        <input type="text" placeholder="Ej: Carpintería, Diseño Web...">
-      </div>
-      <div class="form-group">
-        <input type="text" placeholder="Ciudad">
-      </div>
-      <div class="form-group">
-        <input type="text" placeholder="País">
-      </div>
-      <button>Buscar Talentos</button>
-    </div>
+            <div id="notificaciones-lista">
+                Cargando notificaciones...
+            </div>
+        </div>
+    </header>
 
-    <!-- Sección de resultados -->
-    <div class="results-section">
-      <h3>Resultados Recientes</h3>
-      <div class="no-results">
-        Aún no hay resultados recientes. Realiza una búsqueda para comenzar.
-      </div>
-    </div>
-  </div>
-
-</body>
+    <main>
+        </main>
+    
+    </body>
 </html>
+
+  <script>
+    // ----------------------------------------------------
+    // 1. OBTENER ID DINÁMICO DEL USUARIO LOGUEADO
+    // ----------------------------------------------------
+    // Obtiene el ID del usuario del localStorage, donde se guarda al iniciar sesión.
+    const USER_ID = parseInt(localStorage.getItem('usuarioLogueadoId'));
+    
+    const NOTIFICACIONES_API_URL = `http://localhost:3001/api/notificaciones/${USER_ID}`;
+
+    const contenedorNotificaciones = document.getElementById('notificaciones-lista');
+    const contadorCampana = document.getElementById('contador-campana');
+    const campanaBoton = document.getElementById('campana');
+    
+    // Inicialmente ocultamos la lista
+    contenedorNotificaciones.style.display = 'none';
+
+    // ----------------------------------------------------
+    // 2. FUNCIÓN PRINCIPAL: CONSULTAR NOTIFICACIONES (GET)
+    // ----------------------------------------------------
+    async function cargarNotificaciones() {
+        // Validación crítica: Si no hay ID de usuario, no se puede cargar nada.
+        if (isNaN(USER_ID) || !USER_ID) {
+            contadorCampana.textContent = '';
+            contenedorNotificaciones.innerHTML = '<p style="color: red; padding: 10px;">Error: Debes iniciar sesión para ver notificaciones.</p>';
+            return;
+        }
+        
+        try {
+            const response = await fetch(NOTIFICACIONES_API_URL);
+            
+            if (!response.ok) {
+                throw new Error('Fallo al obtener notificaciones');
+            }
+
+            const notificaciones = await response.json();
+            
+            renderizarNotificaciones(notificaciones);
+
+            // Actualiza el contador
+            const noLeidas = notificaciones.filter(n => n.leida === 0).length;
+            contadorCampana.textContent = noLeidas > 0 ? noLeidas : '';
+
+        } catch (error) {
+            console.error('Error de API:', error);
+            if(contenedorNotificaciones) {
+                contenedorNotificaciones.innerHTML = '<p style="color: red; padding: 10px;">Error al cargar las notificaciones.</p>';
+                contadorCampana.textContent = '';
+            }
+        }
+    }
+
+    // ----------------------------------------------------
+    // 3. FUNCIÓN SECUNDARIA: MOSTRAR EN HTML
+    // ----------------------------------------------------
+    function renderizarNotificaciones(notificaciones) {
+        contenedorNotificaciones.innerHTML = ''; 
+        
+        if (notificaciones.length === 0) {
+            contenedorNotificaciones.innerHTML = '<p style="padding: 10px;">No tienes notificaciones pendientes.</p>';
+            return;
+        }
+
+        notificaciones.forEach(n => {
+            const p = document.createElement('p');
+            let estado = n.leida === 0 ? 'Sin leer' : 'Leída';
+            
+            // Aplica el color de fondo para que el CSS pueda aplicar el estilo de "no leído"
+            if (n.leida === 0) {
+                p.style.backgroundColor = '#fff3e0'; 
+            }
+            
+            p.innerHTML = `
+                <strong>[${estado}]</strong> ${n.mensaje} 
+                <small style="float: right;">${new Date(n.fecha).toLocaleDateString()}</small>
+            `;
+            
+            contenedorNotificaciones.appendChild(p);
+
+            // Añadir evento para marcar como leída (solo si no lo está)
+            if (n.leida === 0) {
+                p.addEventListener('click', () => marcarComoLeida(n.id));
+            }
+        });
+    }
+
+    // ----------------------------------------------------
+    // 4. FUNCIÓN PARA MARCAR COMO LEÍDA (PATCH)
+    // ----------------------------------------------------
+    async function marcarComoLeida(id) {
+        const PATCH_URL = `http://localhost:3001/api/notificaciones/${id}`;
+        
+        try {
+            await fetch(PATCH_URL, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            // Recarga toda la lista para actualizar el contador y el estado visual
+            cargarNotificaciones(); 
+            
+        } catch (error) {
+            console.error('Error al marcar como leída:', error);
+            alert("No se pudo marcar como leída.");
+        }
+    }
+
+    // ----------------------------------------------------
+    // 5. EVENTO PARA MOSTRAR/OCULTAR LISTA
+    // ----------------------------------------------------
+    campanaBoton.addEventListener('click', () => {
+        if (contenedorNotificaciones.style.display === 'none') {
+            contenedorNotificaciones.style.display = 'block';
+        } else {
+            contenedorNotificaciones.style.display = 'none';
+        }
+    });
+
+    // Iniciar la carga de notificaciones cuando la página esté lista
+    window.onload = cargarNotificaciones;
+</script>
