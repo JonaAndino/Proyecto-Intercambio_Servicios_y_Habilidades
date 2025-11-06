@@ -153,7 +153,7 @@ button:not(#campana):hover {
 
 
 /* ========================================================= */
-/* ESTILOS DE NOTIFICACIONES (Widget de Campana)             */
+/* /ESTILOS DE NOTIFICACIONES (Widget de Campana)             */
 /* ========================================================= */
 #notificaciones-widget {
     /* CLAVE: Lo hacemos flotar en la esquina, con posicionamiento relativo */

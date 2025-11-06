@@ -1,38 +1,46 @@
 // server.js
 
-// 0. Configuración del Entorno (DEBE IR PRIMERO)
-require('dotenv').config(); 
+// 1️⃣ Dependencias principales
+import express from "express";
+import cors from 'cors';
+import db from './db.js'; // usa el pool de conexiones de tu db.js
 
-// 1. Importaciones de Librerías
-const express = require('express');
-const cors = require('cors'); 
-// Asegúrate de que esta línea exista si usas las rutas de autenticación
-const authRoutes = require('./routes/auth'); 
+import calificacionesRouter from './routes/calificaciones.js';
+import notificacionesRouter from './routes/notificaciones.js';
+import authRouter from './routes/auth.js';
 
+// 3️⃣ Configurar la app
 const app = express();
-// Obtiene el puerto del .env o usa 3001 por defecto
-const port = process.env.PORT || 3001; 
-
-// 2. Middleware de CORS (Permite al frontend hablar con el backend)
 app.use(cors({
-    // El frontend ahora corre en el puerto 5500 gracias a Live Server
-    origin: 'http://127.0.0.1:5500' 
+    origin: '*', // Permite peticiones desde cualquier origen (Incluyendo tu HTML local)
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// 3. Middleware para procesar JSON (SOLO UNA VEZ)
-app.use(express.json()); 
+app.use(cors());
+app.use(express.json());
 
-// 4. Configurar la URL base para las rutas de autenticación
-app.use('/api', authRoutes);
+app.use('/api/calificaciones', calificacionesRouter); 
+app.use('/api/notificaciones', notificacionesRouter); 
+app.use('/api/auth', authRouter);
 
-// Prueba básica de que el servidor Express funciona
-app.get('/', (req, res) => {
-    res.send('Servidor Skill Connect Activo!');
+// 4️⃣ Probar conexión a la base de datos
+db.query("SELECT 1")
+  .then(() => console.log(" Base de datos conectada correctamente."))
+  .catch((err) => console.error(" Error al conectar con la base de datos:", err));
+
+
+// 6️⃣ Ruta base para probar el servidor
+app.get("/", (req, res) => {
+  res.send("🌟 API de SkillConnect funcionando correctamente");
 });
 
-// 5. Iniciar el servidor
-app.listen(port, () => {
-    // Asegúrate de que el db.js se importe y ejecute su conexión de prueba
-    require('./db');
-    console.log(`Servidor escuchando en http://localhost:${port}`);
+/// 7️⃣ Iniciar servidor
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log( `Servidor corriendo en http://localhost:${PORT}`);
+
+
+
+
 });
