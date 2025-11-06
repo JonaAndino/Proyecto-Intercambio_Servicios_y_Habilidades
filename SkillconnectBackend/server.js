@@ -1,28 +1,25 @@
 // server.js
 
-// 1️⃣ Dependencias principales
-import express from "express";
-import cors from 'cors';
-import db from './db.js'; // usa el pool de conexiones de tu db.js
+// 0. Configuración del Entorno (DEBE IR PRIMERO)
+require('dotenv').config(); 
 
-import calificacionesRouter from './routes/calificaciones.js';
-import notificacionesRouter from './routes/notificaciones.js';
-import authRouter from './routes/auth.js';
+// 1. Importaciones de Librerías
+const express = require('express');
+const cors = require('cors'); 
+// Asegúrate de que esta línea exista si usas las rutas de autenticación
+const authRoutes = require('./routes/auth'); 
 
-// 3️⃣ Configurar la app
 const app = express();
 app.use(cors({
-    origin: '*', // Permite peticiones desde cualquier origen (Incluyendo tu HTML local)
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    // El frontend ahora corre en el puerto 5500 gracias a Live Server
+    origin: 'http://127.0.0.1:5500' 
 }));
 
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/calificaciones', calificacionesRouter); 
-app.use('/api/notificaciones', notificacionesRouter); 
-app.use('/api/auth', authRouter);
+// 4. Configurar la URL base para las rutas de autenticación
+app.use('/api', authRoutes);
 
 // 4️⃣ Probar conexión a la base de datos
 db.query("SELECT 1")
