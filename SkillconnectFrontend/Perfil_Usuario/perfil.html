@@ -289,12 +289,12 @@
     }
     
     .editable:hover::after {
-      content: '✏️ Editar';
+      content: 'Editar';
       position: absolute;
       right: -60px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 11px;
+      font-size: 14px;
       color: #6b7280;
       background: #f9fafb;
       padding: 2px 8px;
@@ -1111,11 +1111,11 @@
             </h2>
             <div class="stats-grid">
               <div class="stat">
-                <p class="stat-number-primary">12</p>
+                <p class="stat-number-primary" id="statIntercambios">0</p>
                 <p class="stat-label">Intercambios (HU 13)</p>
               </div>
               <div class="stat">
-                <p class="stat-number-secondary">8</p>
+                <p class="stat-number-secondary" id="statFavoritos">0</p>
                 <p class="stat-label">Favoritos (HU 10)</p>
               </div>
               <div class="stat">
@@ -1409,7 +1409,50 @@
 
       // Event listeners
       setupEventListeners();
+      
+      // Configurar actualización automática de estadísticas
+      configurarActualizacionAutomatica();
     });
+
+    // ======================
+    // ACTUALIZACIÓN AUTOMÁTICA DE ESTADÍSTICAS
+    // ======================
+    function configurarActualizacionAutomatica() {
+      // 1. Escuchar cuando el usuario regresa a la pestaña
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && perfilPersonaId) {
+          // console.log eliminado
+          cargarEstadisticasUsuario();
+        }
+      });
+      
+      // 2. Escuchar eventos de localStorage (cuando se actualiza desde otra pestaña/página)
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'actualizarEstadisticas' && perfilPersonaId) {
+          // console.log eliminado
+          cargarEstadisticasUsuario();
+        }
+      });
+      
+      // 3. Polling cada 30 segundos (opcional, solo si el usuario está activo)
+      let lastActivity = Date.now();
+      
+      // Detectar actividad del usuario
+      ['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(event => {
+        document.addEventListener(event, () => {
+          lastActivity = Date.now();
+        }, true);
+      });
+      
+      // Polling inteligente: solo actualiza si el usuario estuvo activo en los últimos 2 minutos
+      setInterval(() => {
+        const timeSinceActivity = Date.now() - lastActivity;
+        if (timeSinceActivity < 120000 && perfilPersonaId) { // 2 minutos
+          // console.log eliminado
+          cargarEstadisticasUsuario();
+        }
+      }, 30000); // Cada 30 segundos
+    }
 
     // ======================
     // SETUP EVENT LISTENERS
@@ -1668,6 +1711,157 @@
 
       // Pixel chart
       renderPixelChart();
+      
+      // Cargar calificaciones y reseñas
+      cargarCalificacionesYResenas();
+    }
+
+    // ======================
+    // CARGAR CALIFICACIONES Y RESEÑAS
+    // ======================
+    async function cargarCalificacionesYResenas() {
+      try {
+        // 1. Cargar estadísticas
+        const resEstadisticas = await fetch(`${API_BASE}/intercambios/estadisticas/${perfilPersonaId}`);
+        const dataEstadisticas = await resEstadisticas.json();
+        
+        let promedio = 0;
+        let totalCalificaciones = 0;
+        let totalIntercambios = 0;
+        let distribucion = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+        
+        if (resEstadisticas.ok && dataEstadisticas.success && dataEstadisticas.data) {
+          const stats = dataEstadisticas.data;
+          promedio = stats.promedio_calificacion || 0;
+          totalCalificaciones = stats.total_calificaciones || 0;
+          totalIntercambios = stats.total_intercambios_completados || 0;
+          distribucion = stats.distribucion_calificaciones || distribucion;
+        }
+        
+        // 2. Actualizar el resumen de calificaciones
+        const ratingScore = document.querySelector('.rating-score');
+        const ratingText = document.querySelector('.rating-text');
+        
+        if (ratingScore) {
+          ratingScore.textContent = promedio > 0 ? promedio.toFixed(1) : '0.0';
+        }
+        
+        if (ratingText) {
+          ratingText.textContent = totalIntercambios > 0 
+            ? `Basado en ${totalIntercambios} intercambio${totalIntercambios !== 1 ? 's' : ''}.`
+            : 'Sin intercambios completados aún.';
+        }
+        
+        // Actualizar las estrellas del resumen
+        actualizarEstrellas(promedio);
+        
+        // 3. Cargar las calificaciones (comentarios)
+        const urlCalificaciones = `${API_BASE}/intercambios/calificaciones/${perfilPersonaId}?page=1&limit=10`;
+        
+        const resCalificaciones = await fetch(urlCalificaciones);
+        const dataCalificaciones = await resCalificaciones.json();
+        
+        const reviewsContainer = document.querySelector('.reviews-container');
+        if (!reviewsContainer) {
+          return;
+        }
+        
+        // Limpiar contenedor
+        reviewsContainer.innerHTML = '';
+        
+        if (resCalificaciones.ok && dataCalificaciones.success && dataCalificaciones.data && dataCalificaciones.data.length > 0) {
+          const calificaciones = dataCalificaciones.data;
+          
+          calificaciones.forEach(cal => {
+            const reviewCard = document.createElement('div');
+            reviewCard.className = 'review-card';
+            
+            const nombreCalificador = cal.nombre_calificador || 'Usuario';
+            const apellidoCalificador = cal.apellido_calificador || '';
+            const nombreCompleto = `${nombreCalificador} ${apellidoCalificador}`.trim();
+            const iniciales = `${nombreCalificador.charAt(0)}${apellidoCalificador.charAt(0) || ''}`.toUpperCase();
+            
+            const fechaCalificacion = cal.fecha_calificacion 
+              ? new Date(cal.fecha_calificacion).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
+              : 'Fecha no disponible';
+            
+            reviewCard.innerHTML = `
+              <div class="review-header">
+                <img class="review-avatar" 
+                     src="${cal.imagen_calificador || `https://ui-avatars.com/api/?name=${iniciales}&background=10B981&color=ffffff&size=40&bold=true&rounded=true`}" 
+                     alt="${nombreCompleto}"
+                     onerror="this.src='https://ui-avatars.com/api/?name=${iniciales}&background=10B981&color=ffffff&size=40&bold=true&rounded=true'">
+                <div>
+                  <p class="review-name">${nombreCompleto}</p>
+                  <div class="review-rating">
+                    <span>${cal.puntuacion}.0</span>
+                    <svg class="star-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <p class="review-text">"${cal.comentario || 'Sin comentario'}"</p>
+              <p class="review-date">${fechaCalificacion}</p>
+            `;
+            
+            reviewsContainer.appendChild(reviewCard);
+          });
+        } else {
+          // Mostrar mensaje cuando no hay calificaciones
+          reviewsContainer.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #6b7280;">
+              <svg xmlns="http://www.w3.org/2000/svg" style="width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.5;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+              </svg>
+              <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Este usuario aún no tiene comentarios escritos.</p>
+              <p style="font-size: 14px;">Las reseñas aparecerán aquí después de completar intercambios.</p>
+            </div>
+          `;
+        }
+        
+      } catch (error) {
+        // Error silencioso
+      }
+    }
+    
+    // Función auxiliar para actualizar las estrellas del resumen
+    function actualizarEstrellas(promedio) {
+      const starsContainer = document.querySelector('.rating-summary .stars-container');
+      if (!starsContainer) return;
+      
+      const estrellasLlenas = Math.floor(promedio);
+      const tieneMedia = promedio % 1 >= 0.5;
+      
+      starsContainer.innerHTML = '';
+      
+      // Estrellas llenas
+      for (let i = 0; i < estrellasLlenas; i++) {
+        starsContainer.innerHTML += `
+          <svg class="star-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+        `;
+      }
+      
+      // Estrella media (opcional, si quieres mostrarla)
+      if (tieneMedia && estrellasLlenas < 5) {
+        starsContainer.innerHTML += `
+          <svg class="star-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="opacity: 0.5;">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+        `;
+      }
+      
+      // Estrellas vacías
+      const estrellasVacias = 5 - Math.ceil(promedio);
+      for (let i = 0; i < estrellasVacias; i++) {
+        starsContainer.innerHTML += `
+          <svg class="star-empty" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+        `;
+      }
     }
 
     // ======================
@@ -3084,9 +3278,49 @@ function darken(hex, amount = 0.3) {
     // ======================
     // ESTADÍSTICAS
     // ======================
-    function updateStats() {
+    async function updateStats() {
+      // Actualizar habilidades ofrecidas (ya estaba)
       document.getElementById('statOfferedSkills').textContent = offeredSkills.length;
-      renderPixelChart();
+      
+  // Cargar estadísticas desde el backend
+  await cargarEstadisticasUsuario();
+  renderPixelChart();
+    }
+
+    async function cargarEstadisticasUsuario() {
+      try {
+  // console.log eliminado
+        
+        // 1. Obtener intercambios completados
+        const resIntercambios = await fetch(`${API_BASE}/intercambios/estadisticas/${perfilPersonaId}`);
+        if (resIntercambios.ok) {
+          const dataIntercambios = await resIntercambios.json();
+          if (dataIntercambios.success && dataIntercambios.data) {
+            const totalIntercambios = dataIntercambios.data.total_intercambios_completados || 0;
+            // console.log eliminado
+            document.getElementById('statIntercambios').textContent = totalIntercambios;
+          }
+        }
+
+        // 2. Obtener la lista de favoritos de ESTE usuario (cuántos usuarios tiene agregados)
+        const resFavoritos = await fetch(`${API_BASE}/favoritos/${perfilPersonaId}`);
+  // console.log eliminado
+        
+        if (resFavoritos.ok) {
+          const dataFavoritos = await resFavoritos.json();
+          // console.log eliminado
+          
+          if (dataFavoritos.success) {
+            const totalFavoritos = dataFavoritos.total || 0;
+            // console.log eliminado
+            document.getElementById('statFavoritos').textContent = totalFavoritos;
+          }
+        }
+        
+      } catch (error) {
+  // console.error eliminado
+        // Mantener valores por defecto en caso de error
+      }
     }
 
     // ======================

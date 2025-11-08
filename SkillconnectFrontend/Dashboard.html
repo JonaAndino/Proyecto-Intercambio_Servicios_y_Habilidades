@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,11 +30,87 @@
             min-height: 580px;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .user-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Botón de favoritos */
+        .favorite-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer !important;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 20 !important;
+            border: 2px solid transparent;
+            pointer-events: auto !important;
+            outline: none;
+        }
+
+        .favorite-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .favorite-btn:active {
+            transform: scale(0.95);
+        }
+
+        .favorite-btn.active {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            border-color: #ff6b6b;
+        }
+
+        .favorite-btn.active:hover {
+            transform: scale(1.15) rotate(10deg);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .favorite-icon {
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .favorite-btn:not(.active) .favorite-icon {
+            color: #9ca3af;
+        }
+
+        .favorite-btn.active .favorite-icon {
+            color: white;
+            animation: heartBeat 0.3s ease;
+        }
+
+        @keyframes heartBeat {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            25% {
+                transform: scale(1.3);
+            }
+
+            50% {
+                transform: scale(0.9);
+            }
+
+            75% {
+                transform: scale(1.2);
+            }
         }
 
         .user-card-banner {
@@ -205,13 +282,23 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
         }
 
         .custom-modal {
@@ -225,11 +312,12 @@
         }
 
         @keyframes slideUp {
-            from { 
+            from {
                 opacity: 0;
                 transform: translateY(20px);
             }
-            to { 
+
+            to {
                 opacity: 1;
                 transform: translateY(0);
             }
@@ -240,6 +328,7 @@
                 opacity: 0;
                 transform: translateX(100px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
@@ -574,7 +663,7 @@
                 max-height: 100vh;
                 border-radius: 0;
             }
-            
+
             .profile-modal-banner {
                 border-radius: 0;
             }
@@ -608,6 +697,7 @@
                 transform: scale(0.8);
                 opacity: 0;
             }
+
             to {
                 transform: scale(1);
                 opacity: 1;
@@ -668,8 +758,10 @@
         @media (min-width: 1024px) {
             #sidebar {
                 position: fixed;
-                transform: translateX(-320px); /* Ancho del sidebar */
-                z-index: 40; /* Menor z-index que el header */
+                transform: translateX(-320px);
+                /* Ancho del sidebar */
+                z-index: 40;
+                /* Menor z-index que el header */
             }
 
             #sidebar.open {
@@ -682,7 +774,8 @@
             }
 
             #mainContent.shifted {
-                margin-left: 320px; /* Ancho del sidebar */
+                margin-left: 320px;
+                /* Ancho del sidebar */
             }
 
             /* El overlay no se muestra en desktop */
@@ -780,6 +873,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -794,8 +888,13 @@
         }
 
         @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
         }
 
         /* Skeleton para las tarjetas de usuario */
@@ -809,8 +908,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
         }
 
         .skeleton-banner {
@@ -865,12 +971,15 @@
 
         /* Estilos para el chat */
         #message-container {
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
         }
-        
+
         #message-container::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
+            display: none;
+            /* Chrome, Safari, Opera */
         }
 
         /* Dropdown de notificaciones */
@@ -898,6 +1007,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- Overlay oscuro para cuando el sidebar esté abierto -->
@@ -911,7 +1021,8 @@
                 <h2 class="text-2xl font-bold text-gray-800">Menú</h2>
                 <button id="closeSidebar" class="p-2 rounded-lg hover:bg-gray-100 transition">
                     <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
                     </svg>
                 </button>
             </div>
@@ -919,10 +1030,10 @@
             <!-- Información del Usuario -->
             <div class="mb-8 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
                 <div class="flex items-center space-x-3">
-                    <img id="sidebarUserImage" 
-                         src="https://ui-avatars.com/api/?name=U&background=3b82f6&color=fff&size=48&bold=true&rounded=true" 
-                         alt="Usuario" 
-                         class="w-12 h-12 rounded-full object-cover border-2 border-blue-500 flex-shrink-0">
+                    <img id="sidebarUserImage"
+                        src="https://ui-avatars.com/api/?name=U&background=3b82f6&color=fff&size=48&bold=true&rounded=true"
+                        alt="Usuario"
+                        class="w-12 h-12 rounded-full object-cover border-2 border-blue-500 flex-shrink-0">
                     <div class="flex-1 min-w-0">
                         <p id="sidebarUserName" class="font-semibold text-gray-800 truncate">Usuario</p>
                         <p class="text-sm text-gray-500">Bienvenido de nuevo</p>
@@ -932,67 +1043,100 @@
 
             <!-- Navegación del Sidebar -->
             <nav class="space-y-2">
-                <a href="#" onclick="navigateTo('home'); return false;" data-view="home" class="sidebar-item active flex items-center space-x-3 p-3 rounded-lg text-gray-700">
+                <a href="#" onclick="navigateTo('home'); return false;" data-view="home"
+                    class="sidebar-item active flex items-center space-x-3 p-3 rounded-lg text-gray-700">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                        </path>
                     </svg>
                     <span class="font-medium">Inicio</span>
                 </a>
 
-                <a href="#" onclick="navigateTo('perfil'); return false;" data-view="perfil" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
+                <a href="#" onclick="navigateTo('perfil'); return false;" data-view="perfil"
+                    class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
                     <span class="font-medium">Mi Perfil</span>
                 </a>
 
-                <a href="#" onclick="navigateTo('mensajes'); return false;" data-view="mensajes" class="sidebar-item flex items-center justify-between p-3 rounded-lg text-gray-700">
+                <a href="#" onclick="navigateTo('mensajes'); return false;" data-view="mensajes"
+                    class="sidebar-item flex items-center justify-between p-3 rounded-lg text-gray-700">
                     <div class="flex items-center space-x-3">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z">
+                            </path>
                         </svg>
                         <span class="font-medium">Solicitudes y Mensajes</span>
                     </div>
                     <!-- Badge de mensajes no leídos -->
-                    <span id="sidebarMessagesBadge" class="hidden min-w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5"></span>
+                    <span id="sidebarMessagesBadge"
+                        class="hidden min-w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5"></span>
                 </a>
 
-                <a href="#" onclick="navigateTo('busqueda'); return false;" data-view="busqueda" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
+                <a href="#" onclick="navigateTo('busqueda'); return false;" data-view="busqueda"
+                    class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                     <span class="font-medium">Buscar Habilidades</span>
                 </a>
 
-                <a href="#" onclick="navigateTo('solicitud'); return false;" data-view="solicitud" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
+                <a href="#" onclick="navigateTo('solicitud'); return false;" data-view="solicitud"
+                    class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                     </svg>
                     <span class="font-medium">Solicitud de Intercambio</span>
                 </a>
 
                 <!-- Nueva opción: Solicitudes Enviadas -->
-                <a href="#" onclick="navigateTo('solicitudesEnviadas'); return false;" data-view="solicitudesEnviadas" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700 relative">
+                <a href="#" onclick="navigateTo('solicitudesEnviadas'); return false;" data-view="solicitudesEnviadas"
+                    class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700 relative">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                     </svg>
                     <span class="font-medium">Solicitudes Enviadas</span>
-                    <span id="badge-solicitudes-enviadas" class="hidden absolute right-2 bg-yellow-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                    <span id="badge-solicitudes-enviadas"
+                        class="hidden absolute right-2 bg-yellow-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                </a>
+
+                <!-- Nueva opción: Mis Favoritos -->
+                <a href="#" onclick="navigateTo('favoritos'); return false;" data-view="favoritos"
+                    class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700 relative">
+                    <span class="iconify w-6 h-6 text-red-500" data-icon="ph:heart-bold"
+                        style="font-size: 24px;"></span>
+                    <span class="font-medium">Mis Favoritos</span>
+                    <span id="favoritosBadge"
+                        class="hidden absolute right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
                 </a>
 
                 <div class="my-4 border-t border-gray-200"></div>
 
-                <a href="#" onclick="navigateTo('configuracion'); return false;" data-view="configuracion" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
+                <a href="#" onclick="navigateTo('configuracion'); return false;" data-view="configuracion"
+                    class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
                     <span class="font-medium">Configuración</span>
                 </a>
 
-                <a href="#" onclick="logout(); return false;" class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-red-600 hover:bg-red-50">
+                <a href="#" onclick="logout(); return false;"
+                    class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-red-600 hover:bg-red-50">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                        </path>
                     </svg>
                     <span class="font-medium">Cerrar Sesión</span>
                 </a>
@@ -1020,7 +1164,8 @@
                     <!-- Logo -->
                     <div class="flex items-center space-x-2">
                         <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                         <h1 class="text-2xl font-bold text-blue-600">
                             SkillConnect
@@ -1032,14 +1177,18 @@
                 <div class="relative">
                     <button id="notificationBtn" class="p-2 rounded-lg hover:bg-gray-100 transition relative">
                         <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                            </path>
                         </svg>
                         <!-- Badge contador (oculto por defecto) -->
-                        <span id="notificationBadge" class="hidden absolute -top-1 -right-1 min-w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5"></span>
+                        <span id="notificationBadge"
+                            class="hidden absolute -top-1 -right-1 min-w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5"></span>
                     </button>
-                    
+
                     <!-- Dropdown de notificaciones -->
-                    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
+                    <div id="notificationDropdown"
+                        class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
                         <div class="p-4 border-b border-gray-200 flex items-center justify-between">
                             <h3 class="text-lg font-bold text-gray-800">Solicitudes de Intercambio</h3>
                             <span id="notificationCount" class="text-sm text-gray-500"></span>
@@ -1048,8 +1197,11 @@
                             <!-- Las solicitudes se cargarán aquí dinámicamente -->
                         </div>
                         <div id="emptyNotifications" class="hidden p-8 text-center">
-                            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
+                                </path>
                             </svg>
                             <p class="text-gray-500 font-medium">No tienes solicitudes pendientes</p>
                         </div>
@@ -1070,15 +1222,13 @@
                 <div class="max-w-4xl mx-auto mb-8">
                     <div class="search-container flex items-center px-6 py-4">
                         <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
-                        <input 
-                            type="text" 
-                            id="searchInput"
-                            placeholder="Buscar por nombre, habilidad o ubicación..." 
-                            class="flex-1 ml-4 outline-none text-gray-700 placeholder-gray-400"
-                        >
-                        <button class="request-button text-white px-6 py-2 rounded-full font-semibold">
+                        <input type="text" id="searchInput" placeholder="Buscar por nombre, habilidad o ubicación..."
+                            class="flex-1 ml-4 outline-none text-gray-700 placeholder-gray-400">
+                        <button id="searchButton"
+                            class="request-button text-white px-6 py-2 rounded-full font-semibold">
                             Buscar
                         </button>
                     </div>
@@ -1087,7 +1237,9 @@
                 <!-- Filtros rápidos -->
                 <div id="categoryFilters" class="flex flex-wrap justify-center gap-3 mb-8">
                     <!-- Los botones de categorías se cargarán dinámicamente aquí -->
-                    <button onclick="filtrarPorCategoria(null, event)" class="filter-button filter-active px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition border border-blue-600 shadow-sm flex items-center gap-2" data-categoria-id="null">
+                    <button onclick="filtrarPorCategoria(null, event)"
+                        class="filter-button filter-active px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition border border-blue-600 shadow-sm flex items-center gap-2"
+                        data-categoria-id="null">
                         <span class="iconify" data-icon="mdi:view-grid" data-width="20" data-height="20"></span>
                         Todos
                     </button>
@@ -1096,19 +1248,19 @@
 
             <!-- Contenido Principal: Grid de Perfiles -->
             <main class="w-full px-6 lg:px-12">
-                
+
                 <!-- Estadísticas rápidas -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-6xl mx-auto">
                     <div class="stats-card p-6 text-center">
-                        <div class="text-3xl font-bold text-blue-600 mb-2">1,234</div>
+                        <div id="usuarios-activos" class="text-3xl font-bold text-blue-600 mb-2">0</div>
                         <div class="text-gray-600">Usuarios Activos</div>
                     </div>
                     <div class="stats-card p-6 text-center">
-                        <div class="text-3xl font-bold text-blue-600 mb-2">567</div>
-                        <div class="text-gray-600">Habilidades Disponibles</div>
+                        <div id="categorias-disponibles" class="text-3xl font-bold text-blue-600 mb-2">0</div>
+                        <div class="text-gray-600">Categorías de Habilidades Disponibles</div>
                     </div>
                     <div class="stats-card p-6 text-center">
-                        <div class="text-3xl font-bold text-blue-600 mb-2">890</div>
+                        <div id="intercambios-exitosos" class="text-3xl font-bold text-blue-600 mb-2">0</div>
                         <div class="text-gray-600">Intercambios Exitosos</div>
                     </div>
                 </div>
@@ -1120,7 +1272,8 @@
                     <!-- Ordenamiento -->
                     <div class="flex items-center gap-2">
                         <label class="text-sm font-medium text-gray-700">Ordenar por:</label>
-                        <select id="sortSelect" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select id="sortSelect"
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="recent">Más recientes</option>
                             <option value="name">Nombre (A-Z)</option>
                             <option value="skills">Más habilidades</option>
@@ -1131,7 +1284,8 @@
                     <!-- Resultados por página -->
                     <div class="flex items-center gap-2">
                         <label class="text-sm font-medium text-gray-700">Mostrar:</label>
-                        <select id="perPageSelect" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select id="perPageSelect"
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="6">6 usuarios</option>
                             <option value="9" selected>9 usuarios</option>
                             <option value="12">12 usuarios</option>
@@ -1159,9 +1313,7 @@
 
         <!-- Vista: Mi Perfil -->
         <div id="perfilView" class="view-section">
-            <iframe 
-                src="./Perfil_Usuario/perfil.html" 
-                id="perfilIframe"
+            <iframe src="./Perfil_Usuario/perfil.html" id="perfilIframe"
                 style="width: 100%; height: calc(100vh - 80px); border: none; display: block;"
                 title="Perfil de Usuario">
             </iframe>
@@ -1172,16 +1324,16 @@
             <div class="w-full px-6 lg:px-12 py-8">
                 <div class="max-w-7xl mx-auto">
                     <div class="bg-white rounded-2xl shadow-xl overflow-hidden" style="height: calc(100vh - 180px);">
-                        
+
                         <!-- Chat Layout -->
                         <div class="flex flex-col md:flex-row h-full">
-                            
+
                             <!-- Lista de Conversaciones (Sidebar izquierdo) -->
                             <div class="md:w-1/3 border-r border-gray-200 bg-gray-50 flex flex-col">
                                 <header class="p-4 border-b bg-white">
                                     <h2 class="text-xl font-bold text-gray-800">Mensajes</h2>
                                 </header>
-                                
+
                                 <!-- Lista de conversaciones dinámicas -->
                                 <div id="conversaciones-list" class="flex-grow overflow-y-auto">
                                     <!-- Se cargarán dinámicamente -->
@@ -1195,11 +1347,13 @@
 
                             <!-- Área de Chat (Derecha) -->
                             <div class="md:w-2/3 flex flex-col">
-                                
+
                                 <!-- Estado inicial: Sin conversación seleccionada -->
-                                <div id="chat-vacio-dashboard" class="flex-grow flex items-center justify-center text-gray-400">
+                                <div id="chat-vacio-dashboard"
+                                    class="flex-grow flex items-center justify-center text-gray-400">
                                     <div class="text-center">
-                                        <p class="text-lg font-semibold text-gray-600 mb-2">Selecciona una conversación</p>
+                                        <p class="text-lg font-semibold text-gray-600 mb-2">Selecciona una conversación
+                                        </p>
                                         <p class="text-sm">Elige un contacto para empezar a chatear</p>
                                     </div>
                                 </div>
@@ -1207,29 +1361,25 @@
                                 <!-- Chat activo (oculto por defecto) -->
                                 <div id="chat-activo-dashboard" class="flex flex-col h-full hidden">
                                     <!-- Header del Chat -->
-                                    <header id="chat-header-dashboard" class="p-4 border-b bg-white flex justify-between items-center">
+                                    <header id="chat-header-dashboard"
+                                        class="p-4 border-b bg-white flex justify-between items-center">
                                         <!-- Se llenará dinámicamente -->
                                     </header>
 
                                     <!-- Contenedor de Mensajes -->
-                                    <div id="mensajes-container-dashboard" class="flex-grow p-4 overflow-y-auto space-y-4 bg-gray-50">
+                                    <div id="mensajes-container-dashboard"
+                                        class="flex-grow p-4 overflow-y-auto space-y-4 bg-gray-50">
                                         <!-- Se cargarán dinámicamente -->
                                     </div>
 
                                     <!-- Input de Mensaje -->
                                     <div class="p-4 border-t bg-white">
                                         <form id="chat-form-dashboard" class="flex space-x-3">
-                                            <input 
-                                                type="text" 
-                                                id="message-input-dashboard"
-                                                placeholder="Escribe un mensaje..."
-                                                required
-                                                class="flex-grow px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                            >
-                                            <button 
-                                                type="submit" 
-                                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-full transition duration-150 ease-in-out shadow-lg"
-                                            >
+                                            <input type="text" id="message-input-dashboard"
+                                                placeholder="Escribe un mensaje..." required
+                                                class="flex-grow px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                            <button type="submit"
+                                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-full transition duration-150 ease-in-out shadow-lg">
                                                 Enviar
                                             </button>
                                         </form>
@@ -1237,7 +1387,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                     </div>
                 </div>
             </div>
@@ -1245,9 +1395,7 @@
 
         <!-- Vista: Buscar Habilidades -->
         <div id="busquedaView" class="view-section">
-            <iframe 
-                src="./busqueda.html" 
-                id="busquedaIframe"
+            <iframe src="./busqueda.html" id="busquedaIframe"
                 style="width: 100%; height: calc(100vh - 80px); border: none; display: block;"
                 title="Búsqueda de Habilidades">
             </iframe>
@@ -1255,9 +1403,7 @@
 
         <!-- Vista: Solicitud de Intercambio -->
         <div id="solicitudView" class="view-section">
-            <iframe 
-                src="./solicitud_intercambio.html" 
-                id="solicitudIframe"
+            <iframe src="./solicitud_intercambio.html" id="solicitudIframe"
                 style="width: 100%; height: calc(100vh - 80px); border: none; display: block;"
                 title="Solicitud de Intercambio">
             </iframe>
@@ -1269,7 +1415,8 @@
                 <div class="max-w-6xl mx-auto">
                     <div class="mb-8">
                         <h2 class="text-3xl font-bold text-gray-800 mb-2">Solicitudes Enviadas</h2>
-                        <p class="text-gray-600">Aquí puedes ver las solicitudes que has enviado y que están pendientes de respuesta</p>
+                        <p class="text-gray-600">Aquí puedes ver las solicitudes que has enviado y que están pendientes
+                            de respuesta</p>
                     </div>
 
                     <!-- Grid de Solicitudes Enviadas -->
@@ -1277,10 +1424,38 @@
                         <!-- Se cargarán dinámicamente -->
                         <div class="col-span-full flex items-center justify-center py-12">
                             <div class="text-center">
-                                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                                 </svg>
                                 <p class="text-gray-500">Cargando solicitudes enviadas...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vista: Mis Favoritos -->
+        <div id="favoritosView" class="view-section">
+            <div class="w-full px-6 lg:px-12 py-8">
+                <div class="max-w-6xl mx-auto">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Mis Favoritos</h2>
+                        <p class="text-gray-600">Aquí puedes ver los usuarios que has marcado como favoritos</p>
+                    </div>
+
+                    <!-- Grid de Favoritos -->
+                    <div id="favoritosGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Se cargarán dinámicamente -->
+                        <div class="col-span-full flex items-center justify-center py-12">
+                            <div class="text-center">
+                                <span class="iconify w-16 h-16 text-gray-300 mx-auto mb-4" data-icon="ph:heart"
+                                    style="font-size: 64px;"></span>
+                                <p class="text-gray-500">Aún no tienes favoritos</p>
+                                <p class="text-gray-400 text-sm mt-2">Haz clic en el corazón de las tarjetas de usuario
+                                    para agregarlos</p>
                             </div>
                         </div>
                     </div>
@@ -1295,7 +1470,7 @@
                     <div class="bg-white rounded-2xl shadow-xl p-8">
                         <h2 class="text-3xl font-bold text-gray-800 mb-6">Configuración</h2>
                         <p class="text-gray-600 mb-4">Ajusta las preferencias de tu cuenta.</p>
-                        
+
                         <div class="space-y-4 mt-6">
                             <div class="border-b pb-4">
                                 <h3 class="font-semibold text-gray-700 mb-2">Preferencias de Notificaciones</h3>
@@ -1304,7 +1479,7 @@
                                     <span class="text-gray-600">Recibir notificaciones por email</span>
                                 </label>
                             </div>
-                            
+
                             <div class="border-b pb-4">
                                 <h3 class="font-semibold text-gray-700 mb-2">Privacidad</h3>
                                 <label class="flex items-center space-x-3">
@@ -1312,7 +1487,7 @@
                                     <span class="text-gray-600">Perfil visible para otros usuarios</span>
                                 </label>
                             </div>
-                            
+
                             <div class="pt-4">
                                 <button class="request-button px-6 py-3 text-white rounded-lg font-semibold">
                                     Guardar Cambios
@@ -1332,7 +1507,8 @@
             <!-- Botón cerrar -->
             <button onclick="closeProfileModal()" class="profile-modal-close">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
                 </svg>
             </button>
 
@@ -1347,11 +1523,13 @@
     </div>
 
     <!-- Modal de Imagen Fullscreen -->
-    <div id="imageFullscreenModal" class="image-fullscreen-overlay" style="display: none;" onclick="closeImageFullscreen()">
+    <div id="imageFullscreenModal" class="image-fullscreen-overlay" style="display: none;"
+        onclick="closeImageFullscreen()">
         <div class="image-fullscreen-container">
             <button class="image-fullscreen-close" onclick="closeImageFullscreen()">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
                 </svg>
             </button>
             <img id="fullscreenImage" src="" alt="Imagen fullscreen">
@@ -1393,6 +1571,12 @@
                 activeItem.classList.add('active');
             }
 
+            // Cargar contenido específico según la vista
+            if (viewName === 'favoritos') {
+                console.log(' navigateTo("favoritos") - Llamando a cargarFavoritos()');
+                cargarFavoritos();
+            }
+
             // Cerrar el sidebar automáticamente en móvil
             if (window.innerWidth < 1024) {
                 closeSidebarFn();
@@ -1407,7 +1591,7 @@
             sidebar.classList.add('open');
             mainContent.classList.add('shifted');
             hamburgerBtn.classList.add('open');
-            
+
             // Solo mostrar overlay y prevenir scroll en móvil
             if (window.innerWidth < 1024) {
                 overlay.classList.add('show');
@@ -1453,7 +1637,7 @@
                     </div>
                 </div>
             `;
-            
+
             document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
 
@@ -1471,7 +1655,7 @@
             localStorage.removeItem('usuarioId');
             localStorage.removeItem('token');
             localStorage.removeItem('usuario');
-            
+
             // Redirigir al login
             window.location.href = 'login.html';
         }
@@ -1503,7 +1687,7 @@
         function verificarActualizacionesPendientes() {
             const imagenActualizada = localStorage.getItem('perfilImagenActualizada');
             const timestamp = localStorage.getItem('perfilImagenTimestamp');
-            
+
             if (imagenActualizada && timestamp) {
                 const tiempoTranscurrido = Date.now() - parseInt(timestamp);
                 // Si la actualización fue hace menos de 5 segundos, aplicarla
@@ -1533,13 +1717,13 @@
         // CARGAR INFORMACIÓN DEL USUARIO EN SIDEBAR
         // ========================================
         const API_BASE = 'http://localhost:3001/api';
-        
+
         // Variable global para el usuario actual
         let miPerfilIdGlobal = null;
-        
+
         // Variable global para almacenar usuarios
         let usuariosReales = [];
-        
+
         // Variables de paginación y ordenamiento
         let currentPage = 1;
         let usersPerPage = 9;
@@ -1548,10 +1732,13 @@
         let currentCategoryFilter = null; // Filtro de categoría activo
         let currentSearchFilter = ''; // Filtro de búsqueda activo
 
+        // Variable global para almacenar ID_Persona del usuario actual
+        let usuarioActualPersonaId = null;
+
         async function cargarDatosUsuario() {
             try {
                 const usuarioId = localStorage.getItem('usuarioId');
-                
+
                 if (!usuarioId) {
                     console.log('No hay usuario logueado');
                     return;
@@ -1560,14 +1747,14 @@
                 // Consultar persona por usuario ID
                 const resPersona = await fetch(`${API_BASE}/personas/by-usuario/${usuarioId}`);
                 const dataPersona = await resPersona.json();
-                
+
                 if (!resPersona.ok || !dataPersona.success || !dataPersona.data) {
                     console.error('No se pudo obtener el perfil de la persona');
                     return;
                 }
 
                 const personaDB = dataPersona.data;
-                
+
                 // Función para generar avatar con solo la primera inicial
                 function generarAvatar(nombre, apellido, imagenUrl) {
                     if (imagenUrl) {
@@ -1577,17 +1764,17 @@
                     const inicial = (nombre || 'U').charAt(0).toUpperCase();
                     return `https://ui-avatars.com/api/?name=${encodeURIComponent(inicial)}&background=3b82f6&color=fff&size=48&bold=true&rounded=true`;
                 }
-                
+
                 // Actualizar imagen de perfil
                 const sidebarUserImage = document.getElementById('sidebarUserImage');
                 const avatarUrl = generarAvatar(personaDB.nombre_Persona, personaDB.apellido_Persona, personaDB.imagenUrl_Persona);
                 sidebarUserImage.src = avatarUrl;
-                
+
                 // Actualizar nombre
                 const sidebarUserName = document.getElementById('sidebarUserName');
                 const nombreCompleto = `${personaDB.nombre_Persona || ''} ${personaDB.apellido_Persona || ''}`.trim();
                 sidebarUserName.textContent = nombreCompleto || 'Usuario';
-                
+
             } catch (error) {
                 console.error('Error al cargar datos del usuario:', error);
             }
@@ -1597,22 +1784,22 @@
         // CARGAR USUARIOS DESDE EL BACKEND
         // ========================================
         let categoriaActiva = null; // Para trackear qué filtro está activo
-        
+
         async function cargarCategorias() {
             try {
                 const resCategorias = await fetch(`${API_BASE}/categorias`);
                 const dataCategorias = await resCategorias.json();
-                
+
                 if (!resCategorias.ok || !dataCategorias.success) {
                     console.error('Error al cargar categorías');
                     return;
                 }
-                
+
                 const categorias = dataCategorias.data;
                 console.log('Categorías cargadas:', categorias); // Debug
-                
+
                 const categoryFilters = document.getElementById('categoryFilters');
-                
+
                 // Mapeo de iconos para cada categoría
                 const iconos = {
                     'Diseño y Creatividad': 'mdi:palette',
@@ -1625,23 +1812,23 @@
                     'Música': 'mdi:music',
                     'Escritura': 'mdi:pencil'
                 };
-                
+
                 // Crear botón para cada categoría
                 categorias.forEach(categoria => {
                     // Los nombres de campos pueden variar, intentar diferentes variaciones
-                    const nombreCategoria = categoria.nombre_categoria || 
-                                           categoria.nombre_categoria_Habilidad || 
-                                           categoria.nombreCategoria ||
-                                           'Categoría';
-                    
-                    const idCategoria = categoria.id_categorias_Habilidades_Servicios || 
-                                       categoria.id_categoria_Habilidad_Servicio ||
-                                       categoria.id;
-                    
+                    const nombreCategoria = categoria.nombre_categoria ||
+                        categoria.nombre_categoria_Habilidad ||
+                        categoria.nombreCategoria ||
+                        'Categoría';
+
+                    const idCategoria = categoria.id_categorias_Habilidades_Servicios ||
+                        categoria.id_categoria_Habilidad_Servicio ||
+                        categoria.id;
+
                     const icono = iconos[nombreCategoria] || 'mdi:star';
-                    
+
                     console.log('Procesando categoría:', { nombreCategoria, idCategoria }); // Debug
-                    
+
                     const button = document.createElement('button');
                     button.className = 'filter-button px-6 py-2 bg-white text-gray-700 rounded-full hover:bg-blue-50 hover:text-blue-600 transition border border-gray-200 shadow-sm flex items-center gap-2';
                     button.setAttribute('data-categoria-id', idCategoria);
@@ -1650,27 +1837,27 @@
                         <span class="iconify" data-icon="${icono}" data-width="20" data-height="20"></span>
                         ${nombreCategoria}
                     `;
-                    
+
                     categoryFilters.appendChild(button);
                 });
-                
+
             } catch (error) {
                 console.error('Error al cargar categorías:', error);
             }
         }
-        
+
         async function filtrarPorCategoria(idCategoria, event) {
             // Guardar el filtro de categoría activo
             currentCategoryFilter = idCategoria;
             currentPage = 1; // Resetear a primera página
-            
+
             // Actualizar estilos de botones
             const buttons = document.querySelectorAll('#categoryFilters .filter-button');
             buttons.forEach(btn => {
                 btn.classList.remove('filter-active', 'bg-blue-600', 'text-white', 'border-blue-600');
                 btn.classList.add('bg-white', 'text-gray-700', 'border-gray-200');
             });
-            
+
             // Marcar botón activo
             if (event && event.target) {
                 const buttonElement = event.target.closest('.filter-button');
@@ -1679,7 +1866,7 @@
                     buttonElement.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
                 }
             }
-            
+
             // Aplicar todos los filtros
             await aplicarFiltros();
         }
@@ -1690,16 +1877,16 @@
         async function aplicarFiltros() {
             try {
                 mostrarSkeletonLoaders(usersPerPage);
-                
+
                 const usuarioActualId = localStorage.getItem('usuarioId');
                 let personas = [];
-                
+
                 // 1. Obtener personas según el filtro de categoría
                 if (currentCategoryFilter === null) {
                     // Sin filtro de categoría - obtener todos
                     const resPersonas = await fetch(`${API_BASE}/personas`);
                     const dataPersonas = await resPersonas.json();
-                    
+
                     if (!resPersonas.ok || !dataPersonas.success) {
                         console.error('Error al obtener personas');
                         usersGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">Error al cargar usuarios</p>';
@@ -1709,30 +1896,30 @@
                 } else {
                     // Con filtro de categoría
                     const resPersonas = await fetch(`${API_BASE}/personas/categoria/${currentCategoryFilter}`);
-                    
+
                     if (!resPersonas.ok) {
                         const errorData = await resPersonas.json().catch(() => ({}));
                         console.error('Error del servidor:', resPersonas.status, errorData);
                         usersGrid.innerHTML = `<p class="col-span-full text-center text-red-500">Error al filtrar: ${errorData.error || 'Error del servidor'}</p>`;
                         return;
                     }
-                    
+
                     const dataPersonas = await resPersonas.json();
-                    
+
                     if (!dataPersonas.success) {
                         console.error('Error al filtrar personas:', dataPersonas);
                         usersGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">No se encontraron usuarios en esta categoría</p>';
                         return;
                     }
-                    
+
                     personas = dataPersonas.data;
                 }
-                
+
                 // 2. Filtrar usuario actual
                 const personasFiltradas = personas.filter(persona => {
                     return !usuarioActualId || persona.id_Usuario !== parseInt(usuarioActualId);
                 });
-                
+
                 // 3. Procesar usuarios en paralelo
                 const usuariosPromises = personasFiltradas.map(async (persona) => {
                     try {
@@ -1740,7 +1927,7 @@
                             fetch(`${API_BASE}/habilidades/persona/${persona.id_Perfil_Persona}`).catch(() => null),
                             fetch(`${API_BASE}/direcciones/persona/${persona.id_Perfil_Persona}`).catch(() => null)
                         ]);
-                        
+
                         let habilidades = [];
                         if (resHabilidades && resHabilidades.ok) {
                             const dataHabilidades = await resHabilidades.json();
@@ -1751,21 +1938,38 @@
                                     .slice(0, 4);
                             }
                         }
-                        
+
                         let location = 'Sin ubicación';
                         if (resDireccion && resDireccion.ok) {
                             const dataDireccion = await resDireccion.json();
                             if (dataDireccion.success && dataDireccion.data) {
-                                const direccion = Array.isArray(dataDireccion.data) 
-                                    ? dataDireccion.data[0] 
+                                const direccion = Array.isArray(dataDireccion.data)
+                                    ? dataDireccion.data[0]
                                     : dataDireccion.data;
-                                    
+
                                 const ciudad = direccion.ciudad_Direccion || direccion.ciudad || '';
                                 const pais = direccion.pais_Direccion || direccion.pais || '';
                                 location = [ciudad, pais].filter(Boolean).join(', ') || 'Sin ubicación';
                             }
                         }
-                        
+
+                        // Obtener estadísticas reales
+                        let rating = 0;
+                        let exchanges = 0;
+
+                        try {
+                            const resEstadisticas = await fetch(`${API_BASE}/intercambios/estadisticas/${persona.id_Perfil_Persona}`);
+                            if (resEstadisticas.ok) {
+                                const dataEstadisticas = await resEstadisticas.json();
+                                if (dataEstadisticas.success && dataEstadisticas.data) {
+                                    rating = dataEstadisticas.data.promedio_calificacion || 0;
+                                    exchanges = dataEstadisticas.data.total_intercambios_completados || 0;
+                                }
+                            }
+                        } catch (e) {
+                            console.error('Error al obtener estadísticas:', e);
+                        }
+
                         return {
                             id: persona.id_Perfil_Persona,
                             usuarioId: persona.id_Usuario,
@@ -1774,73 +1978,131 @@
                             location: location,
                             skills: habilidades,
                             bio: persona.descripcionPerfil_Persona || 'Sin descripción',
-                            rating: 4.5 + Math.random() * 0.5,
-                            exchanges: Math.floor(Math.random() * 30) + 5,
+                            rating: rating,
+                            exchanges: exchanges,
                             online: Math.random() > 0.5,
                             avatar: persona.imagenUrl_Persona || null,
-                            avatarInitials: `${(persona.nombre_Persona || 'U')[0]}${(persona.apellido_Persona || 'S')[0]}`
+                            avatarInitials: (persona.nombre_Persona || 'U')[0].toUpperCase()
                         };
-                        
+
                     } catch (error) {
                         console.error(`Error al procesar persona ${persona.id_Perfil_Persona}:`, error);
                         return null;
                     }
                 });
-                
+
                 const resultados = await Promise.all(usuariosPromises);
                 let usuariosFiltrados = resultados.filter(u => u !== null);
-                
+
                 // 4. Aplicar filtro de búsqueda si existe
                 if (currentSearchFilter && currentSearchFilter.trim() !== '') {
                     const searchTerm = currentSearchFilter.toLowerCase().trim();
+
                     usuariosFiltrados = usuariosFiltrados.filter(user => {
-                        return (
-                            user.name.toLowerCase().includes(searchTerm) ||
-                            user.location.toLowerCase().includes(searchTerm) ||
-                            user.skills.some(skill => skill.toLowerCase().includes(searchTerm))
-                        );
+                        const matchName = user.name.toLowerCase().includes(searchTerm);
+                        const matchLocation = user.location.toLowerCase().includes(searchTerm);
+                        const matchSkills = user.skills.some(skill => skill.toLowerCase().includes(searchTerm));
+                        const matchBio = user.bio.toLowerCase().includes(searchTerm);
+
+                        return matchName || matchLocation || matchSkills || matchBio;
                     });
                 }
-                
+
                 // 5. Actualizar allUsers y renderizar
                 allUsers = usuariosFiltrados;
-                console.log(`✅ ${allUsers.length} usuarios después de aplicar filtros`);
-                
+
                 renderUserCardsReal();
-                
+
             } catch (error) {
                 console.error('Error al aplicar filtros:', error);
                 usersGrid.innerHTML = '<p class="col-span-full text-center text-red-500">Error al filtrar usuarios</p>';
             }
         }
-        
+
+        // ========================================
+        // CARGAR ESTADÍSTICAS GLOBALES
+        // ========================================
+        async function cargarEstadisticasGlobales() {
+            try {
+                console.log(' Cargando estadísticas globales...');
+                const response = await fetch(`${API_BASE}/intercambios/estadisticas-globales`);
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error('Error al obtener estadísticas globales');
+                }
+
+                const data = await response.json();
+                console.log('Datos recibidos:', data);
+
+                if (data.success && data.data) {
+                    console.log('Usuarios activos:', data.data.usuarios_activos);
+                    console.log('Categorías:', data.data.categorias_disponibles);
+                    console.log('Intercambios:', data.data.intercambios_exitosos);
+
+                    // Actualizar los valores en el HTML usando animación
+                    animarContador('usuarios-activos', data.data.usuarios_activos);
+                    animarContador('categorias-disponibles', data.data.categorias_disponibles);
+                    animarContador('intercambios-exitosos', data.data.intercambios_exitosos);
+                }
+            } catch (error) {
+                // Mantener valores por defecto si hay error
+            }
+        }
+
+        // Función auxiliar para animar el contador
+        function animarContador(elementId, valorFinal) {
+            const elemento = document.getElementById(elementId);
+            if (!elemento) {
+                console.error(` No se encontró el elemento con ID: ${elementId}`);
+                return;
+            }
+
+            // console.log eliminado
+
+            const duracion = 1000; // 1 segundo
+            const pasos = 20;
+            const incremento = valorFinal / pasos;
+            let valorActual = 0;
+            const intervalo = duracion / pasos;
+
+            const timer = setInterval(() => {
+                valorActual += incremento;
+                if (valorActual >= valorFinal) {
+                    valorActual = valorFinal;
+                    clearInterval(timer);
+                }
+                elemento.textContent = Math.floor(valorActual).toLocaleString('es-ES');
+            }, intervalo);
+        }
+
         async function cargarUsuariosReales() {
             try {
                 console.log('Cargando usuarios desde el backend...');
                 console.time('Carga de usuarios'); // Medir tiempo
-                
+
                 // Obtener el ID del usuario actual para excluirlo
                 const usuarioActualId = localStorage.getItem('usuarioId');
-                
+
                 // 1. Obtener todas las personas
                 const resPersonas = await fetch(`${API_BASE}/personas`);
                 const dataPersonas = await resPersonas.json();
-                
+
                 if (!resPersonas.ok || !dataPersonas.success) {
                     console.error('Error al obtener personas');
                     usersGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">Error al cargar usuarios</p>';
                     return;
                 }
-                
+
                 const personas = dataPersonas.data;
-                
+
                 // Filtrar usuario actual primero
                 const personasFiltradas = personas.filter(persona => {
                     return !usuarioActualId || persona.id_Usuario !== parseInt(usuarioActualId);
                 });
-                
+
                 console.log(`Procesando ${personasFiltradas.length} usuarios...`);
-                
+
                 // 2. Procesar usuarios en paralelo (mucho más rápido)
                 const usuariosPromises = personasFiltradas.map(async (persona) => {
                     try {
@@ -1849,7 +2111,7 @@
                             fetch(`${API_BASE}/habilidades/persona/${persona.id_Perfil_Persona}`).catch(() => null),
                             fetch(`${API_BASE}/direcciones/persona/${persona.id_Perfil_Persona}`).catch(() => null)
                         ]);
-                        
+
                         // Procesar habilidades
                         let habilidades = [];
                         if (resHabilidades && resHabilidades.ok) {
@@ -1861,22 +2123,39 @@
                                     .slice(0, 4);
                             }
                         }
-                        
+
                         // Procesar dirección
                         let location = 'Sin ubicación';
                         if (resDireccion && resDireccion.ok) {
                             const dataDireccion = await resDireccion.json();
                             if (dataDireccion.success && dataDireccion.data) {
-                                const direccion = Array.isArray(dataDireccion.data) 
-                                    ? dataDireccion.data[0] 
+                                const direccion = Array.isArray(dataDireccion.data)
+                                    ? dataDireccion.data[0]
                                     : dataDireccion.data;
-                                    
+
                                 const ciudad = direccion.ciudad_Direccion || direccion.ciudad || '';
                                 const pais = direccion.pais_Direccion || direccion.pais || '';
                                 location = [ciudad, pais].filter(Boolean).join(', ') || 'Sin ubicación';
                             }
                         }
-                        
+
+                        // Obtener estadísticas reales
+                        let rating = 0;
+                        let exchanges = 0;
+
+                        try {
+                            const resEstadisticas = await fetch(`${API_BASE}/intercambios/estadisticas/${persona.id_Perfil_Persona}`);
+                            if (resEstadisticas.ok) {
+                                const dataEstadisticas = await resEstadisticas.json();
+                                if (dataEstadisticas.success && dataEstadisticas.data) {
+                                    rating = dataEstadisticas.data.promedio_calificacion || 0;
+                                    exchanges = dataEstadisticas.data.total_intercambios_completados || 0;
+                                }
+                            }
+                        } catch (e) {
+                            console.error('Error al obtener estadísticas:', e);
+                        }
+
                         // Crear objeto de usuario
                         return {
                             id: persona.id_Perfil_Persona,
@@ -1886,32 +2165,32 @@
                             location: location,
                             skills: habilidades,
                             bio: persona.descripcionPerfil_Persona || 'Sin descripción',
-                            rating: 4.5 + Math.random() * 0.5,
-                            exchanges: Math.floor(Math.random() * 30) + 5,
+                            rating: rating,
+                            exchanges: exchanges,
                             online: Math.random() > 0.5,
                             avatar: persona.imagenUrl_Persona || null,
-                            avatarInitials: `${(persona.nombre_Persona || 'U')[0]}${(persona.apellido_Persona || 'S')[0]}`
+                            avatarInitials: (persona.nombre_Persona || 'U')[0].toUpperCase()
                         };
-                        
+
                     } catch (error) {
                         console.error(`Error al procesar persona ${persona.id_Perfil_Persona}:`, error);
                         return null;
                     }
                 });
-                
+
                 // Esperar a que todos los usuarios se procesen en paralelo
                 const resultados = await Promise.all(usuariosPromises);
-                
+
                 // Filtrar nulos y asignar
                 usuariosReales = resultados.filter(u => u !== null);
                 allUsers = [...usuariosReales]; // Guardar copia completa
-                
+
                 console.timeEnd('Carga de usuarios');
-                console.log(`✅ ${usuariosReales.length} usuarios cargados exitosamente`);
-                
+                console.log(` ${usuariosReales.length} usuarios cargados exitosamente`);
+
                 // 3. Renderizar usuarios reales con paginación
                 renderUserCardsReal();
-                
+
             } catch (error) {
                 console.error('Error al cargar usuarios:', error);
                 usersGrid.innerHTML = '<p class="col-span-full text-center text-red-500">Error al cargar usuarios. Por favor, recarga la página.</p>';
@@ -1923,24 +2202,24 @@
         // ========================================
         function sortUsers(users, sortType) {
             const sorted = [...users];
-            
-            switch(sortType) {
+
+            switch (sortType) {
                 case 'recent':
                     // Ordenar por ID descendente (más recientes primero)
                     return sorted.sort((a, b) => b.id - a.id);
-                    
+
                 case 'name':
                     // Ordenar alfabéticamente por nombre
                     return sorted.sort((a, b) => a.name.localeCompare(b.name));
-                    
+
                 case 'skills':
                     // Ordenar por cantidad de habilidades (más primero)
                     return sorted.sort((a, b) => b.skills.length - a.skills.length);
-                    
+
                 case 'location':
                     // Ordenar por ubicación alfabéticamente
                     return sorted.sort((a, b) => a.location.localeCompare(b.location));
-                    
+
                 default:
                     return sorted;
             }
@@ -1952,14 +2231,14 @@
         function renderPagination() {
             const totalPages = Math.ceil(allUsers.length / usersPerPage);
             const paginationContainer = document.getElementById('paginationControls');
-            
+
             if (totalPages <= 1) {
                 paginationContainer.innerHTML = '';
                 return;
             }
-            
+
             let buttons = '';
-            
+
             // Botón anterior
             buttons += `
                 <button 
@@ -1971,16 +2250,16 @@
                     </svg>
                 </button>
             `;
-            
+
             // Botones de páginas
             const maxButtons = 5;
             let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
             let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-            
+
             if (endPage - startPage < maxButtons - 1) {
                 startPage = Math.max(1, endPage - maxButtons + 1);
             }
-            
+
             if (startPage > 1) {
                 buttons += `
                     <button onclick="changePage(1)" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
@@ -1991,7 +2270,7 @@
                     buttons += `<span class="px-2 py-2">...</span>`;
                 }
             }
-            
+
             for (let i = startPage; i <= endPage; i++) {
                 buttons += `
                     <button 
@@ -2001,7 +2280,7 @@
                     </button>
                 `;
             }
-            
+
             if (endPage < totalPages) {
                 if (endPage < totalPages - 1) {
                     buttons += `<span class="px-2 py-2">...</span>`;
@@ -2012,7 +2291,7 @@
                     </button>
                 `;
             }
-            
+
             // Botón siguiente
             buttons += `
                 <button 
@@ -2024,17 +2303,17 @@
                     </svg>
                 </button>
             `;
-            
+
             paginationContainer.innerHTML = buttons;
         }
 
         function changePage(page) {
             const totalPages = Math.ceil(allUsers.length / usersPerPage);
             if (page < 1 || page > totalPages) return;
-            
+
             currentPage = page;
             renderUserCardsReal();
-            
+
             // Scroll suave al inicio del grid
             document.getElementById('usersGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -2043,34 +2322,333 @@
             const start = (currentPage - 1) * usersPerPage + 1;
             const end = Math.min(currentPage * usersPerPage, allUsers.length);
             const total = allUsers.length;
-            
-            document.getElementById('resultsCount').textContent = 
+
+            document.getElementById('resultsCount').textContent =
                 `Mostrando ${start}-${end} de ${total} usuarios`;
+        }
+
+        // ========================================
+        // SISTEMA DE FAVORITOS (Conectado con Backend)
+        // ========================================
+
+        let favoritosCache = [];
+
+        // Cargar favoritos desde el backend
+        async function cargarFavoritosDesdeBackend() {
+            try {
+                console.log('🔄 cargarFavoritosDesdeBackend() - INICIO');
+                const personaId = await obtenerPersonaIdActual();
+                if (!personaId) {
+                    console.warn('⚠️ No hay personaId');
+                    return [];
+                }
+
+                console.log('📡 Fetch a /api/favoritos/' + personaId);
+                const response = await fetch(`${API_BASE}/favoritos/${personaId}`);
+                const data = await response.json();
+                console.log(' cargarFavoritosDesdeBackend - Data:', data);
+
+                if (data.success) {
+                    favoritosCache = data.favoritos.map(fav => ({
+                        id: fav.id_persona,
+                        nombre: fav.nombre,
+                        fechaAgregado: fav.fecha_agregado
+                    }));
+                    console.log('favoritosCache actualizado:', favoritosCache.length, 'favoritos');
+                    return favoritosCache;
+                }
+                return [];
+            } catch (error) {
+                console.error(' Error al cargar favoritos:', error);
+                return [];
+            }
+        }
+
+        // Verificar si un usuario es favorito
+        function esFavorito(userId) {
+            return favoritosCache.some(fav => fav.id === userId);
+        }
+
+        // Toggle favorito (agregar o quitar) con Backend
+        async function toggleFavorite(event, userId, userName) {
+            event.stopPropagation();
+            event.preventDefault();
+
+            try {
+                // Obtener id_Perfil_Persona en lugar de id_Usuario
+                const personaId = await obtenerPersonaIdActual();
+                if (!personaId) {
+                    showNotification('Debes iniciar sesión para agregar favoritos', 'error');
+                    return;
+                }
+
+                console.log(' Toggle favorito:', { personaId, userId, userName });
+
+                const response = await fetch(`${API_BASE}/favoritos/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id_persona: personaId,
+                        id_persona_favorito: userId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    if (data.accion === 'agregado') {
+                        favoritosCache.push({
+                            id: userId,
+                            nombre: userName,
+                            fechaAgregado: new Date().toISOString()
+                        });
+                        // SVG corazón rojo
+                        const svgCorazon = `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path fill=\"#ff401d\" d=\"M12.002 4.818a6.228 6.228 0 0 1 8.51 9.087l-5.225 5.225L12 22.415l-7.28-7.279l-1.23-1.232a6.228 6.228 0 0 1 8.511-9.086\"/></svg>`;
+                        showNotification(`${svgCorazon} ${userName} agregado a favoritos`, 'success');
+                        localStorage.setItem('actualizarEstadisticas', Date.now().toString());
+                    } else {
+                        const svgCorazon2 = `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 36 36\"><g fill=\"#dd2e44\"><path d=\"M13.589 26.521a1.5 1.5 0 0 1 .035-1.599l4.395-6.646l-5.995-5.139a1.5 1.5 0 0 1-.31-1.911l4.304-7.172a9.78 9.78 0 0 0-6.035-2.09c-5.45 0-9.868 4.417-9.868 9.868c0 .772.098 1.52.266 2.241C1.751 22.587 11.216 31.568 18 34.034l.077-.032z\"/><path d=\"M26.018 1.966c-2.765 0-5.248 1.151-7.037 2.983l-4.042 6.737l6.039 5.176a1.5 1.5 0 0 1 .274 1.966l-4.604 6.962l4.161 6.935c6.338-3.529 13.621-11.263 14.809-18.649c.17-.721.268-1.469.268-2.241c-.001-5.452-4.419-9.869-9.868-9.869\"/></g></svg>`;
+                        favoritosCache = favoritosCache.filter(fav => fav.id !== userId);
+                        localStorage.setItem('actualizarEstadisticas', Date.now().toString());
+                        showNotification(`${svgCorazon2} ${userName} eliminado de favoritos`, 'info');
+                    }
+
+                    // Actualizar badge del menú
+                    actualizarBadgeFavoritos();
+
+                    // Re-renderizar la vista actual
+                    if (currentView === 'favoritos') {
+                        await cargarFavoritos();
+                    } else {
+                        renderUserCardsReal();
+                    }
+
+                    // Notificar a otras pestañas/páginas que las estadísticas deben actualizarse
+                    localStorage.setItem('actualizarEstadisticas', Date.now().toString());
+                } else {
+                    showNotification(data.mensaje || 'Error al actualizar favorito', 'error');
+                }
+
+            } catch (error) {
+                console.error(' Error al toggle favorito:', error);
+                showNotification('Error de conexión con el servidor', 'error');
+            }
+        }
+
+        // Actualizar el badge de favoritos en el sidebar
+        function actualizarBadgeFavoritos() {
+            const badge = document.getElementById('favoritosBadge');
+            if (badge) {
+                badge.textContent = favoritosCache.length;
+                if (favoritosCache.length > 0) {
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+        }
+
+        // Cargar y mostrar usuarios favoritos (patrón de solicitudes enviadas)
+        async function cargarFavoritos() {
+            // console.log eliminado
+            try {
+                console.log(' Obteniendo personaId actual...');
+                const personaId = await obtenerPersonaIdActual();
+                console.log(' personaId obtenido:', personaId);
+
+                if (!personaId) {
+                    console.warn(' No hay personaId, abortando');
+                    return;
+                }
+
+                console.log(` Haciendo fetch a: http://localhost:3001/api/favoritos/${personaId}`);
+                const response = await fetch(`http://localhost:3001/api/favoritos/${personaId}`);
+
+                if (!response.ok) throw new Error('Error al cargar favoritos');
+
+                const data = await response.json();
+
+                mostrarFavoritos(data.favoritos || []);
+
+                // Actualizar badge
+                actualizarBadgeFavoritos();
+
+            } catch (error) {
+                console.error(' Error al cargar favoritos:', error);
+                mostrarEstadoVacioFavoritos();
+            }
+        }
+
+        // Mostrar favoritos
+        function mostrarFavoritos(favoritos) {
+            // console.log eliminado
+
+            const grid = document.getElementById('favoritosGrid');
+            // console.log eliminado
+
+            if (!favoritos || favoritos.length === 0) {
+                console.log('⚠️ No hay favoritos, mostrando estado vacío');
+                mostrarEstadoVacioFavoritos();
+                return;
+            }
+
+            // console.log eliminado
+            grid.innerHTML = favoritos.map(fav => {
+                const nombreCompleto = fav.nombre || 'Usuario';
+                const imagenUrl = fav.imagen || '';
+                const descripcion = fav.descripcion || 'Sin descripción';
+                const userId = fav.id_persona;
+                const initials = nombreCompleto.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+                return `
+                    <div class="user-card" onclick="viewProfile(${userId})">
+                        <!-- Botón de favoritos -->
+
+                            <button onclick="toggleFavorite(event, ${userId}, '${nombreCompleto.replace(/'/g, "\\'")}'); localStorage.setItem('actualizarFavoritos', Date.now().toString()); cargarFavoritosDesdeBackend().then(() => { renderUserCardsReal(); });" 
+                                    class="favorite-btn active" 
+                                    title="Quitar de favoritos">
+                                <span class="iconify favorite-icon" data-icon="ph:heart-fill"></span>
+                            </button>
+                        
+                        <!-- Banner superior con gradiente -->
+                        <div class="user-card-banner bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
+                        
+                        <!-- Contenido de la tarjeta -->
+                        <div class="user-card-content">
+                            <div class="user-card-info">
+                                <!-- Avatar -->
+                                <div class="user-card-avatar-container">
+                                    <div class="relative inline-block">
+                                        ${imagenUrl
+                        ? `<img src="${imagenUrl}" 
+                                                   alt="${nombreCompleto}" 
+                                                   class="user-avatar object-cover"
+                                                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                               <div class="user-avatar hidden">
+                                                   <span class="text-white text-3xl font-bold">${initials}</span>
+                                               </div>`
+                        : `<div class="user-avatar">
+                                                   <span class="text-white text-3xl font-bold">${initials}</span>
+                                               </div>`
+                    }
+                                    </div>
+                                </div>
+                                
+                                <!-- Información del usuario -->
+                                <h3 class="text-xl font-bold text-gray-800 mb-1 truncate" title="${nombreCompleto}">${nombreCompleto}</h3>
+                                <p class="text-blue-600 font-semibold mb-2 truncate" title="${descripcion}">${descripcion}</p>
+                                
+                                <!-- Fecha agregado -->
+                                <div class="flex items-center text-gray-600 text-sm mb-3">
+                                    <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span class="truncate">Agregado el ${new Date(fav.fecha_agregado).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}</span>
+                                </div>
+                                
+                                ${fav.notas ? `<p class="text-gray-600 text-sm mb-3"><strong>Nota:</strong> ${fav.notas}</p>` : ''}
+                            </div>
+                            
+                            <!-- Botón Ver Perfil -->
+                            <button onclick="event.stopPropagation(); viewProfile(${userId})" class="request-button" title="Ver perfil completo de ${nombreCompleto}">
+                                Ver Perfil
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Mostrar estado vacío de favoritos
+        function mostrarEstadoVacioFavoritos() {
+            const grid = document.getElementById('favoritosGrid');
+            grid.innerHTML = `
+                <div class="col-span-full flex items-center justify-center py-12">
+                    <div class="text-center">
+                        <span class="iconify w-16 h-16 text-gray-300 mx-auto mb-4" data-icon="ph:heart" style="font-size: 64px;"></span>
+                        <p class="text-gray-500 text-lg">Aún no tienes favoritos</p>
+                        <p class="text-gray-400 text-sm mt-2">Haz clic en el corazón de las tarjetas de usuario para agregarlos</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Mostrar notificación
+        function showNotification(message, type = 'info') {
+
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white flex items-center gap-2 ${type === 'success' ? 'bg-green-500' :
+                    type === 'error' ? 'bg-red-500' :
+                        'bg-blue-500'
+                } transform transition-all duration-300 translate-x-0`;
+            notification.innerHTML = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
 
         // Función para renderizar las tarjetas con datos reales
         function renderUserCardsReal() {
             if (allUsers.length === 0) {
-                usersGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">No hay usuarios disponibles</p>';
+                let mensaje = 'No hay usuarios disponibles';
+                let icono = `<svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>`;
+
+                if (currentSearchFilter && currentSearchFilter.trim() !== '') {
+                    mensaje = `No se encontraron resultados para "<strong>${currentSearchFilter}</strong>"`;
+                    icono = `<svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>`;
+                } else if (currentCategoryFilter !== null) {
+                    mensaje = 'No hay usuarios en esta categoría';
+                }
+
+                usersGrid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center py-16">
+                        ${icono}
+                        <p class="text-gray-500 text-lg mb-2">${mensaje}</p>
+                        ${currentSearchFilter ? '<p class="text-gray-400 text-sm">Intenta con otras palabras clave o limpia los filtros</p>' : ''}
+                    </div>
+                `;
                 document.getElementById('resultsCount').textContent = '0 usuarios encontrados';
                 document.getElementById('paginationControls').innerHTML = '';
                 return;
             }
-            
+
             // Aplicar ordenamiento
             const sortedUsers = sortUsers(allUsers, currentSort);
-            
+
             // Calcular indices de paginación
             const startIndex = (currentPage - 1) * usersPerPage;
             const endIndex = startIndex + usersPerPage;
             const paginatedUsers = sortedUsers.slice(startIndex, endIndex);
-            
+
             // Actualizar contador
             updateResultsCount();
-            
+
             // Renderizar tarjetas
+            const usuarioActualId = parseInt(localStorage.getItem('usuarioId'));
+
             usersGrid.innerHTML = paginatedUsers.map(user => `
-                <div class="user-card">
+                <div class="user-card" onclick="viewProfile(${user.id})">
+                    <!-- Botón de favoritos (ocultar si es el propio usuario) -->
+                    ${user.usuarioId !== usuarioActualId ? `
+                    <button type="button"
+                            onclick="toggleFavorite(event, ${user.id}, '${user.name.replace(/'/g, "\\'")}'); localStorage.setItem('actualizarFavoritos', Date.now().toString()); cargarFavoritosDesdeBackend().then(() => { renderUserCardsReal(); });" 
+                            class="favorite-btn ${esFavorito(user.id) ? 'active' : ''}" 
+                            title="${esFavorito(user.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'}"
+                            data-user-id="${user.id}">
+                        <span class="iconify favorite-icon" data-icon="${esFavorito(user.id) ? 'ph:heart-fill' : 'ph:heart'}"></span>
+                    </button>
+                    ` : ''}
+                    
                     <!-- Banner superior con gradiente -->
                     <div class="user-card-banner bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
                     
@@ -2080,10 +2658,10 @@
                             <!-- Avatar con badge de estado - Alineado a la izquierda -->
                             <div class="user-card-avatar-container">
                                 <div class="relative inline-block">
-                                    ${user.avatar 
-                                        ? `<img src="${user.avatar}" alt="${user.name}" class="user-avatar object-cover">`
-                                        : `<div class="user-avatar"><span class="text-white text-3xl font-bold">${user.avatarInitials}</span></div>`
-                                    }
+                                    ${user.avatar
+                    ? `<img src="${user.avatar}" alt="${user.name}" class="user-avatar object-cover">`
+                    : `<div class="user-avatar"><span class="text-white text-3xl font-bold">${user.avatarInitials}</span></div>`
+                }
                                     ${user.online ? '<div class="online-badge"></div>' : ''}
                                 </div>
                             </div>
@@ -2107,40 +2685,45 @@
                             <!-- Habilidades -->
                             <div class="skills-container-card">
                                 <div class="flex flex-wrap gap-1">
-                                    ${user.skills.length > 0 
-                                        ? user.skills.slice(0, 4).map(skill => `<span class="skill-badge">${skill}</span>`).join('')
-                                        : '<span class="text-gray-400 text-sm">Sin habilidades registradas</span>'
-                                    }
+                                    ${user.skills.length > 0
+                    ? user.skills.slice(0, 4).map(skill => `<span class="skill-badge">${skill}</span>`).join('')
+                    : '<span class="text-gray-400 text-sm">Sin habilidades registradas</span>'
+                }
                                 </div>
                             </div>
                             
                             <!-- Estadísticas -->
                             <div class="flex items-center justify-between text-sm pb-4 border-b border-gray-200">
                                 <div class="flex items-center">
-                                    <svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    <span class="font-semibold text-gray-700">${user.rating.toFixed(1)}</span>
+                                    ${user.rating > 0
+                    ? `<svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                           </svg>
+                                           <span class="font-semibold text-gray-700">${user.rating.toFixed(1)}</span>`
+                    : `<span class="text-gray-400 text-xs">Sin calificaciones</span>`
+                }
                                 </div>
                                 <div class="text-gray-600">
-                                    <span class="font-semibold">${user.exchanges}</span> intercambios
+                                    <span class="font-semibold">${user.exchanges}</span> intercambio${user.exchanges !== 1 ? 's' : ''}
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Botones de acción -->
-                        <div class="grid grid-cols-2 gap-3 mt-4">
-                            <button onclick="viewProfile(${user.id})" class="px-4 py-2 border-2 border-blue-500 text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition">
-                                Ver Perfil
-                            </button>
-                            <button onclick="sendRequest(${user.id}, '${user.name}')" class="request-button px-4 py-2 text-white rounded-lg font-semibold">
-                                Solicitar
-                            </button>
-                        </div>
+                       <div class="grid grid-cols-2 gap-3 mt-4">
+    <button onclick="event.stopPropagation(); viewProfile(${user.id})" 
+            class="flex items-center justify-center px-4 py-2 border-2 border-blue-500 text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition">
+        Ver Perfil
+    </button>
+    <button onclick="event.stopPropagation(); sendRequest(${user.id}, '${user.name}')" 
+            class="request-button flex items-center justify-center px-4 py-2 text-white rounded-lg font-semibold">
+        Solicitar
+    </button>
+</div>
                     </div>
                 </div>
             `).join('');
-            
+
             // Renderizar controles de paginación
             renderPagination();
         }
@@ -2168,7 +2751,7 @@
                     </div>
                 </div>
             `).join('');
-            
+
             usersGrid.innerHTML = skeletons;
         }
 
@@ -2178,16 +2761,21 @@
         async function inicializarDashboard() {
             // Mostrar skeleton mientras carga
             mostrarSkeletonLoaders(6);
-            
+
             // Cargar todo en paralelo para mejorar el rendimiento
             await Promise.all([
                 cargarDatosUsuario(),
                 cargarCategorias(),
-                cargarUsuariosReales()
+                cargarUsuariosReales(),
+                cargarFavoritosDesdeBackend(),
+                cargarEstadisticasGlobales()
             ]);
-            
+
             // Verificar actualizaciones de imagen
             verificarActualizacionesPendientes();
+
+            // Actualizar badge de favoritos
+            actualizarBadgeFavoritos();
         }
 
         // Llamar a la función de inicialización optimizada
@@ -2206,7 +2794,7 @@
                     renderUserCardsReal();
                 });
             }
-            
+
             // Selector de resultados por página
             const perPageSelect = document.getElementById('perPageSelect');
             if (perPageSelect) {
@@ -2216,40 +2804,44 @@
                     renderUserCardsReal();
                 });
             }
-            
+
             // Búsqueda
             const searchInput = document.getElementById('searchInput');
-            const searchButton = searchInput?.nextElementSibling?.nextElementSibling; // El botón "Buscar"
-            
+            const searchButton = document.getElementById('searchButton');
+
             if (searchInput && searchButton) {
                 // Búsqueda al hacer clic en el botón
                 searchButton.addEventListener('click', (e) => {
                     e.preventDefault();
-                    currentSearchFilter = searchInput.value;
+                    currentSearchFilter = searchInput.value.trim();
                     currentPage = 1;
                     aplicarFiltros();
                 });
-                
+
                 // Búsqueda al presionar Enter
                 searchInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        currentSearchFilter = searchInput.value;
+                        currentSearchFilter = searchInput.value.trim();
                         currentPage = 1;
                         aplicarFiltros();
                     }
                 });
-                
-                // Limpiar búsqueda si el input está vacío y pierde el foco
-                searchInput.addEventListener('blur', () => {
-                    if (searchInput.value.trim() === '' && currentSearchFilter !== '') {
-                        currentSearchFilter = '';
-                        currentPage = 1;
-                        aplicarFiltros();
-                    }
+
+                // Búsqueda en tiempo real mientras escribe (opcional)
+                let searchTimeout;
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        if (searchInput.value.trim().length >= 3 || searchInput.value.trim() === '') {
+                            currentSearchFilter = searchInput.value.trim();
+                            currentPage = 1;
+                            aplicarFiltros();
+                        }
+                    }, 500);
                 });
             }
-            
+
             // Verificar si se debe abrir el perfil de un usuario desde un enlace externo
             const urlParams = new URLSearchParams(window.location.search);
             const verPerfilId = urlParams.get('verPerfil');
@@ -2283,7 +2875,7 @@
 
                     // Simula una respuesta del receptor después de 1.5 segundos
                     setTimeout(() => {
-                        addMessageToChat("Mensaje recibido y leído. ✅", 'received');
+                        addMessageToChat("Mensaje recibido y leído. ", 'received');
                         scrollToBottom();
                     }, 1500);
                 }
@@ -2296,7 +2888,7 @@
                 const messageDiv = document.createElement('div');
                 const bubbleDiv = document.createElement('div');
                 const timeSpan = document.createElement('span');
-                
+
                 timeSpan.className = 'block text-right text-xs mt-1';
                 timeSpan.textContent = timeString;
 
@@ -2311,7 +2903,7 @@
                     bubbleDiv.className = 'bg-gray-200 p-3 rounded-xl rounded-tl-none max-w-xs text-sm shadow';
                     timeSpan.classList.add('text-gray-500');
                 }
-                
+
                 bubbleDiv.textContent = text;
                 bubbleDiv.appendChild(timeSpan);
                 messageDiv.appendChild(bubbleDiv);
@@ -2321,7 +2913,7 @@
             function scrollToBottom() {
                 container.scrollTop = container.scrollHeight;
             }
-            
+
             // Asegura que al cargar se vea el último mensaje
             scrollToBottom();
         }
@@ -2335,7 +2927,7 @@
         async function viewProfile(perfilId) {
             const modal = document.getElementById('profileModal');
             const modalContent = document.getElementById('profileModalContent');
-            
+
             // Mostrar el modal con loading
             modal.style.display = 'flex';
             modalContent.innerHTML = `
@@ -2343,44 +2935,44 @@
                     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                 </div>
             `;
-            
+
             try {
                 // 1. Obtener datos de la persona
                 const resPersonas = await fetch(`${API_BASE}/personas`);
                 const dataPersonas = await resPersonas.json();
-                
+
                 if (!resPersonas.ok || !dataPersonas.success) {
                     throw new Error('No se pudo obtener los datos del usuario');
                 }
-                
+
                 const persona = dataPersonas.data.find(p => p.id_Perfil_Persona === perfilId);
-                
+
                 if (!persona) {
                     throw new Error('Usuario no encontrado');
                 }
-                
+
                 // 2. Obtener habilidades con todos sus datos
                 let habilidadesOfrece = [];
                 let habilidadesNecesita = [];
                 let todasLasHabilidades = []; // Guardamos todas para el modal de detalle
-                
+
                 try {
                     const resHabilidades = await fetch(`${API_BASE}/habilidades/persona/${perfilId}`);
                     const dataHabilidades = await resHabilidades.json();
-                    
+
                     if (resHabilidades.ok && dataHabilidades.success && dataHabilidades.data) {
                         todasLasHabilidades = dataHabilidades.data;
-                        
+
                         habilidadesOfrece = dataHabilidades.data
                             .filter(h => h.tipoEstado_Habilidad === 'Ofrece');
-                        
+
                         habilidadesNecesita = dataHabilidades.data
                             .filter(h => h.tipoEstado_Habilidad === 'Necesita');
                     }
                 } catch (e) {
                     console.error('Error al cargar habilidades:', e);
                 }
-                
+
                 // Obtener categorías para mostrar el nombre
                 let categorias = [];
                 try {
@@ -2392,7 +2984,7 @@
                 } catch (e) {
                     console.error('Error al cargar categorías:', e);
                 }
-                
+
                 // 3. Obtener dirección
                 let direccion = null;
                 try {
@@ -2406,13 +2998,13 @@
                 } catch (e) {
                     console.error('Error al cargar dirección:', e);
                 }
-                
+
                 // 4. Preparar las imágenes de la galería
                 const galeriaImagenes = [];
                 if (persona.imagen1Url_Persona) galeriaImagenes.push(persona.imagen1Url_Persona);
                 if (persona.imagen2Url_Persona) galeriaImagenes.push(persona.imagen2Url_Persona);
                 if (persona.imagen3Url_Persona) galeriaImagenes.push(persona.imagen3Url_Persona);
-                
+
                 // 5. Formatear ubicación
                 let ubicacion = 'Sin ubicación';
                 if (direccion) {
@@ -2421,19 +3013,19 @@
                     const pais = direccion.pais_Direccion || direccion.pais || '';
                     ubicacion = [ciudad, departamento, pais].filter(Boolean).join(', ');
                 }
-                
+
                 // 6. Generar el contenido del modal
                 const nombreCompleto = `${persona.nombre_Persona || ''} ${persona.apellido_Persona || ''}`.trim();
                 const iniciales = `${(persona.nombre_Persona || 'U')[0]}${(persona.apellido_Persona || 'S')[0]}`;
-                
+
                 modalContent.innerHTML = `
                     <!-- Banner y Avatar -->
                     <div class="profile-modal-banner">
                         <div class="profile-modal-avatar" style="cursor: ${persona.imagenUrl_Persona ? 'zoom-in' : 'default'};" ${persona.imagenUrl_Persona ? `onclick="openImageFullscreen('${persona.imagenUrl_Persona}')"` : ''}>
-                            ${persona.imagenUrl_Persona 
-                                ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}">`
-                                : `<span>${iniciales}</span>`
-                            }
+                            ${persona.imagenUrl_Persona
+                        ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}">`
+                        : `<span>${iniciales}</span>`
+                    }
                         </div>
                     </div>
                     
@@ -2449,18 +3041,18 @@
                             <span>${ubicacion}</span>
                         </div>
                         
-                        <!-- Estadísticas -->
-                        <div class="profile-stats">
+                        <!-- Estadísticas (se actualizarán con datos reales) -->
+                        <div class="profile-stats" id="profile-stats-container">
                             <div class="profile-stat-card">
                                 <div class="profile-stat-value">${habilidadesOfrece.length}</div>
                                 <div class="profile-stat-label">Habilidades</div>
                             </div>
                             <div class="profile-stat-card">
-                                <div class="profile-stat-value">${Math.floor(Math.random() * 30) + 5}</div>
+                                <div class="profile-stat-value"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div></div>
                                 <div class="profile-stat-label">Intercambios</div>
                             </div>
                             <div class="profile-stat-card">
-                                <div class="profile-stat-value">${(4.5 + Math.random() * 0.5).toFixed(1)}</div>
+                                <div class="profile-stat-value"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div></div>
                                 <div class="profile-stat-label">Valoración</div>
                             </div>
                         </div>
@@ -2491,9 +3083,9 @@
                         <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Estas son las habilidades que ofrece para un intercambio.</p>
                         <div class="skills-container" id="offeredSkillsContainer">
                             ${habilidadesOfrece.map(skill => {
-                                const categoria = categorias.find(c => c.id_categorias_Habilidades_Servicios === skill.id_categorias_Habilidades_Servicios);
-                                return `<span class="skill-tag-offered" onclick='showSkillDetailInModal(${JSON.stringify(skill)}, ${JSON.stringify(categoria)}, "offered")'>${skill.nombre_Habilidad}</span>`;
-                            }).join('')}
+                        const categoria = categorias.find(c => c.id_categorias_Habilidades_Servicios === skill.id_categorias_Habilidades_Servicios);
+                        return `<span class="skill-tag-offered" onclick='showSkillDetailInModal(${JSON.stringify(skill)}, ${JSON.stringify(categoria)}, "offered")'>${skill.nombre_Habilidad}</span>`;
+                    }).join('')}
                         </div>
                         <div id="selectedOfferedDetail" style="display: none;"></div>
                     </div>
@@ -2511,9 +3103,9 @@
                         <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Busca a otros usuarios con estas habilidades para iniciar un trueque.</p>
                         <div class="skills-container" id="requiredSkillsContainer">
                             ${habilidadesNecesita.map(skill => {
-                                const categoria = categorias.find(c => c.id_categorias_Habilidades_Servicios === skill.id_categorias_Habilidades_Servicios);
-                                return `<span class="skill-tag-required" onclick='showSkillDetailInModal(${JSON.stringify(skill)}, ${JSON.stringify(categoria)}, "required")'>${skill.nombre_Habilidad}</span>`;
-                            }).join('')}
+                        const categoria = categorias.find(c => c.id_categorias_Habilidades_Servicios === skill.id_categorias_Habilidades_Servicios);
+                        return `<span class="skill-tag-required" onclick='showSkillDetailInModal(${JSON.stringify(skill)}, ${JSON.stringify(categoria)}, "required")'>${skill.nombre_Habilidad}</span>`;
+                    }).join('')}
                         </div>
                         <div id="selectedRequiredDetail" style="display: none;"></div>
                     </div>
@@ -2538,6 +3130,21 @@
                     </div>
                     ` : ''}
                     
+                    <!-- Sección de Calificaciones y Reseñas -->
+                    <div id="calificaciones-section" class="profile-modal-section" style="display: none;">
+                        <h3 class="profile-modal-section-title">
+                            <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            Calificaciones y Reseñas
+                        </h3>
+                        <div id="calificaciones-content">
+                            <div class="flex items-center justify-center py-4">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Botón de solicitud -->
                     <div class="profile-modal-section" id="request-button-section">
                         <div class="flex items-center justify-center py-4">
@@ -2545,10 +3152,13 @@
                         </div>
                     </div>
                 `;
-                
+
+                // Cargar estadísticas y calificaciones
+                await cargarEstadisticasYCalificaciones(perfilId);
+
                 // Verificar si existe una solicitud activa DESPUÉS de cargar el perfil
                 await verificarYMostrarBotonSolicitud(perfilId, nombreCompleto);
-                
+
             } catch (error) {
                 console.error('Error al cargar el perfil:', error);
                 modalContent.innerHTML = `
@@ -2566,27 +3176,199 @@
             }
         }
 
+        // Cargar estadísticas y calificaciones del usuario
+        async function cargarEstadisticasYCalificaciones(perfilId) {
+            try {
+                // 1. Obtener estadísticas
+                const resEstadisticas = await fetch(`${API_BASE}/intercambios/estadisticas/${perfilId}`);
+                const dataEstadisticas = await resEstadisticas.json();
+
+                let estadisticas = {
+                    total_intercambios_completados: 0,
+                    promedio_calificacion: 0,
+                    total_calificaciones: 0,
+                    distribucion_estrellas_5: 0,
+                    distribucion_estrellas_4: 0,
+                    distribucion_estrellas_3: 0,
+                    distribucion_estrellas_2: 0,
+                    distribucion_estrellas_1: 0
+                };
+
+                if (resEstadisticas.ok && dataEstadisticas.success && dataEstadisticas.data) {
+                    estadisticas = dataEstadisticas.data;
+                }
+
+                // 2. Actualizar estadísticas en el perfil
+                const statsContainer = document.getElementById('profile-stats-container');
+                if (statsContainer) {
+                    const habilidadesCount = statsContainer.querySelector('.profile-stat-card:first-child .profile-stat-value').textContent;
+                    statsContainer.innerHTML = `
+                        <div class="profile-stat-card">
+                            <div class="profile-stat-value">${habilidadesCount}</div>
+                            <div class="profile-stat-label">Habilidades</div>
+                        </div>
+                        <div class="profile-stat-card">
+                            <div class="profile-stat-value">${estadisticas.total_intercambios_completados || 0}</div>
+                            <div class="profile-stat-label">Intercambios</div>
+                        </div>
+                        <div class="profile-stat-card">
+                            <div class="profile-stat-value">
+                                ${estadisticas.promedio_calificacion > 0
+                            ? `<div class="flex items-center justify-center space-x-1">
+                                        <span>${estadisticas.promedio_calificacion.toFixed(1)}</span>
+                                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                        </svg>
+                                       </div>`
+                            : '<span class="text-gray-400 text-sm">Sin calificar</span>'}
+                            </div>
+                            <div class="profile-stat-label">Valoración</div>
+                        </div>
+                    `;
+                }
+
+                // 3. Si no tiene calificaciones, ocultar la sección
+                if (estadisticas.total_calificaciones === 0) {
+                    document.getElementById('calificaciones-section').style.display = 'none';
+                    return;
+                }
+
+                // 4. Obtener calificaciones con comentarios
+                const resCalificaciones = await fetch(`${API_BASE}/intercambios/calificaciones/${perfilId}`);
+                const dataCalificaciones = await resCalificaciones.json();
+
+                let calificaciones = [];
+                if (resCalificaciones.ok && dataCalificaciones.success && dataCalificaciones.data) {
+                    calificaciones = dataCalificaciones.data.filter(cal => cal.visible);
+                }
+
+                // 5. Mostrar la sección de calificaciones
+                const calificacionesSection = document.getElementById('calificaciones-section');
+                const calificacionesContent = document.getElementById('calificaciones-content');
+
+                calificacionesSection.style.display = 'block';
+
+                // 6. Generar el HTML de calificaciones
+                const promedioCalificacion = estadisticas.promedio_calificacion || 0;
+                const totalCalificaciones = estadisticas.total_calificaciones || 0;
+
+                calificacionesContent.innerHTML = `
+                    <!-- Resumen de calificaciones -->
+                    <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <div class="flex items-center space-x-2 mb-1">
+                                    <span style="font-size: 48px; font-weight: 700; color: #92400e;">${promedioCalificacion.toFixed(1)}</span>
+                                    <svg class="w-12 h-12 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                    </svg>
+                                </div>
+                                <p style="color: #92400e; font-size: 14px; font-weight: 600;">${totalCalificaciones} calificación${totalCalificaciones !== 1 ? 'es' : ''}</p>
+                            </div>
+                            <div style="flex: 1; max-width: 300px; margin-left: 32px;">
+                                ${[5, 4, 3, 2, 1].map(star => {
+                    const count = estadisticas[`distribucion_estrellas_${star}`] || 0;
+                    const percentage = totalCalificaciones > 0
+                        ? (count / totalCalificaciones * 100).toFixed(0)
+                        : 0;
+                    return `
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            <span style="color: #92400e; font-size: 12px; font-weight: 600; width: 50px;">${star} ⭐</span>
+                                            <div style="flex: 1; background: rgba(146, 64, 14, 0.2); border-radius: 9999px; height: 8px; overflow: hidden;">
+                                                <div style="background: #f59e0b; height: 100%; width: ${percentage}%; transition: width 0.3s;"></div>
+                                            </div>
+                                            <span style="color: #92400e; font-size: 12px; width: 35px; text-align: right;">${count}</span>
+                                        </div>
+                                    `;
+                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lista de comentarios -->
+                    ${calificaciones.length > 0 ? `
+                        <h4 style="font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">
+                            Comentarios de Usuarios (${calificaciones.length})
+                        </h4>
+                        <div style="max-height: 400px; overflow-y: auto; space-y: 16px;">
+                            ${calificaciones.map(cal => {
+                    const nombreCalificador = `${cal.nombre_calificador || ''} ${cal.apellido_calificador || ''}`.trim();
+                    const iniciales = `${(cal.nombre_calificador || 'U')[0]}${(cal.apellido_calificador || 'S')[0]}`;
+                    const fechaFormateada = new Date(cal.fecha_calificacion).toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+
+                    return `
+                                    <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px;">
+                                        <div class="flex items-start space-x-3">
+                                            <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); display: flex; align-items: center; justify-center; color: white; font-weight: 700; flex-shrink: 0;">
+                                                ${cal.imagenUrl_calificador
+                            ? `<img src="${cal.imagenUrl_calificador}" alt="${nombreCalificador}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`
+                            : iniciales
+                        }
+                                            </div>
+                                            <div style="flex: 1;">
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <div>
+                                                        <p style="font-weight: 600; color: #1f2937; font-size: 14px;">${nombreCalificador}</p>
+                                                        <p style="color: #6b7280; font-size: 12px;">${fechaFormateada}</p>
+                                                    </div>
+                                                    <div class="flex items-center space-x-1" style="color: #fbbf24;">
+                                                        ${Array(Math.round(cal.puntuacion)).fill(0).map(() => `
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display: inline-block;">
+                                                                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                                                            </svg>
+                                                        `).join('')}
+                                                    </div>
+                                                </div>
+                                                ${cal.comentario ? `
+                                                    <p style="color: #4b5563; font-size: 14px; line-height: 1.5; margin-top: 8px;">
+                                                        "${cal.comentario}"
+                                                    </p>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                }).join('')}
+                        </div>
+                    ` : `
+                        <p style="text-align: center; color: #6b7280; font-size: 14px; padding: 24px;">
+                            Este usuario aún no tiene comentarios escritos.
+                        </p>
+                    `}
+                `;
+
+            } catch (error) {
+                console.error('Error al cargar estadísticas y calificaciones:', error);
+                // Ocultar la sección si hay error
+                document.getElementById('calificaciones-section').style.display = 'none';
+            }
+        }
+
         // Verificar si existe solicitud y mostrar el botón correspondiente
         async function verificarYMostrarBotonSolicitud(perfilId, nombreCompleto) {
             const buttonSection = document.getElementById('request-button-section');
-            
+
             try {
                 // Intentar usar la variable global primero
                 let miPerfilId = miPerfilIdGlobal;
-                
+
                 // Si no está en la variable global, intentar obtenerla
                 if (!miPerfilId) {
                     console.log('Variable global no disponible, obteniendo del servidor...');
                     miPerfilId = await obtenerPersonaIdActual();
                 }
-                
+
                 // Si aún no tenemos el ID, esperar y reintentar
                 if (!miPerfilId) {
                     console.log('No se pudo obtener el ID, esperando y reintentando...');
                     await new Promise(resolve => setTimeout(resolve, 1500));
                     miPerfilId = miPerfilIdGlobal || await obtenerPersonaIdActual();
                 }
-                
+
                 if (!miPerfilId) {
                     console.error('No se pudo obtener el ID del usuario actual');
                     buttonSection.innerHTML = `
@@ -2596,24 +3378,24 @@
                     `;
                     return;
                 }
-                
+
                 console.log('Mi perfil ID:', miPerfilId, 'Perfil a verificar:', perfilId);
-                
+
                 // Verificar si existe una solicitud activa
                 const resVerificar = await fetch(`${API_BASE}/solicitudes-intercambio/verificar/${miPerfilId}/${perfilId}`);
                 const dataVerificar = await resVerificar.json();
-                
+
                 if (!resVerificar.ok || !dataVerificar.success) {
                     throw new Error('Error al verificar solicitud');
                 }
-                
+
                 if (dataVerificar.existeSolicitud) {
                     // Ya existe una solicitud - mostrar mensaje informativo
                     const solicitud = dataVerificar.solicitud;
                     let iconoHTML = '';
                     let colorClase = '';
                     let mensajeTexto = solicitud.mensaje;
-                    
+
                     if (solicitud.estado === 'Aceptada') {
                         iconoHTML = '<span class="iconify text-green-600" data-icon="mdi:check-circle" data-width="24"></span>';
                         colorClase = 'bg-green-50 border-green-200 text-green-800';
@@ -2624,14 +3406,14 @@
                         iconoHTML = '<span class="iconify text-purple-600" data-icon="mdi:email-outline" data-width="24"></span>';
                         colorClase = 'bg-purple-50 border-purple-200 text-purple-800';
                     }
-                    
+
                     buttonSection.innerHTML = `
                         <div class="p-4 ${colorClase} border-2 rounded-lg flex items-center space-x-3">
                             ${iconoHTML}
                             <div class="flex-1">
                                 <p class="font-semibold">${mensajeTexto}</p>
-                                ${solicitud.estado === 'Pendiente' && !solicitud.esMiSolicitud ? 
-                                    '<p class="text-sm mt-1">Ve a la sección de notificaciones para responder.</p>' : ''}
+                                ${solicitud.estado === 'Pendiente' && !solicitud.esMiSolicitud ?
+                            '<p class="text-sm mt-1">Ve a la sección de notificaciones para responder.</p>' : ''}
                             </div>
                         </div>
                     `;
@@ -2644,7 +3426,7 @@
                         </button>
                     `;
                 }
-                
+
             } catch (error) {
                 console.error('Error al verificar solicitud:', error);
                 // En caso de error, mostrar botón por defecto
@@ -2662,7 +3444,7 @@
         }
 
         // Cerrar modal al hacer clic fuera de él
-        document.getElementById('profileModal').addEventListener('click', function(e) {
+        document.getElementById('profileModal').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeProfileModal();
             }
@@ -2674,10 +3456,10 @@
         function openImageFullscreen(imageUrl) {
             const modal = document.getElementById('imageFullscreenModal');
             const img = document.getElementById('fullscreenImage');
-            
+
             img.src = imageUrl;
             modal.style.display = 'flex';
-            
+
             // Prevenir scroll del body
             document.body.style.overflow = 'hidden';
         }
@@ -2686,16 +3468,16 @@
             if (event) {
                 event.stopPropagation();
             }
-            
+
             const modal = document.getElementById('imageFullscreenModal');
             modal.style.display = 'none';
-            
+
             // Restaurar scroll del body
             document.body.style.overflow = '';
         }
 
         // Prevenir que el click en la imagen cierre el modal
-        document.getElementById('fullscreenImage')?.addEventListener('click', function(e) {
+        document.getElementById('fullscreenImage')?.addEventListener('click', function (e) {
             e.stopPropagation();
         });
 
@@ -2705,11 +3487,11 @@
         function showSkillDetailInModal(skill, categoria, type) {
             const detailId = type === 'offered' ? 'selectedOfferedDetail' : 'selectedRequiredDetail';
             const detailDiv = document.getElementById(detailId);
-            
+
             if (!detailDiv) return;
-            
+
             const categoryName = categoria ? categoria.nombre_categoria : null;
-            
+
             detailDiv.innerHTML = `
                 <div class="skill-detail-card">
                     <p class="skill-detail-title">${skill.nombre_Habilidad}</p>
@@ -2730,9 +3512,6 @@
         // ========================================
         // SISTEMA DE SOLICITUDES DE INTERCAMBIO
         // ========================================
-        
-        // Variable global para almacenar ID_Persona del usuario actual
-        let usuarioActualPersonaId = null;
 
         // Función para obtener el ID_Persona del usuario actual
         async function obtenerPersonaIdActual() {
@@ -2743,7 +3522,7 @@
             try {
                 // Intentar con ambos nombres de clave por compatibilidad
                 const usuarioId = localStorage.getItem('id_usuario') || localStorage.getItem('usuarioId');
-                
+
                 if (!usuarioId) {
                     console.error('No hay usuario logueado');
                     return null;
@@ -2751,25 +3530,30 @@
 
                 const response = await fetch(`${API_BASE}/personas/by-usuario/${usuarioId}`);
                 const data = await response.json();
-                
-                // Verificar estructura de respuesta
-                if (data && data.id_Perfil_Persona) {
-                    usuarioActualPersonaId = data.id_Perfil_Persona;
-                    miPerfilIdGlobal = data.id_Perfil_Persona; // Guardar en variable global
-                    return usuarioActualPersonaId;
-                } else if (data.success && data.data && data.data.id_Perfil_Persona) {
+
+                console.log('🔍 Respuesta de /personas/by-usuario:', data);
+
+                // Verificar estructura de respuesta (primero la anidada que es la correcta)
+                if (data.success && data.data && data.data.id_Perfil_Persona) {
                     usuarioActualPersonaId = data.data.id_Perfil_Persona;
                     miPerfilIdGlobal = data.data.id_Perfil_Persona; // Guardar en variable global
+                    console.log('✅ id_Perfil_Persona obtenido:', usuarioActualPersonaId);
+                    return usuarioActualPersonaId;
+                } else if (data && data.id_Perfil_Persona) {
+                    usuarioActualPersonaId = data.id_Perfil_Persona;
+                    miPerfilIdGlobal = data.id_Perfil_Persona; // Guardar en variable global
+                    console.log('✅ id_Perfil_Persona obtenido:', usuarioActualPersonaId);
                     return usuarioActualPersonaId;
                 }
-                
+
+                console.error(' No se pudo extraer id_Perfil_Persona de la respuesta');
                 return null;
             } catch (error) {
                 console.error('Error al obtener id_Perfil_Persona:', error);
                 return null;
             }
         }
-        
+
         // Enviar solicitud de intercambio
         async function sendRequest(receptorId, nombreReceptor) {
             try {
@@ -2778,9 +3562,9 @@
                 if (profileModal && profileModal.style.display !== 'none') {
                     closeProfileModal();
                 }
-                
+
                 const solicitanteId = await obtenerPersonaIdActual();
-                
+
                 if (!solicitanteId) {
                     Swal.fire({
                         icon: 'error',
@@ -2972,18 +3756,18 @@
                         confirmButtonColor: '#3b82f6',
                         timer: 3000
                     });
-                    
+
                     // Recargar usuarios y solicitudes enviadas
                     cargarUsuariosReales();
                     cargarSolicitudesEnviadas();
                 } else {
                     // Mensaje más amigable si ya existe una solicitud
                     const esYaEnviada = data.message && (
-                        data.message.includes('ya existe') || 
+                        data.message.includes('ya existe') ||
                         data.message.includes('pendiente') ||
                         data.message.includes('conexión establecida')
                     );
-                    
+
                     if (esYaEnviada) {
                         Swal.fire({
                             icon: 'info',
@@ -3017,7 +3801,7 @@
         async function cargarSolicitudesRecibidas() {
             try {
                 const personaId = await obtenerPersonaIdActual();
-                
+
                 if (!personaId) {
                     return;
                 }
@@ -3027,7 +3811,7 @@
 
                 if (data.success) {
                     actualizarBadgeNotificaciones(data.count);
-                    
+
                     if (data.count > 0) {
                         mostrarSolicitudesEnDropdown(data.data);
                     } else {
@@ -3044,7 +3828,7 @@
         function actualizarBadgeNotificaciones(count) {
             const badge = document.getElementById('notificationBadge');
             const countText = document.getElementById('notificationCount');
-            
+
             if (count > 0) {
                 badge.classList.remove('hidden');
                 badge.textContent = count > 99 ? '99+' : count;
@@ -3056,17 +3840,17 @@
         }
 
         // Toggle dropdown de notificaciones
-        document.getElementById('notificationBtn')?.addEventListener('click', function(e) {
+        document.getElementById('notificationBtn')?.addEventListener('click', function (e) {
             e.stopPropagation();
             const dropdown = document.getElementById('notificationDropdown');
             dropdown.classList.toggle('hidden');
         });
 
         // Cerrar dropdown al hacer clic fuera
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const dropdown = document.getElementById('notificationDropdown');
             const btn = document.getElementById('notificationBtn');
-            
+
             if (!dropdown?.contains(e.target) && !btn?.contains(e.target)) {
                 dropdown?.classList.add('hidden');
             }
@@ -3076,25 +3860,25 @@
         function mostrarSolicitudesEnDropdown(solicitudes) {
             const notificationList = document.getElementById('notificationList');
             const emptyState = document.getElementById('emptyNotifications');
-            
+
             if (!notificationList) return;
-            
+
             emptyState?.classList.add('hidden');
-            
+
             notificationList.innerHTML = solicitudes.map(solicitud => {
                 const nombreCompleto = `${solicitud.nombre_solicitante || ''} ${solicitud.apellido_solicitante || ''}`.trim();
-                const inicial = (solicitud.nombre_solicitante && solicitud.nombre_solicitante.length > 0) 
-                    ? solicitud.nombre_solicitante.charAt(0).toUpperCase() 
+                const inicial = (solicitud.nombre_solicitante && solicitud.nombre_solicitante.length > 0)
+                    ? solicitud.nombre_solicitante.charAt(0).toUpperCase()
                     : '?';
-                
+
                 // Construir detalles adicionales si existen
                 let detallesHTML = '';
-                
-                if (solicitud.fecha_propuesta || solicitud.hora_propuesta || solicitud.duracion_estimada || 
+
+                if (solicitud.fecha_propuesta || solicitud.hora_propuesta || solicitud.duracion_estimada ||
                     solicitud.modalidad || solicitud.mensaje_adicional || solicitud.habilidad_ofrecida || solicitud.habilidad_solicitada) {
-                    
+
                     detallesHTML = '<div class="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-100 text-xs space-y-1">';
-                    
+
                     // Habilidades
                     if (solicitud.habilidad_ofrecida) {
                         detallesHTML += `
@@ -3104,7 +3888,7 @@
                                 <span class="text-blue-700 font-medium">${solicitud.habilidad_ofrecida}</span>
                             </div>`;
                     }
-                    
+
                     if (solicitud.habilidad_solicitada) {
                         detallesHTML += `
                             <div class="flex items-center gap-1.5 text-gray-700">
@@ -3113,22 +3897,22 @@
                                 <span class="text-purple-700 font-medium">${solicitud.habilidad_solicitada}</span>
                             </div>`;
                     }
-                    
+
                     if (solicitud.fecha_propuesta) {
                         const fechaPropuesta = new Date(solicitud.fecha_propuesta);
                         detallesHTML += `
                             <div class="flex items-center gap-1.5 text-gray-700">
                                 <span class="iconify text-gray-700" data-icon="mdi:calendar" data-width="16" data-height="16"></span>
                                 <span class="font-semibold">Fecha:</span>
-                                <span>${fechaPropuesta.toLocaleDateString('es-HN', { 
-                                    weekday: 'short', 
-                                    year: 'numeric', 
-                                    month: 'short', 
-                                    day: 'numeric' 
-                                })}</span>
+                                <span>${fechaPropuesta.toLocaleDateString('es-HN', {
+                            weekday: 'short',
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        })}</span>
                             </div>`;
                     }
-                    
+
                     if (solicitud.hora_propuesta) {
                         detallesHTML += `
                             <div class="flex items-center gap-1.5 text-gray-700">
@@ -3137,14 +3921,14 @@
                                 <span>${solicitud.hora_propuesta}</span>
                             </div>`;
                     }
-                    
+
                     if (solicitud.duracion_estimada) {
                         const horas = Math.floor(solicitud.duracion_estimada / 60);
                         const minutos = solicitud.duracion_estimada % 60;
                         let duracionTexto = '';
                         if (horas > 0) duracionTexto += `${horas}h `;
                         if (minutos > 0) duracionTexto += `${minutos}min`;
-                        
+
                         detallesHTML += `
                             <div class="flex items-center gap-1.5 text-gray-700">
                                 <span class="iconify text-gray-700" data-icon="mdi:timer-outline" data-width="16" data-height="16"></span>
@@ -3152,10 +3936,10 @@
                                 <span>${duracionTexto}</span>
                             </div>`;
                     }
-                    
+
                     if (solicitud.modalidad) {
-                        const iconoModalidad = solicitud.modalidad === 'Virtual' 
-                            ? '<span class="iconify text-gray-700" data-icon="mdi:laptop" data-width="16" data-height="16"></span>' 
+                        const iconoModalidad = solicitud.modalidad === 'Virtual'
+                            ? '<span class="iconify text-gray-700" data-icon="mdi:laptop" data-width="16" data-height="16"></span>'
                             : '<span class="iconify text-gray-700" data-icon="mdi:office-building" data-width="16" data-height="16"></span>';
                         detallesHTML += `
                             <div class="flex items-center gap-1.5 text-gray-700">
@@ -3164,7 +3948,7 @@
                                 <span>${solicitud.modalidad}</span>
                             </div>`;
                     }
-                    
+
                     if (solicitud.mensaje_adicional) {
                         detallesHTML += `
                             <div class="mt-1.5 pt-1.5 border-t border-blue-200">
@@ -3175,33 +3959,33 @@
                                 <p class="text-gray-600 italic">"${solicitud.mensaje_adicional}"</p>
                             </div>`;
                     }
-                    
+
                     detallesHTML += '</div>';
                 }
-                
+
                 return `
                     <div class="p-4 hover:bg-gray-50 transition border-b border-gray-100 last:border-b-0">
                         <div class="flex items-start gap-3">
-                            ${solicitud.foto_solicitante 
-                                ? `<img src="${solicitud.foto_solicitante}" alt="${nombreCompleto}" class="w-12 h-12 rounded-full object-cover flex-shrink-0" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                            ${solicitud.foto_solicitante
+                        ? `<img src="${solicitud.foto_solicitante}" alt="${nombreCompleto}" class="w-12 h-12 rounded-full object-cover flex-shrink-0" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 items-center justify-center text-white font-bold text-lg flex-shrink-0" style="display:none;">
                                     ${inicial}
                                    </div>`
-                                : `<div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                        : `<div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                                     ${inicial}
                                    </div>`
-                            }
+                    }
                             <div class="flex-1 min-w-0">
                                 <p class="font-semibold text-gray-800 truncate">${nombreCompleto || 'Usuario'}</p>
                                 <p class="text-sm text-gray-600 mb-1">Quiere intercambiar habilidades contigo</p>
-                                <p class="text-xs text-gray-400 mb-2">${new Date(solicitud.fecha_solicitud).toLocaleString('es-HN', { 
-                                    month: 'short', 
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    hour12: true,
-                                    timeZone: 'America/Tegucigalpa'
-                                })}</p>
+                                <p class="text-xs text-gray-400 mb-2">${new Date(solicitud.fecha_solicitud).toLocaleString('es-HN', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true,
+                        timeZone: 'America/Tegucigalpa'
+                    })}</p>
                                 
                                 ${detallesHTML}
                                 
@@ -3228,7 +4012,7 @@
         function mostrarDropdownVacio() {
             const notificationList = document.getElementById('notificationList');
             const emptyState = document.getElementById('emptyNotifications');
-            
+
             if (notificationList && emptyState) {
                 notificationList.innerHTML = '';
                 emptyState.classList.remove('hidden');
@@ -3339,7 +4123,7 @@
 
         // Cargar solicitudes cada 30 segundos
         setInterval(cargarSolicitudesRecibidas, 30000);
-        
+
         // Actualizar badge de mensajes del sidebar cada 30 segundos
         setInterval(async () => {
             try {
@@ -3353,11 +4137,11 @@
                 console.warn('Error al actualizar badge de mensajes:', error);
             }
         }, 30000);
-        
+
         // Cargar solicitudes al iniciar
         document.addEventListener('DOMContentLoaded', () => {
             cargarSolicitudesRecibidas();
-            
+
             // Cargar badge de mensajes al iniciar
             (async () => {
                 try {
@@ -3376,7 +4160,7 @@
         // ============================================
         // SOLICITUDES ENVIADAS
         // ============================================
-        
+
         // Cargar solicitudes enviadas
         async function cargarSolicitudesEnviadas() {
             try {
@@ -3388,7 +4172,7 @@
 
                 const data = await response.json();
                 mostrarSolicitudesEnviadas(data.data || []);
-                
+
                 // Actualizar badge
                 const badge = document.getElementById('badge-solicitudes-enviadas');
                 if (badge) {
@@ -3409,7 +4193,7 @@
         // Mostrar solicitudes enviadas
         function mostrarSolicitudesEnviadas(solicitudes) {
             const grid = document.getElementById('solicitudesEnviadasGrid');
-            
+
             if (!solicitudes || solicitudes.length === 0) {
                 mostrarEstadoVacioEnviadas();
                 return;
@@ -3419,32 +4203,32 @@
                 const nombreCompleto = `${solicitud.nombre_receptor || 'Usuario'} ${solicitud.apellido_receptor || ''}`.trim();
                 const imagenUrl = solicitud.imagenUrl_receptor || solicitud.imagenUrl_Persona_receptor || '';
                 const initials = nombreCompleto.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                
+
                 return `
                     <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100">
                         <div class="p-6">
                             <div class="flex items-center space-x-4 mb-4">
-                                ${imagenUrl ? 
-                                    `<img src="${imagenUrl}" 
+                                ${imagenUrl ?
+                        `<img src="${imagenUrl}" 
                                          class="w-16 h-16 rounded-full object-cover border-2 border-blue-500 shadow-md" 
                                          alt="${nombreCompleto}"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                      <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full items-center justify-center text-white font-bold text-xl shadow-md hidden">
                                         ${initials}
                                      </div>` :
-                                    `<div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">
+                        `<div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">
                                         ${initials}
                                     </div>`
-                                }
+                    }
                                 <div class="flex-1">
                                     <p class="font-semibold text-gray-800">${nombreCompleto}</p>
                                     <p class="text-sm text-gray-600">Solicitud pendiente</p>
-                                    <p class="text-xs text-gray-400 mt-1">${new Date(solicitud.fecha_solicitud).toLocaleString('es-ES', { 
-                                        month: 'short', 
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}</p>
+                                    <p class="text-xs text-gray-400 mt-1">${new Date(solicitud.fecha_solicitud).toLocaleString('es-ES', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })}</p>
                                 </div>
                             </div>
                             
@@ -3558,7 +4342,7 @@
                     cargarSolicitudesEnviadas();
                 });
             }
-            
+
             // Cargar badge inicial
             cargarSolicitudesEnviadas();
         });
@@ -3610,11 +4394,11 @@
             try {
                 const personaId = await obtenerPersonaIdActual();
                 const response = await fetch(`http://localhost:3001/api/mensajeria/conversaciones/${personaId}`);
-                
+
                 if (!response.ok) throw new Error('Error al cargar conversaciones');
 
                 const resultado = await response.json();
-                
+
                 // La API devuelve { success: true, data: [...] }
                 conversacionesDashboard = resultado.data || [];
                 mostrarConversacionesDashboard(conversacionesDashboard);
@@ -3636,7 +4420,7 @@
         // Mostrar conversaciones
         function mostrarConversacionesDashboard(conversaciones) {
             const container = document.getElementById('conversaciones-list');
-            
+
             if (!conversaciones || conversaciones.length === 0) {
                 container.innerHTML = `
                     <div class="flex items-center justify-center h-full text-gray-400">
@@ -3656,23 +4440,23 @@
                 const mensajesNoLeidos = conv.mensajes_no_leidos || 0;
                 const isActive = conversacionActivaDashboard && conversacionActivaDashboard.id_conversacion === conv.id_conversacion;
                 const tieneImagen = conv.imagenUrl_contacto && conv.imagenUrl_contacto.trim() !== '';
-                
+
                 return `
                     <div class="p-3 flex items-center space-x-3 ${isActive ? 'bg-indigo-100 border-l-4 border-indigo-600' : 'hover:bg-gray-100'} cursor-pointer transition-all"
                          onclick="seleccionarConversacionDashboard(${conv.id_conversacion})">
                         <div class="relative flex-shrink-0">
-                            ${tieneImagen ? 
-                                `<img src="${conv.imagenUrl_contacto}" 
+                            ${tieneImagen ?
+                        `<img src="${conv.imagenUrl_contacto}" 
                                      class="w-12 h-12 rounded-full object-cover border-2 border-white shadow" 
                                      alt="${nombreContacto}"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                  <div class="w-12 h-12 ${colorClass} rounded-full items-center justify-center text-white font-semibold shadow hidden">
                                     ${initials}
                                  </div>` :
-                                `<div class="w-12 h-12 ${colorClass} rounded-full flex items-center justify-center text-white font-semibold shadow">
+                        `<div class="w-12 h-12 ${colorClass} rounded-full flex items-center justify-center text-white font-semibold shadow">
                                     ${initials}
                                 </div>`
-                            }
+                    }
                         </div>
                         <div class="flex-grow min-w-0">
                             <p class="text-sm font-semibold text-gray-900 truncate">${nombreContacto}</p>
@@ -3693,14 +4477,14 @@
         // Actualizar badge de mensajes no leídos en el sidebar
         function actualizarBadgeSidebarMensajes(conversaciones) {
             const badge = document.getElementById('sidebarMessagesBadge');
-            
+
             if (!badge) return;
-            
+
             // Calcular el total de mensajes no leídos de todas las conversaciones
             const totalNoLeidos = conversaciones.reduce((total, conv) => {
                 return total + (conv.mensajes_no_leidos || 0);
             }, 0);
-            
+
             if (totalNoLeidos > 0) {
                 badge.classList.remove('hidden');
                 badge.textContent = totalNoLeidos > 99 ? '99+' : totalNoLeidos;
@@ -3712,7 +4496,7 @@
         // Seleccionar conversación
         async function seleccionarConversacionDashboard(idConversacion) {
             conversacionActivaDashboard = conversacionesDashboard.find(c => c.id_conversacion === idConversacion);
-            
+
             if (!conversacionActivaDashboard) return;
 
             // Mostrar panel de chat
@@ -3736,27 +4520,27 @@
             const initials = getInitialsDashboard(nombreContacto);
             const colorClass = getColorClassDashboard(conv.id_conversacion);
             const tieneImagen = conv.imagenUrl_contacto && conv.imagenUrl_contacto.trim() !== '';
-            
+
             // Guardar el ID del contacto
             if (!conversacionActivaDashboard.id_contacto && conv.id_contacto) {
                 conversacionActivaDashboard.id_contacto = conv.id_contacto;
             }
-            
+
             document.getElementById('chat-header-dashboard').innerHTML = `
                 <div class="flex items-center space-x-3">
                     <div class="relative">
-                        ${tieneImagen ? 
-                            `<img src="${conv.imagenUrl_contacto}" 
+                        ${tieneImagen ?
+                    `<img src="${conv.imagenUrl_contacto}" 
                                   class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md" 
                                   alt="${nombreContacto}"
                                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                              <div class="w-12 h-12 ${colorClass} rounded-full items-center justify-center text-white font-bold text-base shadow-md hidden">
                                 ${initials}
                              </div>` :
-                            `<div class="w-12 h-12 ${colorClass} rounded-full flex items-center justify-center text-white font-bold text-base shadow-md">
+                    `<div class="w-12 h-12 ${colorClass} rounded-full flex items-center justify-center text-white font-bold text-base shadow-md">
                                 ${initials}
                             </div>`
-                        }
+                }
                     </div>
                     <div>
                         <h2 class="text-lg font-semibold text-gray-800">${nombreContacto}</h2>
@@ -3767,6 +4551,10 @@
                     <span class="iconify" data-icon="mdi:account" data-width="18"></span>
                     <span>Ver Perfil</span>
                 </button>
+  <button id="finalizarIntercambioBtn" class="px-4 py-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition flex items-center space-x-1">
+                            <span class="iconify" data-icon="mdi:check-circle" data-width="18"></span>
+                            <span>Finalizar Intercambio</span>
+                        </button>
             `;
         }
 
@@ -3775,11 +4563,11 @@
         function verPerfilContactoDashboard() {
             console.log('Función verPerfilContactoDashboard llamada');
             console.log('Conversación activa:', conversacionActivaDashboard);
-            
-            const idContacto = conversacionActivaDashboard?.id_contacto || 
-                             conversacionActivaDashboard?.idContacto || 
-                             conversacionActivaDashboard?.id_persona_contacto;
-            
+
+            const idContacto = conversacionActivaDashboard?.id_contacto ||
+                conversacionActivaDashboard?.idContacto ||
+                conversacionActivaDashboard?.id_persona_contacto;
+
             if (idContacto) {
                 console.log('Abriendo perfil para ID:', idContacto);
                 viewProfile(parseInt(idContacto)); // Usar la función existente viewProfile
@@ -3794,11 +4582,11 @@
             try {
                 const personaId = await obtenerPersonaIdActual();
                 const response = await fetch(`http://localhost:3001/api/mensajeria/conversacion/${idConversacion}/mensajes?personaId=${personaId}`);
-                
+
                 if (!response.ok) throw new Error('Error al cargar mensajes');
 
                 const resultado = await response.json();
-                
+
                 // La API devuelve { success: true, data: [...] }
                 const mensajes = resultado.data || [];
                 mostrarMensajesDashboard(mensajes);
@@ -3829,7 +4617,7 @@
         // Mostrar mensajes
         function mostrarMensajesDashboard(mensajes) {
             const container = document.getElementById('mensajes-container-dashboard');
-            
+
             if (!mensajes || mensajes.length === 0) {
                 container.innerHTML = `
                     <div class="flex items-center justify-center h-full text-gray-400">
@@ -3841,7 +4629,7 @@
 
             container.innerHTML = mensajes.map(msg => {
                 const esMio = msg.es_remitente_actual === 1 || msg.es_remitente_actual === true;
-                
+
                 if (esMio) {
                     // Mensaje enviado por mí (derecha, azul/morado)
                     return `
@@ -3875,7 +4663,7 @@
         // Enviar mensaje
         async function enviarMensajeDashboard(e) {
             e.preventDefault();
-            
+
             const input = document.getElementById('message-input-dashboard');
             const contenido = input.value.trim();
 
@@ -3903,6 +4691,424 @@
             }
         }
 
+        // ============================================
+        // FINALIZAR INTERCAMBIO DESDE DASHBOARD
+        // ============================================
+
+        // Event listener para el botón Finalizar Intercambio
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'finalizarIntercambioBtn' || e.target.closest('#finalizarIntercambioBtn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Click en botón Finalizar Intercambio (Dashboard)');
+                finalizarIntercambioDashboard();
+            }
+        }, true);
+
+        // Función para finalizar el intercambio desde Dashboard
+        async function finalizarIntercambioDashboard() {
+            console.log('🔴 finalizarIntercambioDashboard() - INICIO');
+            console.log('conversacionActivaDashboard:', conversacionActivaDashboard);
+
+            if (!conversacionActivaDashboard || !conversacionActivaDashboard.id_conversacion) {
+                alert('Error: No se pudo identificar la conversación actual');
+                return;
+            }
+
+            // Obtener IDs necesarios
+            const idConversacion = conversacionActivaDashboard.id_conversacion;
+            const idContacto = conversacionActivaDashboard.id_contacto || conversacionActivaDashboard.id_persona_contacto;
+            const nombreContacto = conversacionActivaDashboard.nombre_contacto || 'este usuario';
+
+            if (!idContacto) {
+                alert('Error: No se pudo identificar al usuario contacto');
+                return;
+            }
+
+            // Confirmación antes de finalizar con SweetAlert2
+            const result = await Swal.fire({
+                title: '¿Finalizar intercambio?',
+                html: `
+                    <div style="text-align: center;">
+                        <p style="font-size: 16px; color: #4b5563; margin: 16px 0;">
+                            Estás a punto de finalizar el intercambio con <strong>${nombreContacto}</strong>
+                        </p>
+                        <p style="font-size: 14px; color: #6b7280; margin-bottom: 0;">
+                            ⚠️ La conversación será eliminada permanentemente
+                        </p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: '<i class="mdi mdi-check-circle"></i> Sí, finalizar',
+                cancelButtonText: '<i class="mdi mdi-close-circle"></i> Cancelar',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'rounded-lg shadow-2xl',
+                    confirmButton: 'px-6 py-2 rounded-lg font-semibold',
+                    cancelButton: 'px-6 py-2 rounded-lg font-semibold'
+                }
+            });
+
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            try {
+                // Mostrar indicador de carga
+                Swal.fire({
+                    title: 'Procesando...',
+                    html: '<div style="padding: 20px;">Finalizando intercambio</div>',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Obtener datos de la persona actual
+                const personaId = await obtenerPersonaIdActual();
+
+                if (!personaId) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de autenticación',
+                        text: 'No se pudo obtener tu información de usuario. Por favor, inicia sesión nuevamente.',
+                        confirmButtonColor: '#3b82f6',
+                        customClass: {
+                            popup: 'rounded-lg shadow-2xl'
+                        }
+                    });
+                    return;
+                }
+
+                // Llamar al backend para finalizar el intercambio
+                const response = await fetch(`${API_BASE}/intercambios/finalizar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id_conversacion: idConversacion,
+                        id_persona_finalizador: personaId,
+                        id_persona_otro: idContacto
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log('✅ Intercambio finalizado:', data);
+                    console.log('📊 ID Intercambio:', data.intercambio?.id_intercambio);
+                    console.log('👤 ID Contacto:', idContacto);
+                    console.log('📝 Nombre Contacto:', nombreContacto);
+
+                    Swal.close(); // Cerrar el loading
+
+                    // Verificar que tenemos el ID del intercambio
+                    if (!data.intercambio || !data.intercambio.id_intercambio) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'No se pudo obtener el ID del intercambio',
+                            confirmButtonColor: '#ef4444'
+                        });
+                        return;
+                    }
+
+                    // Mostrar modal de calificación
+                    mostrarModalCalificacionDashboard(data.intercambio.id_intercambio, idContacto, nombreContacto);
+
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al finalizar',
+                        html: `
+                            <p style="color: #4b5563; font-size: 15px;">
+                                ${data.mensaje || 'No se pudo finalizar el intercambio'}
+                            </p>
+                        `,
+                        confirmButtonColor: '#ef4444',
+                        customClass: {
+                            popup: 'rounded-lg shadow-2xl'
+                        }
+                    });
+                }
+
+            } catch (error) {
+                console.error(' Error al finalizar intercambio:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    html: `
+                        <div style="text-align: center;">
+                            <p style="color: #4b5563; font-size: 15px; margin-bottom: 12px;">
+                                No se pudo conectar con el servidor
+                            </p>
+                            <p style="color: #6b7280; font-size: 13px;">
+                                Por favor, verifica tu conexión a internet e intenta nuevamente
+                            </p>
+                        </div>
+                    `,
+                    confirmButtonColor: '#3b82f6',
+                    customClass: {
+                        popup: 'rounded-lg shadow-2xl'
+                    }
+                });
+            }
+        }
+
+        // Modal de calificación con sistema de estrellas (Dashboard)
+        function mostrarModalCalificacionDashboard(idIntercambio, idPersonaCalificada, nombrePersona) {
+            console.log('🔍 mostrarModalCalificacionDashboard recibió:');
+            console.log('   idIntercambio:', idIntercambio, 'tipo:', typeof idIntercambio);
+            console.log('   idPersonaCalificada:', idPersonaCalificada, 'tipo:', typeof idPersonaCalificada);
+            console.log('   nombrePersona:', nombrePersona);
+
+            const modal = document.createElement('div');
+            modal.id = 'modalCalificacionDashboard';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.style.zIndex = '9999';
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4" style="animation: slideUp 0.3s ease;">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="iconify text-blue-600" data-icon="mdi:star" data-width="32"></span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Califica tu experiencia</h2>
+                        <p class="text-gray-600">¿Cómo fue tu intercambio con <strong>${nombrePersona}</strong>?</p>
+                    </div>
+
+                    <!-- Sistema de estrellas -->
+                    <div class="flex justify-center space-x-2 mb-6" id="sistemaEstrellasDashboard">
+                        ${[1, 2, 3, 4, 5].map(num => `
+                            <button type="button" class="estrella-dashboard text-gray-300 hover:text-yellow-400 transition transform hover:scale-110" data-valor="${num}" style="background: none; border: none; cursor: pointer;">
+                                <span class="iconify" data-icon="mdi:star" data-width="48"></span>
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <!-- Texto de calificación seleccionada -->
+                    <div class="text-center mb-4">
+                        <p id="textoCalificacionDashboard" class="text-lg font-semibold text-gray-600">Selecciona una calificación</p>
+                    </div>
+
+                    <!-- Campo de comentario -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Comentario (opcional)</label>
+                        <textarea id="comentarioCalificacionDashboard" rows="4" maxlength="500"
+                                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                  placeholder="Comparte tu experiencia con ${nombrePersona}..."></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Máximo 500 caracteres</p>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="flex space-x-3">
+                        <button id="btnCancelarCalificacionDashboard" class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition">
+                            Omitir
+                        </button>
+                        <button id="btnEnviarCalificacionDashboard" class="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            Enviar Calificación
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Variables para la calificación
+            let calificacionSeleccionada = 0;
+            const estrellas = modal.querySelectorAll('.estrella-dashboard');
+            const textoCalificacion = modal.querySelector('#textoCalificacionDashboard');
+            const btnEnviar = modal.querySelector('#btnEnviarCalificacionDashboard');
+            const textosCalificacion = {
+                1: '⭐ Malo',
+                2: '⭐⭐ Regular',
+                3: '⭐⭐⭐ Bueno',
+                4: '⭐⭐⭐⭐ Muy Bueno',
+                5: '⭐⭐⭐⭐⭐ Excelente'
+            };
+
+            // Event listeners para las estrellas
+            estrellas.forEach(estrella => {
+                estrella.addEventListener('click', () => {
+                    calificacionSeleccionada = parseInt(estrella.dataset.valor);
+                    actualizarEstrellas();
+                    textoCalificacion.textContent = textosCalificacion[calificacionSeleccionada];
+                    textoCalificacion.className = 'text-lg font-semibold text-yellow-500';
+                    btnEnviar.disabled = false;
+                });
+
+                estrella.addEventListener('mouseenter', () => {
+                    const valor = parseInt(estrella.dataset.valor);
+                    estrellas.forEach((e, index) => {
+                        if (index < valor) {
+                            e.classList.add('text-yellow-400');
+                            e.classList.remove('text-gray-300');
+                        } else {
+                            e.classList.add('text-gray-300');
+                            e.classList.remove('text-yellow-400');
+                        }
+                    });
+                });
+            });
+
+            modal.querySelector('#sistemaEstrellasDashboard').addEventListener('mouseleave', () => {
+                actualizarEstrellas();
+            });
+
+            function actualizarEstrellas() {
+                estrellas.forEach((estrella, index) => {
+                    if (index < calificacionSeleccionada) {
+                        estrella.classList.add('text-yellow-400');
+                        estrella.classList.remove('text-gray-300');
+                    } else {
+                        estrella.classList.add('text-gray-300');
+                        estrella.classList.remove('text-yellow-400');
+                    }
+                });
+            }
+
+            // Botón cancelar/omitir
+            modal.querySelector('#btnCancelarCalificacionDashboard').addEventListener('click', () => {
+                modal.remove();
+                // Recargar conversaciones
+                cargarConversacionesDashboard();
+
+                // Limpiar chat activo (con validación)
+                const activeChat = document.getElementById('chat-activo-dashboard');
+                const emptyState = document.getElementById('chat-vacio-dashboard');
+
+                if (activeChat) activeChat.classList.add('hidden');
+                if (emptyState) emptyState.classList.remove('hidden');
+                conversacionActivaDashboard = null;
+            });
+
+            // Botón enviar calificación
+            btnEnviar.addEventListener('click', async () => {
+                const comentario = modal.querySelector('#comentarioCalificacionDashboard').value.trim();
+
+                btnEnviar.disabled = true;
+                btnEnviar.innerHTML = '<span class="mdi mdi-loading mdi-spin"></span> Enviando...';
+
+                try {
+                    const personaId = await obtenerPersonaIdActual();
+
+                    const payload = {
+                        id_intercambio: idIntercambio,
+                        id_persona_calificadora: personaId,
+                        id_persona_calificada: idPersonaCalificada,
+                        puntuacion: calificacionSeleccionada,
+                        comentario: comentario || null
+                    };
+
+                    console.log('📤 Enviando calificación con payload:', payload);
+                    console.log('   Tipos:', {
+                        id_intercambio: typeof payload.id_intercambio,
+                        id_persona_calificadora: typeof payload.id_persona_calificadora,
+                        id_persona_calificada: typeof payload.id_persona_calificada,
+                        puntuacion: typeof payload.puntuacion
+                    });
+
+                    const response = await fetch(`${API_BASE}/intercambios/calificar`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        modal.remove();
+
+                        // Mostrar alerta de éxito con SweetAlert2
+                        await Swal.fire({
+                            icon: 'success',
+                            title: '¡Calificación enviada!',
+                            html: `
+                                <div style="text-align: center; padding: 10px;">
+                                    <p style="font-size: 16px; color: #4b5563; margin: 12px 0;">
+                                        Gracias por compartir tu experiencia con <strong>${nombrePersona}</strong>
+                                    </p>
+                                    <div style="font-size: 32px; margin: 16px 0;">
+                                        ${'⭐'.repeat(calificacionSeleccionada)}
+                                    </div>
+                                </div>
+                            `,
+                            confirmButtonColor: '#10b981',
+                            confirmButtonText: '<i class="mdi mdi-check"></i> Continuar',
+                            timer: 3000,
+                            timerProgressBar: true,
+                            customClass: {
+                                popup: 'rounded-lg shadow-2xl'
+                            }
+                        });
+
+                        // Recargar conversaciones
+                        await cargarConversacionesDashboard();
+
+                        // Limpiar chat activo (con validación)
+                        const activeChat = document.getElementById('chat-activo-dashboard');
+                        const emptyState = document.getElementById('chat-vacio-dashboard');
+
+                        if (activeChat) activeChat.classList.add('hidden');
+                        if (emptyState) emptyState.classList.remove('hidden');
+                        conversacionActivaDashboard = null;
+
+                    } else {
+                        modal.remove();
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error al enviar calificación',
+                            html: `
+                                <p style="color: #4b5563; font-size: 15px;">
+                                    ${data.mensaje || 'No se pudo enviar tu calificación'}
+                                </p>
+                            `,
+                            confirmButtonColor: '#ef4444',
+                            customClass: {
+                                popup: 'rounded-lg shadow-2xl'
+                            }
+                        });
+
+                        btnEnviar.disabled = false;
+                        btnEnviar.textContent = 'Enviar Calificación';
+                    }
+
+                } catch (error) {
+                    console.error('Error al enviar calificación:', error);
+                    modal.remove();
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de conexión',
+                        html: `
+                            <div style="text-align: center;">
+                                <p style="color: #4b5563; font-size: 15px; margin-bottom: 12px;">
+                                    No se pudo conectar con el servidor
+                                </p>
+                                <p style="color: #6b7280; font-size: 13px;">
+                                    Tu calificación no fue guardada. Por favor, intenta nuevamente.
+                                </p>
+                            </div>
+                        `,
+                        confirmButtonColor: '#3b82f6',
+                        customClass: {
+                            popup: 'rounded-lg shadow-2xl'
+                        }
+                    });
+
+                    btnEnviar.disabled = false;
+                    btnEnviar.textContent = 'Enviar Calificación';
+                }
+            });
+        }
+
         // Utilidades para Dashboard
         function getInitialsDashboard(nombre) {
             if (!nombre) return '??';
@@ -3927,10 +5133,10 @@
 
         function formatearHoraDashboard(fecha) {
             if (!fecha) return '';
-            return new Date(fecha).toLocaleTimeString('es-ES', { 
-                hour: '2-digit', 
+            return new Date(fecha).toLocaleTimeString('es-ES', {
+                hour: '2-digit',
                 minute: '2-digit',
-                hour12: true 
+                hour12: true
             });
         }
 
@@ -3949,21 +5155,21 @@
 
         function mostrarMenuContextual(event, messageId, messageContent) {
             event.preventDefault();
-            
+
             const menu = document.getElementById('messageContextMenu');
             mensajeSeleccionadoId = messageId;
             mensajeSeleccionadoContenido = messageContent;
-            
+
             // Posicionar el menú
             menu.style.left = event.pageX + 'px';
             menu.style.top = event.pageY + 'px';
             menu.classList.remove('hidden');
-            
+
             return false;
         }
 
         // Cerrar menú contextual al hacer clic fuera
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const menu = document.getElementById('messageContextMenu');
             if (menu && !menu.contains(event.target)) {
                 menu.classList.add('hidden');
@@ -3974,28 +5180,28 @@
         function agregarLongPressListeners() {
             const messages = document.querySelectorAll('.message-item');
             let longPressTimer;
-            
+
             messages.forEach(msg => {
                 // Touch events para móvil
-                msg.addEventListener('touchstart', function(e) {
+                msg.addEventListener('touchstart', function (e) {
                     const messageId = this.getAttribute('data-message-id');
                     const messageContent = this.getAttribute('data-message-content');
-                    
+
                     longPressTimer = setTimeout(() => {
                         const touch = e.touches[0];
                         mostrarMenuContextual({
-                            preventDefault: () => {},
+                            preventDefault: () => { },
                             pageX: touch.pageX,
                             pageY: touch.pageY
                         }, messageId, messageContent);
                     }, 500); // 500ms para activar long-press
                 });
-                
-                msg.addEventListener('touchend', function() {
+
+                msg.addEventListener('touchend', function () {
                     clearTimeout(longPressTimer);
                 });
-                
-                msg.addEventListener('touchmove', function() {
+
+                msg.addEventListener('touchmove', function () {
                     clearTimeout(longPressTimer);
                 });
             });
@@ -4005,7 +5211,7 @@
         async function editarMensaje() {
             const menu = document.getElementById('messageContextMenu');
             menu.classList.add('hidden');
-            
+
             const { value: nuevoContenido } = await Swal.fire({
                 title: 'Editar Mensaje',
                 input: 'textarea',
@@ -4024,7 +5230,7 @@
                     }
                 }
             });
-            
+
             if (nuevoContenido && nuevoContenido.trim() !== mensajeSeleccionadoContenido) {
                 try {
                     const response = await fetch(`http://localhost:3001/api/mensajeria/mensajes/${mensajeSeleccionadoId}`, {
@@ -4036,9 +5242,9 @@
                             contenido: nuevoContenido.trim()
                         })
                     });
-                    
+
                     const data = await response.json();
-                    
+
                     if (data.success) {
                         Swal.fire({
                             icon: 'success',
@@ -4047,7 +5253,7 @@
                             timer: 2000,
                             showConfirmButton: false
                         });
-                        
+
                         // Recargar mensajes
                         if (conversacionActivaDashboard && conversacionActivaDashboard.id_conversacion) {
                             await cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion);
@@ -4070,7 +5276,7 @@
         async function eliminarMensaje() {
             const menu = document.getElementById('messageContextMenu');
             menu.classList.add('hidden');
-            
+
             const result = await Swal.fire({
                 title: '¿Eliminar mensaje?',
                 text: 'Esta acción no se puede deshacer',
@@ -4081,15 +5287,15 @@
                 confirmButtonText: 'Sí, eliminar',
                 cancelButtonText: 'Cancelar'
             });
-            
+
             if (result.isConfirmed) {
                 try {
                     const response = await fetch(`http://localhost:3001/api/mensajeria/mensajes/${mensajeSeleccionadoId}`, {
                         method: 'DELETE'
                     });
-                    
+
                     const data = await response.json();
-                    
+
                     if (data.success) {
                         Swal.fire({
                             icon: 'success',
@@ -4097,7 +5303,7 @@
                             timer: 2000,
                             showConfirmButton: false
                         });
-                        
+
                         // Recargar mensajes
                         if (conversacionActivaDashboard && conversacionActivaDashboard.id_conversacion) {
                             await cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion);
@@ -4125,16 +5331,23 @@
     </script>
 
     <!-- Menú Contextual para Mensajes -->
-    <div id="messageContextMenu" class="hidden fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50" style="min-width: 150px;">
-        <button onclick="editarMensaje()" class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-gray-700">
+    <div id="messageContextMenu" class="hidden fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
+        style="min-width: 150px;">
+        <button onclick="editarMensaje()"
+            class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-gray-700">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                </path>
             </svg>
             Editar
         </button>
-        <button onclick="eliminarMensaje()" class="w-full px-4 py-2 text-left hover:bg-red-50 flex items-center gap-2 text-red-600">
+        <button onclick="eliminarMensaje()"
+            class="w-full px-4 py-2 text-left hover:bg-red-50 flex items-center gap-2 text-red-600">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                </path>
             </svg>
             Eliminar
         </button>
@@ -4144,4 +5357,5 @@
     <script src="js/auth-guard.js"></script>
 
 </body>
+
 </html>
