@@ -3027,6 +3027,9 @@
 // ======================
 // PIXEL BAR CHART - CON COLORES COORDINADOS
 // ======================
+// ======================
+// PIXEL BAR CHART - VERSIÓN COMPLETAMENTE DINÁMICA
+// ======================
 function renderPixelChart() {
   const container = document.querySelector('.pixel-chart');
   if (!container) return;
@@ -3049,32 +3052,39 @@ function renderPixelChart() {
   // Limpiar contenido anterior
   svgContainer.innerHTML = '';
   
-  // 🎨 COLORES COORDINADOS CON TU DISEÑO
+  // ✅ LEER VALORES DEL DOM EN TIEMPO REAL
+  const intercambios = parseInt(document.getElementById('statIntercambios')?.textContent || '0');
+  const favoritos = parseInt(document.getElementById('statFavoritos')?.textContent || '0');
+  const habilidades = offeredSkills.length;
+  
+  console.log('📊 Renderizando gráfico con valores:', { intercambios, favoritos, habilidades });
+  
+  // 🎨 COLORES COORDINADOS (DINÁMICOS - NO HARDCODEADOS)
   const data = [
     { 
       label: 'Int', 
-      value: 12, 
-      fill: '#2563eb',      // Azul primario (igual al botón "Enviar Solicitud")
-      highlight: '#1d4ed8'  // Azul más oscuro para la tapa
+      value: intercambios,  // ✅ DINÁMICO - Lee del DOM
+      fill: '#2563eb',
+      highlight: '#1d4ed8'
     },
     { 
       label: 'Fav', 
-      value: 8, 
-      fill: '#10B981',      // Verde (igual al avatar)
-      highlight: '#059669'  // Verde más oscuro
+      value: favoritos,     // ✅ DINÁMICO - Lee del DOM
+      fill: '#10B981',
+      highlight: '#059669'
     },
     { 
       label: 'Hab', 
-      value: offeredSkills.length, 
-      fill: '#8B5CF6',      // Morado/Púrpura
-      highlight: '#7C3AED'  // Morado más oscuro
+      value: habilidades,   // ✅ DINÁMICO - Lee del array
+      fill: '#8B5CF6',
+      highlight: '#7C3AED'
     }
   ];
   
   // Configuración del SVG
   const width = 320;
   const height = 200;
-  const maxValue = Math.max(...data.map(d => d.value), 1);
+  const maxValue = Math.max(...data.map(d => d.value), 5);
   
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
@@ -3083,7 +3093,7 @@ function renderPixelChart() {
   svg.style.width = '100%';
   svg.style.height = 'auto';
   
-  // 🎨 Fondo con gradiente sutil (más moderno)
+  // 🎨 Fondo con gradiente
   const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
   const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
   gradient.setAttribute('id', 'bgGradient');
@@ -3112,7 +3122,7 @@ function renderPixelChart() {
   bgRect.setAttribute('width', width);
   bgRect.setAttribute('height', height);
   bgRect.setAttribute('fill', 'url(#bgGradient)');
-  bgRect.setAttribute('rx', '8'); // Bordes redondeados
+  bgRect.setAttribute('rx', '8');
   svg.appendChild(bgRect);
   
   // Marco
@@ -3127,7 +3137,7 @@ function renderPixelChart() {
   frameRect.setAttribute('shape-rendering', 'crispEdges');
   svg.appendChild(frameRect);
   
-  // Grid horizontal (más sutil)
+  // Grid horizontal
   const gridYs = [152, 122, 92, 62, 32];
   const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   gridGroup.setAttribute('stroke', '#e5e7eb');
@@ -3181,7 +3191,7 @@ function renderPixelChart() {
     const barGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     barGroup.setAttribute('transform', `translate(${x},0)`);
     
-    // Sombra de la barra (efecto 3D sutil)
+    // Sombra
     const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     shadow.setAttribute('x', '2');
     shadow.setAttribute('y', y + 2);
@@ -3191,7 +3201,7 @@ function renderPixelChart() {
     shadow.setAttribute('rx', '4');
     barGroup.appendChild(shadow);
     
-    // Barra principal con bordes redondeados
+    // Barra principal
     const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     bar.setAttribute('x', '0');
     bar.setAttribute('y', y);
@@ -3203,7 +3213,7 @@ function renderPixelChart() {
     bar.setAttribute('rx', '4');
     bar.setAttribute('ry', '4');
     
-    // Animación de aparición
+    // Animación
     const animate = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
     animate.setAttribute('attributeName', 'height');
     animate.setAttribute('from', '0');
@@ -3222,7 +3232,7 @@ function renderPixelChart() {
     
     barGroup.appendChild(bar);
     
-    // Brillo en la barra (efecto glossy)
+    // Brillo
     const shine = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     shine.setAttribute('x', '2');
     shine.setAttribute('y', y + 2);
@@ -3232,7 +3242,7 @@ function renderPixelChart() {
     shine.setAttribute('rx', '3');
     barGroup.appendChild(shine);
     
-    // Tapa superior (más destacada)
+    // Tapa superior
     const cap = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     cap.setAttribute('x', '0');
     cap.setAttribute('y', capY);
@@ -3242,7 +3252,7 @@ function renderPixelChart() {
     cap.setAttribute('rx', '2');
     barGroup.appendChild(cap);
     
-    // Etiqueta con mejor contraste
+    // Etiqueta
     const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     label.setAttribute('x', barW / 2);
     label.setAttribute('y', '172');
@@ -3252,6 +3262,17 @@ function renderPixelChart() {
     label.setAttribute('font-weight', '700');
     label.textContent = d.label;
     barGroup.appendChild(label);
+    
+    // Valor
+    const value = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    value.setAttribute('x', barW / 2);
+    value.setAttribute('y', y - 8);
+    value.setAttribute('text-anchor', 'middle');
+    value.setAttribute('fill', d.fill);
+    value.setAttribute('font-size', '13');
+    value.setAttribute('font-weight', '700');
+    value.textContent = d.value;
+    barGroup.appendChild(value);
     
     svg.appendChild(barGroup);
   });
