@@ -2758,256 +2758,256 @@
         // ========================================
         // INICIALIZACIÓN OPTIMIZADA CON CARGA PARALELA
         // ========================================
-async function inicializarDashboard() {
-    // Mostrar skeleton mientras carga
-    mostrarSkeletonLoaders(6);
+        async function inicializarDashboard() {
+            // Mostrar skeleton mientras carga
+            mostrarSkeletonLoaders(6);
 
-    // Cargar todo en paralelo para mejorar el rendimiento
-    await Promise.all([
-        cargarDatosUsuario(),
-        cargarCategorias(),
-        cargarUsuariosReales(),
-        cargarFavoritosDesdeBackend(),
-        cargarEstadisticasGlobales()
-    ]);
+            // Cargar todo en paralelo para mejorar el rendimiento
+            await Promise.all([
+                cargarDatosUsuario(),
+                cargarCategorias(),
+                cargarUsuariosReales(),
+                cargarFavoritosDesdeBackend(),
+                cargarEstadisticasGlobales()
+            ]);
 
-    // Verificar actualizaciones de imagen
-    verificarActualizacionesPendientes();
+            // Verificar actualizaciones de imagen
+            verificarActualizacionesPendientes();
 
-    // Actualizar badge de favoritos
-    actualizarBadgeFavoritos();
-}
+            // Actualizar badge de favoritos
+            actualizarBadgeFavoritos();
+        }
 
-// Llamar a la función de inicialización optimizada
-inicializarDashboard();
+        // Llamar a la función de inicialización optimizada
+        inicializarDashboard();
 
-// ========================================
-// EVENT LISTENERS PARA PAGINACIÓN Y ORDENAMIENTO
-// ========================================
-document.addEventListener('DOMContentLoaded', () => {
-    // Selector de ordenamiento
-    const sortSelect = document.getElementById('sortSelect');
-    if (sortSelect) {
-        sortSelect.addEventListener('change', (e) => {
-            currentSort = e.target.value;
-            currentPage = 1;
-            renderUserCardsReal();
-        });
-    }
-
-    // Selector de resultados por página
-    const perPageSelect = document.getElementById('perPageSelect');
-    if (perPageSelect) {
-        perPageSelect.addEventListener('change', (e) => {
-            usersPerPage = parseInt(e.target.value);
-            currentPage = 1;
-            renderUserCardsReal();
-        });
-    }
-
-    // Búsqueda
-    const searchInput = document.getElementById('searchInput');
-    const searchButton = document.getElementById('searchButton');
-
-    if (searchInput && searchButton) {
-        // Búsqueda al hacer clic en el botón
-        searchButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            currentSearchFilter = searchInput.value.trim();
-            currentPage = 1;
-            aplicarFiltros();
-        });
-
-        // Búsqueda al presionar Enter
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                currentSearchFilter = searchInput.value.trim();
-                currentPage = 1;
-                aplicarFiltros();
+        // ========================================
+        // EVENT LISTENERS PARA PAGINACIÓN Y ORDENAMIENTO
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Selector de ordenamiento
+            const sortSelect = document.getElementById('sortSelect');
+            if (sortSelect) {
+                sortSelect.addEventListener('change', (e) => {
+                    currentSort = e.target.value;
+                    currentPage = 1;
+                    renderUserCardsReal();
+                });
             }
-        });
 
-        // Búsqueda en tiempo real mientras escribe
-        let searchTimeout;
-        searchInput.addEventListener('input', () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                if (searchInput.value.trim().length >= 3 || searchInput.value.trim() === '') {
+            // Selector de resultados por página
+            const perPageSelect = document.getElementById('perPageSelect');
+            if (perPageSelect) {
+                perPageSelect.addEventListener('change', (e) => {
+                    usersPerPage = parseInt(e.target.value);
+                    currentPage = 1;
+                    renderUserCardsReal();
+                });
+            }
+
+            // Búsqueda
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton');
+
+            if (searchInput && searchButton) {
+                // Búsqueda al hacer clic en el botón
+                searchButton.addEventListener('click', (e) => {
+                    e.preventDefault();
                     currentSearchFilter = searchInput.value.trim();
                     currentPage = 1;
                     aplicarFiltros();
-                }
-            }, 500);
+                });
+
+                // Búsqueda al presionar Enter
+                searchInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        currentSearchFilter = searchInput.value.trim();
+                        currentPage = 1;
+                        aplicarFiltros();
+                    }
+                });
+
+                // Búsqueda en tiempo real mientras escribe
+                let searchTimeout;
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        if (searchInput.value.trim().length >= 3 || searchInput.value.trim() === '') {
+                            currentSearchFilter = searchInput.value.trim();
+                            currentPage = 1;
+                            aplicarFiltros();
+                        }
+                    }, 500);
+                });
+            }
+
+            // Verificar si se debe abrir el perfil de un usuario desde un enlace externo
+            const urlParams = new URLSearchParams(window.location.search);
+            const verPerfilId = urlParams.get('verPerfil');
+            if (verPerfilId) {
+                setTimeout(() => {
+                    console.log('Abriendo perfil desde URL, ID:', verPerfilId);
+                    viewProfile(parseInt(verPerfilId));
+                }, 1500);
+            }
         });
-    }
 
-    // Verificar si se debe abrir el perfil de un usuario desde un enlace externo
-    const urlParams = new URLSearchParams(window.location.search);
-    const verPerfilId = urlParams.get('verPerfil');
-    if (verPerfilId) {
-        setTimeout(() => {
-            console.log('Abriendo perfil desde URL, ID:', verPerfilId);
-            viewProfile(parseInt(verPerfilId));
-        }, 1500);
-    }
-});
+        // ========================================
+        // FUNCIONALIDAD DEL CHAT
+        // ========================================
+        function initializeChat() {
+            const form = document.getElementById('chat-form');
+            const input = document.getElementById('message-input');
+            const container = document.getElementById('message-container');
 
-// ========================================
-// FUNCIONALIDAD DEL CHAT
-// ========================================
-function initializeChat() {
-    const form = document.getElementById('chat-form');
-    const input = document.getElementById('message-input');
-    const container = document.getElementById('message-container');
+            if (!form || !input || !container) return;
 
-    if (!form || !input || !container) return;
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const messageText = input.value.trim();
 
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const messageText = input.value.trim();
+                if (messageText) {
+                    addMessageToChat(messageText, 'sent');
+                    input.value = '';
+                    scrollToBottom();
 
-        if (messageText) {
-            addMessageToChat(messageText, 'sent');
-            input.value = '';
+                    setTimeout(() => {
+                        addMessageToChat("Mensaje recibido y leído. ", 'received');
+                        scrollToBottom();
+                    }, 1500);
+                }
+            });
+
+            function addMessageToChat(text, type) {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                const messageDiv = document.createElement('div');
+                const bubbleDiv = document.createElement('div');
+                const timeSpan = document.createElement('span');
+
+                timeSpan.className = 'block text-right text-xs mt-1';
+                timeSpan.textContent = timeString;
+
+                if (type === 'sent') {
+                    messageDiv.className = 'flex justify-end';
+                    bubbleDiv.className = 'bg-indigo-600 text-white p-3 rounded-xl rounded-tr-none max-w-xs text-sm shadow';
+                    timeSpan.classList.add('text-indigo-300');
+                } else {
+                    messageDiv.className = 'flex justify-start';
+                    bubbleDiv.className = 'bg-gray-200 p-3 rounded-xl rounded-tl-none max-w-xs text-sm shadow';
+                    timeSpan.classList.add('text-gray-500');
+                }
+
+                bubbleDiv.textContent = text;
+                bubbleDiv.appendChild(timeSpan);
+                messageDiv.appendChild(bubbleDiv);
+                container.appendChild(messageDiv);
+            }
+
+            function scrollToBottom() {
+                container.scrollTop = container.scrollHeight;
+            }
+
             scrollToBottom();
-
-            setTimeout(() => {
-                addMessageToChat("Mensaje recibido y leído. ", 'received');
-                scrollToBottom();
-            }, 1500);
-        }
-    });
-
-    function addMessageToChat(text, type) {
-        const now = new Date();
-        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        const messageDiv = document.createElement('div');
-        const bubbleDiv = document.createElement('div');
-        const timeSpan = document.createElement('span');
-
-        timeSpan.className = 'block text-right text-xs mt-1';
-        timeSpan.textContent = timeString;
-
-        if (type === 'sent') {
-            messageDiv.className = 'flex justify-end';
-            bubbleDiv.className = 'bg-indigo-600 text-white p-3 rounded-xl rounded-tr-none max-w-xs text-sm shadow';
-            timeSpan.classList.add('text-indigo-300');
-        } else {
-            messageDiv.className = 'flex justify-start';
-            bubbleDiv.className = 'bg-gray-200 p-3 rounded-xl rounded-tl-none max-w-xs text-sm shadow';
-            timeSpan.classList.add('text-gray-500');
         }
 
-        bubbleDiv.textContent = text;
-        bubbleDiv.appendChild(timeSpan);
-        messageDiv.appendChild(bubbleDiv);
-        container.appendChild(messageDiv);
-    }
+        initializeChat();
 
-    function scrollToBottom() {
-        container.scrollTop = container.scrollHeight;
-    }
+        // ========================================
+        // FUNCIONALIDAD DEL MODAL DE PERFIL
+        // ========================================
+        async function viewProfile(perfilId) {
+            const modal = document.getElementById('profileModal');
+            const modalContent = document.getElementById('profileModalContent');
 
-    scrollToBottom();
-}
-
-initializeChat();
-
-// ========================================
-// FUNCIONALIDAD DEL MODAL DE PERFIL
-// ========================================
-async function viewProfile(perfilId) {
-    const modal = document.getElementById('profileModal');
-    const modalContent = document.getElementById('profileModalContent');
-
-    modal.style.display = 'flex';
-    modalContent.innerHTML = `
+            modal.style.display = 'flex';
+            modalContent.innerHTML = `
         <div class="flex items-center justify-center py-12">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
     `;
 
-    try {
-        // 1. Obtener datos de la persona
-        const resPersonas = await fetch(`${API_BASE}/personas`);
-        const dataPersonas = await resPersonas.json();
+            try {
+                // 1. Obtener datos de la persona
+                const resPersonas = await fetch(`${API_BASE}/personas`);
+                const dataPersonas = await resPersonas.json();
 
-        if (!resPersonas.ok || !dataPersonas.success) {
-            throw new Error('No se pudo obtener los datos del usuario');
-        }
-
-        const persona = dataPersonas.data.find(p => p.id_Perfil_Persona === perfilId);
-
-        if (!persona) {
-            throw new Error('Usuario no encontrado');
-        }
-
-        // 2. Obtener habilidades
-        let habilidadesOfrece = [];
-        let habilidadesNecesita = [];
-        let todasLasHabilidades = [];
-
-        try {
-            const resHabilidades = await fetch(`${API_BASE}/habilidades/persona/${perfilId}`);
-            const dataHabilidades = await resHabilidades.json();
-
-            if (resHabilidades.ok && dataHabilidades.success && dataHabilidades.data) {
-                todasLasHabilidades = dataHabilidades.data;
-                habilidadesOfrece = dataHabilidades.data.filter(h => h.tipoEstado_Habilidad === 'Ofrece');
-                habilidadesNecesita = dataHabilidades.data.filter(h => h.tipoEstado_Habilidad === 'Necesita');
-            }
-        } catch (e) {
-            console.error('Error al cargar habilidades:', e);
-        }
-
-        // 3. Obtener categorías
-        let categorias = [];
-        try {
-            const resCategorias = await fetch(`${API_BASE}/categorias`);
-            const dataCategorias = await resCategorias.json();
-            if (resCategorias.ok && dataCategorias.success && dataCategorias.data) {
-                categorias = dataCategorias.data;
-            }
-        } catch (e) {
-            console.error('Error al cargar categorías:', e);
-        }
-
-        // 4. Obtener dirección
-        let direccion = null;
-        try {
-            const resDireccion = await fetch(`${API_BASE}/direcciones/persona/${perfilId}`);
-            if (resDireccion.ok) {
-                const dataDireccion = await resDireccion.json();
-                if (dataDireccion.success && dataDireccion.data) {
-                    direccion = Array.isArray(dataDireccion.data) ? dataDireccion.data[0] : dataDireccion.data;
+                if (!resPersonas.ok || !dataPersonas.success) {
+                    throw new Error('No se pudo obtener los datos del usuario');
                 }
-            }
-        } catch (e) {
-            console.error('Error al cargar dirección:', e);
-        }
 
-        // 5. Preparar las imágenes de la galería
-        const galeriaImagenes = [];
-        if (persona.imagen1Url_Persona) galeriaImagenes.push(persona.imagen1Url_Persona);
-        if (persona.imagen2Url_Persona) galeriaImagenes.push(persona.imagen2Url_Persona);
-        if (persona.imagen3Url_Persona) galeriaImagenes.push(persona.imagen3Url_Persona);
+                const persona = dataPersonas.data.find(p => p.id_Perfil_Persona === perfilId);
 
-        // 6. Formatear ubicación
-        let ubicacion = 'Sin ubicación';
-        if (direccion) {
-            const ciudad = direccion.ciudad_Direccion || direccion.ciudad || '';
-            const departamento = direccion.departamento_Direccion || direccion.departamento || '';
-            const pais = direccion.pais_Direccion || direccion.pais || '';
-            ubicacion = [ciudad, departamento, pais].filter(Boolean).join(', ');
-        }
+                if (!persona) {
+                    throw new Error('Usuario no encontrado');
+                }
 
-        // 7. Generar el contenido del modal
-        const nombreCompleto = `${persona.nombre_Persona || ''} ${persona.apellido_Persona || ''}`.trim();
-        const iniciales = `${(persona.nombre_Persona || 'U')[0]}${(persona.apellido_Persona || 'S')[0]}`;
+                // 2. Obtener habilidades
+                let habilidadesOfrece = [];
+                let habilidadesNecesita = [];
+                let todasLasHabilidades = [];
 
-        modalContent.innerHTML = `
+                try {
+                    const resHabilidades = await fetch(`${API_BASE}/habilidades/persona/${perfilId}`);
+                    const dataHabilidades = await resHabilidades.json();
+
+                    if (resHabilidades.ok && dataHabilidades.success && dataHabilidades.data) {
+                        todasLasHabilidades = dataHabilidades.data;
+                        habilidadesOfrece = dataHabilidades.data.filter(h => h.tipoEstado_Habilidad === 'Ofrece');
+                        habilidadesNecesita = dataHabilidades.data.filter(h => h.tipoEstado_Habilidad === 'Necesita');
+                    }
+                } catch (e) {
+                    console.error('Error al cargar habilidades:', e);
+                }
+
+                // 3. Obtener categorías
+                let categorias = [];
+                try {
+                    const resCategorias = await fetch(`${API_BASE}/categorias`);
+                    const dataCategorias = await resCategorias.json();
+                    if (resCategorias.ok && dataCategorias.success && dataCategorias.data) {
+                        categorias = dataCategorias.data;
+                    }
+                } catch (e) {
+                    console.error('Error al cargar categorías:', e);
+                }
+
+                // 4. Obtener dirección
+                let direccion = null;
+                try {
+                    const resDireccion = await fetch(`${API_BASE}/direcciones/persona/${perfilId}`);
+                    if (resDireccion.ok) {
+                        const dataDireccion = await resDireccion.json();
+                        if (dataDireccion.success && dataDireccion.data) {
+                            direccion = Array.isArray(dataDireccion.data) ? dataDireccion.data[0] : dataDireccion.data;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error al cargar dirección:', e);
+                }
+
+                // 5. Preparar las imágenes de la galería
+                const galeriaImagenes = [];
+                if (persona.imagen1Url_Persona) galeriaImagenes.push(persona.imagen1Url_Persona);
+                if (persona.imagen2Url_Persona) galeriaImagenes.push(persona.imagen2Url_Persona);
+                if (persona.imagen3Url_Persona) galeriaImagenes.push(persona.imagen3Url_Persona);
+
+                // 6. Formatear ubicación
+                let ubicacion = 'Sin ubicación';
+                if (direccion) {
+                    const ciudad = direccion.ciudad_Direccion || direccion.ciudad || '';
+                    const departamento = direccion.departamento_Direccion || direccion.departamento || '';
+                    const pais = direccion.pais_Direccion || direccion.pais || '';
+                    ubicacion = [ciudad, departamento, pais].filter(Boolean).join(', ');
+                }
+
+                // 7. Generar el contenido del modal
+                const nombreCompleto = `${persona.nombre_Persona || ''} ${persona.apellido_Persona || ''}`.trim();
+                const iniciales = `${(persona.nombre_Persona || 'U')[0]}${(persona.apellido_Persona || 'S')[0]}`;
+
+                modalContent.innerHTML = `
             <!-- Banner y Avatar -->
             <div class="profile-modal-banner">
                 <div class="profile-modal-avatar" style="cursor: ${persona.imagenUrl_Persona ? 'zoom-in' : 'default'};" ${persona.imagenUrl_Persona ? `onclick="openImageFullscreen('${persona.imagenUrl_Persona}')"` : ''}>
@@ -3122,9 +3122,9 @@ async function viewProfile(perfilId) {
             <!-- Sección de Calificaciones y Reseñas -->
             <div id="calificaciones-section" class="profile-modal-section" style="display: none;">
                 <h3 class="profile-modal-section-title">
-                    <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                    </svg>
+                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="#FFD700" stroke="#FFD700" stroke-width="1" style="display: inline-block; margin: 0 4px;">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
                     Calificaciones y Reseñas
                 </h3>
                 <div id="calificaciones-content">
@@ -3142,15 +3142,15 @@ async function viewProfile(perfilId) {
             </div>
         `;
 
-        // Cargar estadísticas y calificaciones
-        await cargarEstadisticasYCalificaciones(perfilId);
+                // Cargar estadísticas y calificaciones
+                await cargarEstadisticasYCalificaciones(perfilId);
 
-        // Verificar si existe una solicitud activa
-        await verificarYMostrarBotonSolicitud(perfilId, nombreCompleto);
+                // Verificar si existe una solicitud activa
+                await verificarYMostrarBotonSolicitud(perfilId, nombreCompleto);
 
-    } catch (error) {
-        console.error('Error al cargar el perfil:', error);
-        modalContent.innerHTML = `
+            } catch (error) {
+                console.error('Error al cargar el perfil:', error);
+                modalContent.innerHTML = `
             <div class="p-12 text-center">
                 <svg class="w-16 h-16 mx-auto text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -3162,36 +3162,36 @@ async function viewProfile(perfilId) {
                 </button>
             </div>
         `;
-    }
-}
-
-// Cargar estadísticas y calificaciones del usuario
-async function cargarEstadisticasYCalificaciones(perfilId) {
-    try {
-        // 1. Obtener estadísticas
-        const resEstadisticas = await fetch(`${API_BASE}/intercambios/estadisticas/${perfilId}`);
-        const dataEstadisticas = await resEstadisticas.json();
-
-        let estadisticas = {
-            total_intercambios_completados: 0,
-            promedio_calificacion: 0,
-            total_calificaciones: 0,
-            distribucion_estrellas_5: 0,
-            distribucion_estrellas_4: 0,
-            distribucion_estrellas_3: 0,
-            distribucion_estrellas_2: 0,
-            distribucion_estrellas_1: 0
-        };
-
-        if (resEstadisticas.ok && dataEstadisticas.success && dataEstadisticas.data) {
-            estadisticas = dataEstadisticas.data;
+            }
         }
 
-        // 2. Actualizar estadísticas en el perfil
-        const statsContainer = document.getElementById('profile-stats-container');
-        if (statsContainer) {
-            const habilidadesCount = statsContainer.querySelector('.profile-stat-card:first-child .profile-stat-value').textContent;
-            statsContainer.innerHTML = `
+        // Cargar estadísticas y calificaciones del usuario
+        async function cargarEstadisticasYCalificaciones(perfilId) {
+            try {
+                // 1. Obtener estadísticas
+                const resEstadisticas = await fetch(`${API_BASE}/intercambios/estadisticas/${perfilId}`);
+                const dataEstadisticas = await resEstadisticas.json();
+
+                let estadisticas = {
+                    total_intercambios_completados: 0,
+                    promedio_calificacion: 0,
+                    total_calificaciones: 0,
+                    distribucion_estrellas_5: 0,
+                    distribucion_estrellas_4: 0,
+                    distribucion_estrellas_3: 0,
+                    distribucion_estrellas_2: 0,
+                    distribucion_estrellas_1: 0
+                };
+
+                if (resEstadisticas.ok && dataEstadisticas.success && dataEstadisticas.data) {
+                    estadisticas = dataEstadisticas.data;
+                }
+
+                // 2. Actualizar estadísticas en el perfil
+                const statsContainer = document.getElementById('profile-stats-container');
+                if (statsContainer) {
+                    const habilidadesCount = statsContainer.querySelector('.profile-stat-card:first-child .profile-stat-value').textContent;
+                    statsContainer.innerHTML = `
                 <div class="profile-stat-card">
                     <div class="profile-stat-value">${habilidadesCount}</div>
                     <div class="profile-stat-label">Habilidades</div>
@@ -3214,66 +3214,68 @@ async function cargarEstadisticasYCalificaciones(perfilId) {
                     <div class="profile-stat-label">Valoración</div>
                 </div>
             `;
-        }
+                }
 
-        // 3. Si no tiene calificaciones, ocultar la sección
-        if (estadisticas.total_calificaciones === 0) {
-            document.getElementById('calificaciones-section').style.display = 'none';
-            return;
-        }
+                // 3. Si no tiene calificaciones, ocultar la sección
+                if (estadisticas.total_calificaciones === 0) {
+                    document.getElementById('calificaciones-section').style.display = 'none';
+                    return;
+                }
 
-        // 4. Obtener calificaciones con comentarios
-        const resCalificaciones = await fetch(`${API_BASE}/intercambios/calificaciones/${perfilId}`);
-        const dataCalificaciones = await resCalificaciones.json();
+                // 4. Obtener calificaciones con comentarios
+                const resCalificaciones = await fetch(`${API_BASE}/intercambios/calificaciones/${perfilId}`);
+                const dataCalificaciones = await resCalificaciones.json();
 
-        let calificaciones = [];
-        if (resCalificaciones.ok && dataCalificaciones.success && dataCalificaciones.data) {
-            calificaciones = dataCalificaciones.data.filter(cal => cal.visible);
-        }
+                let calificaciones = [];
+                if (resCalificaciones.ok && dataCalificaciones.success && dataCalificaciones.data) {
+                    calificaciones = dataCalificaciones.data.filter(cal => cal.visible);
+                }
 
 
-        
-        // 5. Mostrar la sección de calificaciones
-        const calificacionesSection = document.getElementById('calificaciones-section');
-        const calificacionesContent = document.getElementById('calificaciones-content');
 
-        calificacionesSection.style.display = 'block';
+                // 5. Mostrar la sección de calificaciones
+                const calificacionesSection = document.getElementById('calificaciones-section');
+                const calificacionesContent = document.getElementById('calificaciones-content');
 
-        // 6. Generar el HTML de calificaciones
-        const promedioCalificacion = estadisticas.promedio_calificacion || 0;
-        const totalCalificaciones = estadisticas.total_calificaciones || 0;
+                calificacionesSection.style.display = 'block';
 
-        calificacionesContent.innerHTML = `
+                // 6. Generar el HTML de calificaciones
+                const promedioCalificacion = estadisticas.promedio_calificacion || 0;
+                const totalCalificaciones = estadisticas.total_calificaciones || 0;
+
+                calificacionesContent.innerHTML = `
             <!-- Resumen de calificaciones -->
-            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+           <div style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF9C3 100%); border-radius: 16px; padding: 24px; margin-bottom: 24px;">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <div class="flex items-center space-x-2 mb-1">
                             <span style="font-size: 48px; font-weight: 700; color: #92400e;">${promedioCalificacion.toFixed(1)}</span>
-                            <svg class="w-12 h-12 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="#FFD700" stroke="#FFD700" stroke-width="1" style="display: inline-block; margin: 0 4px;">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
                         </div>
                         <p style="color: #92400e; font-size: 14px; font-weight: 600;"> calificación${totalCalificaciones !== 1 ? 'es' : ''}</p>
                     </div>
                     <div style="flex: 1; max-width: 300px; margin-left: 32px;">
                         ${[5, 4, 3, 2, 1].map(star => {
-                            const count = estadisticas[`distribucion_estrellas_${star}`] || 0;
-                            const percentage = totalCalificaciones > 0
-                                ? (count / totalCalificaciones * 100).toFixed(0)
-                                : 0;
-                            return `
+                    const count = estadisticas[`distribucion_estrellas_${star}`] || 0;
+                    const percentage = totalCalificaciones > 0
+                        ? (count / totalCalificaciones * 100).toFixed(0)
+                        : 0;
+                    return `
                             <div class="flex items-center space-x-2 mb-1">
                                 <span style="color: #92400e; font-size: 12px; font-weight: 600; width: 50px; display: flex; align-items: center; gap: 4px;">
                                     ${star}
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="#d2b900" d="m12.001.63l2.903 8.35l8.839.181l-7.045 5.341l2.56 8.462L12 17.914l-7.256 5.05l2.56-8.462L.26 9.161l8.839-.18z"/></svg>
-                                </span>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="#FFD700" stroke="#FFD700" stroke-width="1" style="display: inline-block; margin: 0 4px;">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+                                    </span>
                                 <div style="flex: 1; background: rgba(146, 64, 14, 0.2); border-radius: 9999px; height: 8px; overflow: hidden;">
                                     <div style="background: #f59e0b; height: 100%; width: ${percentage}%; transition: width 0.3s;"></div>
                                 </div>
                                 <span style="color: #92400e; font-size: 12px; width: 35px; text-align: right;">${count}</span>
                             </div>`;
-                        }).join('')}
+                }).join('')}
                     </div>
                 </div>
             </div>
@@ -3285,22 +3287,22 @@ async function cargarEstadisticasYCalificaciones(perfilId) {
                 </h4>
                 <div style="max-height: 400px; overflow-y: auto;">
                     ${calificaciones.map(cal => {
-                        const nombreCalificador = `${cal.nombre_calificador || ''} ${cal.apellido_calificador || ''}`.trim();
-                        const iniciales = `${(cal.nombre_calificador || 'U')[0]}${(cal.apellido_calificador || 'S')[0]}`;
-                        const fechaFormateada = new Date(cal.fecha_calificacion).toLocaleDateString('es-ES', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        });
+                    const nombreCalificador = `${cal.nombre_calificador || ''} ${cal.apellido_calificador || ''}`.trim();
+                    const iniciales = `${(cal.nombre_calificador || 'U')[0]}${(cal.apellido_calificador || 'S')[0]}`;
+                    const fechaFormateada = new Date(cal.fecha_calificacion).toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
 
-                        return `
+                    return `
                             <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; gap: 12px;">
                                 <!-- Avatar del calificador -->
                                 <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; overflow: hidden; position: relative;">
                                     ${getImagenCalificador(cal)
-                                        ? `<img src="${getImagenCalificador(cal)}" alt="${nombreCalificador}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">`
-                                        : `<span style="font-size: 20px;">${iniciales}</span>`
-                                    }
+                            ? `<img src="${getImagenCalificador(cal)}" alt="${nombreCalificador}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">`
+                            : `<span style="font-size: 20px;">${iniciales}</span>`
+                        }
                                 </div>
                                 
                                 <!-- Contenido de la reseña -->
@@ -3326,7 +3328,7 @@ async function cargarEstadisticasYCalificaciones(perfilId) {
                                 </div>
                             </div>
                         `;
-                    }).join('')}
+                }).join('')}
                 </div>
             ` : `
                 <p style="text-align: center; color: #6b7280; font-size: 14px; padding: 24px;">
@@ -3335,29 +3337,29 @@ async function cargarEstadisticasYCalificaciones(perfilId) {
             `}
         `;
 
-    } catch (error) {
-        console.error('Error al cargar estadísticas y calificaciones:', error);
-        document.getElementById('calificaciones-section').style.display = 'none';
-    }
-}
+            } catch (error) {
+                console.error('Error al cargar estadísticas y calificaciones:', error);
+                document.getElementById('calificaciones-section').style.display = 'none';
+            }
+        }
 
-// Función auxiliar para obtener la imagen del calificador
-function getImagenCalificador(cal) {
-    // Intenta varios nombres de campos posibles
-    const posiblesNombres = [
-        cal.imagenUrl_calificador,
-        cal.imagen_calificador,
-        cal.foto_calificador,
-        cal.urlFoto,
-        cal.imagenUrl_Persona_calificador,
-        cal.imagen_Persona_calificador,
-        cal.fotoPerfil_calificador,
-        cal.imagenPerfil_calificador
-    ];
-    
-    // Retorna la primera que tenga valor
-    return posiblesNombres.find(nombre => nombre && nombre.trim() !== '') || null;
-}
+        // Función auxiliar para obtener la imagen del calificador
+        function getImagenCalificador(cal) {
+            // Intenta varios nombres de campos posibles
+            const posiblesNombres = [
+                cal.imagenUrl_calificador,
+                cal.imagen_calificador,
+                cal.foto_calificador,
+                cal.urlFoto,
+                cal.imagenUrl_Persona_calificador,
+                cal.imagen_Persona_calificador,
+                cal.fotoPerfil_calificador,
+                cal.imagenPerfil_calificador
+            ];
+
+            // Retorna la primera que tenga valor
+            return posiblesNombres.find(nombre => nombre && nombre.trim() !== '') || null;
+        }
 
         // Verificar si existe solicitud y mostrar el botón correspondiente
         async function verificarYMostrarBotonSolicitud(perfilId, nombreCompleto) {
@@ -3542,18 +3544,18 @@ function getImagenCalificador(cal) {
                 const response = await fetch(`${API_BASE}/personas/by-usuario/${usuarioId}`);
                 const data = await response.json();
 
-                console.log('🔍 Respuesta de /personas/by-usuario:', data);
+                console.log(' Respuesta de /personas/by-usuario:', data);
 
                 // Verificar estructura de respuesta (primero la anidada que es la correcta)
                 if (data.success && data.data && data.data.id_Perfil_Persona) {
                     usuarioActualPersonaId = data.data.id_Perfil_Persona;
                     miPerfilIdGlobal = data.data.id_Perfil_Persona; // Guardar en variable global
-                    console.log('✅ id_Perfil_Persona obtenido:', usuarioActualPersonaId);
+                    console.log(' id_Perfil_Persona obtenido:', usuarioActualPersonaId);
                     return usuarioActualPersonaId;
                 } else if (data && data.id_Perfil_Persona) {
                     usuarioActualPersonaId = data.id_Perfil_Persona;
                     miPerfilIdGlobal = data.id_Perfil_Persona; // Guardar en variable global
-                    console.log('✅ id_Perfil_Persona obtenido:', usuarioActualPersonaId);
+                    console.log(' id_Perfil_Persona obtenido:', usuarioActualPersonaId);
                     return usuarioActualPersonaId;
                 }
 
@@ -4718,7 +4720,7 @@ function getImagenCalificador(cal) {
 
         // Función para finalizar el intercambio desde Dashboard
         async function finalizarIntercambioDashboard() {
-            console.log('🔴 finalizarIntercambioDashboard() - INICIO');
+            console.log(' finalizarIntercambioDashboard() - INICIO');
             console.log('conversacionActivaDashboard:', conversacionActivaDashboard);
 
             if (!conversacionActivaDashboard || !conversacionActivaDashboard.id_conversacion) {
@@ -4745,7 +4747,7 @@ function getImagenCalificador(cal) {
                             Estás a punto de finalizar el intercambio con <strong>${nombreContacto}</strong>
                         </p>
                         <p style="font-size: 14px; color: #6b7280; margin-bottom: 0;">
-                            ⚠️ La conversación será eliminada permanentemente
+                             La conversación será eliminada permanentemente
                         </p>
                     </div>
                 `,
@@ -4811,7 +4813,7 @@ function getImagenCalificador(cal) {
                 const data = await response.json();
 
                 if (data.success) {
-                    
+
 
                     Swal.close(); // Cerrar el loading
 
@@ -4932,11 +4934,11 @@ function getImagenCalificador(cal) {
             const textoCalificacion = modal.querySelector('#textoCalificacionDashboard');
             const btnEnviar = modal.querySelector('#btnEnviarCalificacionDashboard');
             const textosCalificacion = {
-                1: '⭐ Malo',
-                2: '⭐⭐ Regular',
-                3: '⭐⭐⭐ Bueno',
-                4: '⭐⭐⭐⭐ Muy Bueno',
-                5: '⭐⭐⭐⭐⭐ Excelente'
+                1: ' Malo',
+                2: ' Regular',
+                3: ' Bueno',
+                4: ' Muy Bueno',
+                5: ' Excelente'
             };
 
             // Event listeners para las estrellas
@@ -5012,7 +5014,7 @@ function getImagenCalificador(cal) {
                         comentario: comentario || null
                     };
 
-                    console.log('📤 Enviando calificación con payload:', payload);
+                    console.log(' Enviando calificación con payload:', payload);
                     console.log('   Tipos:', {
                         id_intercambio: typeof payload.id_intercambio,
                         id_persona_calificadora: typeof payload.id_persona_calificadora,
@@ -5033,20 +5035,33 @@ function getImagenCalificador(cal) {
                     if (data.success) {
                         modal.remove();
 
+                        // Crear estrellas SVG
+                        const crearEstrellaSVG = () => {
+                            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="#FFD700" stroke="#FFD700" stroke-width="1" style="display: inline-block; margin: 0 4px;">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>`;
+                        };
+
+                        // Generar estrellas según la calificación
+                        const estrellasHTML = Array(calificacionSeleccionada)
+                            .fill(0)
+                            .map(() => crearEstrellaSVG())
+                            .join('');
+
                         // Mostrar alerta de éxito con SweetAlert2
                         await Swal.fire({
                             icon: 'success',
                             title: '¡Calificación enviada!',
                             html: `
-                                <div style="text-align: center; padding: 10px;">
-                                    <p style="font-size: 16px; color: #4b5563; margin: 12px 0;">
-                                        Gracias por compartir tu experiencia con <strong>${nombrePersona}</strong>
-                                    </p>
-                                    <div style="font-size: 32px; margin: 16px 0;">
-                                        ${'⭐'.repeat(calificacionSeleccionada)}
-                                    </div>
-                                </div>
-                            `,
+            <div style="text-align: center; padding: 10px;">
+                <p style="font-size: 16px; color: #4b5563; margin: 12px 0;">
+                    Gracias por compartir tu experiencia con <strong>${nombrePersona}</strong>
+                </p>
+                <div style="font-size: 32px; margin: 16px 0;">
+                    ${estrellasHTML}
+                </div>
+            </div>
+        `,
                             confirmButtonColor: '#10b981',
                             confirmButtonText: '<i class="mdi mdi-check"></i> Continuar',
                             timer: 3000,
@@ -5055,6 +5070,7 @@ function getImagenCalificador(cal) {
                                 popup: 'rounded-lg shadow-2xl'
                             }
                         });
+
 
                         // Recargar conversaciones
                         await cargarConversacionesDashboard();
