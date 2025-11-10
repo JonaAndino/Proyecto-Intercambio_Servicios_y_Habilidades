@@ -236,6 +236,7 @@ const additionalStyles = `
 }
 
 textarea.inline-edit-input {
+  width: 100%;
   min-height: 80px;
   resize: vertical;
   line-height: 1.5;
