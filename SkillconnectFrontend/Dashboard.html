@@ -1317,15 +1317,10 @@
         </div>
 
 
-<div id="perfilSeccionView" class="view-section" style="display: none; animation: fadeIn 0.3s ease-in-out;">
-    <div class="w-full px-6 lg:px-12 py-8">
-        <div id="perfilSeccionContent">
-            <!-- El contenido se cargará aquí dinámicamente -->
-        </div>
-    </div>
+
+<div id="perfilSeccionView" class="view-section" style="display: none; animation: fadeIn 0.3s ease-in-out;"> 
+    <div class="w-full px-6 lg:px-12 py-8"> <div id="perfilSeccionContent"> <!-- El contenido se cargará aquí dinámicamente --> </div> </div> 
 </div>
-
-
 
 
         <!-- Vista: Mi Perfil -->
@@ -1566,6 +1561,33 @@
         let currentView = 'home';
 
         function navigateTo(viewName) {
+
+document.querySelectorAll('.view-section').forEach(view => {
+        view.classList.remove('active');
+    });
+
+    // 🛑 2. AÑADIR: OCULTAR LA VISTA DE PERFIL FORZOSAMENTE (si fue activada con style.display)
+    const perfSectionView = document.getElementById('perfilSeccionView');
+    const homeView = document.getElementById('homeView');
+    
+    // Si la vista de perfil existe y fue activada con style.display, la ocultamos
+    if (perfSectionView) {
+        perfSectionView.style.display = 'none';
+        perfSectionView.classList.remove('animate-slideIn'); // Elimina la clase de animación si aplica
+    }
+    
+    // Asegurarse de que el homeView se muestre si volvemos a 'home', o se oculte si cambiamos a otra cosa
+    if (viewName !== 'home' && homeView) {
+         homeView.style.display = 'none';
+    } else if (homeView) {
+        homeView.style.display = ''; // O block, dependiendo de tu CSS base
+    }
+
+
+    // 3. Mostrar la vista seleccionada (resto del código sin cambios)
+    
+    
+            
             // Ocultar todas las vistas
             document.querySelectorAll('.view-section').forEach(view => {
                 view.classList.remove('active');
@@ -2732,6 +2754,8 @@
             class="flex items-center justify-center px-4 py-2 border-2 border-blue-500 text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition">
         Ver Perfil
     </button>
+     
+ 
     <button onclick="event.stopPropagation(); sendRequest(${user.id}, '${user.name}')" 
             class="request-button flex items-center justify-center px-4 py-2 text-white rounded-lg font-semibold">
         Solicitar
@@ -2932,19 +2956,9 @@
 
         initializeChat();
 
-
-        function volverAlGrid() {
-    const homeView = document.getElementById('homeView');
-    const perfSectionView = document.getElementById('perfilSeccionView');
-    
-    if (homeView && perfSectionView) {
-        perfSectionView.style.display = 'none';
-        homeView.style.display = 'block';
-        
-        // Scroll al inicio
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-}
+        // ========================================
+        // FUNCIONALIDAD DEL MODAL DE PERFIL
+        // ========================================
 async function viewProfile(perfilId) {
     console.log('viewProfile() llamado con perfilId:', perfilId);
     
@@ -2974,11 +2988,22 @@ async function viewProfile(perfilId) {
     }
 }
 
-        // ========================================
-        // FUNCIONALIDAD DEL MODAL DE PERFIL
-        // ========================================
-        async function cargarPerfilEnSeccion(perfilId) {
-           const container = document.getElementById('perfilSeccionContent');
+ 
+
+function volverAlGrid() {
+    const homeView = document.getElementById('homeView');
+    const perfSectionView = document.getElementById('perfilSeccionView');
+    
+    if (homeView && perfSectionView) {
+        perfSectionView.style.display = 'none';
+        homeView.style.display = 'block';
+        
+        // Scroll al inicio
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+ async function cargarPerfilEnSeccion(perfilId) {
+    const container = document.getElementById('perfilSeccionContent');
     
     // Mostrar loader
     container.innerHTML = `
@@ -2986,8 +3011,6 @@ async function viewProfile(perfilId) {
             <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
         </div>
     `;
-
-
             try {
                 // 1. Obtener datos de la persona
                 const resPersonas = await fetch(`${API_BASE}/personas`);
@@ -4619,10 +4642,10 @@ async function viewProfile(perfilId) {
                         <p class="text-xs text-gray-500">Conversación activa</p>
                     </div>
                 </div>
-              <button onclick="event.stopPropagation(); viewProfile(${user.id})" 
-        class="request-button">
-    Ver Perfil
-</button>
+                <button id="verPerfilBtnDashboard" class="text-sm text-indigo-600 hover:text-indigo-800 font-semibold px-4 py-2 rounded-lg hover:bg-indigo-50 transition flex items-center space-x-1">
+                    <span class="iconify" data-icon="mdi:account" data-width="18"></span>
+                    <span>Ver Perfil</span>
+                </button>
   <button id="finalizarIntercambioBtn" class="px-4 py-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition flex items-center space-x-1">
                             <span class="iconify" data-icon="mdi:check-circle" data-width="18"></span>
                             <span>Finalizar Intercambio</span>
