@@ -1264,7 +1264,7 @@
             <main class="w-full px-6 lg:px-12">
 
                 <!-- Estadísticas rápidas -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-6xl mx-auto">
+                <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-6xl mx-auto">
                     <div class="stats-card p-6 text-center">
                         <div id="usuarios-activos" class="text-3xl font-bold text-blue-600 mb-2">0</div>
                         <div class="text-gray-600">Usuarios Activos</div>
@@ -1277,7 +1277,7 @@
                         <div id="intercambios-exitosos" class="text-3xl font-bold text-blue-600 mb-2">0</div>
                         <div class="text-gray-600">Intercambios Exitosos</div>
                     </div>
-                </div>
+                </div> -->
 
                 <h3 class="text-2xl font-bold text-gray-800 mb-6 max-w-6xl mx-auto">Usuarios Recomendados</h3>
 
@@ -3120,7 +3120,11 @@ function volverAlGrid() {
                     </svg>
                     <span>${ubicacion}</span>
                 </div>
-                
+                  <div class="profile-modal-section" id="request-button-section">
+                <div class="flex items-center justify-center py-4">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+            </div>
                 <!-- Estadísticas -->
                 <div class="profile-stats" id="profile-stats-container">
                     <div class="profile-stat-card">
@@ -3226,11 +3230,7 @@ function volverAlGrid() {
             </div>
             
             <!-- Botón de solicitud -->
-            <div class="profile-modal-section" id="request-button-section">
-                <div class="flex items-center justify-center py-4">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-            </div>
+          
         `;
 
                 // Cargar estadísticas y calificaciones
@@ -4655,10 +4655,10 @@ function volverAlGrid() {
                     <span class="iconify" data-icon="mdi:account" data-width="18"></span>
                     <span>Ver Perfil</span>
                 </button>
-  <button id="finalizarIntercambioBtn" class="px-4 py-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition flex items-center space-x-1">
+                <button id="finalizarIntercambioBtn" class="px-4 py-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition flex items-center space-x-1">
                             <span class="iconify" data-icon="mdi:check-circle" data-width="18"></span>
                             <span>Finalizar Intercambio</span>
-                        </button>
+                </button>
             `;
         }
 
