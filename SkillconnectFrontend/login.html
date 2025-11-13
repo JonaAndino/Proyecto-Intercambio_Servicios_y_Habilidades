@@ -144,6 +144,20 @@
     <!-- CRÍTICO: Carga el script como un módulo -->
     <!-- <script type="module" src="js/login.js"></script> -->
  <script>
+    // Si ya hay sesión activa, redirigir al Dashboard para evitar que el usuario vuelva al login
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            const hasUser = localStorage.getItem('usuarioId');
+            const hasToken = localStorage.getItem('token') || localStorage.getItem('authToken');
+            if (hasUser && hasToken) {
+                // Mantener sesión abierta; evitar mostrar login
+                window.location.href = 'Dashboard.html';
+            }
+        } catch (e) {
+            // no hacer nada si el acceso a localStorage falla
+            console.warn('No se pudo verificar sesión:', e);
+        }
+    });
         // AL CARGAR LA PÁGINA: Verificar si viene de autenticación con Google
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -157,8 +171,9 @@
                 console.log("   - Email:", email);
                 console.log("   - User ID:", userId);
                 
-                // Guardar en localStorage
+                // Guardar en localStorage (guardamos token en dos claves para compatibilidad)
                 localStorage.setItem('authToken', token);
+                localStorage.setItem('token', token);
                 localStorage.setItem('usuarioId', userId);
                 localStorage.setItem('correoUsuario', email);
                 localStorage.setItem('firebaseUser', 'true');
@@ -251,6 +266,7 @@
                     console.log("Login exitoso, guardando datos...");
                     // Guardar token y datos en localStorage
                     localStorage.setItem('authToken', loginData.token);
+                    localStorage.setItem('token', loginData.token);
                     localStorage.setItem('usuarioId', loginData.usuarioId);
                     localStorage.setItem('correoUsuario', loginData.correo);
                     localStorage.setItem('firebaseUser', 'true');
@@ -319,9 +335,10 @@
                     const data = await res.json();
 
                     if (res.ok) {
-                        localStorage.setItem('authToken', data.token);
-                        localStorage.setItem('usuarioId', data.usuarioId);
-                        localStorage.setItem('correoUsuario', data.correo);
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('usuarioId', data.usuarioId);
+                localStorage.setItem('correoUsuario', data.correo);
                         
                         showMessage("Redirigiendo al dashboard...", "bg-green-100 text-green-700");
 

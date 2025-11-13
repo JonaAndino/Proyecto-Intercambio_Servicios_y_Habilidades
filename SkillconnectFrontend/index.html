@@ -10,6 +10,24 @@
     <!-- Script para cargar Lucide Icons (se carga como script normal, no como módulo) -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script>
+        // Detecta URLs con segmentos adicionales después de index.html, por ejemplo:
+        // /SkillconnectFrontend/index.html/jhajsh
+        // Si se detecta, redirige a la página 404 personalizada.
+        (function(){
+            try {
+                var p = location.pathname || '';
+                // Coincide index.html seguido de una barra y algo más
+                if (p.match(/index\.html\/.+/)) {
+                    // Reemplaza la ubicación por la página de error relativa
+                    location.replace('404.html');
+                }
+            } catch (e) {
+                // no hacemos nada si ocurre un error
+                console.error('Error comprobando ruta:', e);
+            }
+        })();
+    </script>
+    <script>
         // Inicializa los iconos de Lucide usando el objeto global 'lucide'
         // Esto soluciona el error 'does not provide an export named createIcons'
         document.addEventListener('DOMContentLoaded', () => {
