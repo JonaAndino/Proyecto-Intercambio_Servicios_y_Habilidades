@@ -8,7 +8,6 @@ const path = require('path');
 
 const PORT = process.env.PORT || 5050;
 const PUBLIC_DIR = __dirname; // sirve archivos desde esta carpeta
-const PUBLIC_BASENAME = path.basename(PUBLIC_DIR); // e.g. 'SkillconnectFrontend'
 
 const mime = {
   '.html': 'text/html; charset=UTF-8',
@@ -52,11 +51,6 @@ const server = http.createServer((req, res) => {
     const decoded = decodeURIComponent(req.url.split('?')[0]);
     // Normalizar y prevenir traversal
     let safePath = path.normalize(decoded).replace(/^\/+/, '');
-    // Si la petición usa la carpeta como prefijo (por ejemplo /SkillconnectFrontend
-    // o /SkillconnectFrontend/), tratarla como raíz y servir index.html.
-    if (safePath === PUBLIC_BASENAME || safePath === PUBLIC_BASENAME + '/') {
-      safePath = '';
-    }
     // Si la petición tiene segmentos después de index.html (index.html/xxx)
     // tratamos como no encontrado y servimos 404.html
     if (/index\.html\/.+/.test(decoded)) {

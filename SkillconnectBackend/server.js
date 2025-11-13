@@ -8,6 +8,7 @@ const express = require('express');
 const cors = require('cors'); 
 const session = require('express-session');
 const passport = require('./config/passport');
+const path = require('path');
 
 // Importar rutas
 const authRoutes = require('./routes/auth');
@@ -73,6 +74,37 @@ app.use('/api/intercambios', intercambiosRoutes); // Rutas de intercambios final
 // Prueba básica de que el servidor Express funciona
 app.get('/', (req, res) => {
     res.send('Servidor Skill Connect Activo!');
+});
+
+// Servir archivos estáticos del frontend (SkillconnectFrontend)
+// Colocamos un middleware que añade una cabecera Content-Security-Policy
+// razonable para desarrollo antes de servir los archivos estáticos, porque
+// algunos servidores/entornos envían por defecto "default-src 'none'" y eso
+// bloquea fuentes externas (Google Fonts) y hojas de estilo.
+const frontendPath = path.join(__dirname, '..', 'SkillconnectFrontend');
+
+// Middleware para establecer CSP (relajada para desarrollo). Ajusta según
+// seguridad en producción.
+app.use('/SkillconnectFrontend', (req, res, next) => {
+    // Política de ejemplo: permite recursos propios, fuentes/estilos de Google
+    // y datos en-linea para facilitar desarrollo local.
+    const csp = "default-src 'self' data:; " +
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; " +
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+                "font-src 'self' https://fonts.gstatic.com data:; " +
+                "img-src 'self' data: https:; " +
+                "connect-src 'self' http://127.0.0.1:5050 http://localhost:5050 ws:;";
+    res.setHeader('Content-Security-Policy', csp);
+    next();
+});
+
+// Servir estáticos (index por defecto)
+app.use('/SkillconnectFrontend', express.static(frontendPath, { index: 'index.html' }));
+
+// Si la petición comienza con /SkillconnectFrontend y no se encontró un archivo,
+// devolvemos la página 404 personalizada del frontend.
+app.use('/SkillconnectFrontend', (req, res) => {
+    res.status(404).sendFile(path.join(frontendPath, '404.html'));
 });
 
 // 5. Iniciar el servidor
