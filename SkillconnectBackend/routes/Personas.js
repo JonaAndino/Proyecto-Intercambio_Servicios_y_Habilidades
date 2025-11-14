@@ -374,3 +374,54 @@ router.get('/categoria/:idCategoria', async (req, res) => {
 
 // Exportar el router para usarlo en el archivo principal (e.g., app.js)
 module.exports = router;
+
+// Endpoint adicional: buscar persona por "slug" legible
+// GET /personas/slug/:slug
+router.get('/slug/:slug', async (req, res) => {
+    const slugParam = (req.params.slug || '').toString().trim().toLowerCase();
+    if (!slugParam) return res.status(400).json({ success: false, message: 'Slug requerido' });
+
+    try {
+        // Intentar llamar al procedimiento almacenado si existe
+        try {
+            const [callResult] = await db.execute('CALL sp_Personas_GetBySlug(?)', [slugParam]);
+            // Dependiendo del driver, CALL puede devolver un array anidado
+            const resultSet = Array.isArray(callResult) && Array.isArray(callResult[0]) ? callResult[0] : callResult;
+            if (Array.isArray(resultSet) && resultSet.length > 0) {
+                return res.json({ success: true, data: resultSet[0] });
+            }
+            // Si el SP existe pero no encontró nada, devolvemos 404
+            return res.status(404).json({ success: false, message: 'Perfil no encontrado' });
+        } catch (procErr) {
+            // Si el procedimiento no existe o falla, seguiremos con fallback por query
+            // console.warn('sp_Personas_GetBySlug no disponible, usando fallback:', procErr.message);
+        }
+
+        // Fallback: obtener la lista de personas y comparar el slug en JS
+        const [rows] = await db.execute(
+            `SELECT p.*, u.correo, u.nombre AS nombre_usuario_cuenta, u.activo
+             FROM Personas p
+             INNER JOIN Usuarios u ON p.id_Usuario = u.id_usuario`
+        );
+
+        const normalize = (s) => (s || '').toString().toLowerCase().trim();
+        const makeSlug = (p) => {
+            const full = `${p.nombre_Persona || ''} ${p.apellido_Persona || ''}`.toLowerCase();
+            return full.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        };
+
+        const found = rows.find(p => {
+            if (normalize(p.nombre_Persona) === slugParam) return true;
+            if (normalize(p.nombre_usuario_cuenta) === slugParam) return true;
+            if (makeSlug(p) === slugParam) return true;
+            return false;
+        });
+
+        if (found) return res.json({ success: true, data: found });
+
+        return res.status(404).json({ success: false, message: 'Perfil no encontrado' });
+    } catch (error) {
+        console.error('Error en GET /personas/slug/:slug', error.message);
+        return res.status(500).json({ success: false, message: 'Error del servidor' });
+    }
+});
