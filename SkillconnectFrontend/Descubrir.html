@@ -1028,7 +1028,7 @@
         <div class="p-6">
             <!-- Encabezado del Sidebar -->
             <div class="flex items-center justify-between mb-8">
-                <a href="Dashboard.html"
+                <a href="Descubrir.html"
                 >
                 <h2 class="text-2xl font-bold text-gray-800">Menú</h2>
                 </a>
@@ -1063,7 +1063,7 @@
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
                         </path>
                     </svg>
-                    <span class="font-medium">Inicio</span>
+                    <span class="font-medium">Descubrir</span>
                 </a>
 
                 <a href="#" onclick="navigateTo('perfil'); return false;" data-view="perfil"
@@ -1173,7 +1173,7 @@
                             <div class="hamburger-line line3 w-6 h-0.5 bg-gray-700"></div>
                         </div>
                     </button>
- <a href="Dashboard.html"
+ <a href="Descubrir.html"
                     <!-- Logo -->
                     <div class="flex items-center space-x-2">
                         <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1644,7 +1644,7 @@ document.querySelectorAll('.view-section').forEach(view => {
                 closeSidebarFn();
             }
 
-            // Scroll al inicio
+            // Scroll al Descubrir
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -2376,7 +2376,7 @@ document.querySelectorAll('.view-section').forEach(view => {
             currentPage = page;
             renderUserCardsReal();
 
-            // Scroll suave al inicio del grid
+            // Scroll suave al Descubrir del grid
             document.getElementById('usersGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -2398,7 +2398,7 @@ document.querySelectorAll('.view-section').forEach(view => {
         // Cargar favoritos desde el backend
         async function cargarFavoritosDesdeBackend() {
             try {
-                console.log(' cargarFavoritosDesdeBackend() - INICIO');
+                console.log(' cargarFavoritosDesdeBackend() - Descubrir');
                 const personaId = await obtenerPersonaIdActual();
                 if (!personaId) {
                     console.warn(' No hay personaId');
@@ -2565,7 +2565,7 @@ document.querySelectorAll('.view-section').forEach(view => {
                 const initials = nombreCompleto.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
                 return `
-                    <div class="user-card" onclick="openChatProfileModal(${userId})">
+                    <div class="user-card" onclick="viewProfile(${userId})">
                         <!-- Botón de favoritos -->
 
                             <button onclick="toggleFavorite(event, ${userId}, '${nombreCompleto.replace(/'/g, "\\'")}'); localStorage.setItem('actualizarFavoritos', Date.now().toString()); cargarFavoritosDesdeBackend().then(() => { renderUserCardsReal(); });" 
@@ -2614,7 +2614,7 @@ document.querySelectorAll('.view-section').forEach(view => {
                             </div>
                             
                             <!-- Botón Ver Perfil -->
-                            <button onclick="event.stopPropagation(); openChatProfileModal(${userId})" class="request-button" title="Ver perfil completo de ${nombreCompleto}">
+                            <button onclick="event.stopPropagation(); viewProfile(${userId})" class="request-button" title="Ver perfil completo de ${nombreCompleto}">
                                 Ver Perfil
                             </button>
                         </div>
@@ -2989,22 +2989,31 @@ async function viewProfile(perfilId) {
         // Ocultar el grid de usuarios
         const homeView = document.getElementById('homeView');
         const perfSectionView = document.getElementById('perfilSeccionView');
+        const favoritosView = document.getElementById('favoritosView');
         
         if (!perfSectionView) {
             console.error('No existe el elemento perfilSeccionView');
             return;
         }
 
-        // Mostrar vista de perfil
-        homeView.style.display = 'none';
+        // Integración SPA: ocultar/limpiar otras vistas y marcar la sección de perfil como activa
+        document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+
+        if (homeView) homeView.style.display = 'none';
+        if (favoritosView) favoritosView.classList.remove('active');
+
+        // Mostrar vista de perfil correctamente
         perfSectionView.style.display = 'block';
+        perfSectionView.classList.add('active');
         perfSectionView.classList.add('animate-slideIn');
 
-        // Cargar contenido del perfil
+        // Cargar contenido del perfil (reemplaza el contenido anterior)
         await cargarPerfilEnSeccion(perfilId);
 
-        // Scroll al inicio
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Asegurar que la UI muestre la parte superior del perfil
+        setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 50);
 
     } catch (error) {
         console.error('Error al mostrar perfil:', error);
@@ -3021,7 +3030,7 @@ function volverAlGrid() {
         perfSectionView.style.display = 'none';
         homeView.style.display = 'block';
         
-        // Scroll al inicio
+        // Scroll al Descubrir
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
@@ -4670,7 +4679,7 @@ function volverAlGrid() {
                         </svg>
                         <h3 class="text-lg font-semibold text-gray-700 mb-2">No tienes solicitudes enviadas</h3>
                         <p class="text-gray-500 mb-4">Busca usuarios y envíales solicitudes de intercambio</p>
-                        <button onclick="window.location.href='Dashboard.html'" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <button onclick="window.location.href='Descubrir.html'" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
                         Explorar Usuarios
                         </button>
                     </div>
@@ -4791,7 +4800,7 @@ function volverAlGrid() {
             document.addEventListener('click', (e) => {
                 if (e.target.id === 'verPerfilBtnDashboard' || e.target.closest('#verPerfilBtnDashboard')) {
                     e.preventDefault();
-                    console.log('Click capturado en botón Ver Perfil Dashboard');
+                    console.log('Click capturado en botón Ver Perfil Descubrir');
                     verPerfilContactoDashboard();
                 }
             });
@@ -4976,11 +4985,11 @@ function volverAlGrid() {
                 conversacionActivaDashboard?.idContacto ||
                 conversacionActivaDashboard?.id_persona_contacto;
 
-            if (idContacto) {
-                console.log('Abriendo perfil para ID (chat modal):', idContacto);
-                // Abrir el perfil en un modal específico para el chat (no cambiar la vista principal)
-                openChatProfileModal(parseInt(idContacto));
-            } else {
+                if (idContacto) {
+                    console.log('Abriendo perfil para ID (chat -> vista perfil):', idContacto);
+                    // Abrir la vista de perfil en la sección principal (comportamiento SPA)
+                    viewProfile(parseInt(idContacto));
+                } else {
                 console.error('No se encontró el ID del contacto');
                 alert('No se pudo cargar el perfil del contacto');
             }
@@ -5109,14 +5118,14 @@ function volverAlGrid() {
             if (e.target.id === 'finalizarIntercambioBtn' || e.target.closest('#finalizarIntercambioBtn')) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Click en botón Finalizar Intercambio (Dashboard)');
+                console.log('Click en botón Finalizar Intercambio (Descubrir)');
                 finalizarIntercambioDashboard();
             }
         }, true);
 
         // Función para finalizar el intercambio desde Dashboard
         async function finalizarIntercambioDashboard() {
-            console.log(' finalizarIntercambioDashboard() - INICIO');
+            console.log(' finalizarIntercambioDashboard() - Descubrir');
             console.log('conversacionActivaDashboard:', conversacionActivaDashboard);
 
             if (!conversacionActivaDashboard || !conversacionActivaDashboard.id_conversacion) {
@@ -5775,6 +5784,62 @@ function volverAlGrid() {
 
     <!-- Protección de sesión -->
     <script src="js/auth-guard.js"></script>
+
+        <script>
+            // Script simple: al hacer click en elementos con `data-view` actualiza la URL a `/home`, `/perfil`, etc.
+            (function(){
+                function setPath(view, replace = false){
+                    if(!view) return;
+                    const state = { view };
+                    try{
+                        const u = new URL(window.location.href);
+                        u.pathname = '/' + encodeURIComponent(view);
+                        if(replace) history.replaceState(state, '', u.toString());
+                        else history.pushState(state, '', u.toString());
+                    }catch(err){
+                        const p = '/' + encodeURIComponent(view);
+                        if(replace) history.replaceState(state, '', p);
+                        else history.pushState(state, '', p);
+                    }
+                }
+
+                document.addEventListener('click', function(e){
+                    const el = e.target.closest('[data-view]');
+                    if(!el) return;
+                    const view = el.getAttribute('data-view');
+                    // actualizar URL después de que otros handlers corran
+                    setTimeout(()=> setPath(view), 0);
+                });
+
+                window.addEventListener('popstate', function(e){
+                    const view = (e.state && e.state.view) || (function(){
+                        try{
+                            const p = location.pathname.replace(/^\/+/, '').split('/')[0];
+                            return p || '';
+                        }catch(err){ return ''; }
+                    })();
+                    if(!view) return;
+                    const target = document.querySelector('[data-view="'+view+'"]');
+                    if(target) target.click();
+                });
+
+                document.addEventListener('DOMContentLoaded', function(){
+                    // Al cargar, si la ruta es /home o similar, activar esa vista
+                    try{
+                        const p = location.pathname.replace(/^\/+/, '').split('/')[0];
+                        if(p && p !== ''){
+                            // establecer estado sin agregar al historial
+                            try{ history.replaceState({view: p}, '', window.location.href); } catch(e){}
+                            const target = document.querySelector('[data-view="'+p+'"]');
+                            if(target) target.click();
+                        }
+                    }catch(e){}
+                });
+
+                // Nota: usar rutas tipo `/home` puede generar 404 al recargar si el servidor
+                // no está configurado para redirigir todas las rutas a `Descubrir.html`.
+            })();
+        </script>
 
 </body>
 
