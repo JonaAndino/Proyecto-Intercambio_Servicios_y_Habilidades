@@ -148,6 +148,20 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// ENDPOINT: Obtener id_Usuario dado id_Perfil_Persona (GET /personas/perfil-usuario/:idPerfil)
+router.get('/perfil-usuario/:idPerfil', async (req, res) => {
+    const idPerfil = parseInt(req.params.idPerfil, 10);
+    if (isNaN(idPerfil)) return res.status(400).json({ success: false, message: 'idPerfil no válido' });
+    try {
+        const [rows] = await db.execute('SELECT id_Usuario FROM Personas WHERE id_Perfil_Persona = ? LIMIT 1', [idPerfil]);
+        if (!rows || rows.length === 0) return res.status(404).json({ success: false, message: 'Perfil no encontrado' });
+        return res.json({ success: true, data: { id_Usuario: rows[0].id_Usuario } });
+    } catch (error) {
+        console.error('Error en GET /personas/perfil-usuario/:idPerfil', error.message);
+        return res.status(500).json({ success: false, message: 'Error del servidor' });
+    }
+});
+
 // ----------------------------------------------------
 // ENDPOINT: Crear una nueva persona (POST /personas)
 // ----------------------------------------------------

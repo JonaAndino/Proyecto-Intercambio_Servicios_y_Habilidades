@@ -63,6 +63,7 @@ app.use('/api',loginRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/personas', personasRoutes);
     const respuestasReseniaRoutes = require('./routes/Respuestas_Resenia');
+    const notificacionesRoutes = require('./routes/notificaciones_reseñas');
 app.use('/api/habilidades', habilidadesRoutes);
 app.use('/api/direcciones', direccionesRoutes);
 app.use('/api/categorias', categoriasRoutes);
@@ -84,6 +85,7 @@ app.get('/', (req, res) => {
 // Servir archivos estáticos del frontend (SkillconnectFrontend)
 // Colocamos un middleware que añade una cabecera Content-Security-Policy
     app.use('/api/respuestas-resenia', respuestasReseniaRoutes); // Rutas de respuestas a reseñas
+app.use('/api/notificaciones', notificacionesRoutes); // Rutas de notificaciones (notificaciones_reseñas)
 // razonable para desarrollo antes de servir los archivos estáticos, porque
 // algunos servidores/entornos envían por defecto "default-src 'none'" y eso
 // bloquea fuentes externas (Google Fonts) y hojas de estilo.

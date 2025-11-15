@@ -3635,6 +3635,27 @@ function volverAlGrid() {
                     calificaciones = dataCalificaciones.data.filter(cal => cal.visible);
                 }
 
+                // Cargar respuestas para cada calificación (si existen)
+                for (let i = 0; i < calificaciones.length; i++) {
+                    const cal = calificaciones[i];
+                    // normalizar posibles nombres de id
+                    const calId = cal.id_Calificacion ?? cal.id_calificacion ?? cal.id ?? cal.idCalificacion ?? null;
+                    if (!calId) continue;
+                    try {
+                        const resRespuestas = await fetch(`${API_BASE}/respuestas-resenia/por-resena/${calId}`);
+                        if (resRespuestas.ok) {
+                            const dataRespuestas = await resRespuestas.json();
+                            if (dataRespuestas.success && dataRespuestas.data && dataRespuestas.data.length > 0) {
+                                cal.respuesta_del_dueno = dataRespuestas.data[0].respuesta || '';
+                                cal.id_respuesta = dataRespuestas.data[0].id_respuesta;
+                                cal.fecha_respuesta = dataRespuestas.data[0].fecha_creacion || dataRespuestas.data[0].fecha_respuesta || new Date().toISOString();
+                            }
+                        }
+                    } catch (err) {
+                        console.debug('No hay respuesta para la reseña id:', calId, err);
+                    }
+                }
+
 
 
                 // 5. Mostrar la sección de calificaciones
@@ -3728,6 +3749,18 @@ function volverAlGrid() {
                                         <p style="color: #4b5563; font-size: 14px; line-height: 1.5; margin: 8px 0 0 0;">
                                             "${cal.comentario}"
                                         </p>
+                                    ` : ''}
+                                    ${cal.respuesta_del_dueno ? `
+                                        <div style="margin-top:12px; padding:12px; background:#f0f9ff; border-left:4px solid #2563eb; border-radius:6px;">
+                                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-weight:600; color:#1f2937; font-size:13px;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style="color: #2563eb;">
+                                                    <path d="M3 6a3 3 0 013-3h10a1 1 0 01.82.055l.487.979A2 2 0 0116 6v10a3 3 0 01-3 3H6a3 3 0 01-3-3V6z"/>
+                                                </svg>
+                                                <span>Respuesta</span>
+                                            </div>
+                                            <p style="color:#374151; margin:0;">"${cal.respuesta_del_dueno}"</p>
+                                            <p style="color:#9ca3af; font-size:12px; margin-top:8px;">Respondido ${new Date(cal.fecha_respuesta).toLocaleDateString('es-ES')}</p>
+                                        </div>
                                     ` : ''}
                                 </div>
                             </div>
@@ -4273,6 +4306,49 @@ function volverAlGrid() {
                 countText.textContent = '';
             }
         }
+
+        // Escuchar cambios en localStorage realizados por iframes (storage event)
+        window.addEventListener('storage', function (e) {
+            try {
+                if (e.key === 'skillconnect_notification_delta') {
+                    const delta = parseInt(e.newValue || '0', 10) || 0;
+                    if (delta > 0) {
+                        const badge = document.getElementById('notificationBadge');
+                        const countText = document.getElementById('notificationCount');
+                        const current = parseInt(badge?.textContent?.replace(/\D+/g, '') || '0', 10) || 0;
+                        const nuevo = current + delta;
+                        if (badge) {
+                            badge.classList.remove('hidden');
+                            badge.textContent = nuevo > 99 ? '99+' : nuevo;
+                        }
+                        if (countText) countText.textContent = `${nuevo} pendiente${nuevo > 1 ? 's' : ''}`;
+                        // limpiar la bandera
+                        try { localStorage.removeItem('skillconnect_notification_delta'); } catch (err) { }
+                    }
+                }
+            } catch (err) { console.debug('storage listener error', err); }
+        });
+
+        // Escuchar mensajes postMessage desde iframes (por si se envía directamente)
+        window.addEventListener('message', function (ev) {
+            try {
+                // confianza: mismo origen
+                if (ev.origin !== window.location.origin) return;
+                const d = ev.data || {};
+                if (d.type === 'nueva_notificacion') {
+                    const inc = parseInt(d.inc || 1, 10) || 1;
+                    const badge = document.getElementById('notificationBadge');
+                    const countText = document.getElementById('notificationCount');
+                    const current = parseInt(badge?.textContent?.replace(/\D+/g, '') || '0', 10) || 0;
+                    const nuevo = current + inc;
+                    if (badge) {
+                        badge.classList.remove('hidden');
+                        badge.textContent = nuevo > 99 ? '99+' : nuevo;
+                    }
+                    if (countText) countText.textContent = `${nuevo} pendiente${nuevo > 1 ? 's' : ''}`;
+                }
+            } catch (err) { console.debug('message listener error', err); }
+        });
 
         // Toggle dropdown de notificaciones
         document.getElementById('notificationBtn')?.addEventListener('click', function (e) {
