@@ -1056,7 +1056,7 @@
 
             <!-- Navegación del Sidebar -->
             <nav class="space-y-2">
-                <a href="#" onclick="navigateTo('home'); return false;" data-view="home"
+                <a href="#" onclick="navigateTo('descubrir'); return false;" data-view="descubrir"
                     class="sidebar-item active flex items-center space-x-3 p-3 rounded-lg text-gray-700">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1132,16 +1132,10 @@
 
                 <div class="my-4 border-t border-gray-200"></div>
 
-                <a href="#" onclick="navigateTo('configuracion'); return false;" data-view="configuracion"
+                <a href="#" onclick="navigateTo('historia'); return false;" data-view="historia"
                     class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
-                        </path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                    <span class="font-medium">Configuración</span>
+                    <span class="iconify w-6 h-6 text-blue-600" data-icon="mdi:shield-check" style="font-size: 24px;"></span>
+                    <span class="font-medium">Solicitud de verificación</span>
                 </a>
 
                 <a href="#" onclick="logout(); return false;"
@@ -1225,7 +1219,7 @@
         </header>
 
         <!-- Sección Hero con Búsqueda -->
-        <div id="homeView" class="view-section active">
+        <div id="descubrirView" class="view-section active">
             <div class="w-full px-6 lg:px-12 py-8">
                 <div class="text-center mb-8">
                     <h2 class="text-4xl font-bold text-gray-800 mb-4">Descubre Talentos Increíbles</h2>
@@ -1484,43 +1478,21 @@
             </div>
         </div>
 
-        <!-- Vista: Configuración -->
-        <div id="configuracionView" class="view-section">
+        <!-- Vista: Solicitud de verificación -->
+        <div id="solicitudVerificacionView" class="view-section">
             <div class="w-full px-6 lg:px-12 py-8">
                 <div class="max-w-4xl mx-auto">
                     <div class="bg-white rounded-2xl shadow-xl p-8">
-                        <h2 class="text-3xl font-bold text-gray-800 mb-6">Configuración</h2>
-                        <p class="text-gray-600 mb-4">Ajusta las preferencias de tu cuenta.</p>
-
-                        <div class="space-y-4 mt-6">
-                            <div class="border-b pb-4">
-                                <h3 class="font-semibold text-gray-700 mb-2">Preferencias de Notificaciones</h3>
-                                <label class="flex items-center space-x-3">
-                                    <input type="checkbox" class="w-4 h-4 text-purple-600" checked>
-                                    <span class="text-gray-600">Recibir notificaciones por email</span>
-                                </label>
-                            </div>
-
-                            <div class="border-b pb-4">
-                                <h3 class="font-semibold text-gray-700 mb-2">Privacidad</h3>
-                                <label class="flex items-center space-x-3">
-                                    <input type="checkbox" class="w-4 h-4 text-purple-600" checked>
-                                    <span class="text-gray-600">Perfil visible para otros usuarios</span>
-                                </label>
-                            </div>
-
-                            <div class="pt-4">
-                                <button class="request-button px-6 py-3 text-white rounded-lg font-semibold">
-                                    Guardar Cambios
-                                </button>
-                            </div>
-                        </div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-6">Solicitud de verificación</h2>
+                        <p class="text-gray-600 mb-4">Solicita la verificación de tu cuenta para aumentar la confianza y credibilidad en la comunidad SkillConnect.</p>
+                        <button id="btnSolicitarVerificacion" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow transition mb-4">
+                            Solicitar verificación
+                        </button>
+                        <div id="verificacionMensaje" class="mt-4"></div>
                     </div>
                 </div>
             </div>
         </div>
-
-    </div>
 
     <!-- Modal de Perfil de Usuario -->
     <div id="profileModal" class="custom-modal-overlay" style="display: none;">
@@ -1581,7 +1553,7 @@
         }
 
         // Sistema de navegación SPA (Single Page Application)
-        let currentView = 'home';
+        let currentView = 'descubrir';
 
         function navigateTo(viewName) {
 
@@ -1591,7 +1563,7 @@ document.querySelectorAll('.view-section').forEach(view => {
 
     // 🛑 2. AÑADIR: OCULTAR LA VISTA DE PERFIL FORZOSAMENTE (si fue activada con style.display)
     const perfSectionView = document.getElementById('perfilSeccionView');
-    const homeView = document.getElementById('homeView');
+    const descubrirView = document.getElementById('descubrirView');
     
     // Si la vista de perfil existe y fue activada con style.display, la ocultamos
     if (perfSectionView) {
@@ -1599,11 +1571,11 @@ document.querySelectorAll('.view-section').forEach(view => {
         perfSectionView.classList.remove('animate-slideIn'); // Elimina la clase de animación si aplica
     }
     
-    // Asegurarse de que el homeView se muestre si volvemos a 'home', o se oculte si cambiamos a otra cosa
-    if (viewName !== 'home' && homeView) {
-         homeView.style.display = 'none';
-    } else if (homeView) {
-        homeView.style.display = ''; // O block, dependiendo de tu CSS base
+    // Asegurarse de que la vista descubrir se muestre si volvemos a 'descubrir', o se oculte si cambiamos a otra cosa
+    if (viewName !== 'descubrir' && descubrirView) {
+         descubrirView.style.display = 'none';
+    } else if (descubrirView) {
+        descubrirView.style.display = ''; // O block, dependiendo de tu CSS base
     }
 
 
@@ -1875,6 +1847,18 @@ document.querySelectorAll('.view-section').forEach(view => {
                     'Escritura': 'mdi:pencil'
                 };
 
+                // Función auxiliar: generar slug seguro para URL
+                function slugify(text) {
+                    return (text || '')
+                        .toString()
+                        .normalize('NFD') // separar acentos
+                        .replace(/\p{Diacritic}/gu, '') // eliminar diacríticos
+                        .toLowerCase()
+                        .trim()
+                        .replace(/[^a-z0-9]+/g, '_') // reemplazar separadores por guiones bajos
+                        .replace(/^_+|_+$/g, '');
+                }
+
                 // Crear botón para cada categoría
                 categorias.forEach(categoria => {
                     // Los nombres de campos pueden variar, intentar diferentes variaciones
@@ -1894,6 +1878,9 @@ document.querySelectorAll('.view-section').forEach(view => {
                     const button = document.createElement('button');
                     button.className = 'filter-button px-6 py-2 bg-white text-gray-700 rounded-full hover:bg-blue-50 hover:text-blue-600 transition border border-gray-200 shadow-sm flex items-center gap-2';
                     button.setAttribute('data-categoria-id', idCategoria);
+                    // Añadir slug legible para la URL (ej: disenio_y_creatividad)
+                    const slug = slugify(nombreCategoria);
+                    if (slug) button.setAttribute('data-categoria-slug', slug);
                     button.onclick = (e) => filtrarPorCategoria(idCategoria, e);
                     button.innerHTML = `
                         <span class="iconify" data-icon="${icono}" data-width="20" data-height="20"></span>
@@ -1902,6 +1889,26 @@ document.querySelectorAll('.view-section').forEach(view => {
 
                     categoryFilters.appendChild(button);
                 });
+
+                // Después de crear los botones, si la URL contiene un slug de categoría
+                // intentar activar ese filtro automáticamente.
+                try {
+                    const rawPath = decodeURIComponent(window.location.pathname.replace(/^\/+/,'').split('/')[0] || '');
+                    if (rawPath && rawPath !== '') {
+                        const normalizedPathSlug = slugify(rawPath);
+                        if (normalizedPathSlug) {
+                            const targetBtn = categoryFilters.querySelector('[data-categoria-slug="' + normalizedPathSlug + '"]');
+                            if (targetBtn) {
+                                // Defer para asegurarnos que el resto del init termine
+                                setTimeout(() => {
+                                    targetBtn.click();
+                                }, 50);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('No se pudo activar slug de categoría desde la URL:', e);
+                }
 
             } catch (error) {
                 console.error('Error al cargar categorías:', error);
@@ -1926,6 +1933,18 @@ document.querySelectorAll('.view-section').forEach(view => {
                 if (buttonElement) {
                     buttonElement.classList.add('filter-active', 'bg-blue-600', 'text-white', 'border-blue-600');
                     buttonElement.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
+                    // Actualizar la URL (solo la ruta) a `/mi_slug_de_categoria`
+                    try {
+                        const slug = buttonElement.getAttribute('data-categoria-slug') || '';
+                        if (slug) {
+                            const state = { category: slug };
+                            const p = '/' + encodeURIComponent(slug);
+                            history.pushState(state, '', p);
+                        }
+                    } catch (err) {
+                        // No bloquear la funcionalidad por errores en history
+                        console.warn('No se pudo actualizar la URL de categoría:', err);
+                    }
                 }
             }
 
@@ -2818,7 +2837,90 @@ document.querySelectorAll('.view-section').forEach(view => {
 
             usersGrid.innerHTML = skeletons;
         }
+// Variable global para historial de coincidencias
+let historialCoincidencias = [];
 
+// Algoritmo de coincidencia entre habilidades ofrecidas y requeridas
+function obtenerUsuariosCoincidentes(miPerfil, usuarios) {
+    if (!miPerfil || !miPerfil.habilidades_ofrecidas || !miPerfil.habilidades_requeridas) return [];
+    const ofrecidas = miPerfil.habilidades_ofrecidas.map(h => h.toLowerCase());
+    const requeridas = miPerfil.habilidades_requeridas.map(h => h.toLowerCase());
+    return usuarios.filter(user => {
+        if (!user.habilidades_ofrecidas || !user.habilidades_requeridas) return false;
+        const userOfrecidas = user.habilidades_ofrecidas.map(h => h.toLowerCase());
+        const userRequeridas = user.habilidades_requeridas.map(h => h.toLowerCase());
+        const matchOfrecidas = userOfrecidas.some(h => requeridas.includes(h));
+        const matchRequeridas = userRequeridas.some(h => ofrecidas.includes(h));
+        return matchOfrecidas || matchRequeridas;
+    });
+}
+
+// Simulación de función para obtener perfil actual (ajusta según tu backend)
+async function obtenerPerfilActual() {
+    // Aquí deberías obtener el perfil real del usuario logueado
+    // Ejemplo de estructura:
+    return {
+        id: usuarioActualPersonaId,
+        habilidades_ofrecidas: ['Estructuras', 'Control de Versiones'],
+        habilidades_requeridas: ['Conocimiento Botánico', 'Diseño y Análisis de Circuitos']
+    };
+}
+
+// Renderizar solo usuarios recomendados
+function renderUserCardsRecomendados(users) {
+    const usersGrid = document.getElementById('usersGrid');
+    if (!usersGrid) return;
+    if (!users || users.length === 0) {
+        usersGrid.innerHTML = '<div class="text-center text-gray-500 py-8">No se encontraron coincidencias de habilidades.</div>';
+        return;
+    }
+    usersGrid.innerHTML = users.map(user => `
+        <div class="user-card">
+            <div class="user-card-avatar-container">
+                <img src="${user.avatarUrl || 'default-avatar.png'}" alt="Avatar" class="user-avatar" />
+            </div>
+            <div class="user-card-info">
+                <h3>${user.name}</h3>
+                <p>${user.descripcion || ''}</p>
+                <div class="skills-container-card">
+                    ${(user.habilidades_ofrecidas || []).map(h => `<span class="skill-badge">${h}</span>`).join('')}
+                </div>
+                <div class="skills-container-card">
+                    ${(user.habilidades_requeridas || []).map(h => `<span class="skill-badge">${h}</span>`).join('')}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Llama a la función de recomendaciones automáticas al inicializar el dashboard
+async function inicializarDashboard() {
+    // Mostrar skeleton mientras carga
+    mostrarSkeletonLoaders(6);
+
+    // Cargar todo en paralelo para mejorar el rendimiento
+    await Promise.all([
+        // ...otros loaders...
+        cargarEstadisticasGlobales()
+    ]);
+
+    // Verificar actualizaciones de imagen
+    verificarActualizacionesPendientes();
+
+    // Actualizar badge de favoritos
+    actualizarBadgeFavoritos();
+
+    // Mostrar recomendaciones automáticas
+    try {
+        const miPerfil = await obtenerPerfilActual();
+        const usuarios = await cargarUsuariosReales();
+        const recomendados = obtenerUsuariosCoincidentes(miPerfil, usuarios);
+        historialCoincidencias = recomendados.map(u => u.id);
+        renderUserCardsRecomendados(recomendados);
+    } catch (e) {
+        console.error('Error mostrando recomendaciones automáticas:', e);
+    }
+}
         // ========================================
         // INICIALIZACIÓN OPTIMIZADA CON CARGA PARALELA
         // ========================================
@@ -2987,7 +3089,7 @@ async function viewProfile(perfilId) {
     
     try {
         // Ocultar el grid de usuarios
-        const homeView = document.getElementById('homeView');
+        const descubrirView = document.getElementById('descubrirView');
         const perfSectionView = document.getElementById('perfilSeccionView');
         const favoritosView = document.getElementById('favoritosView');
         
@@ -2999,7 +3101,7 @@ async function viewProfile(perfilId) {
         // Integración SPA: ocultar/limpiar otras vistas y marcar la sección de perfil como activa
         document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
 
-        if (homeView) homeView.style.display = 'none';
+        if (descubrirView) descubrirView.style.display = 'none';
         if (favoritosView) favoritosView.classList.remove('active');
 
         // Mostrar vista de perfil correctamente
@@ -3023,12 +3125,12 @@ async function viewProfile(perfilId) {
  
 
 function volverAlGrid() {
-    const homeView = document.getElementById('homeView');
+    const descubrirView = document.getElementById('descubrirView');
     const perfSectionView = document.getElementById('perfilSeccionView');
     
-    if (homeView && perfSectionView) {
+    if (descubrirView && perfSectionView) {
         perfSectionView.style.display = 'none';
-        homeView.style.display = 'block';
+        descubrirView.style.display = 'block';
         
         // Scroll al Descubrir
         window.scrollTo({ top: 0, behavior: 'smooth' });

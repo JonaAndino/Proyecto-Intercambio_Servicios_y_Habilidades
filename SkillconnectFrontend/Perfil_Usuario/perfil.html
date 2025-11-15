@@ -1647,6 +1647,52 @@
     // RENDERIZAR USUARIO
     // ======================
     function renderUsuario() {
+            // Sección de solicitud de verificación
+            const badge = document.querySelector('.verified-badge');
+            if (badge) {
+              // Agregar formulario solo si no está verificado
+              setTimeout(() => {
+                if (badge.textContent.includes('No verificado')) {
+                  if (!document.getElementById('solicitudVerificacionForm')) {
+                    const form = document.createElement('form');
+                    form.id = 'solicitudVerificacionForm';
+                    form.innerHTML = `
+                      <div style="margin-top: 16px;">
+                        <label for="correoVerificacion" style="font-weight:600;">Correo para contacto:</label>
+                        <input type="email" id="correoVerificacion" required placeholder="tu@email.com" style="margin-left:8px;padding:6px 12px;border-radius:8px;border:1px solid #e5e7eb;">
+                        <button type="submit" style="background:#2563eb;color:white;padding:6px 18px;border-radius:8px;margin-left:8px;font-weight:600;">Solicitar verificación</button>
+                      </div>
+                      <div id="mensajeVerificacion" style="margin-top:8px;font-size:14px;"></div>
+                    `;
+                    badge.parentNode.insertBefore(form, badge.nextSibling);
+                    form.addEventListener('submit', async function(e) {
+                      e.preventDefault();
+                      const correo = document.getElementById('correoVerificacion').value.trim();
+                      const mensaje = document.getElementById('mensajeVerificacion');
+                      mensaje.textContent = 'Enviando solicitud...';
+                      try {
+                        const resp = await fetch('http://localhost:3001/api/verificacion-usuarios', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ id_Perfil: perfilPersonaId, correo })
+                        });
+                        const data = await resp.json();
+                        if (resp.ok && data.ok) {
+                          mensaje.textContent = '¡Solicitud enviada! El administrador revisará tu cuenta.';
+                          form.querySelector('button').disabled = true;
+                          form.querySelector('button').style.opacity = '0.6';
+                          mostrarEstadoVerificacion();
+                        } else {
+                          mensaje.textContent = data.error || 'No se pudo enviar la solicitud.';
+                        }
+                      } catch (err) {
+                        mensaje.textContent = 'Error de conexión.';
+                      }
+                    });
+                  }
+                }
+              }, 800);
+            }
       // Profile pic
       const profilePic = document.getElementById('profilePic');
       profilePic.src = getImagenPerfil();
@@ -1692,6 +1738,9 @@
       }
       makeEditable(descripcion, 'descripcion_Usuario', (value) => updateUsuario('descripcion_Usuario', value), true);
 
+      // Mostrar distintivo de verificación
+      mostrarEstadoVerificacion();
+
       // Datos personales
       renderDatosPersonales();
 
@@ -1712,6 +1761,39 @@
       
       // Cargar calificaciones y reseñas
       cargarCalificacionesYResenas();
+        // ======================
+        // MOSTRAR ESTADO DE VERIFICACIÓN
+        // ======================
+        async function mostrarEstadoVerificacion() {
+          const badge = document.querySelector('.verified-badge');
+          if (!badge) return;
+          badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-check" style="color: #2563eb; font-size: 20px; margin-right: 4px;"></span>Verificando...';
+          try {
+            const resp = await fetch(`http://localhost:3001/api/verificacion-usuarios/perfil/${perfilPersonaId}`);
+            const perfil = await resp.json();
+            if (perfil && perfil.estado_verificacion === 'aprobada') {
+              badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-check" style="color: #22c55e; font-size: 20px; margin-right: 4px;"></span>Usuario Verificado';
+              badge.style.background = 'rgba(34,197,94,0.1)';
+              badge.style.color = '#22c55e';
+              badge.style.border = '1px solid #22c55e';
+            } else if (perfil && perfil.estado_verificacion === 'pendiente') {
+              badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-alert" style="color: #eab308; font-size: 20px; margin-right: 4px;"></span>Verificación pendiente';
+              badge.style.background = 'rgba(234,179,8,0.1)';
+              badge.style.color = '#eab308';
+              badge.style.border = '1px solid #eab308';
+            } else {
+              badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-off" style="color: #ef4444; font-size: 20px; margin-right: 4px;"></span>No verificado';
+              badge.style.background = 'rgba(239,68,68,0.1)';
+              badge.style.color = '#ef4444';
+              badge.style.border = '1px solid #ef4444';
+            }
+          } catch (error) {
+            badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-alert" style="color: #eab308; font-size: 20px; margin-right: 4px;"></span>Error al verificar';
+            badge.style.background = 'rgba(234,179,8,0.1)';
+            badge.style.color = '#eab308';
+            badge.style.border = '1px solid #eab308';
+          }
+        }
     }
 
     // ======================
