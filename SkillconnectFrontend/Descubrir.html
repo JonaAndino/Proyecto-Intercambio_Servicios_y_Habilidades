@@ -5,6 +5,151 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Principal- SkillConnect</title>
+
+    <script>
+        // Escapa texto para prevenir inyección de HTML
+        function escapeHtml(str) {
+            if (!str && str !== 0) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // Cargar historial (timeline) reutilizando endpoints existentes
+        async function cargarHistorial() {
+            const container = document.getElementById('historialContent');
+            if (!container) return;
+
+            // Mostrar loader sencillo
+            container.innerHTML = `<div class="p-6 bg-white rounded-xl shadow text-center">Cargando historial...</div>`;
+
+            try {
+                // Obtener id de perfil actual (usa la función existente si está disponible)
+                let perfilId = null;
+                try {
+                    perfilId = await obtenerPersonaIdActual();
+                } catch (e) {
+                    // fallback: intentar leer variable global
+                    perfilId = usuarioActualPersonaId || null;
+                }
+
+                // Intentar obtener calificaciones (ya existe endpoint en el proyecto)
+                let calificaciones = [];
+                if (perfilId) {
+                    try {
+                        const res = await fetch(`${API_BASE}/intercambios/calificaciones/${perfilId}`);
+                        const json = await res.json();
+                        if (res.ok && json.success && Array.isArray(json.data)) {
+                            calificaciones = json.data.filter(c => c.visible !== false);
+                        }
+                    } catch (err) {
+                        console.warn('No se pudo obtener calificaciones por perfil:', err);
+                    }
+                }
+
+                // Si no hay calificaciones, intentar obtener intercambios finalizados y luego buscar calificaciones relacionadas
+                if (!calificaciones || calificaciones.length === 0) {
+                    try {
+                        const resAll = await fetch(`${API_BASE}/intercambios/finalizados${perfilId ? `/${perfilId}` : ''}`);
+                        const j = await resAll.json();
+                        if (resAll.ok && j.success && Array.isArray(j.data)) {
+                            // Mapear a objects con fecha, otro participante y estado
+                            calificaciones = j.data.map(it => {
+                                return {
+                                    id_intercambio: it.id_intercambio ?? it.id_intercambio_final ?? it.id ?? null,
+                                    fecha: it.fecha_finalizacion || it.fecha_inicio || it.fecha || null,
+                                    estado: it.estado || 'Completado',
+                                    estrellas: it.calificacion_promedio ?? it.calificacion ?? null,
+                                    // intenta determinar la otra persona
+                                    id_otro: (perfilId && it.id_persona_1 == perfilId) ? it.id_persona_2 : it.id_persona_1
+                                };
+                            });
+                        }
+                    } catch (err) {
+                        console.warn('No existe endpoint /intercambios/finalizados/:', err);
+                    }
+                }
+
+                // Renderizar timeline a partir de calificaciones (o intercambios mapeados)
+                if (!calificaciones || calificaciones.length === 0) {
+                    container.innerHTML = `<div class="p-6 bg-white rounded-xl shadow text-center text-gray-500">No hay intercambios o calificaciones registradas.</div>`;
+                    return;
+                }
+
+                // Para cada item, obtener nombre del otro participante si es necesario
+                const itemsHtml = await Promise.all(calificaciones.map(async (cal) => {
+                    // normalizar fecha
+                    const fechaRaw = cal.fecha || cal.fecha_creacion || cal.created_at || cal.fecha_calificacion || null;
+                    const fecha = fechaRaw ? new Date(fechaRaw).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+
+                    // determinar nombre: preferimos nombre completo.
+                    // Si existe id_otro intentamos resolver siempre mediante el endpoint /personas/:id
+                    let nombre = cal.nombre_calificador || cal.nombre_completo || cal.usuario_nombre || cal.autor_nombre || null;
+                    if (cal.id_otro) {
+                        try {
+                            const r = await fetch(`${API_BASE}/personas/${cal.id_otro}`);
+                            const j = await r.json();
+                            if (r.ok && j.success && j.data) {
+                                // Priorizar campos que puedan contener el nombre completo
+                                nombre = j.data.nombre_completo || j.data.nombre || `${j.data.nombres || ''} ${j.data.apellidos || ''}`.trim() || nombre;
+                            } else if (r.ok && j.data) {
+                                // Algunos endpoints devuelven la entidad directa en j.data
+                                nombre = j.data.nombre_completo || j.data.nombre || `${j.data.nombres || ''} ${j.data.apellidos || ''}`.trim() || nombre;
+                            }
+                        } catch (err) {
+                            console.warn('No se pudo obtener persona', cal.id_otro, err);
+                        }
+                    }
+
+                    // Sanitizar nombre antes de renderizar
+                    nombre = nombre ? escapeHtml(nombre) : null;
+
+                    // estrellas
+                    let estrellas = cal.estrellas ?? cal.puntuacion ?? cal.valor ?? cal.calificacion ?? cal.rating ?? null;
+                    if (!estrellas && cal.valoracion) estrellas = cal.valoracion;
+
+                    // comentario (si el usuario dejó uno)
+                    const comentario = cal.comentario ?? cal.mensaje ?? cal.texto ?? cal.observacion ?? cal.review ?? '';
+                    const comentarioEscapado = comentario ? escapeHtml(comentario).replace(/\n/g, '<br>') : '';
+
+                    // estado siempre 'Completado' según tu requerimiento (si no viene explícito)
+                    const estado = cal.estado || 'Completado';
+
+                    return `
+                        <div class="timeline-item">
+                            <div class="timeline-dot bg-green-500 text-white">
+                                <span class="iconify" data-icon="mdi:check" style="font-size: 10px;"></span>
+                            </div>
+                            <div class="bg-white p-4 rounded-xl shadow-md">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <div class="text-sm text-gray-500">${fecha}</div>
+                                        <div class="text-lg font-semibold text-gray-800">${nombre || 'Usuario'}</div>
+                                        ${comentarioEscapado ? `<div class="text-sm text-gray-600 mt-2">${comentarioEscapado}</div>` : ''}
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="inline-block px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">${estado}</div>
+                                        <div class="mt-2 text-yellow-500 font-bold flex items-center justify-end gap-1">
+                                            <span class="iconify" data-icon="mdi:star" style="font-size: 1rem;"></span>
+                                            ${estrellas ? Number(estrellas).toFixed(1) : '-'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                }));
+
+                container.innerHTML = `<div class="timeline">${itemsHtml.join('')}</div>`;
+
+            } catch (err) {
+                console.error('Error en cargarHistorial:', err);
+                container.innerHTML = `<div class="p-6 bg-white rounded-xl shadow text-center text-red-500">Error cargando historial.</div>`;
+            }
+        }
+    </script>
     <!-- Incluir Tailwind CSS desde CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Iconify -->
@@ -17,6 +162,79 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='%232563EB' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 10V3L4 14h7v7l9-11h-7z'/></svg>" type="image/svg+xml">
 
     <style>
+                /* Gallery Responsive */
+                    .gallery-grid {
+                        display: grid;
+                        grid-template-columns: repeat(3, minmax(0, 1fr));
+                        gap: 1.2rem;
+                        margin-top: 16px;
+                        align-items: stretch;
+                        width: 100%;
+                        overflow: visible;
+                    }
+
+                    .gallery-item {
+                        position: relative;
+                        width: 100%;
+                        aspect-ratio: 7/4;
+                        border-radius: 2.5rem;
+                        min-width: 0;
+                        min-height: 120px;
+                        max-height: 320px;
+                        overflow: hidden;
+                        cursor: pointer;
+                        transition: box-shadow 0.3s, transform 0.3s;
+                        border: 2px solid transparent;
+                        background: rgba(255, 255, 255, 0.1);
+                        backdrop-filter: blur(10px);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+
+                    .gallery-item:hover {
+                        transform: scale(1.03);
+                        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
+                    }
+
+                    .gallery-item img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        display: block;
+                        border-radius: 2.5rem;
+                        min-width: 0;
+                        min-height: 0;
+                        max-width: 100%;
+                        max-height: 100%;
+                    }
+
+                    .gallery-upload {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background: rgba(249, 250, 251, 0.5);
+                        border: 3px dashed #a5b4fc;
+                        cursor: pointer;
+                        transition: box-shadow 0.3s, transform 0.3s;
+                        aspect-ratio: 7/4;
+                        border-radius: 2.5rem;
+                        max-width: 320px;
+                        min-height: 120px;
+                        margin: 0 auto;
+                        backdrop-filter: blur(10px);
+                    }
+
+                    @media (max-width: 900px) {
+                        .gallery-grid {
+                            grid-template-columns: 1fr 1fr;
+                        }
+                    }
+                    @media (max-width: 600px) {
+                        .gallery-grid {
+                            grid-template-columns: 1fr;
+                        }
+                    }
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f4f7f9;
@@ -200,7 +418,7 @@
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             transition: all 0.3s ease;
             border: none;
-            height: 50px;
+            height: 100%;
             border-radius: 1rem;
             --tw-text-opacity: 1;
             color: rgb(255 255 255 / var(--tw-text-opacity, 1));
@@ -210,6 +428,59 @@
             transform: scale(1.05);
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Botón volver: oculto por defecto, se muestra en móvil */
+        .back-btn { display: none; }
+
+        /* Estilos específicos para el botón dentro de la vista "Mis Favoritos".
+           Evita heredar los estilos globales y le da apariencia propia. */
+        #favoritosView .request-button {
+            /* Mantener colores originales del botón global pero con tamaño y centrado adecuado */
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+            border: none;
+            width: 70%;
+            max-width: 260px;
+            margin: 0.25rem auto 0 auto;
+            padding: 0.75rem 1rem;
+            height: auto;
+            border-radius: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            box-shadow: 0 6px 18px rgba(37,99,235,0.08);
+            transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+        }
+
+        #favoritosView .request-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37,99,235,0.12);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+
+        /* Mejoras responsivas para la vista de Mensajes en móvil */
+        @media (max-width: 767px) {
+            /* Layout: ocultar columna de chat y mostrar lista por defecto */
+            #chat-layout-dashboard { position: relative; }
+            #conversacionesColumn { display: block; }
+            #chatColumn { display: none; }
+
+            /* Cuando se añade la clase mobile-show-chat mostramos el chat a pantalla completa */
+            #chat-layout-dashboard.mobile-show-chat #conversacionesColumn { display: none !important; }
+            #chat-layout-dashboard.mobile-show-chat #chatColumn { display: flex !important; width: 100% !important; }
+
+            /* Botón volver en el header (visible solo en móvil) */
+            .back-btn { display: inline-flex !important; align-items: center; gap: 8px; }
+
+            /* Fijar el input al pie de la pantalla para que no tape los mensajes */
+            #chat-input-dashboard { position: fixed; bottom: 0; left: 0; right: 0; z-index: 40; }
+            #mensajes-container-dashboard { padding-bottom: 92px; }
+
+            /* Asegurar que el contenedor de chat ocupa toda la altura cuando está activo */
+            #chatColumn { height: 100%; flex-direction: column; }
+            #chatColumn .flex-grow { overflow: hidden; }
         }
 
         /* Animación para los botones de filtro */
@@ -518,27 +789,49 @@
 
         .profile-gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.2rem;
+            margin-top: 16px;
+            align-items: stretch;
         }
 
         .profile-gallery-item {
-            aspect-ratio: 1;
-            border-radius: 12px;
+            position: relative;
+            aspect-ratio: 7/4;
+            border-radius: 2.5rem;
+            max-width: 320px;
+            min-height: 180px;
+            margin: 0 auto;
             overflow: hidden;
             cursor: pointer;
-            transition: transform 0.3s;
-            background: #f3f4f6;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
         }
 
         .profile-gallery-item:hover {
             transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
 
         .profile-gallery-item img {
             width: 100%;
+            aspect-ratio: 7/4;
             height: 100%;
             object-fit: cover;
+            display: block;
+            border-radius: 2.5rem;
+        }
+        @media (max-width: 900px) {
+            .profile-gallery {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 600px) {
+            .profile-gallery {
+                grid-template-columns: 1fr;
+            }
         }
 
         .profile-stats {
@@ -1039,6 +1332,7 @@
                     </svg>
                 </button>
             </div>
+                <!-- removed misplaced historialView (moved to main content) -->
 
             <!-- Información del Usuario -->
             <div class="mb-8 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
@@ -1129,6 +1423,13 @@
                     <span id="favoritosBadge"
                         class="hidden absolute right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
                 </a>
+
+                    <!-- Nueva opción: Historial de Intercambios -->
+                    <a href="#" onclick="navigateTo('historial'); return false;" data-view="historial"
+                        class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
+                        <span class="iconify w-6 h-6 text-blue-600" data-icon="mdi:history" style="font-size: 24px;"></span>
+                        <span class="font-medium">Historial de Intercambios</span>
+                    </a>
 
                 <div class="my-4 border-t border-gray-200"></div>
                 <!-- <a href="#" onclick="navigateTo('historia'); return false;" data-view="historia"
@@ -1340,10 +1641,10 @@
                     <div class="bg-white rounded-2xl shadow-xl overflow-hidden" style="height: calc(100vh - 180px);">
 
                         <!-- Chat Layout -->
-                        <div class="flex flex-col md:flex-row h-full">
+                        <div id="chat-layout-dashboard" class="flex flex-col md:flex-row h-full">
 
                             <!-- Lista de Conversaciones (Sidebar izquierdo) -->
-                            <div class="md:w-1/3 border-r border-gray-200 bg-gray-50 flex flex-col">
+                            <div id="conversacionesColumn" class="md:w-1/3 border-r border-gray-200 bg-gray-50 flex flex-col">
                                 <header class="p-4 border-b bg-white">
                                     <h2 class="text-xl font-bold text-gray-800">Mensajes</h2>
                                 </header>
@@ -1360,7 +1661,7 @@
                             </div>
 
                             <!-- Área de Chat (Derecha) -->
-                            <div class="md:w-2/3 flex flex-col">
+                            <div id="chatColumn" class="md:w-2/3 flex flex-col">
 
                                 <!-- Estado inicial: Sin conversación seleccionada -->
                                 <div id="chat-vacio-dashboard"
@@ -1387,7 +1688,7 @@
                                     </div>
 
                                     <!-- Input de Mensaje -->
-                                    <div class="p-4 border-t bg-white">
+                                    <div id="chat-input-dashboard" class="p-4 border-t bg-white">
                                         <form id="chat-form-dashboard" class="flex space-x-3">
                                             <input type="text" id="message-input-dashboard"
                                                 placeholder="Escribe un mensaje..." required
@@ -1477,6 +1778,128 @@
             </div>
         </div>
 
+        <!-- Vista: Historial de Intercambios (Timeline) -->
+        <div id="historialView" class="view-section" style="display: none;">
+            <div class="w-full px-6 lg:px-12 py-8">
+                <div class="max-w-6xl mx-auto">
+                    <div class="mb-6">
+                        <h2 class="text-3xl font-bold text-blue-700 mb-2 flex items-center gap-2">
+                            <span class="iconify" data-icon="mdi:history" style="font-size: 2rem;"></span>
+                            Historial de Intercambios
+                        </h2>
+                        <p class="text-gray-600">Registro visual de tus intercambios pasados y estado actual.</p>
+                    </div>
+
+                    <!-- Timeline styles (scoped) -->
+                    <style>
+                        .timeline {
+                            position: relative;
+                            padding-left: 2rem;
+                        }
+                        .timeline::before {
+                            content: '';
+                            position: absolute;
+                            left: 20px;
+                            top: 0;
+                            bottom: 0;
+                            width: 3px;
+                            background: linear-gradient(#e6e9ef, #f1f5f9);
+                            border-radius: 4px;
+                        }
+                        .timeline-item {
+                            position: relative;
+                            margin-bottom: 1.75rem;
+                            padding-left: 2.5rem;
+                        }
+                        .timeline-dot {
+                            position: absolute;
+                            left: 12px;
+                            top: 6px;
+                            width: 16px;
+                            height: 16px;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            box-shadow: 0 2px 6px rgba(16,24,40,0.08);
+                        }
+                        @media (max-width: 768px) {
+                            .timeline { padding-left: 1.25rem; }
+                            .timeline::before { left: 12px; }
+                            .timeline-dot { left: 6px; }
+                        }
+                    </style>
+
+                    <div id="historialContent" class="mt-4">
+                        <div class="timeline">
+                            <!-- Item 1 -->
+                            <div class="timeline-item">
+                                <div class="timeline-dot bg-green-500 text-white">
+                                    <span class="iconify" data-icon="mdi:check" style="font-size: 10px;"></span>
+                                </div>
+                                <div class="bg-white p-4 rounded-xl shadow-md">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <div class="text-sm text-gray-500">15 Nov 2025</div>
+                                            <div class="text-lg font-semibold text-gray-800">Intercambio con Juan Pérez</div>
+                                            <div class="text-sm text-gray-600 mt-1">Servicio ofrecido: Diseño Web — Servicio recibido: Fotografía</div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="inline-block px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">Completado</div>
+                                            <div class="mt-2 text-yellow-500 font-bold flex items-center justify-end gap-1">
+                                                <span class="iconify" data-icon="mdi:star" style="font-size: 1rem;"></span> 5.0
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Item 2 -->
+                            <div class="timeline-item">
+                                <div class="timeline-dot bg-yellow-400 text-white">
+                                    <span class="iconify" data-icon="mdi:clock" style="font-size: 10px;"></span>
+                                </div>
+                                <div class="bg-white p-4 rounded-xl shadow-md">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <div class="text-sm text-gray-500">10 Nov 2025</div>
+                                            <div class="text-lg font-semibold text-gray-800">Intercambio con Ana Gómez</div>
+                                            <div class="text-sm text-gray-600 mt-1">Servicio: Fotografía — Estado en espera de confirmación</div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="inline-block px-3 py-1 rounded-full bg-yellow-50 text-yellow-700 text-sm font-semibold">Pendiente</div>
+                                            <div class="mt-2 text-gray-400 font-bold">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Item 3 -->
+                            <div class="timeline-item">
+                                <div class="timeline-dot bg-red-400 text-white">
+                                    <span class="iconify" data-icon="mdi:close" style="font-size: 10px;"></span>
+                                </div>
+                                <div class="bg-white p-4 rounded-xl shadow-md">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <div class="text-sm text-gray-500">02 Nov 2025</div>
+                                            <div class="text-lg font-semibold text-gray-800">Intercambio con Carlos Ruiz</div>
+                                            <div class="text-sm text-gray-600 mt-1">Servicio: Clases de Idiomas — Cancelado por el otro usuario</div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="inline-block px-3 py-1 rounded-full bg-red-50 text-red-700 text-sm font-semibold">Cancelado</div>
+                                            <div class="mt-2 text-gray-400 font-bold">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Vista: Solicitud de verificación -->
         <!-- <div id="solicitudVerificacionView" class="view-section">
             <div class="w-full px-6 lg:px-12 py-8">
@@ -1555,9 +1978,20 @@
         // Sistema de navegación SPA (Single Page Application)
         let currentView = 'descubrir';
 
-        function navigateTo(viewName) {
+        async function navigateTo(viewName) {
 
-document.querySelectorAll('.view-section').forEach(view => {
+            // Actualizar el estado activo del sidebar inmediatamente
+            try {
+                document.querySelectorAll('.sidebar-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                const earlyActive = document.querySelector(`[data-view="${viewName}"]`);
+                if (earlyActive) earlyActive.classList.add('active');
+            } catch (e) {
+                // no hacer nada si falla (compatibilidad)
+            }
+
+    document.querySelectorAll('.view-section').forEach(view => {
         view.classList.remove('active');
     });
 
@@ -1591,8 +2025,17 @@ document.querySelectorAll('.view-section').forEach(view => {
             // Mostrar la vista seleccionada
             const targetView = document.getElementById(viewName + 'View');
             if (targetView) {
-                targetView.classList.add('active');
-                currentView = viewName;
+                 // Ocultar todas las vistas
+                 document.querySelectorAll('.view-section').forEach(view => {
+                    view.style.display = 'none';
+                    view.classList.remove('active');
+                 });
+                 // Mostrar la vista seleccionada
+                 targetView.style.display = '';
+                 targetView.classList.add('active');
+                 currentView = viewName;
+                 // Actualizar la URL para SPA
+                 window.history.pushState({}, '', '/' + viewName);
             }
 
             // Actualizar estado activo en el sidebar
@@ -1609,6 +2052,14 @@ document.querySelectorAll('.view-section').forEach(view => {
             if (viewName === 'favoritos') {
                 console.log(' navigateTo("favoritos") - Llamando a cargarFavoritos()');
                 cargarFavoritos();
+            }
+            if (viewName === 'historial') {
+                console.log(' navigateTo("historial") - Llamando a cargarHistorial()');
+                try {
+                    await cargarHistorial();
+                } catch (err) {
+                    console.error('Error cargando historial:', err);
+                }
             }
 
             // Cerrar el sidebar automáticamente en móvil
@@ -2619,8 +3070,7 @@ document.querySelectorAll('.view-section').forEach(view => {
                                 
                                 <!-- Información del usuario -->
                                 <h3 class="text-xl font-bold text-gray-800 mb-1 truncate" title="${nombreCompleto}">${nombreCompleto}</h3>
-                                <p class="text-blue-600 font-semibold mb-2 truncate" title="${descripcion}">${descripcion}</p>
-                                
+                    
                                 <!-- Fecha agregado -->
                                 <div class="flex items-center text-gray-600 text-sm mb-3">
                                     <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -5015,6 +5465,15 @@ function volverAlGrid() {
             document.getElementById('chat-activo-dashboard').classList.remove('hidden');
             document.getElementById('chat-activo-dashboard').classList.add('flex');
 
+            // En móvil, mostrar el chat a pantalla completa (ocultar lista)
+            try {
+                if (window.innerWidth && window.innerWidth <= 767) {
+                    document.getElementById('chat-layout-dashboard').classList.add('mobile-show-chat');
+                }
+            } catch (e) {
+                // no crítico
+            }
+
             // Actualizar header del chat
             actualizarHeaderChatDashboard(conversacionActivaDashboard);
 
@@ -5023,6 +5482,19 @@ function volverAlGrid() {
 
             // Actualizar lista para mostrar cual está activa
             mostrarConversacionesDashboard(conversacionesDashboard);
+        }
+
+        // Volver a la lista de conversaciones en móvil
+        function volverALaListaDashboard() {
+            const layout = document.getElementById('chat-layout-dashboard');
+            if (layout && layout.classList.contains('mobile-show-chat')) {
+                layout.classList.remove('mobile-show-chat');
+            }
+
+            // Mostrar otra vez la vista vacía y ocultar chat activo
+            document.getElementById('chat-vacio-dashboard').classList.remove('hidden');
+            document.getElementById('chat-activo-dashboard').classList.add('hidden');
+            document.getElementById('chat-activo-dashboard').classList.remove('flex');
         }
 
         // Actualizar header del chat
@@ -5039,6 +5511,9 @@ function volverAlGrid() {
 
             document.getElementById('chat-header-dashboard').innerHTML = `
                 <div class="flex items-center space-x-3">
+                    <button id="backToListBtnDashboard" onclick="volverALaListaDashboard()" class="back-btn text-gray-600 p-2 rounded-md" title="Volver">
+                        <span class="iconify" data-icon="mdi:arrow-left" data-width="18"></span>
+                    </button>
                     <div class="relative">
                         ${tieneImagen ?
                     `<img src="${conv.imagenUrl_contacto}" 
