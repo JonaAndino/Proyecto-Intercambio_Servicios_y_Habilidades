@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes y Estadísticas - SkillConnect</title>
+    <!-- Incluye Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconify (SVG icons) -->
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <!-- SweetAlert2 para modales -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Chart.js para gráficos dinámicos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Plugin Chart.js: datalabels para mostrar valores encima de las barras -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Gris claro de fondo */
+        }
+        .container-fluid {
+            padding: 2rem;
+        }
+        /* Estilos para la gráfica de barras simulada */
+        .bar-chart-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center; /* centrar barras horizontalmente */
+            gap: 48px; /* espacio entre barras para evitar solapamiento */
+            height: 150px; /* Altura fija para la gráfica */
+            border-left: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            padding: 0 24px 28px 24px; /* espacio interior para las etiquetas */
+            position: relative;
+            min-width: 220px;
+        }
+        .bar {
+            width: 40px; /* Ancho aumentado para mejor visibilidad */
+            /* eliminar margin: usamos gap en el container */
+            background-color: #3b82f6; /* Azul de Tailwind */
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            border-radius: 4px;
+        }
+        .bar-label {
+            /* Centrar la etiqueta debajo de la barra para evitar solapamientos */
+            position: absolute;
+            bottom: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: #555;
+            white-space: nowrap;
+        }
+        .bar-value {
+            /* Mostrar el valor encima de la barra, centrado */
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #111827;
+            white-space: nowrap;
+        }
+        /* Estilos para la gráfica de pastel simulada */
+        .pie-chart {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-image: conic-gradient(
+                #3b82f6 0% 60%, /* Usuarios */
+                #ef4444 60% 100% /* Intercambios */
+            );
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Estilos específicos para la sección de usuarios reportados */
+        .report-counts-section th,
+        .report-counts-section td,
+        .report-counts-section .text-gray-600,
+        .report-counts-section p,
+        .report-counts-section span {
+            color: #b91c1c; /* rojo */
+        }
+        .report-counts-section h2 svg { stroke: #b91c1c; color: #b91c1c; }
+        .pie-center {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Panel de Administración: Reportes y Estadísticas</h1>
+    <p class="text-gray-600 mb-8">Información clave para la gestión de SkillConnect.</p>
+
+    <!-- Sección de Tarjetas de Resumen --><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+
+        <!-- Tarjeta 1: Usuarios Registrados (Dinámico) -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-500 hover:shadow-xl transition duration-300">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-gray-500 uppercase">Usuarios Totales</p>
+                <span class="iconify text-blue-500" data-icon="mdi:account-multiple" data-inline="false" style="font-size:24px;"></span>
+            </div>
+            <p id="usuariosTotal" class="text-3xl font-extrabold text-gray-900 mt-1">—</p>
+            <span id="usuariosNuevos" class="text-xs text-green-500">Nuevos usuarios: —</span>
+        </div>
+
+        <!-- Tarjeta 2: Intercambios Finalizados (Dinámico) -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-red-500 hover:shadow-xl transition duration-300">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-gray-500 uppercase">Intercambios Exitosos</p>
+                <span class="iconify text-red-500" data-icon="mdi:handshake" data-inline="false" style="font-size:24px;"></span>
+            </div>
+            <p id="intercambiosTotal" class="text-3xl font-extrabold text-gray-900 mt-1">—</p>
+            <span id="intercambiosPendientes" class="text-xs text-yellow-600">— pendientes de cierre</span>
+        </div>
+
+        <!-- Tarjeta 3: Habilidad Top (Dinámico, fallback) -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500 hover:shadow-xl transition duration-300">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-gray-500 uppercase">Habilidad #1</p>
+                <span class="iconify text-green-500" data-icon="mdi:language-javascript" data-inline="false" style="font-size:24px;"></span>
+            </div>
+            <p id="habilidadTop" class="text-3xl font-extrabold text-gray-900 mt-1">—</p>
+            <span id="habilidadTopCount" class="text-xs text-gray-500">— usuarios la ofrecen</span>
+        </div>
+
+        <!-- Tarjeta 4: Reportes Abiertos (Dinámico) -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-yellow-500 hover:shadow-xl transition duration-300">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-gray-500 uppercase">Reportes Pendientes</p>
+                <span class="iconify text-yellow-500" data-icon="mdi:alert-circle" data-inline="false" style="font-size:24px;"></span>
+            </div>
+            <p id="reportesPendientes" class="text-3xl font-extrabold text-gray-900 mt-1">—</p>
+            <span class="text-xs text-red-600">¡Necesitan atención inmediata!</span>
+        </div>
+    </div>
+
+    <!-- Sección de Gráficos (Simulación) --><div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Tabla 1: Usuarios reportados (reemplaza la gráfica de barras) -->
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Usuarios reportados</h2>
+            <p class="text-sm text-gray-600 mb-4">Usuarios que han recibido más solicitudes/reportes.</p>
+            <div id="reportCountsContainer" class="overflow-x-auto">
+                <table id="reportCountsTable" class="w-full table-auto border-collapse">
+                    <thead>
+                                <tr class="text-left text-sm text-gray-600 border-b">
+                                    <th class="py-2 px-3">Usuario Reportado</th>
+                                    <th class="py-2 px-3">Email</th>
+                                    <th class="py-2 px-3">Perfil ID</th>
+                                    <th class="py-2 px-3">Cantidad de reportes</th>
+                                    <th class="py-2 px-3">Último reporte</th>
+                                    <th class="py-2 px-3">Motivo (último)</th>
+                                    <th class="py-2 px-3">Acciones</th>
+                                </tr>
+                    </thead>
+                    <tbody id="reportCountsTbody">
+                        <tr><td colspan="2" class="p-4 text-sm text-gray-500">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Gráfico 2: Representación en Pastel (Simulado) --><div class="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Proporción de Actividad</h2>
+            <div>
+                <canvas id="pieChart" style="width:100%;height:160px"></canvas>
+            </div>
+            <div class="flex justify-center mt-4 space-x-4 text-sm text-gray-600" id="pieLegend">
+                <!-- legend filled by JS -->
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- Sección: Solicitudes de Verificación -->
+    <div id="verificationSection" class="bg-white p-6 rounded-xl shadow-lg mt-8">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Solicitudes de Verificación de Usuarios</h2>
+        <p class="text-sm text-gray-600 mb-4">Listado de solicitudes pendientes. Puedes aceptar o rechazar cada solicitud.</p>
+
+        <div id="verificationTableContainer" class="overflow-x-auto">
+            <table id="verificationTable" class="w-full table-auto border-collapse">
+                <thead>
+                    <tr class="text-left text-sm text-gray-600 border-b">
+                        <th class="py-2 px-3">ID</th>
+                        <th class="py-2 px-3">Perfil ID</th>
+                        <th class="py-2 px-3">Nombre</th>
+                        <th class="py-2 px-3">Estado</th>
+                        <th class="py-2 px-3">Fecha</th>
+                        <th class="py-2 px-3">Hora</th>
+                        <th class="py-2 px-3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="verificationTbody">
+                    <tr><td colspan="7" class="p-4 text-sm text-gray-500">Cargando solicitudes...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Aquí iría el JavaScript para cargar los datos y generar los gráficos reales.
+    // Para las gráficas reales, integrarías librerías como Chart.js, D3.js o ApexCharts.
+    // Por ejemplo, con Chart.js:
+    /*
+    const ctxBar = document.getElementById('barChart').getContext('2d');
+    new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: ['Usuarios Totales', 'Intercambios Exitosos'],
+            datasets: [{
+                label: 'Cantidad',
+                data: [12, 20],
+                backgroundColor: ['#3b82f6', '#ef4444'],
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    */
+</script>
+
+<script>
+    // ----- Código para manejar solicitudes de verificación -----
+    async function cargarSolicitudesVerificacion() {
+        const tbody = document.getElementById('verificationTbody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-sm text-gray-500">Cargando solicitudes...</td></tr>';
+
+        try {
+            const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+            const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+
+            // Llamar al backend (ajusta host/puerto si tu API corre en otra dirección)
+            const API_BASE = 'http://localhost:3001';
+            const res = await fetch(API_BASE + '/api/verificacion-usuarios', { headers });
+            if (!res.ok) {
+                const txt = await res.text();
+                throw new Error(`HTTP ${res.status} - ${txt.substring(0,200)}`);
+            }
+            const contentType = res.headers.get('content-type') || '';
+            let rows;
+            if (contentType.includes('application/json')) {
+                rows = await res.json();
+            } else {
+                const txt = await res.text();
+                throw new Error('Respuesta no JSON del servidor: ' + txt.slice(0,200));
+            }
+
+            if (!rows || rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-sm text-gray-500">No hay solicitudes</td></tr>';
+                return;
+            }
+
+            // Intentar obtener la lista de personas para mapear id_Perfil -> nombre (cache sencillo)
+            let personasMap = {};
+            try {
+                const respP = await fetch(API_BASE + '/api/personas');
+                if (respP.ok) {
+                    const jsonP = await respP.json();
+                    if (jsonP && jsonP.success && Array.isArray(jsonP.data)) {
+                        jsonP.data.forEach(p => {
+                            const pid = p.id_Perfil_Persona || p.id_Perfil || p.id;
+                            if (pid !== undefined && pid !== null) personasMap[String(pid)] = p;
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn('No se pudo cargar mapa de personas, se usará info de la solicitud:', e);
+            }
+
+            const isAdmin = localStorage.getItem('usuarioRolId') === '1';
+            const adminId = localStorage.getItem('usuarioId') || null;
+
+            tbody.innerHTML = rows.map(r => {
+                const perfilId = r.id_Perfil || r.id_Perfil_Persona || r.id_perfil || r.perfil_id || '';
+                let nombre = '-';
+
+                // Si tenemos persona en el mapa, usar su nombre
+                if (perfilId && personasMap[String(perfilId)]) {
+                    const p = personasMap[String(perfilId)];
+                    nombre = `${p.nombre_Persona || p.nombre || ''} ${p.apellido_Persona || p.apellido || ''}`.trim() || '-';
+                } else {
+                    // Fallback a campos directos de la solicitud
+                    nombre = r.nombre_Persona ? `${r.nombre_Persona} ${r.apellido_Persona || ''}`.trim() : (r.nombre || '-');
+                }
+
+                // fecha de la solicitud: puede venir como 'fecha_solicitud' o 'fechaSolicitud'
+                const fechaSolicitud = r.fecha_solicitud || r.fechaSolicitud || r.fecha_solicitud || null;
+                let fechaStr = '-';
+                let horaStr = '-';
+                if (fechaSolicitud) {
+                    try {
+                        const d = new Date(fechaSolicitud);
+                        if (!isNaN(d.getTime())) {
+                            // Formatear fecha y hora en local
+                            fechaStr = d.toLocaleDateString();
+                            horaStr = d.toLocaleTimeString();
+                        }
+                    } catch (e) {
+                        fechaStr = String(fechaSolicitud);
+                    }
+                }
+
+                // Normalizar estados: puede venir como string ('pendiente','aprobada','rechazada') o como código numérico (1,2,3)
+                function normalizeEstado(e) {
+                    if (e === null || e === undefined) return 'pendiente';
+                    const s = String(e).toLowerCase().trim();
+                    if (s === '1' || s === 'pendiente') return 'pendiente';
+                    if (s === '2' || s === 'aprobada' || s === 'aprobado') return 'aprobada';
+                    if (s === '3' || s === 'rechazada' || s === 'rechazado') return 'rechazada';
+                    return s;
+                }
+                const estado = normalizeEstado(r.estado || 'pendiente');
+
+                // Construir acciones disponibles para el administrador según estado
+                let accionesHtml = '';
+                if (isAdmin) {
+                    if (estado === 'pendiente') {
+                        accionesHtml = `<td class="py-2 px-3 text-sm"><button onclick="actualizarSolicitud(${r.id}, 'aprobada')" class="bg-green-100 text-green-700 px-3 py-1 rounded mr-2">Aceptar</button><button onclick="actualizarSolicitud(${r.id}, 'rechazada')" class="bg-red-100 text-red-700 px-3 py-1 rounded">Rechazar</button></td>`;
+                    } else if (estado === 'aprobada') {
+                        accionesHtml = `<td class="py-2 px-3 text-sm"><button onclick="actualizarSolicitud(${r.id}, 'rechazada')" class="bg-red-100 text-red-700 px-3 py-1 rounded">Rechazar</button></td>`;
+                    } else if (estado === 'rechazada') {
+                        accionesHtml = `<td class="py-2 px-3 text-sm"><button onclick="actualizarSolicitud(${r.id}, 'aprobada')" class="bg-green-100 text-green-700 px-3 py-1 rounded">Aceptar</button></td>`;
+                    }
+                } else {
+                    accionesHtml = '<td class="py-2 px-3 text-sm text-gray-500">—</td>';
+                }
+
+                return `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="py-2 px-3 text-sm text-gray-700">${r.id || ''}</td>
+                        <td class="py-2 px-3 text-sm text-gray-700">${perfilId || ''}</td>
+                        <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(nombre)}</td>
+                        <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(estado)}</td>
+                        <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(fechaStr)}</td>
+                        <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(horaStr)}</td>
+                        ${accionesHtml}
+                    </tr>
+                `;
+            }).join('');
+
+        } catch (err) {
+            console.error('Error cargarSolicitudesVerificacion:', err);
+            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-sm text-red-600">Error al cargar solicitudes</td></tr>';
+        }
+    }
+
+    async function actualizarSolicitud(id, nuevoEstado) {
+        try {
+            const confirmColor = nuevoEstado === 'aprobada' ? '#10b981' : (nuevoEstado === 'rechazada' ? '#ef4444' : '#3b82f6');
+            const { isConfirmed } = await Swal.fire({
+                title: 'Confirmar acción',
+                html: `¿Seguro que deseas marcar la solicitud <strong>#${id}</strong> como <strong>${escapeHtml(nuevoEstado)}</strong>?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, continuar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: confirmColor,
+                reverseButtons: true,
+                focusCancel: true
+            });
+
+            if (!isConfirmed) return;
+
+            // Mostrar loader mientras se procesa la petición
+            Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+            const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+            const adminId = localStorage.getItem('usuarioId') || null;
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+
+            const API_BASE = 'http://localhost:3001';
+            const res = await fetch(API_BASE + '/api/verificacion-usuarios/' + id, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({ estado: nuevoEstado, revisado_por: adminId, comentario_admin: '' })
+            });
+
+            Swal.close();
+
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                throw new Error(text || 'Error en la petición');
+            }
+
+            await Swal.fire({ icon: 'success', title: 'Solicitud actualizada', text: `La solicitud ${id} fue marcada como ${nuevoEstado}.`, confirmButtonColor: '#2563eb' });
+
+            // Refrescar la tabla
+            await cargarSolicitudesVerificacion();
+
+        } catch (err) {
+            console.error('Error actualizarSolicitud:', err);
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Error al actualizar la solicitud. Revisa la consola para más detalles.', confirmButtonColor: '#ef4444' });
+        }
+    }
+
+    // Pequeña función escapeHtml para seguridad en renderizado (ya existe en Descubrir)
+    function escapeHtml(unsafe) {
+        if (unsafe === null || unsafe === undefined) return '';
+        return String(unsafe)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // Cargar solicitudes al abrir la página (si es admin mostrarlas)
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            const isAdmin = localStorage.getItem('usuarioRolId') === '1';
+            if (!isAdmin) {
+                const sec = document.getElementById('verificationSection');
+                if (sec) sec.style.display = 'none';
+                return;
+            }
+            cargarSolicitudesVerificacion();
+            // Además cargar estadísticas dinámicas
+            cargarEstadisticasReportes();
+        } catch (e) {
+            console.warn('Inicialización verificación error', e);
+        }
+    });
+</script>
+
+<script>
+    // CARGA DE ESTADÍSTICAS Y RENDER DE GRÁFICOS
+    async function cargarEstadisticasReportes() {
+        const API_BASE = 'http://localhost:3001';
+
+        // Elementos a actualizar
+        const elUsuarios = document.getElementById('usuariosTotal');
+        const elUsuariosNuevos = document.getElementById('usuariosNuevos');
+        const elIntercambios = document.getElementById('intercambiosTotal');
+        const elIntercambiosPend = document.getElementById('intercambiosPendientes');
+        const elHabilidadTop = document.getElementById('habilidadTop');
+        const elHabilidadTopCount = document.getElementById('habilidadTopCount');
+        const elReportesPend = document.getElementById('reportesPendientes');
+
+        // Valores por defecto
+        let usuarios = 0, intercambios = 0, intercambiosPendientes = 0;
+        try {
+            // 1) Estadísticas globales (si existe endpoint)
+            try {
+                const res = await fetch(API_BASE + '/api/intercambios/estadisticas-globales');
+                if (res.ok) {
+                    const j = await res.json();
+                    if (j && j.success && j.data) {
+                        usuarios = j.data.usuarios_activos || j.data.usuarios || usuarios;
+                        intercambios = j.data.intercambios_exitosos || j.data.intercambios || intercambios;
+                        intercambiosPendientes = j.data.pendientes_cierre || j.data.intercambios_pendientes || 0;
+                    }
+                }
+            } catch (e) {
+                console.warn('No se pudo obtener /estadisticas-globales:', e);
+            }
+
+            // 2) Conteo de personas como fallback si usuarios = 0
+            if (!usuarios) {
+                try {
+                    const rp = await fetch(API_BASE + '/api/personas');
+                    if (rp.ok) {
+                        const jp = await rp.json();
+                        if (jp && jp.success && Array.isArray(jp.data)) {
+                            usuarios = jp.data.length;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('No se pudo obtener /personas:', e);
+                }
+            }
+
+            // 3) Top habilidad (intento simple: preguntar endpoint /api/habilidades si existe)
+            let topSkill = '—';
+            let topCount = 0;
+            try {
+                const rh = await fetch(API_BASE + '/api/habilidades');
+                if (rh.ok) {
+                    const jh = await rh.json();
+                    if (jh && jh.success && Array.isArray(jh.data) && jh.data.length) {
+                        // agrupar por nombre
+                        const counts = {};
+                        jh.data.forEach(h => {
+                            const name = h.nombre_Habilidad || h.nombre || h.nombre_Habilidad || 'Desconocida';
+                            counts[name] = (counts[name] || 0) + 1;
+                        });
+                        const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+                        if (entries.length) {
+                            topSkill = entries[0][0];
+                            topCount = entries[0][1];
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('No se pudo obtener /habilidades:', e);
+            }
+
+            // 4) Reportes pendientes
+            let reportes = 0;
+            try {
+                const rr = await fetch(API_BASE + '/api/verificacion-usuarios');
+                if (rr.ok) {
+                    const jr = await rr.json();
+                    if (Array.isArray(jr)) reportes = jr.length;
+                    else if (jr && jr.success && Array.isArray(jr.data)) reportes = jr.data.length;
+                }
+            } catch (e) {
+                console.warn('No se pudo obtener verificacion-usuarios:', e);
+            }
+
+            // Actualizar DOM
+            if (elUsuarios) elUsuarios.textContent = String(usuarios || 0);
+            if (elUsuariosNuevos) elUsuariosNuevos.textContent = `Nuevos usuarios: ${0}`;
+            if (elIntercambios) elIntercambios.textContent = String(intercambios || 0);
+            if (elIntercambiosPend) elIntercambiosPend.textContent = `${intercambiosPendientes || 0} pendientes de cierre`;
+            if (elHabilidadTop) elHabilidadTop.textContent = topSkill || '—';
+            if (elHabilidadTopCount) elHabilidadTopCount.textContent = `${topCount || 0} usuarios la ofrecen`;
+            if (elReportesPend) elReportesPend.textContent = String(reportes || 0);
+
+            // Renderizar gráficos con Chart.js
+            try {
+                // Construir tabla de "Usuarios más reportados" usando verificacion-usuarios
+                try {
+                    const rcTbody = document.getElementById('reportCountsTbody');
+                    if (rcTbody) rcTbody.innerHTML = '<tr><td colspan="2" class="p-4 text-sm text-gray-500">Cargando...</td></tr>';
+
+                    // Obtener lista de reportes desde el nuevo endpoint /api/reportes/all
+                    let reporteList = [];
+                    try {
+                        const rv = await fetch(API_BASE + '/api/reportes/all');
+                        if (rv.ok) {
+                            const jrv = await rv.json();
+                            if (Array.isArray(jrv)) reporteList = jrv;
+                        }
+                    } catch (e) {
+                        console.warn('No se pudo cargar /api/reportes/all para la tabla de reportes:', e);
+                    }
+
+                    // Construir conteos por usuario reportado usando los campos devueltos por el backend
+                    // Agrupar reportes por usuario reportado y recopilar metadatos
+                    const counts = {};
+                    reporteList.forEach(r => {
+                        const uid = r.reported_user_id || r.reported_user || r.id_usuario_reportado || 'sin_usuario';
+                        const key = String(uid || 'sin_usuario');
+
+                        if (!counts[key]) counts[key] = {
+                            name: null,
+                            email: r.reported_correo || null,
+                            perfilId: r.id_perfil_persona || r.id_Perfil_Persona || null,
+                            count: 0,
+                            lastDate: null,
+                            lastMotivo: null
+                        };
+
+                        // Nombre preferido desde persona
+                        const nombreFull = (r.reported_nombre || r.reported_apellido) ? `${r.reported_nombre || ''} ${r.reported_apellido || ''}`.trim() : (r.reported_correo || r.reported_user || null);
+                        if (nombreFull) counts[key].name = nombreFull;
+
+                        counts[key].count++;
+
+                        // Fecha más reciente
+                        const fecha = r.fecha_reporte || r.fecha || r.created_at || r.fecha_reporte_raw || null;
+                        if (fecha) {
+                            const d = new Date(fecha);
+                            if (!isNaN(d.getTime())) {
+                                if (!counts[key].lastDate || new Date(counts[key].lastDate) < d) {
+                                    counts[key].lastDate = d.toISOString();
+                                    counts[key].lastMotivo = r.motivo_descripcion || r.motivo || r.descripcion || null;
+                                }
+                            }
+                        }
+                    });
+
+                    const entries = Object.entries(counts).sort((a,b)=>b[1].count - a[1].count);
+                    if (rcTbody) {
+                        if (!entries.length) {
+                            rcTbody.innerHTML = '<tr><td colspan="7" class="p-4 text-sm text-gray-500">Sin reportes</td></tr>';
+                        } else {
+                            rcTbody.innerHTML = entries.map(([uid,obj]) => {
+                                const fechaStr = obj.lastDate ? new Date(obj.lastDate).toLocaleString() : '-';
+                                const motivoShort = obj.lastMotivo ? String(obj.lastMotivo).slice(0,80) : '-';
+                                return `\n                                <tr class="border-b hover:bg-gray-50">\n                                    <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(obj.name || uid)}</td>\n                                    <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(obj.email || '-')}</td>\n                                    <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(obj.perfilId || '-')}</td>\n                                    <td class="py-2 px-3 text-sm text-gray-700">${obj.count}</td>\n                                    <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(fechaStr)}</td>\n                                    <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(motivoShort)}</td>\n                                    <td class="py-2 px-3 text-sm text-gray-700"><button onclick=\"openReportDetails(${uid})\" class=\"text-sm text-gray-600 hover:text-gray-900\">Ver reportes</button></td>\n                                </tr>`;
+                            }).join('');
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Error construyendo tabla de reportes:', e);
+                    const rcTbody = document.getElementById('reportCountsTbody');
+                    if (rcTbody) rcTbody.innerHTML = '<tr><td colspan="2" class="p-4 text-sm text-red-600">Error al cargar tabla</td></tr>';
+                }
+
+                const pieCtx = document.getElementById('pieChart').getContext('2d');
+                if (window._reportesPieChart) window._reportesPieChart.destroy();
+                window._reportesPieChart = new Chart(pieCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Usuarios', 'Intercambios'],
+                        datasets: [{ data: [usuarios || 0, intercambios || 0], backgroundColor: ['#3b82f6', '#ef4444'] }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+
+                // Legend manual (mejor formato)
+                const legend = document.getElementById('pieLegend');
+                if (legend) {
+                    legend.innerHTML = `
+                        <div class="flex items-center"><span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Usuarios (${usuarios || 0})</div>
+                        <div class="flex items-center"><span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span> Intercambios (${intercambios || 0})</div>
+                    `;
+                }
+            } catch (e) {
+                console.warn('Error renderizando gráficos:', e);
+            }
+
+        } catch (err) {
+            console.error('Error cargarEstadisticasReportes:', err);
+        }
+    }
+</script>
+
+    <script>
+        // Abrir modal con lista de reportes para un usuario reportado
+        async function openReportDetails(reportedUserId) {
+            try {
+                const API_BASE = 'http://localhost:3001';
+                const res = await fetch(`${API_BASE}/api/reportes/user/${reportedUserId}`);
+                let rows = [];
+                if (res.ok) {
+                    const j = await res.json();
+                    if (Array.isArray(j)) rows = j;
+                    else if (j && j.success && Array.isArray(j.data)) rows = j.data;
+                }
+
+                if (!rows || rows.length === 0) {
+                    Swal.fire({ icon: 'info', title: 'Sin reportes', text: 'No se encontraron reportes para este usuario.' });
+                    return;
+                }
+
+                const html = `
+                    <div style="max-height:400px; overflow:auto; text-align:left;">
+                        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                            <thead><tr><th style="text-align:left; padding:6px;">Fecha</th><th style="text-align:left; padding:6px;">Reportero</th><th style="text-align:left; padding:6px;">Motivo</th><th style="text-align:left; padding:6px;">Descripción</th></tr></thead>
+                            <tbody>
+                            ${rows.map(r => `
+                                <tr style="border-top:1px solid #eee;"><td style="padding:6px; vertical-align:top;">${escapeHtml(new Date(r.fecha_reporte || r.fecha || r.created_at || '').toLocaleString())}</td>
+                                    <td style="padding:6px; vertical-align:top;">${escapeHtml(r.reporter_correo || r.reporter || r.reporter_id || '-')}</td>
+                                    <td style="padding:6px; vertical-align:top;">${escapeHtml(r.motivo_descripcion || r.motivo || '-')}</td>
+                                    <td style="padding:6px; vertical-align:top;">${escapeHtml(r.descripcion || '')}</td></tr>
+                            `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                Swal.fire({ title: 'Reportes del usuario', html, width: 800, confirmButtonText: 'Cerrar' });
+            } catch (err) {
+                console.error('openReportDetails error', err);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los detalles.' });
+            }
+        }
+    </script>
+
+</body>
+</html>

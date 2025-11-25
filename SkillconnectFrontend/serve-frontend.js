@@ -97,6 +97,9 @@ const server = http.createServer((req, res) => {
               res.writeHead(404, { 'Content-Type': 'text/plain; charset=UTF-8' });
               return res.end('404 Not Found');
             }
+          } else if (firstNorm === 'reportes') {
+            // Ruta /reportes -> servir la SPA para que el cliente SPA la maneje
+            if (fs.existsSync(entryFile)) return sendFile(res, entryFile, 200);
           } else {
             // Para cualquier otra ruta sin extensión, SIEMPRE servir la SPA
             if (fs.existsSync(entryFile)) return sendFile(res, entryFile, 200);

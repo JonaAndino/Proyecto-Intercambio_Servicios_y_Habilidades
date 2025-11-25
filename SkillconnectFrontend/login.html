@@ -36,6 +36,24 @@
             getRedirectResult
         };
     </script>
+    <script>
+        // Base URL del API
+        const API_BASE = "http://localhost:3001/api";
+
+        // Obtener rol por correo usando el endpoint del backend
+        async function fetchRoleByCorreo(correo) {
+            try {
+                const res = await fetch(`${API_BASE}/login/rol/correo/${encodeURIComponent(correo)}`);
+                if (!res.ok) return null;
+                const data = await res.json();
+                console.debug('fetchRoleByCorreo result for', correo, data);
+                return data;
+            } catch (e) {
+                console.error('Error al obtener rol por correo:', e);
+                return null;
+            }
+        }
+    </script>
     <style>
         /* Fuente Inter para una apariencia moderna */
         body { font-family: 'Inter', sans-serif; }
@@ -159,7 +177,7 @@
         }
     });
         // AL CARGAR LA PÁGINA: Verificar si viene de autenticación con Google
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             const userId = urlParams.get('userId');
@@ -178,6 +196,19 @@
                 localStorage.setItem('correoUsuario', email);
                 localStorage.setItem('firebaseUser', 'true');
                 
+                // Intentar obtener rol por correo y guardarlo antes de redirigir
+                try {
+                    const roleData = await fetchRoleByCorreo(email);
+                    if (roleData) {
+                        localStorage.setItem('usuarioRol', roleData.rol || '');
+                        localStorage.setItem('usuarioRolId', roleData.id_rol || '');
+                    } else {
+                        console.debug('No se obtuvo roleData para', email);
+                    }
+                } catch (e) {
+                    console.warn('Error obteniendo rol para correo en redirect:', e);
+                }
+
                 showMessage("Descubrir de sesión con Google exitoso. Redirigiendo...", "bg-green-100 text-green-700");
                 
                 // Limpiar URL y redirigir
@@ -270,9 +301,20 @@
                     localStorage.setItem('usuarioId', loginData.usuarioId);
                     localStorage.setItem('correoUsuario', loginData.correo);
                     localStorage.setItem('firebaseUser', 'true');
-                    
+
+                    // Intentar obtener rol por correo y guardarlo
+                    try {
+                        const roleData = await fetchRoleByCorreo(email);
+                        if (roleData) {
+                            localStorage.setItem('usuarioRol', roleData.rol || '');
+                            localStorage.setItem('usuarioRolId', roleData.id_rol || '');
+                        }
+                    } catch (e) {
+                        console.warn('No se pudo obtener rol después del login Firebase:', e);
+                    }
+
                     showMessage("Descubrir de sesión exitoso. Redirigiendo...", "bg-green-100 text-green-700");
-                    
+
                     console.log("Redirigiendo al descubrir...");
                     setTimeout(() => {
                         window.location.href = "Descubrir.html";
@@ -335,11 +377,22 @@
                     const data = await res.json();
 
                     if (res.ok) {
-                localStorage.setItem('authToken', data.token);
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('usuarioId', data.usuarioId);
-                localStorage.setItem('correoUsuario', data.correo);
-                        
+                        localStorage.setItem('authToken', data.token);
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('usuarioId', data.usuarioId);
+                        localStorage.setItem('correoUsuario', data.correo);
+
+                        // Obtener rol por correo y guardarlo
+                        try {
+                            const roleData = await fetchRoleByCorreo(correo);
+                            if (roleData) {
+                                localStorage.setItem('usuarioRol', roleData.rol || '');
+                                localStorage.setItem('usuarioRolId', roleData.id_rol || '');
+                            }
+                        } catch (e) {
+                            console.warn('No se pudo obtener rol después del login:', e);
+                        }
+
                         showMessage("Redirigiendo al descubrir...", "bg-green-100 text-green-700");
 
                         setTimeout(() => {

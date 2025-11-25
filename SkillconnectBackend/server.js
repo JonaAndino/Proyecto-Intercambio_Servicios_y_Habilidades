@@ -26,6 +26,7 @@ const recuperarPasswordRoutes = require('./routes/recuperarPassword');
 const favoritosRoutes = require('./routes/favoritos');
 const intercambiosRoutes = require('./routes/intercambios');
 const verificacionUsuariosRoutes = require('./routes/verificacionUsuarios');
+const reportesUsuariosRoutes = require('./routes/ReportesUsuarios');
 
 const app = express();
 // Obtiene el puerto del .env o usa 3001 por defecto
@@ -76,6 +77,8 @@ app.use('/api/intercambios', intercambiosRoutes); // Rutas de intercambios final
 
 // Rutas de verificación de usuarios
 app.use('/api/verificacion-usuarios', verificacionUsuariosRoutes);
+// Rutas para reportes de usuarios (crear/listar/actualizar/eliminar)
+app.use('/api/reportes', reportesUsuariosRoutes);
 
 // Prueba básica de que el servidor Express funciona
 app.get('/', (req, res) => {

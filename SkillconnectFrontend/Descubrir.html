@@ -1450,6 +1450,9 @@
             </nav>
         </div>
     </aside>
+    
+    <!-- Script para mostrar sección de reportes si el usuario es administrador -->
+    <!-- Este bloque fue reemplazado por un script consolidado más abajo. -->
 
     <!-- Contenedor Principal -->
     <div id="mainContent" class="min-h-screen pb-12">
@@ -1599,6 +1602,52 @@
                             <option value="12">12 usuarios</option>
                             <option value="18">18 usuarios</option>
                         </select>
+
+                    <!-- Script: Mostrar ítem 'Reportes' en el sidebar solo si el usuario es administrador (id_rol === 1) -->
+                    <script>
+                        (function () {
+                            function renderReportItem() {
+                                try {
+                                    const isAdmin = localStorage.getItem('usuarioRolId') === '1';
+                                    const sidebar = document.getElementById('sidebar');
+                                    if (!sidebar) return;
+
+                                    // Buscar elemento de Cerrar Sesión para insertar antes
+                                    const logoutAnchor = sidebar.querySelector('a[onclick*="logout"]') || sidebar.querySelector('a[onclick*="logout();"]');
+
+                                    // Si ya existe el elemento, solo actualizar visibilidad
+                                    let item = document.getElementById('sidebar-report-item');
+                                    if (!item) {
+                                        item = document.createElement('a');
+                                        item.id = 'sidebar-report-item';
+                                        item.href = '#';
+                                        item.setAttribute('data-view', 'reportes');
+                                        item.setAttribute('onclick', "navigateTo('reportes'); return false;");
+                                        item.className = 'sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700';
+                                        item.innerHTML = `
+                                            <span class="iconify w-6 h-6 text-blue-600" data-icon="mdi:chart-box" style="font-size:24px;"></span>
+                                            <span class="font-medium">Reportes</span>
+                                        `;
+
+                                        // Insertar antes del logout si existe, sino al final del nav
+                                        const nav = sidebar.querySelector('nav') || sidebar;
+                                        if (logoutAnchor && logoutAnchor.parentElement) {
+                                            nav.insertBefore(item, logoutAnchor);
+                                        } else {
+                                            nav.appendChild(item);
+                                        }
+                                    }
+
+                                    item.style.display = isAdmin ? '' : 'none';
+                                } catch (err) {
+                                    console.warn('Error renderReportItem:', err);
+                                }
+                            }
+
+                            document.addEventListener('DOMContentLoaded', renderReportItem);
+                            window.addEventListener('storage', renderReportItem);
+                        })();
+                    </script>
                     </div>
 
                     <!-- Contador de resultados -->
@@ -1713,6 +1762,14 @@
             <iframe src="./busqueda.html" id="busquedaIframe"
                 style="width: 100%; height: calc(100vh - 80px); border: none; display: block;"
                 title="Búsqueda de Habilidades">
+            </iframe>
+        </div>
+
+        <!-- Vista: Reportes (carga Reportes.html dentro del layout) -->
+        <div id="reportesView" class="view-section" style="display: none;">
+            <iframe src="./Reportes.html" id="reportesIframe"
+                style="width: 100%; height: calc(100vh - 80px); border: none; display: block;"
+                title="Reportes">
             </iframe>
         </div>
 
@@ -3240,15 +3297,14 @@
                             </div>
                         </div>
                         
-                        <!-- Botones de acción -->
+                        <!-- Botones de acción (el botón 'Reportar' fue movido al perfil) -->
                        <div class="grid grid-cols-2 gap-3 mt-4">
     <button onclick="event.stopPropagation(); viewProfile(${user.id})" 
             class="flex items-center justify-center px-4 py-2 border-2 border-blue-500 text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition">
         Ver Perfil
     </button>
-     
- 
-    <button onclick="event.stopPropagation(); sendRequest(${user.id}, '${user.name}')" 
+
+    <button onclick="event.stopPropagation(); sendRequest(${user.id}, '${user.name.replace(/'/g, "\\'")}')" 
             class="request-button flex items-center justify-center px-4 py-2 text-white rounded-lg font-semibold">
         Solicitar
     </button>
@@ -3477,6 +3533,61 @@ async function viewProfile(perfilId) {
 
         // Cargar contenido del perfil (reemplaza el contenido anterior)
         await cargarPerfilEnSeccion(perfilId);
+
+        // Insertar botón 'Reportar' dentro de la sección de perfil (evitar duplicados)
+        try {
+            const contentContainer = document.getElementById('perfilSeccionContent');
+            if (contentContainer) {
+                const prev = contentContainer.querySelector('#reportInProfileBtn');
+                if (prev) prev.remove();
+
+                const reportBtn = document.createElement('button');
+                reportBtn.id = 'reportInProfileBtn';
+                reportBtn.type = 'button';
+                // Hacer el botón un poco más ancho: más padding horizontal y ancho mínimo
+                reportBtn.className = 'bg-red-600 text-white px-6 py-2 rounded-md mt-4 hover:bg-red-700';
+                reportBtn.style.cursor = 'pointer';
+                reportBtn.style.minWidth = '160px';
+                reportBtn.textContent = 'Reportar';
+
+                reportBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    let nombre = '';
+                    try {
+                        const nameEl = contentContainer.querySelector('.profile-modal-info .profile-name') || contentContainer.querySelector('.profile-name') || contentContainer.querySelector('h1');
+                        if (nameEl) nombre = nameEl.textContent.trim();
+                    } catch (err) {
+                        console.debug('No se pudo obtener nombre del perfil para reportar', err);
+                    }
+                    try { reportUser(perfilId, nombre); } catch (err) { console.error('reportUser no disponible', err); }
+                });
+
+                // Intentar insertar el botón dentro de la sección justo debajo de la ubicación
+                const requestSection = contentContainer.querySelector('#request-button-section');
+                if (requestSection) {
+                    // Evitar eliminar contenido existente; sólo remover un wrapper previo si existe
+                    const prevWrapper = requestSection.querySelector('.report-btn-wrapper');
+                    if (prevWrapper) prevWrapper.remove();
+
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'report-btn-wrapper';
+                    wrapper.style.display = 'flex';
+                    wrapper.style.justifyContent = 'center';
+                    wrapper.style.padding = '12px 0';
+                    wrapper.appendChild(reportBtn);
+
+                    // Añadir el wrapper al final de la sección, preservando cualquier contenido previo (p. ej. loader)
+                    requestSection.appendChild(wrapper);
+                } else {
+                    // Fallback: agregar al final sin remover nada
+                    const prev = contentContainer.querySelector('#reportInProfileBtn');
+                    if (prev) prev.remove();
+                    contentContainer.appendChild(reportBtn);
+                }
+            }
+        } catch (err) {
+            console.debug('Error al insertar botón reportar en perfil:', err);
+        }
 
         // Asegurar que la UI muestre la parte superior del perfil
         setTimeout(() => {
@@ -4504,6 +4615,167 @@ function volverAlGrid() {
                     text: 'Ocurrió un error al procesar la solicitud',
                     confirmButtonColor: '#3b82f6'
                 });
+            }
+        }
+
+        // Reportar usuario: abre modal para motivo + descripción y envía POST a /api/reportes
+        async function reportUser(reportedId, reportedName) {
+            try {
+                // Obtener id de cuenta (id_usuario) del reportante preferentemente desde localStorage
+                let reporterUserId = localStorage.getItem('id_usuario') || localStorage.getItem('usuarioId') || null;
+                if (reporterUserId) reporterUserId = Number(reporterUserId);
+
+                // Si no hay id_usuario en localStorage intentar resolver desde el perfil (id_Perfil_Persona)
+                if (!reporterUserId) {
+                    const reporterPersonaId = await obtenerPersonaIdActual();
+                    if (!reporterPersonaId) {
+                        Swal.fire({ icon: 'warning', title: 'Inicia sesión', text: 'Debes iniciar sesión para poder reportar usuarios.', confirmButtonColor: '#3b82f6' });
+                        return;
+                    }
+                    try {
+                        const r2 = await fetch(`${API_BASE}/personas/perfil-usuario/${reporterPersonaId}`);
+                        if (r2.ok) {
+                            const j2 = await r2.json();
+                            if (j2 && j2.data && j2.data.id_Usuario) reporterUserId = Number(j2.data.id_Usuario);
+                            else if (j2 && j2.id_Usuario) reporterUserId = Number(j2.id_Usuario);
+                        }
+                    } catch (err) {
+                        console.warn('No se pudo resolver id_Usuario desde id_Perfil_Persona del reportero:', err);
+                    }
+                }
+
+                if (!reporterUserId) {
+                    Swal.fire({ icon: 'warning', title: 'Inicia sesión', text: 'No se pudo identificar la cuenta del reportante.', confirmButtonColor: '#3b82f6' });
+                    return;
+                }
+
+                // Intentar resolver id_perfil_persona del usuario reportado
+                let personaId = null;
+                // Resolver id_perfil_persona y id_usuario del usuario reportado
+                let reportedUserAccountId = null;
+                try {
+                    const r = await fetch(`${API_BASE}/personas/by-usuario/${reportedId}`);
+                    if (r.ok) {
+                        const j = await r.json();
+                        const d = j.data || j;
+                        personaId = d.id_Perfil_Persona || d.id_perfil_persona || d.idPerfilPersona || null;
+                        // Si la llamada fue por usuario, reportedId ya es account id
+                        reportedUserAccountId = Number(reportedId);
+                    } else if (r.status === 404) {
+                        // Si no existe persona por usuario, quizá reportedId es id_Perfil_Persona
+                        personaId = Number(reportedId) || null;
+                        // Intentar resolver el id_Usuario desde el id_Perfil_Persona
+                        if (personaId) {
+                            try {
+                                const r3 = await fetch(`${API_BASE}/personas/perfil-usuario/${personaId}`);
+                                if (r3.ok) {
+                                    const j3 = await r3.json();
+                                    const dd = j3.data || j3;
+                                    reportedUserAccountId = dd.id_Usuario || dd.id_usuario || null;
+                                    if (reportedUserAccountId) reportedUserAccountId = Number(reportedUserAccountId);
+                                }
+                            } catch (err) {
+                                console.warn('No se pudo resolver id_Usuario desde id_Perfil_Persona reportado:', err);
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.warn('No se pudo obtener persona del usuario reportado:', err);
+                }
+
+                if (!personaId) personaId = null;
+
+                if (!reportedUserAccountId) {
+                    Swal.fire({ icon: 'error', title: 'Usuario no encontrado', text: 'No se pudo identificar la cuenta del usuario reportado. No se enviará el reporte.', confirmButtonColor: '#3b82f6' });
+                    return;
+                }
+
+                const motivos = {
+                    'Spam': 'Spam o publicidad no deseada',
+                    'Abuso': 'Abuso, acoso o lenguaje ofensivo',
+                    'Contenido inapropiado': 'Contenido sexual o inapropiado',
+                    'Suplantación': 'Suplantación de identidad',
+                    'Otro': 'Otro motivo'
+                };
+
+                const { value: formValues } = await Swal.fire({
+                    title: `Reportar a ${escapeHtml(reportedName)}`,
+                    html: `
+                        <div style="text-align:left; margin-bottom:8px; color:#374151;"> 
+                            <p style="margin:0 0 6px 0; font-size:14px;">Por favor, selecciona el motivo del reporte y agrega una descripción si crees que es necesaria. Nuestro equipo revisará el caso.</p>
+                        </div>
+                        <div style="margin-top:6px; text-align:left;">
+                            <label for="swal-motivo" style="display:block; font-weight:600; margin-bottom:6px;">Motivo</label>
+                            <select id="swal-motivo" style="width:100%; padding:10px; border-radius:8px; border:1px solid #d1d5db; font-size:14px;">\n` +
+                                Object.keys(motivos).map(k => `<option value="${k}">${motivos[k]}</option>`).join('') +
+                            `</select>
+                        </div>
+                        <div style="margin-top:12px; text-align:left;">
+                            <label for="swal-descripcion" style="display:block; font-weight:600; margin-bottom:6px;">Descripción adicional <span style=\"font-weight:400; font-size:12px; color:#6b7280;\">(opcional)</span></label>
+                            <textarea id="swal-descripcion" rows="5" maxlength="500" placeholder="Añade más contexto: qué pasó, enlaces, capturas o mensajes relevantes (máx. 500 caracteres)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #d1d5db; resize:vertical; font-size:14px;"></textarea>
+                            <div id="swal-charcount" style="text-align:right; font-size:12px; color:#6b7280; margin-top:6px;">0/500</div>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonText: 'Enviar reporte',
+                    confirmButtonColor: '#f59e0b',
+                    focusConfirm: false,
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        const ta = Swal.getPopup().querySelector('#swal-descripcion');
+                        const countEl = Swal.getPopup().querySelector('#swal-charcount');
+                        if (ta && countEl) {
+                            const update = () => { countEl.textContent = `${ta.value.length}/500`; };
+                            ta.addEventListener('input', update);
+                            update();
+                        }
+                    },
+                    preConfirm: () => {
+                        const motivoEl = Swal.getPopup().querySelector('#swal-motivo');
+                        const descEl = Swal.getPopup().querySelector('#swal-descripcion');
+                        const motivo = motivoEl ? motivoEl.value : '';
+                        const descripcion = descEl ? descEl.value.trim() : '';
+                        if (!motivo) {
+                            Swal.showValidationMessage('Selecciona un motivo para el reporte');
+                            return false;
+                        }
+                        if (descripcion.length > 500) {
+                            Swal.showValidationMessage('La descripción excede los 500 caracteres');
+                            return false;
+                        }
+                        return { motivo, descripcion };
+                    }
+                });
+
+                if (!formValues) return; // cancelado
+
+                // Enviar POST al backend
+                const payload = {
+                    reporter_id: reporterUserId,
+                    reported_user_id: reportedUserAccountId,
+                    id_perfil_persona: personaId,
+                    motivo_descripcion: formValues.motivo,
+                    descripcion: formValues.descripcion || null
+                };
+
+                const resp = await fetch(`${API_BASE}/reportes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (resp.ok) {
+                    const json = await resp.json();
+                    Swal.fire({ icon: 'success', title: 'Reporte enviado', text: json.mensaje || 'Tu reporte ha sido enviado correctamente.', confirmButtonColor: '#3b82f6' });
+                } else {
+                    const err = await resp.json().catch(() => ({}));
+                    Swal.fire({ icon: 'error', title: 'Error', text: err.error || 'No se pudo enviar el reporte.', confirmButtonColor: '#3b82f6' });
+                }
+
+            } catch (error) {
+                console.error('Error en reportUser:', error);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Ocurrió un error al enviar el reporte.', confirmButtonColor: '#3b82f6' });
             }
         }
 
