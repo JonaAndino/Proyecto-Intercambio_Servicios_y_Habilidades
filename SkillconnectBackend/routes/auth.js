@@ -3,23 +3,17 @@ import { Router } from 'express';
 import bcrypt from 'bcrypt'; 
 import db from '../db.js'; // Usa el pool de conexiones
 
-<<<<<<< HEAD
 const router = Router(); // ¡CRÍTICO! Definir el router usando import
 const saltRounds = 10; 
-=======
-const express = require('express');
-const router = express.Router();
-const bcrypt = require('bcrypt'); // Necesario para el Hashing de Contraseñas
-const jwt = require('jsonwebtoken'); // Para generar tokens JWT
-const pool = require('../db'); // Importa la conexión a la base de datos (DB)
-
-// El número de "rondas de sal" para bcrypt. Más alto es más seguro pero más lento.
-const saltRounds = 10;
 
 // ✅ CLAVE SECRETA PARA JWT (En producción, usar variable de entorno)
 const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_super_segura_2025_SkillConnect';
 const JWT_EXPIRES_IN = '7d'; // Token válido por 7 días 
->>>>>>> d814d3fb44af5b02a596fe1fc87cf036f39c7056
+
+// ✅ CLAVE SECRETA PARA JWT (En producción, usar variable de entorno)
+const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_super_segura_2025_SkillConnect';
+const JWT_EXPIRES_IN = '7d'; // Token válido por 7 días 
+
 
 // ******************
 // POST: /api/auth/registro (REGISTRAR NUEVO USUARIO)
@@ -51,9 +45,7 @@ router.post('/registro', async (req, res) => {
             [correo, contrasena_hash]
         );
 
-<<<<<<< HEAD
         res.status(201).json({ mensaje: "Registro exitoso. Usuario creado." });
-=======
         const nuevoUsuarioId = result.insertId;
 
         // 5. CREAR REGISTRO EN TABLA PERSONAS (Reservar espacio para el perfil)
@@ -66,16 +58,6 @@ router.post('/registro', async (req, res) => {
         res.status(201).json({ 
             mensaje: 'Usuario registrado exitosamente.',
             id_usuario: nuevoUsuarioId 
-        });
-
-
-    } catch (error) {
-        console.error("Error en el registro:", error);
-        res.status(500).json({ error: "Error interno del servidor durante el registro." });
-    }
-});
-
-<<<<<<< HEAD
 // ******************
 // POST: /api/auth/login (INICIO DE SESIÓN)
 // ******************
@@ -120,7 +102,50 @@ router.post('/login', async (req, res) => {
 
 
 export default router; // ¡CRÍTICO! Exportar el router
-=======
+        });
+
+    } catch (error) {
+        console.error('Error durante el login JWT:', error);
+        res.status(500).json({ error: 'Ocurrió un error en el servidor al intentar iniciar sesión.' });
+    }
+});
+
+// **********************************************
+// MIDDLEWARE: Verificar Token JWT
+// **********************************************
+
+function verificarToken(req, res, next) {
+    // Obtener token del header Authorization
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer TOKEN"
+
+    if (!token) {
+        return res.status(401).json({ error: 'Token no proporcionado. Inicia sesión nuevamente.' });
+    }
+
+    try {
+        // Verificar y decodificar el token
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.usuario = decoded; // Guardar info del usuario en req
+        next(); // Continuar con la siguiente función
+    } catch (error) {
+        return res.status(403).json({ error: 'Token inválido o expirado.' });
+    }
+}
+
+// **********************************************
+// GET /api/verificar-sesion (Verificar si el token es válido)
+// **********************************************
+
+router.get('/verificar-sesion', verificarToken, (req, res) => {
+    // Si llegó aquí, el token es válido
+    res.status(200).json({ 
+        mensaje: 'Sesión válida',
+        usuarioId: req.usuario.usuarioId,
+        correo: req.usuario.correo
+    });
+});
+
 // **********************************************
 // POST /api/login 
 // **********************************************
@@ -261,4 +286,4 @@ router.get('/verificar-sesion', verificarToken, (req, res) => {
 });
 
 module.exports = router;
->>>>>>> d814d3fb44af5b02a596fe1fc87cf036f39c7056
+

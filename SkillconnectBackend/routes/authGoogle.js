@@ -22,8 +22,8 @@ router.get('/google/callback',
   }),
   async (req, res) => {
     try {
-      console.log('🔄 Procesando callback de Google...');
-      console.log('👤 Usuario:', req.user);
+      console.log(' Procesando callback de Google...');
+      console.log(' Usuario:', req.user);
       
       const user = req.user;
       
@@ -37,18 +37,18 @@ router.get('/google/callback',
         { expiresIn: JWT_EXPIRES_IN }
       );
       
-      console.log('✅ Token JWT generado');
+      console.log(' Token JWT generado');
       
       // Redirigir al frontend con el token en la URL
       // El frontend capturará estos parámetros y los guardará en localStorage
-      const redirectUrl = `http://127.0.0.1:5050/SkillconnectFrontend/login.html?token=${token}&userId=${user.id_usuario}&email=${encodeURIComponent(user.correo)}&source=google`;
+      const redirectUrl = `http://127.0.0.1:5050/login.html?token=${token}&userId=${user.id_usuario}&email=${encodeURIComponent(user.correo)}&source=google`;
       
-      console.log('🔄 Redirigiendo a:', redirectUrl);
+      console.log(' Redirigiendo a:', redirectUrl);
       
       res.redirect(redirectUrl);
       
     } catch (error) {
-      console.error('❌ Error en callback de Google:', error);
+      console.error(' Error en callback de Google:', error);
       res.redirect('/login.html?error=server_error');
     }
   }

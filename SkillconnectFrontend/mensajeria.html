@@ -292,6 +292,14 @@
                     console.log('Click en botón Ver Perfil capturado');
                     verPerfilContacto();
                 }
+                
+                // Event listener para el botón "Finalizar Intercambio"
+                if (e.target.id === 'finalizarIntercambioBtn' || e.target.closest('#finalizarIntercambioBtn')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Click en botón Finalizar Intercambio capturado');
+                    finalizarIntercambio();
+                }
             }, true); // Agregamos 'true' para usar capture phase
         });
 
@@ -465,6 +473,10 @@
                             <span class="iconify" data-icon="mdi:account" data-width="18"></span>
                             <span>Ver Perfil</span>
                         </button>
+                        <button id="finalizarIntercambioBtn" class="px-4 py-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition flex items-center space-x-1">
+                            <span class="iconify" data-icon="mdi:check-circle" data-width="18"></span>
+                            <span>Finalizar Intercambio</span>
+                        </button>
                     </div>
                 </div>
             `;
@@ -494,6 +506,231 @@
                 alert('No se pudo obtener el ID del contacto. Revisa la consola para más detalles.');
                 console.error('currentConversation completo:', JSON.stringify(currentConversation, null, 2));
             }
+        }
+
+        // Función para finalizar el intercambio y mostrar modal de calificación
+        async function finalizarIntercambio() {
+            console.log('🔴 finalizarIntercambio() - Descubrir');
+            console.log('currentConversation:', currentConversation);
+            
+            if (!currentConversation || !currentConversation.id_conversacion) {
+                alert('Error: No se pudo identificar la conversación actual');
+                return;
+            }
+
+            // Obtener IDs necesarios
+            const idConversacion = currentConversation.id_conversacion;
+            const idContacto = currentConversation.id_contacto || currentConversation.idContacto || currentConversation.id_persona_contacto;
+            const nombreContacto = currentConversation.nombre || 'este usuario';
+            
+            if (!idContacto) {
+                alert('Error: No se pudo identificar al usuario contacto');
+                return;
+            }
+
+            // Confirmación antes de finalizar
+            const confirmar = confirm(`¿Estás seguro de que deseas finalizar el intercambio con ${nombreContacto}?\n\nEsto eliminará la conversación y podrás calificar al usuario.`);
+            
+            if (!confirmar) {
+                return;
+            }
+
+            try {
+                // Obtener datos de la persona actual
+                const personaId = await obtenerPersonaIdActual();
+                
+                if (!personaId) {
+                    alert('Error: No se pudo obtener tu información de usuario');
+                    return;
+                }
+
+                // Llamar al backend para finalizar el intercambio
+                const response = await fetch(`${API_URL}/intercambios/finalizar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id_conversacion: idConversacion,
+                        id_persona_finalizador: personaId,
+                        id_persona_otro: idContacto
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log('✅ Intercambio finalizado:', data);
+                    
+                    // Mostrar modal de calificación
+                    mostrarModalCalificacion(data.intercambio.id_intercambio, idContacto, nombreContacto);
+                    
+                } else {
+                    alert('Error al finalizar intercambio: ' + (data.mensaje || 'Error desconocido'));
+                }
+
+            } catch (error) {
+                console.error('❌ Error al finalizar intercambio:', error);
+                alert('Error de conexión con el servidor');
+            }
+        }
+
+        // Modal de calificación con sistema de estrellas
+        function mostrarModalCalificacion(idIntercambio, idPersonaCalificada, nombrePersona) {
+            const modal = document.createElement('div');
+            modal.id = 'modalCalificacion';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 animate-fadeIn">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="iconify text-blue-600" data-icon="mdi:star" data-width="32"></span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Califica tu experiencia</h2>
+                        <p class="text-gray-600">¿Cómo fue tu intercambio con <strong>${nombrePersona}</strong>?</p>
+                    </div>
+
+                    <!-- Sistema de estrellas -->
+                    <div class="flex justify-center space-x-2 mb-6" id="sistemaEstrellas">
+                        ${[1,2,3,4,5].map(num => `
+                            <button type="button" class="estrella text-gray-300 hover:text-yellow-400 transition transform hover:scale-110" data-valor="${num}">
+                                <span class="iconify" data-icon="mdi:star" data-width="48"></span>
+                            </button>
+                        `).join('')}
+                    </div>
+
+                    <!-- Texto de calificación seleccionada -->
+                    <div class="text-center mb-4">
+                        <p id="textoCalificacion" class="text-lg font-semibold text-gray-600">Selecciona una calificación</p>
+                    </div>
+
+                    <!-- Campo de comentario -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Comentario (opcional)</label>
+                        <textarea id="comentarioCalificacion" rows="4" 
+                                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                  placeholder="Comparte tu experiencia con ${nombrePersona}..."></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Máximo 500 caracteres</p>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="flex space-x-3">
+                        <button id="btnCancelarCalificacion" class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition">
+                            Omitir
+                        </button>
+                        <button id="btnEnviarCalificacion" class="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            Enviar Calificación
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Variables para la calificación
+            let calificacionSeleccionada = 0;
+            const estrellas = modal.querySelectorAll('.estrella');
+            const textoCalificacion = modal.getElementById('textoCalificacion');
+            const btnEnviar = modal.getElementById('btnEnviarCalificacion');
+            const textosCalificacion = {
+                1: '⭐ Malo',
+                2: '⭐⭐ Regular',
+                3: '⭐⭐⭐ Bueno',
+                4: '⭐⭐⭐⭐ Muy Bueno',
+                5: '⭐⭐⭐⭐⭐ Excelente'
+            };
+
+            // Event listeners para las estrellas
+            estrellas.forEach(estrella => {
+                estrella.addEventListener('click', () => {
+                    calificacionSeleccionada = parseInt(estrella.dataset.valor);
+                    actualizarEstrellas();
+                    textoCalificacion.textContent = textosCalificacion[calificacionSeleccionada];
+                    textoCalificacion.className = 'text-lg font-semibold text-yellow-500';
+                    btnEnviar.disabled = false;
+                });
+
+                estrella.addEventListener('mouseenter', () => {
+                    const valor = parseInt(estrella.dataset.valor);
+                    estrellas.forEach((e, index) => {
+                        if (index < valor) {
+                            e.classList.add('text-yellow-400');
+                            e.classList.remove('text-gray-300');
+                        } else {
+                            e.classList.add('text-gray-300');
+                            e.classList.remove('text-yellow-400');
+                        }
+                    });
+                });
+            });
+
+            modal.querySelector('#sistemaEstrellas').addEventListener('mouseleave', () => {
+                actualizarEstrellas();
+            });
+
+            function actualizarEstrellas() {
+                estrellas.forEach((estrella, index) => {
+                    if (index < calificacionSeleccionada) {
+                        estrella.classList.add('text-yellow-400');
+                        estrella.classList.remove('text-gray-300');
+                    } else {
+                        estrella.classList.add('text-gray-300');
+                        estrella.classList.remove('text-yellow-400');
+                    }
+                });
+            }
+
+            // Botón cancelar/omitir
+            modal.getElementById('btnCancelarCalificacion').addEventListener('click', () => {
+                modal.remove();
+                // Recargar o redirigir
+                location.reload();
+            });
+
+            // Botón enviar calificación
+            btnEnviar.addEventListener('click', async () => {
+                const comentario = modal.getElementById('comentarioCalificacion').value.trim();
+                
+                btnEnviar.disabled = true;
+                btnEnviar.textContent = 'Enviando...';
+
+                try {
+                    const personaId = await obtenerPersonaIdActual();
+                    
+                    const response = await fetch(`${API_URL}/intercambios/calificar`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            id_intercambio: idIntercambio,
+                            id_persona_calificadora: personaId,
+                            id_persona_calificada: idPersonaCalificada,
+                            puntuacion: calificacionSeleccionada,
+                            comentario: comentario || null
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        modal.remove();
+                        alert('✅ ¡Gracias por tu calificación!');
+                        // Recargar la página para actualizar la lista de conversaciones
+                        location.reload();
+                    } else {
+                        alert('Error al enviar calificación: ' + (data.mensaje || 'Error desconocido'));
+                        btnEnviar.disabled = false;
+                        btnEnviar.textContent = 'Enviar Calificación';
+                    }
+
+                } catch (error) {
+                    console.error('Error al enviar calificación:', error);
+                    alert('Error de conexión con el servidor');
+                    btnEnviar.disabled = false;
+                    btnEnviar.textContent = 'Enviar Calificación';
+                }
+            });
         }
 
         // Cargar mensajes

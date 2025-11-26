@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -8,7 +7,6 @@
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  
   <style>
     * {
       margin: 0;
@@ -77,7 +75,14 @@
       align-items: center;
       gap: 8px;
     }
-
+/* Review Reply Styles */
+.review-reply {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f0f9ff;
+  border-left: 4px solid #2563eb;
+  border-radius: 4px;
+}
     .logout-button:hover {
       background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
       transform: translateY(-2px);
@@ -277,7 +282,6 @@
     .editable {
       position: relative;
       display: inline-block;
-      min-width: 60px;
       cursor: text;
       padding: 4px 8px;
       border-radius: 6px;
@@ -289,12 +293,12 @@
     }
     
     .editable:hover::after {
-      content: '✏️ Editar';
+      content: 'Editar';
       position: absolute;
       right: -60px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 11px;
+      font-size: 14px;
       color: #6b7280;
       background: #f9fafb;
       padding: 2px 8px;
@@ -573,21 +577,31 @@
     /* Gallery */
     .gallery-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.2rem;
       margin-top: 16px;
+      align-items: stretch;
+      width: 100%;
     }
+    
 
     .gallery-item {
       position: relative;
-      aspect-ratio: 1;
-      border-radius: 12px;
+      aspect-ratio: 7/4;
+      border-radius: 2.5rem;
+      width: 100%;
+      min-width: 0;
+      min-height: 120px;
+      max-height: 320px;
       overflow: hidden;
       cursor: pointer;
       transition: all 0.3s;
       border: 2px solid transparent;
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .gallery-item:hover {
@@ -600,6 +614,11 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      border-radius: 2.5rem;
+      min-width: 0;
+      min-height: 0;
+      max-width: 100%;
+      max-height: 100%;
     }
 
     .gallery-upload {
@@ -610,8 +629,21 @@
       border: 3px dashed #a5b4fc;
       cursor: pointer;
       transition: all 0.3s;
-      aspect-ratio: 1;
-      border-radius: 12px;
+      aspect-ratio: 7/4;
+      border-radius: 2.5rem;
+      max-width: 320px;
+      min-height: 180px;
+      margin: 0 auto;
+    @media (max-width: 900px) {
+      .gallery-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (max-width: 600px) {
+      .gallery-grid {
+        grid-template-columns: 1fr;
+      }
+    }
       backdrop-filter: blur(10px);
     }
 
@@ -1111,11 +1143,11 @@
             </h2>
             <div class="stats-grid">
               <div class="stat">
-                <p class="stat-number-primary">12</p>
+                <p class="stat-number-primary" id="statIntercambios">0</p>
                 <p class="stat-label">Intercambios (HU 13)</p>
               </div>
               <div class="stat">
-                <p class="stat-number-secondary">8</p>
+                <p class="stat-number-secondary" id="statFavoritos">0</p>
                 <p class="stat-label">Favoritos (HU 10)</p>
               </div>
               <div class="stat">
@@ -1275,7 +1307,7 @@
           </div>
 
           <div class="view-all-button">
-            <button>Ver todas las 12 reseñas</button>
+            <button id="btnViewAllReviews" onclick="viewAllReviews()" style="display: none;">Ver todas las reseñas</button>
           </div>
         </div>
       </div>
@@ -1409,7 +1441,50 @@
 
       // Event listeners
       setupEventListeners();
+      
+      // Configurar actualización automática de estadísticas
+      configurarActualizacionAutomatica();
     });
+
+    // ======================
+    // ACTUALIZACIÓN AUTOMÁTICA DE ESTADÍSTICAS
+    // ======================
+    function configurarActualizacionAutomatica() {
+      // 1. Escuchar cuando el usuario regresa a la pestaña
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && perfilPersonaId) {
+          // console.log eliminado
+          cargarEstadisticasUsuario();
+        }
+      });
+      
+      // 2. Escuchar eventos de localStorage (cuando se actualiza desde otra pestaña/página)
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'actualizarEstadisticas' && perfilPersonaId) {
+          // console.log eliminado
+          cargarEstadisticasUsuario();
+        }
+      });
+      
+      // 3. Polling cada 30 segundos (opcional, solo si el usuario está activo)
+      let lastActivity = Date.now();
+      
+      // Detectar actividad del usuario
+      ['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(event => {
+        document.addEventListener(event, () => {
+          lastActivity = Date.now();
+        }, true);
+      });
+      
+      // Polling inteligente: solo actualiza si el usuario estuvo activo en los últimos 2 minutos
+      setInterval(() => {
+        const timeSinceActivity = Date.now() - lastActivity;
+        if (timeSinceActivity < 120000 && perfilPersonaId) { // 2 minutos
+          // console.log eliminado
+          cargarEstadisticasUsuario();
+        }
+      }, 30000); // Cada 30 segundos
+    }
 
     // ======================
     // SETUP EVENT LISTENERS
@@ -1606,6 +1681,52 @@
     // RENDERIZAR USUARIO
     // ======================
     function renderUsuario() {
+            // Sección de solicitud de verificación
+            const badge = document.querySelector('.verified-badge');
+            if (badge) {
+              // Agregar formulario solo si no está verificado
+              setTimeout(() => {
+                if (badge.textContent.includes('No verificado')) {
+                  if (!document.getElementById('solicitudVerificacionForm')) {
+                    const form = document.createElement('form');
+                    form.id = 'solicitudVerificacionForm';
+                    form.innerHTML = `
+                      <div style="margin-top: 16px;">
+                        <label for="correoVerificacion" style="font-weight:600;">Correo para contacto:</label>
+                        <input type="email" id="correoVerificacion" required placeholder="tu@email.com" style="margin-left:8px;padding:6px 12px;border-radius:8px;border:1px solid #e5e7eb;">
+                        <button type="submit" style="background:#2563eb;color:white;padding:6px 18px;border-radius:8px;margin-left:8px;font-weight:600;">Solicitar verificación</button>
+                      </div>
+                      <div id="mensajeVerificacion" style="margin-top:8px;font-size:14px;"></div>
+                    `;
+                    badge.parentNode.insertBefore(form, badge.nextSibling);
+                    form.addEventListener('submit', async function(e) {
+                      e.preventDefault();
+                      const correo = document.getElementById('correoVerificacion').value.trim();
+                      const mensaje = document.getElementById('mensajeVerificacion');
+                      mensaje.textContent = 'Enviando solicitud...';
+                      try {
+                        const resp = await fetch('http://localhost:3001/api/verificacion-usuarios', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ id_Perfil: perfilPersonaId, correo })
+                        });
+                        const data = await resp.json();
+                        if (resp.ok && data.ok) {
+                          mensaje.textContent = '¡Solicitud enviada! El administrador revisará tu cuenta.';
+                          form.querySelector('button').disabled = true;
+                          form.querySelector('button').style.opacity = '0.6';
+                          mostrarEstadoVerificacion();
+                        } else {
+                          mensaje.textContent = data.error || 'No se pudo enviar la solicitud.';
+                        }
+                      } catch (err) {
+                        mensaje.textContent = 'Error de conexión.';
+                      }
+                    });
+                  }
+                }
+              }, 800);
+            }
       // Profile pic
       const profilePic = document.getElementById('profilePic');
       profilePic.src = getImagenPerfil();
@@ -1651,6 +1772,9 @@
       }
       makeEditable(descripcion, 'descripcion_Usuario', (value) => updateUsuario('descripcion_Usuario', value), true);
 
+      // Mostrar distintivo de verificación
+      mostrarEstadoVerificacion();
+
       // Datos personales
       renderDatosPersonales();
 
@@ -1668,6 +1792,721 @@
 
       // Pixel chart
       renderPixelChart();
+      
+      // Cargar calificaciones y reseñas
+      cargarCalificacionesYResenas();
+        // ======================
+        // MOSTRAR ESTADO DE VERIFICACIÓN
+        // ======================
+        async function mostrarEstadoVerificacion() {
+          const badge = document.querySelector('.verified-badge');
+          if (!badge) return;
+          badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-check" style="color: #2563eb; font-size: 20px; margin-right: 4px;"></span>Verificando...';
+          try {
+            const resp = await fetch(`http://localhost:3001/api/verificacion-usuarios/perfil/${perfilPersonaId}`);
+            const perfil = await resp.json();
+            if (perfil && perfil.estado_verificacion === 'aprobada') {
+              badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-check" style="color: #22c55e; font-size: 20px; margin-right: 4px;"></span>Usuario Verificado';
+              badge.style.background = 'rgba(34,197,94,0.1)';
+              badge.style.color = '#22c55e';
+              badge.style.border = '1px solid #22c55e';
+            } else if (perfil && perfil.estado_verificacion === 'pendiente') {
+              badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-alert" style="color: #eab308; font-size: 20px; margin-right: 4px;"></span>Verificación pendiente';
+              badge.style.background = 'rgba(234,179,8,0.1)';
+              badge.style.color = '#eab308';
+              badge.style.border = '1px solid #eab308';
+            } else {
+              badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-off" style="color: #ef4444; font-size: 20px; margin-right: 4px;"></span>No verificado';
+              badge.style.background = 'rgba(239,68,68,0.1)';
+              badge.style.color = '#ef4444';
+              badge.style.border = '1px solid #ef4444';
+            }
+          } catch (error) {
+            badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-alert" style="color: #eab308; font-size: 20px; margin-right: 4px;"></span>Error al verificar';
+            badge.style.background = 'rgba(234,179,8,0.1)';
+            badge.style.color = '#eab308';
+            badge.style.border = '1px solid #eab308';
+          }
+        }
+    }
+
+    // ======================
+    // SISTEMA DE RESPUESTAS A RESEÑAS
+    // ======================
+    
+    // Variables globales para manejar respuestas
+    let reviewContextMenuData = { reviewId: null, reviewIndex: null };
+    let reviewsData = []; // Almacenar datos de reseñas con respuestas
+
+    // ======================
+    // CARGAR RESEÑAS CON SOPORTE PARA RESPUESTAS
+    // ======================
+    async function cargarCalificacionesYResenas(page = 1, limit = 10) {
+      try {
+        const resEstadisticas = await fetch(`${API_BASE}/intercambios/estadisticas/${perfilPersonaId}`);
+        const dataEstadisticas = await resEstadisticas.json();
+        
+        let promedio = 0;
+        let totalCalificaciones = 0;
+        let totalIntercambios = 0;
+        let distribucion = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+        
+        if (resEstadisticas.ok && dataEstadisticas.success && dataEstadisticas.data) {
+          const stats = dataEstadisticas.data;
+          promedio = stats.promedio_calificacion || 0;
+          totalCalificaciones = stats.total_calificaciones || 0;
+          totalIntercambios = stats.total_intercambios_completados || 0;
+          distribucion = stats.distribucion_calificaciones || distribucion;
+        }
+        
+        const ratingScore = document.querySelector('.rating-score');
+        const ratingText = document.querySelector('.rating-text');
+        
+        if (ratingScore) {
+          ratingScore.textContent = promedio > 0 ? promedio.toFixed(1) : '0.0';
+        }
+        
+        if (ratingText) {
+          ratingText.textContent = totalIntercambios > 0 
+            ? `Basado en ${totalIntercambios} intercambio${totalIntercambios !== 1 ? 's' : ''}.`
+            : 'Sin intercambios completados aún.';
+        }
+        
+        actualizarEstrellas(promedio);
+        
+        const urlCalificaciones = `${API_BASE}/intercambios/calificaciones/${perfilPersonaId}?page=${page}&limit=${limit}`;
+        
+        const resCalificaciones = await fetch(urlCalificaciones);
+        const dataCalificaciones = await resCalificaciones.json();
+        
+        const reviewsContainer = document.querySelector('.reviews-container');
+        if (!reviewsContainer) {
+          return;
+        }
+        
+        reviewsContainer.innerHTML = '';
+        
+        if (resCalificaciones.ok && dataCalificaciones.success && dataCalificaciones.data && dataCalificaciones.data.length > 0) {
+          const calificaciones = dataCalificaciones.data;
+          // Normalizar nombres de campo de id para evitar 'undefined'
+          calificaciones.forEach(cal => {
+            // Soportar distintas formas que pueda devolver la API
+            cal.id_Calificacion = cal.id_Calificacion ?? cal.id_calificacion ?? cal.id ?? cal.idCalificacion ?? null;
+          });
+
+          reviewsData = calificaciones; // Guardar datos para uso posterior
+          
+          // Cargar respuestas para cada reseña
+          for (let i = 0; i < calificaciones.length; i++) {
+            const cal = calificaciones[i];
+            console.log('calificacion recibida:', cal);
+            if (!cal.id_Calificacion) {
+              console.warn('Reseña sin id detectada, se omitirá la carga de respuestas:', cal);
+              continue;
+            }
+            try {
+              const resRespuestas = await fetch(`${API_BASE}/respuestas-resenia/por-resena/${cal.id_Calificacion}`);
+              if (resRespuestas.ok) {
+                const dataRespuestas = await resRespuestas.json();
+                if (dataRespuestas.success && dataRespuestas.data && dataRespuestas.data.length > 0) {
+                  cal.respuesta_del_dueno = dataRespuestas.data[0].respuesta || '';
+                  cal.id_respuesta = dataRespuestas.data[0].id_respuesta;
+                  cal.fecha_respuesta = dataRespuestas.data[0].fecha_creacion || new Date().toISOString();
+                }
+              } else {
+                console.debug('No se encontraron respuestas (status:', resRespuestas.status, ') para resenna id:', cal.id_Calificacion);
+              }
+            } catch (err) {
+              console.log('No hay respuesta para esta reseña', err);
+            }
+          }
+          
+          // Renderizar todas las reseñas
+          calificaciones.forEach((cal, index) => {
+            renderReviewCard(cal, index);
+          });
+
+          // Mostrar/ocultar y actualizar texto del botón "Ver todas"
+          const viewAllBtn = document.getElementById('btnViewAllReviews');
+          if (viewAllBtn) {
+            // Preferir el total de calificaciones de las estadísticas si está disponible
+            const totalAvailable = totalCalificaciones || totalIntercambios || calificaciones.length;
+            // Si hay más reseñas en total que las actuales (page*limit), mostrar el botón
+            if (totalAvailable > page * limit) {
+              viewAllBtn.style.display = 'inline-block';
+              viewAllBtn.textContent = `Ver todas las ${totalAvailable} reseñas`;
+            } else {
+              viewAllBtn.style.display = 'none';
+            }
+          }
+        } else {
+          reviewsContainer.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #6b7280;">
+              <svg xmlns="http://www.w3.org/2000/svg" style="width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.5;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+              </svg>
+              <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Este usuario aún no tiene comentarios escritos.</p>
+              <p style="font-size: 14px;">Las reseñas aparecerán aquí después de completar intercambios.</p>
+            </div>
+          `;
+        }
+        
+      } catch (error) {
+        console.error('Error al cargar calificaciones:', error);
+      }
+    }
+
+    // Cargar todas las reseñas (llama a cargarCalificacionesYResenas con limit grande)
+    function viewAllReviews() {
+      // Cargar con un limit alto para traer todas (el backend debería paginar correctamente)
+      cargarCalificacionesYResenas(1, 1000).then(() => {
+        // hacer scroll hacia la sección de reseñas para mejor UX
+        const reviewsContainer = document.querySelector('.reviews-container');
+        if (reviewsContainer) reviewsContainer.scrollIntoView({ behavior: 'smooth' });
+      }).catch(err => {
+        console.error('Error al cargar todas las reseñas:', err);
+        alert('No se pudieron cargar todas las reseñas. Intenta recargar la página.');
+      });
+    }
+
+    // ======================
+    // RENDERIZAR TARJETA DE RESEÑA
+    // ======================
+    function renderReviewCard(cal, index) {
+      const reviewsContainer = document.querySelector('.reviews-container');
+      const reviewCard = document.createElement('div');
+      reviewCard.className = 'review-card';
+      reviewCard.dataset.reviewId = cal.id_Calificacion;
+      reviewCard.dataset.reviewIndex = index;
+      
+      const nombreCalificador = cal.nombre_calificador || 'Usuario';
+      const apellidoCalificador = cal.apellido_calificador || '';
+      const nombreCompleto = `${nombreCalificador} ${apellidoCalificador}`.trim();
+      const iniciales = `${nombreCalificador.charAt(0)}${apellidoCalificador.charAt(0) || ''}`.toUpperCase();
+      
+      const fechaCalificacion = cal.fecha_calificacion 
+        ? new Date(cal.fecha_calificacion).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
+        : 'Fecha no disponible';
+      
+      let reviewHTML = `
+        <div class="review-card-content" style="position: relative;">
+          <div class="review-header">
+            <img class="review-avatar" 
+                 src="${cal.imagen_calificador || `https://ui-avatars.com/api/?name=${iniciales}&background=10B981&color=ffffff&size=40&bold=true&rounded=true`}" 
+                 alt="${nombreCompleto}"
+                 onerror="this.src='https://ui-avatars.com/api/?name=${iniciales}&background=10B981&color=ffffff&size=40&bold=true&rounded=true'">
+            <div>
+              <p class="review-name">${nombreCompleto}</p>
+              <div class="review-rating">
+                <span>${cal.puntuacion}.0</span>
+                <svg class="star-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <p class="review-text">"${cal.comentario || 'Sin comentario'}"</p>
+          <p class="review-date">${fechaCalificacion}</p>
+          
+          <!-- Respuesta si existe -->
+          ${cal.respuesta_del_dueno ? `
+            <div class="review-reply" style="margin-top: 16px; padding: 12px; background: #f0f9ff; border-left: 4px solid #2563eb; border-radius: 4px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style="color: #2563eb;">
+                  <path d="M3 6a3 3 0 013-3h10a1 1 0 01.82.055l.487.979A2 2 0 0116 6v10a3 3 0 01-3 3H6a3 3 0 01-3-3V6z"/>
+                </svg>
+                <span style="font-weight: 600; color: #1f2937; font-size: 13px;">Tu respuesta</span>
+              </div>
+              <p style="color: #4b5563; font-size: 14px; margin: 0; line-height: 1.5;">"${cal.respuesta_del_dueno}"</p>
+              <p style="color: #9ca3af; font-size: 12px; margin-top: 8px; margin-bottom: 0;">Respondido ${new Date(cal.fecha_respuesta).toLocaleDateString('es-ES')}</p>
+            </div>
+          ` : ''}
+        </div>
+      `;
+      
+      reviewCard.innerHTML = reviewHTML;
+      
+      // Event listener para clic derecho
+      reviewCard.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        showReviewContextMenu(e.clientX, e.clientY, cal.id_Calificacion, index, !!cal.respuesta_del_dueno, cal.id_respuesta);
+      });
+      
+      reviewsContainer.appendChild(reviewCard);
+    }
+
+    // ======================
+    // CONTEXT MENÚ PARA RESEÑAS
+    // ======================
+    function showReviewContextMenu(x, y, reviewId, reviewIndex, hasReply, replyId) {
+      reviewContextMenuData = { reviewId, reviewIndex, replyId };
+      
+      // Cerrar menú anterior si existe
+      const oldMenu = document.getElementById('reviewContextMenu');
+      if (oldMenu) oldMenu.remove();
+      
+      const menu = document.createElement('div');
+      menu.className = 'context-menu';
+      menu.id = 'reviewContextMenu';
+      menu.style.position = 'fixed';
+      menu.style.left = x + 'px';
+      menu.style.top = y + 'px';
+      menu.style.zIndex = '1000';
+      
+      if (hasReply) {
+        // Si ya hay respuesta: Editar y Borrar
+        menu.innerHTML = `
+          <button class="context-menu-item" onclick="editReviewResponse(${reviewId})">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
+              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+            </svg>
+            Editar respuesta
+          </button>
+          <button class="context-menu-item danger" onclick="showDeleteReplyConfirm(${reviewId})">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
+              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+            Borrar respuesta
+          </button>
+        `;
+      } else {
+        // Si no hay respuesta: Solo Contestar
+        menu.innerHTML = `
+          <button class="context-menu-item" onclick="replyToReview(${reviewId})">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
+              <path fill-rule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.82.055l.487.979A2 2 0 0116 6v10a3 3 0 01-3 3H6a3 3 0 01-3-3V6z" clip-rule="evenodd" />
+            </svg>
+            Contestar
+          </button>
+        `;
+      }
+      
+      document.body.appendChild(menu);
+      
+      // Agregar backdrop
+      const backdrop = document.getElementById('contextMenuBackdrop');
+      if (backdrop) {
+        backdrop.style.display = 'block';
+      }
+      
+      // Cerrar menú al hacer clic fuera
+      setTimeout(() => {
+        document.addEventListener('click', closeReviewContextMenu);
+      }, 100);
+    }
+
+    function closeReviewContextMenu() {
+      const menu = document.getElementById('reviewContextMenu');
+      if (menu) {
+        menu.remove();
+      }
+      const backdrop = document.getElementById('contextMenuBackdrop');
+      if (backdrop) {
+        backdrop.style.display = 'none';
+      }
+      document.removeEventListener('click', closeReviewContextMenu);
+    }
+
+    // ======================
+    // MODAL PARA RESPONDER
+    // ======================
+    function replyToReview(reviewId) {
+      // Mostrar editor inline dentro de la tarjeta de la reseña (evitar modal)
+      closeReviewContextMenu();
+
+      const reviewCard = document.querySelector(`[data-review-id="${reviewId}"]`);
+      if (!reviewCard) return;
+
+      // Si ya existe un bloque .review-reply, no hacemos nada (o lo reemplazamos)
+      let replyDiv = reviewCard.querySelector('.review-reply');
+      if (!replyDiv) {
+        // crear bloque de respuesta vacío donde insertaremos el editor
+        replyDiv = document.createElement('div');
+        replyDiv.className = 'review-reply';
+        reviewCard.querySelector('.review-card-content')?.appendChild(replyDiv);
+      }
+
+      // Guardar contenido original para restaurar si cancela
+      reviewCard.dataset.originalReplyHtml = replyDiv.innerHTML || '';
+
+      // Insertar editor inline
+      const editorHtml = `
+        <div style="margin-top:8px;">
+          <textarea id="inlineReply_${reviewId}" style="width:100%; min-height:90px; padding:10px; font-family:inherit; border:2px solid #2563eb; border-radius:6px;" placeholder="Escribe tu respuesta aquí..."></textarea>
+          <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
+            <button class="modal-button-cancel" onclick="cancelInlineReply(${reviewId})">Cancelar</button>
+            <button class="modal-button-submit" onclick="submitReviewReplyInline(${reviewId})">Enviar respuesta</button>
+          </div>
+        </div>
+      `;
+
+      replyDiv.innerHTML = editorHtml;
+      const ta = document.getElementById(`inlineReply_${reviewId}`);
+      if (ta) ta.focus();
+    }
+
+    // Cancelar editor inline de respuesta
+    function cancelInlineReply(reviewId) {
+      const reviewCard = document.querySelector(`[data-review-id="${reviewId}"]`);
+      if (!reviewCard) return;
+      const replyDiv = reviewCard.querySelector('.review-reply');
+      if (!replyDiv) return;
+
+      if (typeof reviewCard.dataset.originalReplyHtml !== 'undefined') {
+        replyDiv.innerHTML = reviewCard.dataset.originalReplyHtml;
+        delete reviewCard.dataset.originalReplyHtml;
+      } else {
+        // si no había contenido original, simplemente eliminar el bloque
+        replyDiv.remove();
+      }
+    }
+
+    // Enviar respuesta desde el editor inline
+    async function submitReviewReplyInline(reviewId) {
+      const ta = document.getElementById(`inlineReply_${reviewId}`);
+      if (!ta) return alert('Editor no encontrado');
+      const replyText = ta.value.trim();
+      if (!replyText) return alert('La respuesta no puede estar vacía');
+
+      try {
+        setGuardando(true);
+
+        if (!reviewId) {
+          alert('No se pudo identificar la reseña. Intenta recargar la página.');
+          setGuardando(false);
+          return;
+        }
+        if (typeof usuarioId === 'undefined' || usuarioId === null) {
+          alert('Debes iniciar sesión para responder la reseña.');
+          setGuardando(false);
+          return;
+        }
+
+        const payload = { id_calificacion: reviewId, id_usuario: usuarioId, respuesta: replyText };
+        console.debug('Enviar POST /respuestas-resenia/insertar payload:', payload);
+        const response = await fetch(`${API_BASE}/respuestas-resenia/insertar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        console.debug('Respuesta POST insertar (inline):', { status: response.status, body: result });
+
+        if (response.ok && (result.success === true || result.success === 1)) {
+          // recargar reseñas para mostrar la respuesta recién creada
+          await cargarCalificacionesYResenas();
+        } else {
+          alert(result.message || result.error || 'Error al guardar la respuesta');
+        }
+
+        setGuardando(false);
+      } catch (error) {
+        console.error('Error al enviar respuesta (inline):', error);
+        alert('Error de conexión al enviar la respuesta');
+        setGuardando(false);
+      }
+    }
+
+    function editReviewResponse(reviewId) {
+      // Cambiar a edición inline dentro de la tarjeta (evitar abrir otro modal)
+      closeReviewContextMenu();
+
+      const reviewCard = document.querySelector(`[data-review-id="${reviewId}"]`);
+      if (!reviewCard) return;
+
+      const replyDiv = reviewCard.querySelector('.review-reply');
+      if (!replyDiv) return;
+
+      // Guardar el HTML original para poder cancelar
+      reviewCard.dataset.originalReplyHtml = replyDiv.innerHTML;
+
+      // Obtener el texto actual (primer <p>)
+      const replyP = replyDiv.querySelector('p');
+      const currentReply = replyP ? replyP.textContent.replace(/"/g, '') : '';
+
+      // Crear editor inline
+      const editorHtml = `
+        <div style="margin-top: 8px;">
+          <textarea id="inlineEditReply_${reviewId}" style="width:100%; min-height:90px; padding:10px; font-family:inherit; border:2px solid #2563eb; border-radius:6px;">${currentReply}</textarea>
+          <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
+            <button class="modal-button-cancel" onclick="cancelInlineEdit(${reviewId})">Cancelar</button>
+            <button class="modal-button-submit" onclick="submitEditReviewReplyInline(${reviewId})">Guardar cambios</button>
+          </div>
+        </div>
+      `;
+
+      replyDiv.innerHTML = editorHtml;
+
+      // focus y mover cursor al final
+      const ta = document.getElementById(`inlineEditReply_${reviewId}`);
+      if (ta) {
+        ta.focus();
+        const len = ta.value.length;
+        ta.setSelectionRange(len, len);
+      }
+    }
+
+    // Guardar edición inline
+    async function submitEditReviewReplyInline(reviewId) {
+      const ta = document.getElementById(`inlineEditReply_${reviewId}`);
+      if (!ta) return alert('Editor no encontrado');
+      const replyText = ta.value.trim();
+      if (!replyText) return alert('La respuesta no puede estar vacía');
+
+      try {
+        setGuardando(true);
+
+        const reviewData = reviewsData.find(r => r.id_Calificacion == reviewId);
+        if (!reviewData || !reviewData.id_respuesta) {
+          throw new Error('No se encontró el ID de la respuesta');
+        }
+
+        const payload = { respuesta: replyText };
+        const response = await fetch(`${API_BASE}/respuestas-resenia/actualizar/${reviewData.id_respuesta}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (response.ok && (result.success === true || result.success === 1)) {
+          // recargar reseñas para reflejar cambio
+          await cargarCalificacionesYResenas();
+        } else {
+          alert(result.message || result.error || 'Error al actualizar la respuesta');
+        }
+
+        setGuardando(false);
+      } catch (error) {
+        console.error('Error al actualizar respuesta (inline):', error);
+        alert('Error de conexión al actualizar la respuesta');
+        setGuardando(false);
+      }
+    }
+
+    function cancelInlineEdit(reviewId) {
+      const reviewCard = document.querySelector(`[data-review-id="${reviewId}"]`);
+      if (!reviewCard) return;
+      const replyDiv = reviewCard.querySelector('.review-reply');
+      if (!replyDiv) return;
+      // Restaurar HTML original si existe, si no recargar reseñas
+      if (reviewCard.dataset.originalReplyHtml) {
+        replyDiv.innerHTML = reviewCard.dataset.originalReplyHtml;
+        delete reviewCard.dataset.originalReplyHtml;
+      } else {
+        cargarCalificacionesYResenas();
+      }
+    }
+
+    function closeReplyModal() {
+      const modal = document.getElementById('replyModal');
+      if (modal) modal.remove();
+    }
+
+    function closeEditReplyModal() {
+      const modal = document.getElementById('editReplyModal');
+      if (modal) modal.remove();
+    }
+
+    // ======================
+    // GUARDAR RESPUESTA - USAR ENDPOINTS EXISTENTES
+    // ======================
+    async function submitReviewReply(reviewId) {
+      const replyText = document.getElementById('replyText').value.trim();
+      
+      if (!replyText) {
+        alert('La respuesta no puede estar vacía');
+        return;
+      }
+      
+      try {
+        // Validaciones previas
+        if (!reviewId) {
+          alert('No se pudo identificar la reseña. Intenta recargar la página.');
+          return;
+        }
+        if (typeof usuarioId === 'undefined' || usuarioId === null) {
+          alert('Debes iniciar sesión para responder la reseña.');
+          return;
+        }
+
+        setGuardando(true);
+        
+        // Usar endpoint POST /respuestas-resenia/insertar
+        const payload = { id_calificacion: reviewId, id_usuario: usuarioId, respuesta: replyText };
+        console.debug('Enviar POST /respuestas-resenia/insertar payload:', payload);
+        const response = await fetch(`${API_BASE}/respuestas-resenia/insertar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        console.debug('Respuesta POST insertar:', { status: response.status, body: result });
+
+        if (response.ok && (result.success === true || result.success === 1)) {
+          closeReplyModal();
+          await cargarCalificacionesYResenas();
+        } else {
+          alert(result.message || result.error || 'Error al guardar la respuesta');
+        }
+        
+        setGuardando(false);
+      } catch (error) {
+        console.error('Error al enviar respuesta:', error);
+        alert('Error de conexión al enviar la respuesta');
+        setGuardando(false);
+      }
+    }
+
+    // ======================
+    // GUARDAR EDICIÓN - ACTUALIZAR EN BD
+    // ======================
+    async function submitEditReviewReply(reviewId) {
+      const replyText = document.getElementById('editReplyText').value.trim();
+      
+      if (!replyText) {
+        alert('La respuesta no puede estar vacía');
+        return;
+      }
+      
+      try {
+        setGuardando(true);
+        
+        // Obtener el ID de la respuesta actual
+        const reviewData = reviewsData.find(r => r.id_Calificacion == reviewId);
+        if (!reviewData || !reviewData.id_respuesta) {
+          throw new Error('No se encontró el ID de la respuesta');
+        }
+        
+        // Usar endpoint PUT para actualizar
+        const payload = { respuesta: replyText };
+        console.debug('Enviar PUT /respuestas-resenia/actualizar/', reviewData.id_respuesta, 'payload:', payload);
+        const response = await fetch(`${API_BASE}/respuestas-resenia/actualizar/${reviewData.id_respuesta}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        if (response.ok && (result.success === true || result.success === 1)) {
+          closeEditReplyModal();
+          await cargarCalificacionesYResenas();
+        } else {
+          alert(result.message || result.error || 'Error al actualizar la respuesta');
+        }
+        
+        setGuardando(false);
+      } catch (error) {
+        console.error('Error al actualizar respuesta:', error);
+        alert('Error de conexión al actualizar la respuesta');
+        setGuardando(false);
+      }
+    }
+
+    // ======================
+    // BORRAR RESPUESTA (modal personalizado)
+    // ======================
+    function showDeleteReplyConfirm(reviewId) {
+      // cerrar menú contextual si está abierto
+      closeReviewContextMenu();
+
+      // eliminar modal anterior si existe
+      const existing = document.getElementById('deleteReplyConfirmModal');
+      if (existing) existing.remove();
+
+      const modalHTML = `
+        <div class="custom-modal-overlay" id="deleteReplyConfirmModal" onclick="if(event.target.id === 'deleteReplyConfirmModal') document.getElementById('deleteReplyConfirmModal')?.remove()">
+          <div class="custom-modal" style="max-width:420px;">
+            <div class="modal-header">
+              <div class="modal-icon" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #dc2626;">🗑️</div>
+              <div class="modal-title">Borrar respuesta</div>
+            </div>
+            <div class="modal-message" style="margin-bottom: 16px;">¿Estás seguro de que deseas borrar tu respuesta?</div>
+            <div class="modal-actions">
+              <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('deleteReplyConfirmModal')?.remove()">Cancelar</button>
+              <button class="modal-btn modal-btn-confirm" onclick="performDeleteReviewResponse(${reviewId})" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">Borrar respuesta</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    async function performDeleteReviewResponse(reviewId) {
+      // cerrar modal
+      const modal = document.getElementById('deleteReplyConfirmModal');
+      if (modal) modal.remove();
+
+      try {
+        setGuardando(true);
+
+        // Obtener el ID de la respuesta
+        const reviewData = reviewsData.find(r => r.id_Calificacion == reviewId);
+        if (!reviewData || !reviewData.id_respuesta) {
+          throw new Error('No se encontró el ID de la respuesta');
+        }
+
+        // Usar endpoint DELETE /respuestas-resenia/eliminar/:id_respuesta
+        const response = await fetch(`${API_BASE}/respuestas-resenia/eliminar/${reviewData.id_respuesta}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          await cargarCalificacionesYResenas();
+        } else {
+          alert(result.message || 'Error al borrar la respuesta');
+        }
+
+        setGuardando(false);
+      } catch (error) {
+        console.error('Error al borrar respuesta:', error);
+        alert('Error de conexión al borrar la respuesta');
+        setGuardando(false);
+      }
+    }
+    
+    // Función auxiliar para actualizar las estrellas del resumen
+    function actualizarEstrellas(promedio) {
+      const starsContainer = document.querySelector('.rating-summary .stars-container');
+      if (!starsContainer) return;
+      
+      const estrellasLlenas = Math.floor(promedio);
+      const tieneMedia = promedio % 1 >= 0.5;
+      
+      starsContainer.innerHTML = '';
+      
+      // Estrellas llenas
+      for (let i = 0; i < estrellasLlenas; i++) {
+        starsContainer.innerHTML += `
+          <svg class="star-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+        `;
+      }
+      
+      // Estrella media (opcional, si quieres mostrarla)
+      if (tieneMedia && estrellasLlenas < 5) {
+        starsContainer.innerHTML += `
+          <svg class="star-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="opacity: 0.5;">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+        `;
+      }
+      
+      // Estrellas vacías
+      const estrellasVacias = 5 - Math.ceil(promedio);
+      for (let i = 0; i < estrellasVacias; i++) {
+        starsContainer.innerHTML += `
+          <svg class="star-empty" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+        `;
+      }
     }
 
     // ======================
@@ -1726,7 +2565,7 @@
           { value: 'DNI', label: 'DNI' },
           { value: 'Pasaporte', label: 'Pasaporte' }
         ]},
-        { label: 'Número de Identificación', field: 'identificacion_usuario', value: usuario.identificacion_usuario },
+        { label: 'Numero Identificación', field: 'identificacion_usuario', value: usuario.identificacion_usuario },
         { label: 'Fecha de Nacimiento', field: 'fechaNacimiento', value: usuario.fechaNacimiento, type: 'date', displayValue: formatearFecha(usuario.fechaNacimiento) }
       ];
 
@@ -2371,6 +3210,7 @@
   
     function renderGallery() {
       const galleryGrid = document.getElementById('galleryGrid');
+      if (!galleryGrid) return;
       galleryGrid.innerHTML = '';
 
       // Renderizar imágenes existentes
@@ -2378,19 +3218,18 @@
         if (img && img.url) {
           const item = document.createElement('div');
           item.className = 'gallery-item';
-          
+          item.setAttribute('data-img-index', index);
+
           const imgElement = document.createElement('img');
           imgElement.src = img.url;
           imgElement.alt = `Galería ${index + 1}`;
           imgElement.onerror = () => {
-            // Si la imagen falla al cargar, mostrar placeholder
             item.innerHTML = `
               <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(229, 231, 235, 0.5); color: #9ca3af;">
-                <svg xmlns="http://www.w3.org/2000/svg" style="width: 48px; height: 48px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-            `;
+                <svg xmlns='http://www.w3.org/2000/svg' style='width: 48px; height: 48px;' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                  <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-8a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+            </svg>
+          `;
           };
           
           item.appendChild(imgElement);
@@ -2482,10 +3321,13 @@
 
     async function guardarImagenesGaleria() {
       try {
+        // Filtrar solo imágenes válidas (con url)
+        const imagenesValidas = galeriaImagenes.filter(img => img && img.url);
+
         // Extraer las URLs de las imágenes (máximo 3 para la galería)
-        const imagen1 = galeriaImagenes.length > 0 ? galeriaImagenes[0].url : '';
-        const imagen2 = galeriaImagenes.length > 1 ? galeriaImagenes[1].url : '';
-        const imagen3 = galeriaImagenes.length > 2 ? galeriaImagenes[2].url : '';
+        const imagen1 = imagenesValidas[0]?.url || '';
+        const imagen2 = imagenesValidas[1]?.url || '';
+        const imagen3 = imagenesValidas[2]?.url || '';
         
         console.log('Guardando imágenes en BD:', { imagen1, imagen2, imagen3 });
         
@@ -2576,47 +3418,59 @@
 
     async function handleDeleteImage() {
       if (imageContextMenuIndex === null) return;
-      
+
       try {
         setGuardando(true);
-        
-        // Obtener la URL de la imagen a eliminar
-        const imagenAEliminar = galeriaImagenes[imageContextMenuIndex];
-        
-        // Si la imagen está en R2, eliminarla
-        if (imagenAEliminar && imagenAEliminar.url && imagenAEliminar.url.includes('r2.dev')) {
+
+        // Índice y URL de la imagen a eliminar
+        const idx = imageContextMenuIndex;
+        const imagenAEliminar = galeriaImagenes[idx];
+        const imageUrl = imagenAEliminar && imagenAEliminar.url ? imagenAEliminar.url : null;
+
+        // Si la imagen está en R2, pedir eliminación en backend
+        if (imageUrl && imageUrl.includes('r2.dev')) {
           try {
             const response = await fetch(`${API_BASE}/upload`, {
               method: 'DELETE',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ imageUrl: imagenAEliminar.url })
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ imageUrl })
             });
-            
             const result = await response.json();
-            if (result.success) {
-              console.log('Imagen eliminada de R2:', imagenAEliminar.url);
+            if (result && result.success) {
+              console.log('Imagen eliminada de R2:', imageUrl);
+            } else {
+              console.warn('Respuesta inesperada al eliminar de R2:', result);
             }
-          } catch (error) {
-            console.error('Error al eliminar de R2 (continuando):', error);
+          } catch (err) {
+            console.error('Error al eliminar de R2 (continuando):', err);
           }
         }
-        
-        // Actualizar el estado local (filtrar la imagen eliminada)
-        const nuevasImagenes = galeriaImagenes.filter((_, i) => i !== imageContextMenuIndex);
-        galeriaImagenes = nuevasImagenes;
-        
-        // Guardar los cambios en la base de datos
+
+        // Eliminar del array local. Primero intentar por índice; si no coincide, por URL.
+        if (typeof idx === 'number' && idx >= 0 && idx < galeriaImagenes.length) {
+          galeriaImagenes.splice(idx, 1);
+        } else if (imageUrl) {
+          galeriaImagenes = galeriaImagenes.filter(img => img && img.url !== imageUrl);
+        } else {
+          // Fallback: quitar entradas inválidas
+          galeriaImagenes = galeriaImagenes.filter(Boolean);
+        }
+
+        // Normalizar: mantener solo objetos con url y hasta 3 elementos
+        galeriaImagenes = galeriaImagenes.filter(img => img && img.url).slice(0, 3);
+
+        // Guardar los cambios en la base de datos y refrescar UI
         await guardarImagenesGaleria();
         renderGallery();
-        
+
         setGuardando(false);
       } catch (error) {
         console.error('Error al eliminar imagen:', error);
         setGuardando(false);
       }
-      
+
+      // Limpiar índice y cerrar menús
+      imageContextMenuIndex = null;
       closeAllContextMenus();
     }
 
@@ -2645,7 +3499,7 @@
         });
 
         window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors',
+         
           maxZoom: 19,
           minZoom: 2
         }).addTo(map);
@@ -2833,6 +3687,9 @@
 // ======================
 // PIXEL BAR CHART - CON COLORES COORDINADOS
 // ======================
+// ======================
+// PIXEL BAR CHART - VERSIÓN COMPLETAMENTE DINÁMICA
+// ======================
 function renderPixelChart() {
   const container = document.querySelector('.pixel-chart');
   if (!container) return;
@@ -2855,32 +3712,39 @@ function renderPixelChart() {
   // Limpiar contenido anterior
   svgContainer.innerHTML = '';
   
-  // 🎨 COLORES COORDINADOS CON TU DISEÑO
+  // ✅ LEER VALORES DEL DOM EN TIEMPO REAL
+  const intercambios = parseInt(document.getElementById('statIntercambios')?.textContent || '0');
+  const favoritos = parseInt(document.getElementById('statFavoritos')?.textContent || '0');
+  const habilidades = offeredSkills.length;
+  
+  console.log('📊 Renderizando gráfico con valores:', { intercambios, favoritos, habilidades });
+  
+  // 🎨 COLORES COORDINADOS (DINÁMICOS - NO HARDCODEADOS)
   const data = [
     { 
       label: 'Int', 
-      value: 12, 
-      fill: '#2563eb',      // Azul primario (igual al botón "Enviar Solicitud")
-      highlight: '#1d4ed8'  // Azul más oscuro para la tapa
+      value: intercambios,  // ✅ DINÁMICO - Lee del DOM
+      fill: '#2563eb',
+      highlight: '#1d4ed8'
     },
     { 
       label: 'Fav', 
-      value: 8, 
-      fill: '#10B981',      // Verde (igual al avatar)
-      highlight: '#059669'  // Verde más oscuro
+      value: favoritos,     // ✅ DINÁMICO - Lee del DOM
+      fill: '#10B981',
+      highlight: '#059669'
     },
     { 
       label: 'Hab', 
-      value: offeredSkills.length, 
-      fill: '#8B5CF6',      // Morado/Púrpura
-      highlight: '#7C3AED'  // Morado más oscuro
+      value: habilidades,   // ✅ DINÁMICO - Lee del array
+      fill: '#8B5CF6',
+      highlight: '#7C3AED'
     }
   ];
   
   // Configuración del SVG
   const width = 320;
   const height = 200;
-  const maxValue = Math.max(...data.map(d => d.value), 1);
+  const maxValue = Math.max(...data.map(d => d.value), 5);
   
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
@@ -2889,7 +3753,7 @@ function renderPixelChart() {
   svg.style.width = '100%';
   svg.style.height = 'auto';
   
-  // 🎨 Fondo con gradiente sutil (más moderno)
+  // 🎨 Fondo con gradiente
   const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
   const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
   gradient.setAttribute('id', 'bgGradient');
@@ -2918,7 +3782,7 @@ function renderPixelChart() {
   bgRect.setAttribute('width', width);
   bgRect.setAttribute('height', height);
   bgRect.setAttribute('fill', 'url(#bgGradient)');
-  bgRect.setAttribute('rx', '8'); // Bordes redondeados
+  bgRect.setAttribute('rx', '8');
   svg.appendChild(bgRect);
   
   // Marco
@@ -2933,7 +3797,7 @@ function renderPixelChart() {
   frameRect.setAttribute('shape-rendering', 'crispEdges');
   svg.appendChild(frameRect);
   
-  // Grid horizontal (más sutil)
+  // Grid horizontal
   const gridYs = [152, 122, 92, 62, 32];
   const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   gridGroup.setAttribute('stroke', '#e5e7eb');
@@ -2987,7 +3851,7 @@ function renderPixelChart() {
     const barGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     barGroup.setAttribute('transform', `translate(${x},0)`);
     
-    // Sombra de la barra (efecto 3D sutil)
+    // Sombra
     const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     shadow.setAttribute('x', '2');
     shadow.setAttribute('y', y + 2);
@@ -2997,7 +3861,7 @@ function renderPixelChart() {
     shadow.setAttribute('rx', '4');
     barGroup.appendChild(shadow);
     
-    // Barra principal con bordes redondeados
+    // Barra principal
     const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     bar.setAttribute('x', '0');
     bar.setAttribute('y', y);
@@ -3009,7 +3873,7 @@ function renderPixelChart() {
     bar.setAttribute('rx', '4');
     bar.setAttribute('ry', '4');
     
-    // Animación de aparición
+    // Animación
     const animate = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
     animate.setAttribute('attributeName', 'height');
     animate.setAttribute('from', '0');
@@ -3028,7 +3892,7 @@ function renderPixelChart() {
     
     barGroup.appendChild(bar);
     
-    // Brillo en la barra (efecto glossy)
+    // Brillo
     const shine = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     shine.setAttribute('x', '2');
     shine.setAttribute('y', y + 2);
@@ -3038,7 +3902,7 @@ function renderPixelChart() {
     shine.setAttribute('rx', '3');
     barGroup.appendChild(shine);
     
-    // Tapa superior (más destacada)
+    // Tapa superior
     const cap = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     cap.setAttribute('x', '0');
     cap.setAttribute('y', capY);
@@ -3048,7 +3912,7 @@ function renderPixelChart() {
     cap.setAttribute('rx', '2');
     barGroup.appendChild(cap);
     
-    // Etiqueta con mejor contraste
+    // Etiqueta
     const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     label.setAttribute('x', barW / 2);
     label.setAttribute('y', '172');
@@ -3058,6 +3922,17 @@ function renderPixelChart() {
     label.setAttribute('font-weight', '700');
     label.textContent = d.label;
     barGroup.appendChild(label);
+    
+    // Valor
+    const value = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    value.setAttribute('x', barW / 2);
+    value.setAttribute('y', y - 8);
+    value.setAttribute('text-anchor', 'middle');
+    value.setAttribute('fill', d.fill);
+    value.setAttribute('font-size', '13');
+    value.setAttribute('font-weight', '700');
+    value.textContent = d.value;
+    barGroup.appendChild(value);
     
     svg.appendChild(barGroup);
   });
@@ -3084,9 +3959,49 @@ function darken(hex, amount = 0.3) {
     // ======================
     // ESTADÍSTICAS
     // ======================
-    function updateStats() {
+    async function updateStats() {
+      // Actualizar habilidades ofrecidas (ya estaba)
       document.getElementById('statOfferedSkills').textContent = offeredSkills.length;
-      renderPixelChart();
+      
+  // Cargar estadísticas desde el backend
+  await cargarEstadisticasUsuario();
+  renderPixelChart();
+    }
+
+    async function cargarEstadisticasUsuario() {
+      try {
+  // console.log eliminado
+        
+        // 1. Obtener intercambios completados
+        const resIntercambios = await fetch(`${API_BASE}/intercambios/estadisticas/${perfilPersonaId}`);
+        if (resIntercambios.ok) {
+          const dataIntercambios = await resIntercambios.json();
+          if (dataIntercambios.success && dataIntercambios.data) {
+            const totalIntercambios = dataIntercambios.data.total_intercambios_completados || 0;
+            // console.log eliminado
+            document.getElementById('statIntercambios').textContent = totalIntercambios;
+          }
+        }
+
+        // 2. Obtener la lista de favoritos de ESTE usuario (cuántos usuarios tiene agregados)
+        const resFavoritos = await fetch(`${API_BASE}/favoritos/${perfilPersonaId}`);
+  // console.log eliminado
+        
+        if (resFavoritos.ok) {
+          const dataFavoritos = await resFavoritos.json();
+          // console.log eliminado
+          
+          if (dataFavoritos.success) {
+            const totalFavoritos = dataFavoritos.total || 0;
+            // console.log eliminado
+            document.getElementById('statFavoritos').textContent = totalFavoritos;
+          }
+        }
+        
+      } catch (error) {
+  // console.error eliminado
+        // Mantener valores por defecto en caso de error
+      }
     }
 
     // ======================
@@ -3250,5 +4165,5 @@ function darken(hex, amount = 0.3) {
   
 </body>
 </html>
- 
+
 

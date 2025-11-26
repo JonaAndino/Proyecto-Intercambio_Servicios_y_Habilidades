@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - SkillConnect</title>
     <!-- Carga de Tailwind CSS -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='%232563EB' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 10V3L4 14h7v7l9-11h-7z'/></svg>" type="image/svg+xml">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Firebase SDK -->
     <script type="module">
@@ -34,6 +36,24 @@
             getRedirectResult
         };
     </script>
+    <script>
+        // Base URL del API
+        const API_BASE = "http://localhost:3001/api";
+
+        // Obtener rol por correo usando el endpoint del backend
+        async function fetchRoleByCorreo(correo) {
+            try {
+                const res = await fetch(`${API_BASE}/login/rol/correo/${encodeURIComponent(correo)}`);
+                if (!res.ok) return null;
+                const data = await res.json();
+                console.debug('fetchRoleByCorreo result for', correo, data);
+                return data;
+            } catch (e) {
+                console.error('Error al obtener rol por correo:', e);
+                return null;
+            }
+        }
+    </script>
     <style>
         /* Fuente Inter para una apariencia moderna */
         body { font-family: 'Inter', sans-serif; }
@@ -46,7 +66,7 @@
             SkillConnect
         </h1>
         <p class="text-center text-sm text-gray-600 mb-8">
-            Inicia sesión para acceder a tu dashboard y conectar con el backend.
+            Inicia sesión para acceder a tu descubrir y conectar con el backend.
         </p>
 
         <!-- CRÍTICO: Este div se usa para mostrar mensajes de estado/error -->
@@ -142,8 +162,22 @@
     <!-- CRÍTICO: Carga el script como un módulo -->
     <!-- <script type="module" src="js/login.js"></script> -->
  <script>
+    // Si ya hay sesión activa, redirigir al Descubrir para evitar que el usuario vuelva al login
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            const hasUser = localStorage.getItem('usuarioId');
+            const hasToken = localStorage.getItem('token') || localStorage.getItem('authToken');
+            if (hasUser && hasToken) {
+                // Mantener sesión abierta; evitar mostrar login
+                window.location.href = 'Descubrir.html';
+            }
+        } catch (e) {
+            // no hacer nada si el acceso a localStorage falla
+            console.warn('No se pudo verificar sesión:', e);
+        }
+    });
         // AL CARGAR LA PÁGINA: Verificar si viene de autenticación con Google
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             const userId = urlParams.get('userId');
@@ -155,17 +189,31 @@
                 console.log("   - Email:", email);
                 console.log("   - User ID:", userId);
                 
-                // Guardar en localStorage
+                // Guardar en localStorage (guardamos token en dos claves para compatibilidad)
                 localStorage.setItem('authToken', token);
+                localStorage.setItem('token', token);
                 localStorage.setItem('usuarioId', userId);
                 localStorage.setItem('correoUsuario', email);
                 localStorage.setItem('firebaseUser', 'true');
                 
-                showMessage("Inicio de sesión con Google exitoso. Redirigiendo...", "bg-green-100 text-green-700");
+                // Intentar obtener rol por correo y guardarlo antes de redirigir
+                try {
+                    const roleData = await fetchRoleByCorreo(email);
+                    if (roleData) {
+                        localStorage.setItem('usuarioRol', roleData.rol || '');
+                        localStorage.setItem('usuarioRolId', roleData.id_rol || '');
+                    } else {
+                        console.debug('No se obtuvo roleData para', email);
+                    }
+                } catch (e) {
+                    console.warn('Error obteniendo rol para correo en redirect:', e);
+                }
+
+                showMessage("Descubrir de sesión con Google exitoso. Redirigiendo...", "bg-green-100 text-green-700");
                 
                 // Limpiar URL y redirigir
                 setTimeout(() => {
-                    window.location.href = "Dashboard.html";
+                    window.location.href = "Descubrir.html";
                 }, 1500);
                 
                 return; // No continuar con el resto del código
@@ -249,15 +297,27 @@
                     console.log("Login exitoso, guardando datos...");
                     // Guardar token y datos en localStorage
                     localStorage.setItem('authToken', loginData.token);
+                    localStorage.setItem('token', loginData.token);
                     localStorage.setItem('usuarioId', loginData.usuarioId);
                     localStorage.setItem('correoUsuario', loginData.correo);
                     localStorage.setItem('firebaseUser', 'true');
-                    
-                    showMessage("Inicio de sesión exitoso. Redirigiendo...", "bg-green-100 text-green-700");
-                    
-                    console.log("Redirigiendo al Dashboard...");
+
+                    // Intentar obtener rol por correo y guardarlo
+                    try {
+                        const roleData = await fetchRoleByCorreo(email);
+                        if (roleData) {
+                            localStorage.setItem('usuarioRol', roleData.rol || '');
+                            localStorage.setItem('usuarioRolId', roleData.id_rol || '');
+                        }
+                    } catch (e) {
+                        console.warn('No se pudo obtener rol después del login Firebase:', e);
+                    }
+
+                    showMessage("Descubrir de sesión exitoso. Redirigiendo...", "bg-green-100 text-green-700");
+
+                    console.log("Redirigiendo al descubrir...");
                     setTimeout(() => {
-                        window.location.href = "Dashboard.html";
+                        window.location.href = "Descubrir.html";
                     }, 1500);
                 } else {
                     throw new Error(loginData.error || "Error al autenticar con el backend");
@@ -318,17 +378,29 @@
 
                     if (res.ok) {
                         localStorage.setItem('authToken', data.token);
+                        localStorage.setItem('token', data.token);
                         localStorage.setItem('usuarioId', data.usuarioId);
                         localStorage.setItem('correoUsuario', data.correo);
-                        
-                        showMessage("Redirigiendo al dashboard...", "bg-green-100 text-green-700");
+
+                        // Obtener rol por correo y guardarlo
+                        try {
+                            const roleData = await fetchRoleByCorreo(correo);
+                            if (roleData) {
+                                localStorage.setItem('usuarioRol', roleData.rol || '');
+                                localStorage.setItem('usuarioRolId', roleData.id_rol || '');
+                            }
+                        } catch (e) {
+                            console.warn('No se pudo obtener rol después del login:', e);
+                        }
+
+                        showMessage("Redirigiendo al descubrir...", "bg-green-100 text-green-700");
 
                         setTimeout(() => {
-                            window.location.href = "Dashboard.html"; 
+                            window.location.href = "Descubrir.html"; 
                         }, 1000); 
 
                     } else {
-                        showMessage("Error: " + (data.error || "Error de inicio de sesión"), "bg-red-100 text-red-700");
+                        showMessage("Error: " + (data.error || "Error de Descubrir de sesión"), "bg-red-100 text-red-700");
                     }
 
                 } catch (error) {

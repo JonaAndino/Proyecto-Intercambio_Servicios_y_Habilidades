@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página no encontrada • Skill Connect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: linear-gradient(135deg, #6a85b6 0%, #bac8e0 100%);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px 32px;
+      max-width: 720px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+      border: 3px solid #1a2a4b;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+    }
+
+    .icon {
+      display: block;
+      margin: 0 auto 1.2rem;
+      width: 120px;
+      max-width: 50%;
+      height: auto;
+      object-fit: contain;
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0 4px 10px rgba(26, 42, 75, 0.3));
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    h1 {
+      color: #1a2a4b;
+      margin: 0;
+      font-size: clamp(1.4rem, 2vw, 1.8rem);
+      font-weight: 800;
+    }
+
+    p {
+      color: #475569;
+      margin-top: 12px;
+      font-size: clamp(0.9rem, 1.2vw, 1rem);
+      line-height: 1.6;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 18px;
+      border-radius: 8px;
+      background: #1a2a4b;
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .btn:hover {
+      background: #3b4f7a;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <!-- Imagen local de error -->
+    <img src="/error-404.png" alt="Error 404" class="icon">
+
+    <h1>404 — Página no encontrada</h1>
+    <p>
+      Parece que la dirección que intentaste abrir no existe o fue modificada.
+      Si escribiste la URL manualmente, revisa posibles errores tipográficos.
+    </p>
+
+    <div style="margin-top:24px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+      <a class="btn" href="http://127.0.0.1:5050/index.html">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Volver al inicio
+      </a>
+    </div>
+  </div>
+
+  <script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  </script>
+</body>
+
+</html>

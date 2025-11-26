@@ -28,13 +28,15 @@ router.post('/enviar', async (req, res) => {
             });
         }
 
-        // Verificar si ya existe una solicitud pendiente entre estos usuarios
+        // Verificar si ya existe una solicitud activa entre estos usuarios
         const [solicitudesExistentes] = await pool.query(
-            `SELECT id_solicitud, estado 
-             FROM solicitudes_intercambio 
-             WHERE ((id_persona_solicitante = ? AND id_persona_receptor = ?) 
-                OR (id_persona_solicitante = ? AND id_persona_receptor = ?))
-             AND estado IN ('Pendiente', 'Aceptada')`,
+            `SELECT s.id_solicitud, s.estado 
+             FROM solicitudes_intercambio s
+             LEFT JOIN conversaciones c ON c.id_solicitud = s.id_solicitud
+             WHERE ((s.id_persona_solicitante = ? AND s.id_persona_receptor = ?) 
+                OR (s.id_persona_solicitante = ? AND s.id_persona_receptor = ?))
+             AND s.estado IN ('Pendiente', 'Aceptada')
+             AND c.id_conversacion IS NOT NULL`,
             [solicitanteId, receptorId, receptorId, solicitanteId]
         );
 
@@ -43,7 +45,7 @@ router.post('/enviar', async (req, res) => {
             if (solicitud.estado === 'Aceptada') {
                 return res.status(400).json({
                     success: false,
-                    message: 'Ya tienes una conexión establecida con este usuario'
+                    message: 'Ya tienes una conexión activa con este usuario'
                 });
             } else {
                 return res.status(400).json({
@@ -427,13 +429,15 @@ router.post('/enviar-detallada', async (req, res) => {
             });
         }
 
-        // Verificar si ya existe una solicitud pendiente
+        // Verificar si ya existe una solicitud activa entre estos usuarios
         const [solicitudesExistentes] = await pool.query(
-            `SELECT id_solicitud, estado 
-             FROM solicitudes_intercambio 
-             WHERE ((id_persona_solicitante = ? AND id_persona_receptor = ?) 
-                OR (id_persona_solicitante = ? AND id_persona_receptor = ?))
-             AND estado IN ('Pendiente', 'Aceptada')`,
+            `SELECT s.id_solicitud, s.estado 
+             FROM solicitudes_intercambio s
+             LEFT JOIN conversaciones c ON c.id_solicitud = s.id_solicitud
+             WHERE ((s.id_persona_solicitante = ? AND s.id_persona_receptor = ?) 
+                OR (s.id_persona_solicitante = ? AND s.id_persona_receptor = ?))
+             AND s.estado IN ('Pendiente', 'Aceptada')
+             AND c.id_conversacion IS NOT NULL`,
             [solicitanteId, receptorId, receptorId, solicitanteId]
         );
 
@@ -442,7 +446,7 @@ router.post('/enviar-detallada', async (req, res) => {
             if (solicitud.estado === 'Aceptada') {
                 return res.status(400).json({
                     success: false,
-                    message: 'Ya tienes una conexión establecida con este usuario'
+                    message: 'Ya tienes una conexión activa con este usuario'
                 });
             } else {
                 return res.status(400).json({
