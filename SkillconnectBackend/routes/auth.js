@@ -1,49 +1,51 @@
 // routes/auth.js
+import { Router } from 'express';
+import bcrypt from 'bcrypt'; 
+import db from '../db.js'; // Usa el pool de conexiones
 
-const express = require('express');
-const router = express.Router();
-const bcrypt = require('bcrypt'); // Necesario para el Hashing de Contraseñas
-const jwt = require('jsonwebtoken'); // Para generar tokens JWT
-const pool = require('../db'); // Importa la conexión a la base de datos (DB)
-
-// El número de "rondas de sal" para bcrypt. Más alto es más seguro pero más lento.
-const saltRounds = 10;
+const router = Router(); // ¡CRÍTICO! Definir el router usando import
+const saltRounds = 10; 
 
 // ✅ CLAVE SECRETA PARA JWT (En producción, usar variable de entorno)
 const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_super_segura_2025_SkillConnect';
 const JWT_EXPIRES_IN = '7d'; // Token válido por 7 días 
 
-// **********************************************
-// POST /api/registro 
-// **********************************************
+// ✅ CLAVE SECRETA PARA JWT (En producción, usar variable de entorno)
+const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_super_segura_2025_SkillConnect';
+const JWT_EXPIRES_IN = '7d'; // Token válido por 7 días 
 
+
+// ******************
+// POST: /api/auth/registro (REGISTRAR NUEVO USUARIO)
+// ******************
 router.post('/registro', async (req, res) => {
-    // 1. OBTENER DATOS (Paso F del Diagrama: Backend recibe datos)
-    const { correo, contrasena } = req.body;
+    const { correo, contrasena } = req.body; 
 
-    // 1.1 Validación básica de campos no vacíos (una vez que el frontend falle en validarlo)
     if (!correo || !contrasena) {
-        return res.status(400).json({ error: 'Correo y contraseña son obligatorios.' });
+        return res.status(400).json({ error: "Correo y contraseña son obligatorios." });
     }
 
     try {
-        // 2. CONSULTAR DB: ¿CORREO YA EXISTE? (Paso G del Diagrama)
-        const [rows] = await pool.execute('SELECT id_usuario FROM Usuarios WHERE correo = ?', [correo]);
-
+        // 1. Verificar si el correo ya existe
+        const [rows] = await db.query(
+            'SELECT id_usuario FROM Usuarios WHERE correo = ?',
+            [correo]
+        );
         if (rows.length > 0) {
-            // El correo ya existe (Paso H y I del Diagrama)
-            return res.status(409).json({ error: 'El correo electrónico ya está registrado. Por favor, intenta con otro.' });
+            return res.status(409).json({ error: "El correo ya está registrado." });
         }
 
-        // 3. GENERAR HASH SEGURO (Paso J del Diagrama)
+        // 2. Cifrar la contraseña
         const contrasena_hash = await bcrypt.hash(contrasena, saltRounds);
 
-        // 4. GUARDAR NUEVO USUARIO EN DB (Paso K del Diagrama)
-        const [result] = await pool.execute(
-            'INSERT INTO Usuarios (correo, contrasena_hash) VALUES (?, ?)',
+        // 3. Insertar nuevo usuario
+        await db.query(
+            `INSERT INTO Usuarios (correo, contrasena_hash) 
+             VALUES (?, ?)`,
             [correo, contrasena_hash]
         );
 
+        res.status(201).json({ mensaje: "Registro exitoso. Usuario creado." });
         const nuevoUsuarioId = result.insertId;
 
         // 5. CREAR REGISTRO EN TABLA PERSONAS (Reservar espacio para el perfil)
@@ -56,12 +58,92 @@ router.post('/registro', async (req, res) => {
         res.status(201).json({ 
             mensaje: 'Usuario registrado exitosamente.',
             id_usuario: nuevoUsuarioId 
+// ******************
+// POST: /api/auth/login (INICIO DE SESIÓN)
+// ******************
+router.post('/login', async (req, res) => {
+    const { correo, contrasena } = req.body;
+
+    if (!correo || !contrasena) {
+        return res.status(400).json({ error: "Correo y contraseña son obligatorios." });
+    }
+
+    try {
+        // 1. Buscar el usuario
+        const [rows] = await db.query(
+            'SELECT id_usuario, contrasena_hash FROM Usuarios WHERE correo = ?',
+            [correo]
+        );
+        
+        if (rows.length === 0) {
+            return res.status(401).json({ error: "Credenciales inválidas." });
+        }
+
+        const usuario = rows[0];
+        
+        // 2. Comparar la contraseña
+        const match = await bcrypt.compare(contrasena, usuario.contrasena_hash);
+
+        if (!match) {
+            return res.status(401).json({ error: "Credenciales inválidas." });
+        }
+
+        /// 3. Éxito: Devolver datos básicos (aquí iría la generación de tokens en un proyecto real)
+        res.status(200).json({ 
+            mensaje: "Inicio de sesión exitoso", 
+            id_usuario: usuario.id_usuario 
         });
 
     } catch (error) {
-        console.error('Error durante el registro:', error);
-        res.status(500).json({ error: 'Ocurrió un error en el servidor al intentar registrar el usuario.' });
+        console.error("Error en el login:", error);
+        res.status(500).json({ error: "Error interno del servidor durante el login." });
     }
+});
+
+
+export default router; // ¡CRÍTICO! Exportar el router
+        });
+
+    } catch (error) {
+        console.error('Error durante el login JWT:', error);
+        res.status(500).json({ error: 'Ocurrió un error en el servidor al intentar iniciar sesión.' });
+    }
+});
+
+// **********************************************
+// MIDDLEWARE: Verificar Token JWT
+// **********************************************
+
+function verificarToken(req, res, next) {
+    // Obtener token del header Authorization
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer TOKEN"
+
+    if (!token) {
+        return res.status(401).json({ error: 'Token no proporcionado. Inicia sesión nuevamente.' });
+    }
+
+    try {
+        // Verificar y decodificar el token
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.usuario = decoded; // Guardar info del usuario en req
+        next(); // Continuar con la siguiente función
+    } catch (error) {
+        return res.status(403).json({ error: 'Token inválido o expirado.' });
+    }
+}
+
+// **********************************************
+// GET /api/verificar-sesion (Verificar si el token es válido)
+// **********************************************
+
+router.get('/verificar-sesion', verificarToken, (req, res) => {
+    // Si llegó aquí, el token es válido
+    res.status(200).json({ 
+        mensaje: 'Sesión válida',
+        usuarioId: req.usuario.usuarioId,
+        correo: req.usuario.correo
+    });
 });
 
 // **********************************************
@@ -204,3 +286,4 @@ router.get('/verificar-sesion', verificarToken, (req, res) => {
 });
 
 module.exports = router;
+

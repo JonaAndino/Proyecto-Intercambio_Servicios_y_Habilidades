@@ -29,18 +29,14 @@ const verificacionUsuariosRoutes = require('./routes/verificacionUsuarios');
 const reportesUsuariosRoutes = require('./routes/ReportesUsuarios');
 
 const app = express();
-// Obtiene el puerto del .env o usa 3001 por defecto
-const port = process.env.PORT || 3001; 
-
-// 2. Middleware de CORS (Permite al frontend hablar con el backend)
 app.use(cors({
     // Permitir múltiples orígenes para desarrollo
     origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'http://127.0.0.1:5050', 'http://localhost:3000'],
     credentials: true
 }));
 
-// 3. Middleware para procesar JSON (SOLO UNA VEZ)
-app.use(express.json()); 
+app.use(cors());
+app.use(express.json());
 
 // 4. Configurar sesiones para Passport
 app.use(session({
