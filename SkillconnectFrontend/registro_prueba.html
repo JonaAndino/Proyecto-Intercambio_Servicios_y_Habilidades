@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='%232563EB' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 10V3L4 14h7v7l9-11h-7z'/></svg>" type="image/svg+xml">
-
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='%232563EB' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 10V3L4 14h7v7l9-11h-7z'/></svg>" type="image/svg+xml">
     <title>SkillConnect - Registro de Usuario</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, FacebookAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         
-        // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDHPaGaZIoa8fJA1Z4LTDdU7rTaYekNk1E",
             authDomain: "mi-portafolio-main.firebaseapp.com",
@@ -27,10 +29,8 @@
         
         console.log("🔥 Firebase inicializado correctamente");
         
-        // Variable para evitar procesar múltiples veces
         let yaProcesoUsuario = false;
         
-        // Listener de cambios de estado de autenticación (MÁS CONFIABLE)
         auth.onAuthStateChanged((user) => {
             console.log("🔔 onAuthStateChanged disparado");
             console.log("   - yaProcesoUsuario:", yaProcesoUsuario);
@@ -42,10 +42,8 @@
                 console.log("   - Display Name:", user.displayName);
                 console.log("   - Photo URL:", user.photoURL);
                 
-                // Marcar como procesado
                 yaProcesoUsuario = true;
                 
-                // Verificar si acabamos de volver de un redirect
                 const urlParams = new URLSearchParams(window.location.search);
                 const fromFirebase = sessionStorage.getItem('firebaseRedirect');
                 
@@ -53,7 +51,7 @@
                 console.log("   - sessionStorage firebaseRedirect:", fromFirebase);
                 
                 if (fromFirebase === 'true') {
-                    console.log("� Usuario viene de redirect de Firebase, procesando...");
+                    console.log("📱 Usuario viene de redirect de Firebase, procesando...");
                     sessionStorage.removeItem('firebaseRedirect');
                     registrarConFirebase(user);
                 } else {
@@ -67,7 +65,6 @@
             }
         });
         
-        // Función para registrar con Firebase y enviar al backend
         async function registrarConFirebase(user) {
             try {
                 const email = user.email;
@@ -81,14 +78,13 @@
                 
                 const url = 'http://localhost:3001/api/registro';
                 
-                // Registrar en el backend usando el correo como contraseña
                 console.log("📝 Enviando POST a /api/registro con:", { correo: email, contrasena: email });
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         correo: email, 
-                        contrasena: email  // Usar correo como contraseña
+                        contrasena: email
                     })
                 });
 
@@ -98,14 +94,14 @@
                 if (response.status === 201) {
                     console.log("✅ Usuario registrado correctamente");
                     mensajeDiv.textContent = '✓ Registro exitoso con Firebase. Redirigiendo...';
-                    mensajeDiv.className = 'success';
+                    mensajeDiv.className = 'bg-green-100 text-green-700 border border-green-400';
                     setTimeout(() => {
                         window.location.href = 'login.html';
                     }, 2000);
                 } else if (response.status === 409) {
                     console.log("ℹ️ Usuario ya existe, redirigiendo a login");
                     mensajeDiv.textContent = 'Ya tienes cuenta. Redirigiendo a login...';
-                    mensajeDiv.className = 'success';
+                    mensajeDiv.className = 'bg-green-100 text-green-700 border border-green-400';
                     setTimeout(() => {
                         window.location.href = 'login.html';
                     }, 2000);
@@ -117,11 +113,10 @@
                 console.error('❌ Error en registro Firebase:', error);
                 const mensajeDiv = document.getElementById('mensaje');
                 mensajeDiv.textContent = 'Error: ' + error.message;
-                mensajeDiv.className = 'error';
+                mensajeDiv.className = 'bg-red-100 text-red-700 border border-red-400';
             }
         }
         
-        // Exponer funciones para los botones
         window.registrarConGoogle = () => {
             try {
                 console.log("🔵 Click en botón de Google");
@@ -129,7 +124,6 @@
                 mensajeDiv.textContent = 'Redirigiendo a Google...';
                 mensajeDiv.className = '';
                 
-                // Marcar que vamos a hacer un redirect
                 sessionStorage.setItem('firebaseRedirect', 'true');
                 console.log("✅ Marcado firebaseRedirect en sessionStorage");
                 
@@ -140,7 +134,7 @@
                 sessionStorage.removeItem('firebaseRedirect');
                 const mensajeDiv = document.getElementById('mensaje');
                 mensajeDiv.textContent = 'Error con Google: ' + error.message;
-                mensajeDiv.className = 'error';
+                mensajeDiv.className = 'bg-red-100 text-red-700 border border-red-400';
             }
         };
         
@@ -151,7 +145,6 @@
                 mensajeDiv.textContent = 'Redirigiendo a Facebook...';
                 mensajeDiv.className = '';
                 
-                // Marcar que vamos a hacer un redirect
                 sessionStorage.setItem('firebaseRedirect', 'true');
                 console.log("✅ Marcado firebaseRedirect en sessionStorage");
                 
@@ -162,212 +155,224 @@
                 sessionStorage.removeItem('firebaseRedirect');
                 const mensajeDiv = document.getElementById('mensaje');
                 mensajeDiv.textContent = 'Error con Facebook: ' + error.message;
-                mensajeDiv.className = 'error';
+                mensajeDiv.className = 'bg-red-100 text-red-700 border border-red-400';
             }
         };
     </script>
+
     <style>
-        /* CSS para estilizar el formulario */
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            
-            /* ****************************************************** */
-            /* AJUSTE CLAVE: IMAGEN DE FONDO */
-            background-image: url('trabajo.jpg'); 
-            background-size: cover; /* Cubre toda la pantalla */
-            background-position: center; /* Centra la imagen */
-            background-repeat: no-repeat;
-            background-attachment: fixed; /* Mantiene la imagen fija al desplazarse (opcional, pero se ve bien) */
-            /* ****************************************************** */
-            
-            overflow: hidden; /* Evita barras de desplazamiento */
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
         }
-        .container {
-            background-color: rgba(255, 255, 255, 0.95); /* Blanco con 95% de opacidad para ver un poco el fondo */
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4); /* Sombra más fuerte para contraste */
-            width: 350px;
-            text-align: center;
-            z-index: 10;
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
-        /* Estilo para la imagen del Logo */
-        .logo-img {
-            /* Usamos tx.jpeg según tu última verificación de archivos */
-            width: 100%; 
-            max-width: 200px; /* Reducido un poco para que no domine tanto */
-            height: auto;
-            margin-bottom: 20px;
-        }
-        
-        /* Estilo del contenedor del logo/texto */
-        .logo-text {
-            margin-bottom: 0px; 
-        }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 25px;
-            font-size: 1.8em; 
-        }
-        /* ... El resto de los estilos se mantienen sin cambios ... */
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
-        }
-        input[type="email"],
-        input[type="password"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            transition: border-color 0.3s;
-        }
-        input[type="email"]:focus,
-        input[type="password"]:focus {
-            border-color: #6a85b6;
-            outline: none;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #6a85b6;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
-        }
-        button:hover {
-            background-color: #4a5a7b;
-            transform: translateY(-2px);
-        }
-        
-        /* Botones de redes sociales */
-        .social-button {
-            width: 100%;
-            padding: 12px;
-            background-color: white;
-            color: #333;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        
-        .social-button:hover {
-            background-color: #f5f5f5;
-            border-color: #6a85b6;
-            transform: translateY(-2px);
-        }
-        
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .divider span {
-            padding: 0 10px;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        #mensaje {
-            margin-top: 20px;
-            font-weight: bold;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .success {
-            color: #155724;
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-        }
-        .error {
-            color: #721c24;
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
+        .menu-open {
+            animation: slideDown 0.3s ease-out;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="logo-text">
-            <img 
-                src="tx.jpeg" 
-                alt="SkillConnect Logo" 
-                class="logo-img"
-            >
-        </div>
-        
-        <h1>Crear Cuenta</h1>
-        <form id="registroForm">
-            <div class="form-group">
-                <label for="correo">Correo Electrónico:</label>
-                <input type="email" id="correo" name="correo" required>
-            </div>
-            <div class="form-group">
-                <label for="contrasena">Contraseña:</label>
-                <input type="password" id="contrasena" name="contrasena" required>
-            </div>
-            <button type="submit">Registrarse</button>
-        </form>
-        
-        <div class="divider">
-            <span>o regístrate con</span>
-        </div>
-        
-        <!-- Botones de autenticación social -->
-        <button id="google-registro-btn" type="button" class="social-button">
-            <svg width="20" height="20" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Continuar con Google
-        </button>
-        
-        <div id="mensaje"></div>
-        
-        <div style="margin-top: 20px; text-align: center;">
-            <a href="login.html" style="color: #6a85b6; text-decoration: none; font-size: 14px;">
-                ¿Ya tienes cuenta? Inicia sesión aquí
-            </a>
-        </div>
-    </div>
+<body class="bg-gray-100 min-h-screen">
 
+    <!-- NAVBAR RESPONSIVE -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                
+                <!-- Logo -->
+                <a href="index.html" class="text-2xl font-extrabold tracking-tight text-blue-600 flex items-center gap-2">
+                    <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span class="hidden sm:inline">Skill<span class="text-blue-600">Connect</span></span>
+                    <span class="sm:hidden">SC</span>
+                </a>
+
+                <!-- Navegación Desktop -->
+                <nav class="hidden md:flex space-x-8 text-gray-600 font-medium">
+                    <a href="index.html#como-funciona" class="hover:text-blue-500 transition duration-150">Cómo Funciona</a>
+                    <a href="index.html#habilidades" class="hover:text-blue-500 transition duration-150">Habilidades</a>
+                    <a href="index.html#testimonios" class="hover:text-blue-500 transition duration-150">Comunidad</a>
+                </nav>
+
+                <!-- Botones Desktop -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <!-- <a href="login.html">
+                        <button class="text-gray-700 font-semibold hover:text-blue-600 transition duration-150 px-4 py-2 rounded-full">
+                            Iniciar Sesión
+                        </button>
+                    </a> -->
+                    <a href="login.html">
+                        <button class="bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-150 px-6 py-2 rounded-full shadow-lg">
+                             Iniciar Sesión
+                        </button>
+                    </a>
+                </div>
+
+                <!-- Botón Hamburguesa Móvil -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition duration-150">
+                    <svg id="menu-icon" class="w-6 h-6 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    <svg id="close-icon" class="w-6 h-6 text-gray-700 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Menú Mobile -->
+            <div id="mobile-menu" class="hidden md:hidden pb-4 border-t border-gray-200 mt-4 menu-open">
+                <nav class="flex flex-col space-y-3 mb-4">
+                    <a href="index.html#como-funciona" class="text-gray-700 font-medium hover:text-blue-600 transition duration-150 px-4 py-2 rounded-lg hover:bg-gray-100">
+                        Cómo Funciona
+                    </a>
+                    <a href="index.html#habilidades" class="text-gray-700 font-medium hover:text-blue-600 transition duration-150 px-4 py-2 rounded-lg hover:bg-gray-100">
+                        Habilidades
+                    </a>
+                    <a href="index.html#testimonios" class="text-gray-700 font-medium hover:text-blue-600 transition duration-150 px-4 py-2 rounded-lg hover:bg-gray-100">
+                        Comunidad
+                    </a>
+                </nav>
+
+                <!-- Botones Mobile -->
+                <div class="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+                    <a href="login.html" class="w-full">
+                        <button class="w-full text-gray-700 font-semibold border-2 border-gray-300 hover:border-blue-600 hover:text-blue-600 transition duration-150 px-4 py-2 rounded-full">
+                            Iniciar Sesión
+                        </button>
+                    </a>
+                    <a href="registro_prueba.html" class="w-full">
+                        <button class="w-full bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-150 px-4 py-2 rounded-full shadow-lg">
+                            Crear Cuenta
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8 min-h-[calc(100vh-88px)]">
+        <div class="w-full max-w-md bg-white p-6 sm:p-8 rounded-xl shadow-2xl">
+            
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">
+                    Crear Cuenta
+                </h1>
+                <p class="text-sm sm:text-base text-gray-600">
+                    Únete a nuestra comunidad de aprendizaje colaborativo
+                </p>
+            </div>
+
+            <!-- Mensaje de Estado/Error -->
+            <div id="mensaje" class="p-3 text-sm font-medium rounded-lg mb-6 text-center hidden">
+            </div>
+
+            <!-- Formulario de Registro -->
+            <form id="registroForm" class="space-y-6">
+                <div>
+                    <label for="correo" class="block text-sm font-medium text-gray-700 mb-2">
+                        Correo Electrónico
+                    </label>
+                    <input 
+                        type="email" 
+                        id="correo" 
+                        name="correo" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-base sm:text-sm"
+                        placeholder="tucorreo@ejemplo.com"
+                    >
+                </div>
+
+                <div>
+                    <label for="contrasena" class="block text-sm font-medium text-gray-700 mb-2">
+                        Contraseña
+                    </label>
+                    <input 
+                        type="password" 
+                        id="contrasena" 
+                        name="contrasena" 
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-base sm:text-sm"
+                        placeholder="••••••••"
+                    >
+                </div>
+
+                <button 
+                    type="submit"
+                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm sm:text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out active:scale-95"
+                >
+                    Registrarse
+                </button>
+            </form>
+            
+            <!-- Divider -->
+            <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="px-2 bg-white text-gray-500">o regístrate con</span>
+                </div>
+            </div>
+            
+            <!-- Botones de Redes Sociales -->
+            <div class="space-y-3">
+                <button 
+                    id="google-registro-btn"
+                    type="button"
+                    class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out active:scale-95"
+                >
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span class="hidden sm:inline">Continuar con Google</span>
+                    <span class="sm:hidden">Google</span>
+                </button>
+            </div>
+            
+            <!-- Link a Login -->
+            <div class="mt-8 text-center border-t border-gray-200 pt-6">
+                <p class="text-gray-600 text-sm">
+                    ¿Ya tienes cuenta? 
+                    <a href="login.html" class="font-medium text-blue-600 hover:text-blue-500 transition duration-150">
+                        Inicia sesión aquí
+                    </a>
+                </p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-800 text-white py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs sm:text-sm">
+            <p>&copy; 2025 SkillConnect. Todos los derechos reservados.</p>
+            <div class="mt-2 space-x-2 sm:space-x-4 flex justify-center flex-wrap gap-2">
+                <a href="terminos_de_servicio.html" class="hover:text-blue-400 transition duration-150">Términos de Servicio</a>
+                <span class="text-gray-600 hidden sm:inline">|</span>
+                <a href="politica_de_privacidad.html" class="hover:text-blue-400 transition duration-150">Política de Privacidad</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS -->
     <script>
-        // AL CARGAR LA PÁGINA: Verificar si viene de autenticación con Google
+        // Verificar si viene de autenticación con Google
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
@@ -382,37 +387,36 @@
                 console.log("   - Email:", email);
                 console.log("   - User ID:", userId);
                 
-                // Guardar en localStorage
                 localStorage.setItem('authToken', token);
                 localStorage.setItem('usuarioId', userId);
                 localStorage.setItem('correoUsuario', email);
                 localStorage.setItem('firebaseUser', 'true');
                 
+                mensajeDiv.classList.remove('hidden');
                 mensajeDiv.textContent = "Registro con Google exitoso. Redirigiendo...";
-                mensajeDiv.classList.add('success');
+                mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-6 text-center bg-green-100 text-green-700 border border-green-400';
                 
-                // Limpiar URL y redirigir
                 setTimeout(() => {
                     window.location.href = "Descubrir.html";
                 }, 1500);
                 
-                return; // No continuar con el resto del código
+                return;
             }
             
-            // Verificar si hay error en la autenticación
             const error = urlParams.get('error');
             if (error) {
+                mensajeDiv.classList.remove('hidden');
                 if (error === 'auth_failed') {
                     mensajeDiv.textContent = "Error: Autenticación fallida";
-                    mensajeDiv.classList.add('error');
+                    mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-6 text-center bg-red-100 text-red-700 border border-red-400';
                 } else if (error === 'server_error') {
                     mensajeDiv.textContent = "Error del servidor";
-                    mensajeDiv.classList.add('error');
+                    mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-6 text-center bg-red-100 text-red-700 border border-red-400';
                 }
             }
         });
         
-        // REGISTRO TRADICIONAL CON EMAIL Y PASSWORD
+        // REGISTRO TRADICIONAL
         document.getElementById('registroForm').addEventListener('submit', async function(event) {
             event.preventDefault(); 
             
@@ -420,8 +424,7 @@
             const contrasena = document.getElementById('contrasena').value;
             const mensajeDiv = document.getElementById('mensaje');
 
-            mensajeDiv.textContent = '';
-            mensajeDiv.className = '';
+            mensajeDiv.classList.add('hidden');
 
             try {
                 const url = 'http://localhost:3001/api/registro'; 
@@ -437,9 +440,11 @@
 
                 const data = await response.json();
 
+                mensajeDiv.classList.remove('hidden');
+
                 if (response.status === 201) {
-                    mensajeDiv.textContent = 'Registro Exitoso: ' + data.mensaje;
-                    mensajeDiv.classList.add('success');
+                    mensajeDiv.textContent = '✓ Registro Exitoso: ' + data.mensaje;
+                    mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-6 text-center bg-green-100 text-green-700 border border-green-400';
                     document.getElementById('registroForm').reset();
                     
                     setTimeout(() => {
@@ -448,32 +453,59 @@
                     
                 } else if (response.status === 409) {
                     mensajeDiv.textContent = 'Error: Este correo ya está registrado.';
-                    mensajeDiv.classList.add('error');
+                    mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-6 text-center bg-red-100 text-red-700 border border-red-400';
 
                 } else {
-                    mensajeDiv.textContent = 'Error del servidor: ' + data.mensaje || 'Intente de nuevo.';
-                    mensajeDiv.classList.add('error');
+                    mensajeDiv.textContent = 'Error del servidor: ' + (data.mensaje || 'Intente de nuevo.');
+                    mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-6 text-center bg-red-100 text-red-700 border border-red-400';
                 }
 
             } catch (error) {
                 console.error('Error al conectar con el backend:', error);
+                mensajeDiv.classList.remove('hidden');
                 mensajeDiv.textContent = 'Error de conexión. Asegúrate que el Backend esté activo.';
-                mensajeDiv.classList.add('error');
+                mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-6 text-center bg-red-100 text-red-700 border border-red-400';
             }
         });
         
-        // REGISTRO CON GOOGLE (SIN FIREBASE - USANDO BACKEND)
+        // REGISTRO CON GOOGLE
         const googleBtn = document.getElementById("google-registro-btn");
         if (googleBtn) {
             googleBtn.addEventListener("click", () => {
                 console.log("Click en Continuar con Google");
                 const mensajeDiv = document.getElementById('mensaje');
+                mensajeDiv.classList.remove('hidden');
                 mensajeDiv.textContent = 'Redirigiendo a Google...';
-                mensajeDiv.className = '';
-                // Redirigir al endpoint del backend
+                mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-6 text-center bg-blue-100 text-blue-700';
                 window.location.href = 'http://localhost:3001/api/auth/google';
             });
         }
     </script>
+
+    <!-- Control del Menú Móvil -->
+    <script>
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
+        const closeIcon = document.getElementById('close-icon');
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                menuIcon.classList.toggle('hidden');
+                closeIcon.classList.toggle('hidden');
+            });
+
+            const menuLinks = mobileMenu.querySelectorAll('a');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    menuIcon.classList.remove('hidden');
+                    closeIcon.classList.add('hidden');
+                });
+            });
+        }
+    </script>
+
 </body>
 </html>

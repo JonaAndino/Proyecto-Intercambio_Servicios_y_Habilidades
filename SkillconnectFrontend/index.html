@@ -448,18 +448,25 @@
 
                 </nav>
 
-
-
-                <div>
-
-                    <button onclick="toggleView('login')"
-                        class="bg-blue-600 text-white py-2 px-5 rounded-full font-semibold hover:bg-blue-700 transition duration-150 shadow-lg ml-4 inline-block">
-
-                        Unirse Ahora
-
-                    </button>
-
-                </div>
+                <nav>
+                    <ul class="flex space-x-4">
+                        <li>
+                                      <a href="login.html">
+                        <button class="text-gray-700 font-semibold hover:text-blue-600 transition duration-150 px-4 py-2 rounded-full">
+                            Iniciar Sesión
+                        </button>
+                    </a>
+                        </li>
+                        <li>
+                           <a href="registro_prueba.html">
+                        <button class="bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-150 px-6 py-2 rounded-full shadow-lg">
+                            Crear Cuenta
+                        </button>
+                    </a>
+                       
+                        </li>
+                    </ul>
+                </nav>
 
             </div>
 
@@ -485,13 +492,17 @@
                         hacer? ¿Qué quieres aprender?
 
                     </p>
+                    <a href="login.html" id="login-btn-redirect" class="login-btn">
 
-                    <button onclick="toggleView('login')" id="main-cta"
-                        class="inline-block cta-button-accent bg-blue-500 text-white text-xl font-bold py-4 px-10 rounded-full shadow-2xl hover:bg-blue-600 transition duration-300 transform hover:scale-105">
+                        <button id="main-cta"
+                            class="inline-block cta-button-accent bg-blue-500 text-white text-xl font-bold py-4 px-10 rounded-full shadow-2xl hover:bg-blue-600 transition duration-300 transform hover:scale-105">
 
-                        Empieza Gratis Hoy
+                            Empieza Gratis Hoy
 
-                    </button>
+                        </button>
+
+                    </a>
+
 
                     <p class="mt-4 text-sm opacity-80">Sin Pagos. ¡Solo ganas conocimientos!</p>
 
@@ -777,13 +788,15 @@
 
                     <p class="text-xl opacity-80 mb-8">Únete a la plataforma que está redefiniendo el aprendizaje
                         colaborativo. ¡Es gratis!</p>
+                    <a href="registro_prueba.html" id="login-btn-redirect" class="login-btn">
+                        <button
+                            class="inline-block bg-white text-blue-800 text-xl font-bold py-4 px-10 rounded-full shadow-2xl hover:bg-gray-200 transition duration-300 transform hover:scale-105">
 
-                    <button onclick="toggleView('login')"
-                        class="inline-block bg-white text-blue-800 text-xl font-bold py-4 px-10 rounded-full shadow-2xl hover:bg-gray-200 transition duration-300 transform hover:scale-105">
+                            Registrarse en SkillConnect
 
-                        Registrarse en SkillConnect
+                        </button>
+                    </a>
 
-                    </button>
 
                 </div>
 
@@ -795,11 +808,11 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
                 <p>&copy; 2025 SkillConnect. Todos los derechos reservados.</p>
                 <div class="mt-2 space-x-4">
-                    
-                    <a href="terminos_de_servicio.html" target="_blank" class="hover:text-blue-400">Términos de
+
+                    <a href="terminos_de_servicio.html" class="hover:text-blue-400">Términos de
                         Servicio</a>
                     <span class="text-gray-600">|</span>
-                    <a href="politica_de_privacidad.html" target="_blank" class="hover:text-blue-400">Política de
+                    <a href="politica_de_privacidad.html" class="hover:text-blue-400">Política de
                         Privacidad</a>
                 </div>
             </div>
@@ -837,9 +850,7 @@
                     conocimientos.</p>
 
                 <a href="registro_prueba.html" role="button">
-                    <button class="registro-btn">
-                        <i data-lucide="user-plus" class="w-6 h-6 mr-2"></i> CREAR NUEVA CUENTA
-                    </button>
+
                 </a>
 
             </div>
@@ -851,25 +862,9 @@
                 <h2 class="text-2xl font-bold text-[#1a2a4b] mb-5 border-b-2 border-[#6a85b6] pb-2">¿Ya eres miembro?
                     Accede</h2>
                 <p class="text-gray-600 mb-4">Haz clic abajo para ir a la página de inicio de sesión seguro.</p>
-                <a href="login.html" id="login-btn-redirect" class="login-btn">
-                    <button type="submit" class="login-btn-auth bg-blue-700 text-white hover:bg-blue-800">
-
-                        Iniciar Sesión <i data-lucide="log-in" class="w-5 h-5 ml-2"></i>
-
-                    </button>
-                </a>
-
                 <p class="text-sm text-gray-500 mt-5 text-center">
                     Al hacer clic en "Iniciar Sesión" serás dirigido al formulario de autenticación segura.
                 </p>
-
-
-
-
-
-
-
-
             </div>
 
         </div>
@@ -881,8 +876,6 @@
         const landingContainer = document.getElementById('landing-page-container');
 
         const loginContainer = document.getElementById('login-section-container');
-
-
 
         /**
 
