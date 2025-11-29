@@ -1,31 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Política de Privacidad - SkillConnect</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='%232563EB' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 10V3L4 14h7v7l9-11h-7z'/></svg>"
-        type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
+        .container { max-width: 1100px; margin: 40px auto; padding: 20px; }
+    </style>
 </head>
-<body class="p-8 bg-gray-50">
-    <div class="max-w-4xl mx-auto bg-white p-10 rounded-lg shadow-xl">
-        <h1 class="text-4xl font-bold text-blue-700 mb-6 border-b pb-3">Política de Privacidad de SkillConnect</h1>
-        <p class="text-gray-500 mb-6">Última actualización: 20 de Noviembre de 2025</p>
 
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4">1. Información que Recolectamos</h2>
-        <p class="text-gray-700 mb-4">Recolectamos su nombre y dirección de correo electrónico solo para fines de registro y contacto dentro de la plataforma.</p>
+<body class="antialiased">
 
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4">2. Uso de la Información</h2>
-        <p class="text-gray-700 mb-4">Su información se utiliza exclusivamente para facilitar la conexión con otros usuarios y notificarle sobre coincidencias de habilidades.</p>
-
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4">3. Seguridad</h2>
-        <p class="text-gray-700">Tomamos medidas razonables para proteger su información personal contra el acceso no autorizado o la divulgación.</p>
-
-        <div class="mt-8 text-center">
-            <a href="index.html" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition">Volver al Inicio</a>
+    <!-- Header / Navbar (copiado de index.html para mantener la misma navegación) -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-extrabold tracking-tight text-blue-600">Skill<span class="text-blue-600">Connect</span></a>
+            <nav class="hidden md:flex space-x-6 text-gray-600 font-medium">
+                <a href="index.html#como-funciona" class="hover:text-blue-500 transition duration-150">Cómo Funciona</a>
+                <a href="index.html#habilidades" class="hover:text-blue-500 transition duration-150">Habilidades</a>
+                <a href="index.html#testimonios" class="hover:text-blue-500 transition duration-150">Comunidad</a>
+            </nav>
+            <div>
+                <a href="index.html" class="bg-blue-600 text-white py-2 px-5 rounded-full font-semibold hover:bg-blue-700 transition duration-150 shadow-lg ml-4 inline-block">Volver</a>
+            </div>
         </div>
-    </div>
+    </header>
+
+    <main class="container">
+        <div class="max-w-4xl mx-auto bg-white p-10 rounded-lg shadow-xl">
+            <h1 class="text-4xl font-bold text-blue-700 mb-6 border-b pb-3">Política de Privacidad de SkillConnect</h1>
+            <p class="text-gray-500 mb-6">Última actualización: 20 de Noviembre de 2025</p>
+
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">1. Información que Recolectamos</h2>
+            <p class="text-gray-700 mb-4">Recolectamos su nombre y dirección de correo electrónico solo para fines de registro y contacto dentro de la plataforma.</p>
+
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">2. Uso de la Información</h2>
+            <p class="text-gray-700 mb-4">Su información se utiliza exclusivamente para facilitar la conexión con otros usuarios y notificarle sobre coincidencias de habilidades.</p>
+
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">3. Seguridad</h2>
+            <p class="text-gray-700">Tomamos medidas razonables para proteger su información personal contra el acceso no autorizado o la divulgación.</p>
+
+            <div class="mt-8 text-center">
+                <a href="index.html" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition">Volver al Inicio</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p>&copy; 2025 SkillConnect. Todos los derechos reservados.</p>
+            <div class="mt-2 space-x-4">
+                <a href="terminos_de_servicio.html" class="hover:text-blue-400">Términos de Servicio</a>
+                <span class="text-gray-600">|</span>
+                <a href="politica_de_privacidad.html" class="hover:text-blue-400">Política de Privacidad</a>
+            </div>
+        </div>
+    </footer>
+
+    <script> if (typeof lucide !== 'undefined') lucide.createIcons(); </script>
 </body>
+
 </html>

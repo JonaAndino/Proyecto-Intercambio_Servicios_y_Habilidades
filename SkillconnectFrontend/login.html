@@ -4,16 +4,234 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - SkillConnect</title>
-    <!-- Carga de Tailwind CSS -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='%232563EB' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 10V3L4 14h7v7l9-11h-7z'/></svg>" type="image/svg+xml">
-
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDK -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='%232563EB' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 10V3L4 14h7v7l9-11h-7z'/></svg>" type="image/svg+xml">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .menu-open {
+            animation: slideDown 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- NAVBAR RESPONSIVE -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                
+                <!-- Logo -->
+                <a href="index.html" class="text-2xl font-extrabold tracking-tight text-blue-600 flex items-center gap-2">
+                    <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span class="hidden sm:inline">Skill<span class="text-blue-600">Connect</span></span>
+                    <span class="sm:hidden">SC</span>
+                </a>
+
+                <!-- Navegación Desktop -->
+                <nav class="hidden md:flex space-x-8 text-gray-600 font-medium">
+                    <a href="index.html#como-funciona" class="hover:text-blue-500 transition duration-150">Cómo Funciona</a>
+                    <a href="index.html#habilidades" class="hover:text-blue-500 transition duration-150">Habilidades</a>
+                    <a href="index.html#testimonios" class="hover:text-blue-500 transition duration-150">Comunidad</a>
+                </nav>
+
+                <!-- Botones Desktop -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <!-- <a href="login.html">
+                        <button class="text-gray-700 font-semibold hover:text-blue-600 transition duration-150 px-4 py-2 rounded-full">
+                            Iniciar Sesión
+                        </button>
+                    </a> -->
+                    <a href="registro_prueba.html">
+                        <button class="bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-150 px-6 py-2 rounded-full shadow-lg">
+                            Crear Cuenta
+                        </button>
+                    </a>
+                </div>
+
+                <!-- Botón Hamburguesa Móvil -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition duration-150">
+                    <svg id="menu-icon" class="w-6 h-6 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    <svg id="close-icon" class="w-6 h-6 text-gray-700 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Menú Mobile -->
+            <div id="mobile-menu" class="hidden md:hidden pb-4 border-t border-gray-200 mt-4 menu-open">
+                <nav class="flex flex-col space-y-3 mb-4">
+                    <a href="index.html#como-funciona" class="text-gray-700 font-medium hover:text-blue-600 transition duration-150 px-4 py-2 rounded-lg hover:bg-gray-100">
+                        Cómo Funciona
+                    </a>
+                    <a href="index.html#habilidades" class="text-gray-700 font-medium hover:text-blue-600 transition duration-150 px-4 py-2 rounded-lg hover:bg-gray-100">
+                        Habilidades
+                    </a>
+                    <a href="index.html#testimonios" class="text-gray-700 font-medium hover:text-blue-600 transition duration-150 px-4 py-2 rounded-lg hover:bg-gray-100">
+                        Comunidad
+                    </a>
+                </nav>
+
+                <!-- Botones Mobile -->
+                <div class="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+                    <a href="login.html" class="w-full">
+                        <button class="w-full text-gray-700 font-semibold border-2 border-gray-300 hover:border-blue-600 hover:text-blue-600 transition duration-150 px-4 py-2 rounded-full">
+                            Iniciar Sesión
+                        </button>
+                    </a>
+                    <a href="registro_prueba.html" class="w-full">
+                        <button class="w-full bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-150 px-4 py-2 rounded-full shadow-lg">
+                            Crear Cuenta
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8 min-h-[calc(100vh-88px)]">
+        <div class="w-full max-w-md bg-white p-6 sm:p-8 rounded-xl shadow-2xl">
+            
+            <!-- Header del Login -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2">
+                    SkillConnect
+                </h1>
+                <p class="text-sm sm:text-base text-gray-600">
+                    Inicia sesión para acceder y conectar con la comunidad.
+                </p>
+            </div>
+
+            <!-- Mensaje de Estado/Error -->
+            <div id="message-box" class="p-3 text-sm font-medium rounded-lg mb-6 text-center hidden">
+            </div>
+
+            <!-- Formulario de Login -->
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                        Correo Electrónico
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        required 
+                        autocomplete="email"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-base sm:text-sm"
+                        placeholder="tucorreo@ejemplo.com"
+                    >
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        Contraseña
+                    </label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        required 
+                        autocomplete="current-password"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-base sm:text-sm"
+                        placeholder="••••••••"
+                    >
+                </div>
+
+                <div class="flex items-center justify-end">
+                    <a href="recuperar-password.html" class="text-sm font-medium text-blue-600 hover:text-blue-500 transition duration-150">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
+
+                <!-- Botón de Envío -->
+                <button 
+                    type="submit" 
+                    id="login-button" 
+                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm sm:text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out active:scale-95"
+                >
+                    Iniciar Sesión
+                </button>
+            </form>
+            
+            <!-- Divider -->
+            <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="px-2 bg-white text-gray-500">o continúa con</span>
+                </div>
+            </div>
+            
+            <!-- Botones de Autenticación Social -->
+            <div class="space-y-3">
+                <button 
+                    id="google-login-btn"
+                    type="button"
+                    class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out active:scale-95"
+                >
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span class="hidden sm:inline">Continuar con Google</span>
+                    <span class="sm:hidden">Google</span>
+                </button>
+            </div>
+            
+            <!-- Link a Registro -->
+            <div class="mt-8 text-center border-t border-gray-200 pt-6">
+                <p class="text-gray-600 text-sm">
+                    ¿No tienes cuenta? 
+                    <a href="registro_prueba.html" class="font-medium text-blue-600 hover:text-blue-500 transition duration-150">
+                        Regístrate aquí
+                    </a>
+                </p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-800 text-white py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs sm:text-sm">
+            <p>&copy; 2025 SkillConnect. Todos los derechos reservados.</p>
+            <div class="mt-2 space-x-2 sm:space-x-4 flex justify-center flex-wrap gap-2">
+                <a href="terminos_de_servicio.html" class="hover:text-blue-400 transition duration-150">Términos de Servicio</a>
+                <span class="text-gray-600 hidden sm:inline">|</span>
+                <a href="politica_de_privacidad.html" class="hover:text-blue-400 transition duration-150">Política de Privacidad</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- FIREBASE SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, FacebookAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         
-        // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDHPaGaZIoa8fJA1Z4LTDdU7rTaYekNk1E",
             authDomain: "mi-portafolio-main.firebaseapp.com",
@@ -27,20 +245,19 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         
-        // Exponer funciones globalmente
         window.firebaseAuth = {
             auth,
             GoogleAuthProvider,
-            FacebookAuthProvider,
             signInWithRedirect,
             getRedirectResult
         };
     </script>
+
+    <!-- SCRIPT PRINCIPAL -->
     <script>
-        // Base URL del API
         const API_BASE = "http://localhost:3001/api";
 
-        // Obtener rol por correo usando el endpoint del backend
+        // Obtener rol por correo
         async function fetchRoleByCorreo(correo) {
             try {
                 const res = await fetch(`${API_BASE}/login/rol/correo/${encodeURIComponent(correo)}`);
@@ -53,194 +270,18 @@
                 return null;
             }
         }
-    </script>
-    <style>
-        /* Fuente Inter para una apariencia moderna */
-        body { font-family: 'Inter', sans-serif; }
-    </style>
-</head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
-    <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-2xl">
-        <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">
-            SkillConnect
-        </h1>
-        <p class="text-center text-sm text-gray-600 mb-8">
-            Inicia sesión para acceder a tu descubrir y conectar con el backend.
-        </p>
-
-        <!-- CRÍTICO: Este div se usa para mostrar mensajes de estado/error -->
-        <div id="message-box" class="p-3 text-sm font-medium rounded-lg mb-6 text-center" style="display:none;">
-            <!-- Los mensajes se mostrarán aquí (Ej: "Validando credenciales...") -->
-        </div>
-
-        <!-- CRÍTICO: Este formulario debe tener el ID 'login-form' -->
-        <form id="login-form" class="space-y-6">
-            <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">
-                    Correo Electrónico
-                </label>
-                <!-- CRÍTICO: Este input debe tener el ID 'email' -->
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    required 
-                    autocomplete="email"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out"
-                    placeholder="tucorreo@ejemplo.com"
-                >
-            </div>
-            
-            <div>
-                <label for="password" class="block text-sm font-medium text-gray-700">
-                    Contraseña
-                </label>
-                <!-- CRÍTICO: Este input debe tener el ID 'password' -->
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    required 
-                    autocomplete="current-password"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out"
-                    placeholder="••••••••"
-                >
-            </div>
-
-            <div class="flex items-center justify-end">
-                <a href="recuperar-password.html" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                    ¿Olvidaste tu contraseña?
-                </a>
-            </div>
-
-            <!-- CRÍTICO: Este botón debe tener el ID 'login-button' -->
-            <button 
-                type="submit" 
-                id="login-button" 
-                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
-            >
-                Iniciar Sesión
-            </button>
-        </form>
-        
-        <!-- Divider -->
-        <div class="relative my-6">
-            <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-gray-300"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-                <span class="px-2 bg-white text-gray-500">o continúa con</span>
-            </div>
-        </div>
-        
-        <!-- Botones de autenticación social -->
-        <div class="space-y-3">
-            <button 
-                id="google-login-btn"
-                type="button"
-                class="w-full flex items-center justify-center gap-3 py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
-            >
-                <svg class="w-5 h-5" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                Continuar con Google
-            </button>
-        </div>
-        
-        <div class="mt-6 text-center">
-            <a href="registro_prueba.html" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                ¿No tienes cuenta? Regístrate aquí
-            </a>
-        </div>
-
-    </div>
-
-    <!-- CRÍTICO: Carga el script como un módulo -->
-    <!-- <script type="module" src="js/login.js"></script> -->
- <script>
-    // Si ya hay sesión activa, redirigir al Descubrir para evitar que el usuario vuelva al login
-    document.addEventListener('DOMContentLoaded', () => {
-        try {
-            const hasUser = localStorage.getItem('usuarioId');
-            const hasToken = localStorage.getItem('token') || localStorage.getItem('authToken');
-            if (hasUser && hasToken) {
-                // Mantener sesión abierta; evitar mostrar login
-                window.location.href = 'Descubrir.html';
-            }
-        } catch (e) {
-            // no hacer nada si el acceso a localStorage falla
-            console.warn('No se pudo verificar sesión:', e);
-        }
-    });
-        // AL CARGAR LA PÁGINA: Verificar si viene de autenticación con Google
-        window.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
-            const userId = urlParams.get('userId');
-            const email = urlParams.get('email');
-            const source = urlParams.get('source');
-            
-            if (token && userId && email && source === 'google') {
-                console.log("Autenticación con Google exitosa");
-                console.log("   - Email:", email);
-                console.log("   - User ID:", userId);
-                
-                // Guardar en localStorage (guardamos token en dos claves para compatibilidad)
-                localStorage.setItem('authToken', token);
-                localStorage.setItem('token', token);
-                localStorage.setItem('usuarioId', userId);
-                localStorage.setItem('correoUsuario', email);
-                localStorage.setItem('firebaseUser', 'true');
-                
-                // Intentar obtener rol por correo y guardarlo antes de redirigir
-                try {
-                    const roleData = await fetchRoleByCorreo(email);
-                    if (roleData) {
-                        localStorage.setItem('usuarioRol', roleData.rol || '');
-                        localStorage.setItem('usuarioRolId', roleData.id_rol || '');
-                    } else {
-                        console.debug('No se obtuvo roleData para', email);
-                    }
-                } catch (e) {
-                    console.warn('Error obteniendo rol para correo en redirect:', e);
-                }
-
-                showMessage("Descubrir de sesión con Google exitoso. Redirigiendo...", "bg-green-100 text-green-700");
-                
-                // Limpiar URL y redirigir
-                setTimeout(() => {
-                    window.location.href = "Descubrir.html";
-                }, 1500);
-                
-                return; // No continuar con el resto del código
-            }
-            
-            // Verificar si hay error en la autenticación
-            const error = urlParams.get('error');
-            if (error) {
-                if (error === 'auth_failed') {
-                    showMessage("Error: Autenticación fallida", "bg-red-100 text-red-700");
-                } else if (error === 'server_error') {
-                    showMessage("Error del servidor", "bg-red-100 text-red-700");
-                }
-            }
-        });
-        
-        // Función para mostrar mensajes (Usando clases de Tailwind para colores)
+        // Mostrar mensajes
         function showMessage(text, classes) {
             const messageBox = document.getElementById("message-box");
             if (messageBox) {
-                messageBox.style.display = "block";
+                messageBox.classList.remove('hidden');
                 messageBox.className = `p-3 text-sm font-medium rounded-lg mb-6 text-center ${classes}`;
                 messageBox.textContent = text;
             }
         }
-        
-        // Función para autenticar con Firebase y enviar al backend
+
+        // Autenticar con Firebase
         async function authenticateWithFirebase(user) {
             try {
                 const email = user.email;
@@ -249,60 +290,47 @@
                 console.log("Iniciando autenticación para:", email);
                 showMessage(`Autenticando a ${displayName}...`, "bg-blue-100 text-blue-700");
                 
-                // ESTRATEGIA: Enviar correo como email y password al backend
                 const REGISTER_URL = "http://localhost:3001/api/registro";
                 const LOGIN_URL = "http://localhost:3001/api/login-jwt";
                 
-                // PASO 1: Intentar registrar primero (si el usuario no existe)
-                console.log("Intentando registrar usuario en backend...");
                 try {
                     const registerRes = await fetch(REGISTER_URL, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ 
                             correo: email, 
-                            contrasena: email  // Usar el correo como contraseña
+                            contrasena: email
                         })
                     });
                     
                     const registerData = await registerRes.json();
-                    console.log("Respuesta de registro:", registerRes.status, registerData);
                     
                     if (registerRes.status === 201) {
-                        console.log("Usuario registrado exitosamente");
                         showMessage("Cuenta creada exitosamente", "bg-green-100 text-green-700");
-                        await new Promise(resolve => setTimeout(resolve, 1000)); // Esperar 1 segundo
-                    } else if (registerRes.status === 409) {
-                        console.log("Usuario ya existe, continuando con login...");
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                     }
                 } catch (regError) {
-                    console.error("Error en registro (ignorado):", regError);
+                    console.error("Error en registro:", regError);
                 }
                 
-                // PASO 2: Hacer login (ya sea usuario nuevo o existente)
-                console.log("Intentando login en backend...");
                 const loginRes = await fetch(LOGIN_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         correo: email, 
-                        contrasena: email  // Usar el correo como contraseña
+                        contrasena: email
                     })
                 });
                 
                 const loginData = await loginRes.json();
-                console.log("Respuesta de login:", loginRes.status, loginData);
                 
                 if (loginRes.ok) {
-                    console.log("Login exitoso, guardando datos...");
-                    // Guardar token y datos en localStorage
                     localStorage.setItem('authToken', loginData.token);
                     localStorage.setItem('token', loginData.token);
                     localStorage.setItem('usuarioId', loginData.usuarioId);
                     localStorage.setItem('correoUsuario', loginData.correo);
                     localStorage.setItem('firebaseUser', 'true');
 
-                    // Intentar obtener rol por correo y guardarlo
                     try {
                         const roleData = await fetchRoleByCorreo(email);
                         if (roleData) {
@@ -310,17 +338,16 @@
                             localStorage.setItem('usuarioRolId', roleData.id_rol || '');
                         }
                     } catch (e) {
-                        console.warn('No se pudo obtener rol después del login Firebase:', e);
+                        console.warn('No se pudo obtener rol:', e);
                     }
 
-                    showMessage("Descubrir de sesión exitoso. Redirigiendo...", "bg-green-100 text-green-700");
+                    showMessage("Sesión iniciada. Redirigiendo...", "bg-green-100 text-green-700");
 
-                    console.log("Redirigiendo al descubrir...");
                     setTimeout(() => {
                         window.location.href = "Descubrir.html";
                     }, 1500);
                 } else {
-                    throw new Error(loginData.error || "Error al autenticar con el backend");
+                    throw new Error(loginData.error || "Error al autenticar");
                 }
                 
             } catch (error) {
@@ -328,100 +355,154 @@
                 showMessage("Error: " + error.message, "bg-red-100 text-red-700");
             }
         }
-        
-        // Espera que el DOM esté listo
+
+        // Script Principal
         document.addEventListener("DOMContentLoaded", async () => {
+            // Verificar sesión activa
+            try {
+                const hasUser = localStorage.getItem('usuarioId');
+                const hasToken = localStorage.getItem('token') || localStorage.getItem('authToken');
+                if (hasUser && hasToken) {
+                    window.location.href = 'Descubrir.html';
+                }
+            } catch (e) {
+                console.warn('No se pudo verificar sesión:', e);
+            }
+
+            // Verificar parámetros de URL (Google auth)
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const userId = urlParams.get('userId');
+            const email = urlParams.get('email');
+            const source = urlParams.get('source');
+            
+            if (token && userId && email && source === 'google') {
+                localStorage.setItem('authToken', token);
+                localStorage.setItem('token', token);
+                localStorage.setItem('usuarioId', userId);
+                localStorage.setItem('correoUsuario', email);
+                localStorage.setItem('firebaseUser', 'true');
+                
+                try {
+                    const roleData = await fetchRoleByCorreo(email);
+                    if (roleData) {
+                        localStorage.setItem('usuarioRol', roleData.rol || '');
+                        localStorage.setItem('usuarioRolId', roleData.id_rol || '');
+                    }
+                } catch (e) {
+                    console.warn('Error obteniendo rol:', e);
+                }
+
+                showMessage("Sesión iniciada. Redirigiendo...", "bg-green-100 text-green-700");
+                
+                setTimeout(() => {
+                    window.location.href = "Descubrir.html";
+                }, 1500);
+                
+                return;
+            }
+
+            // Formulario de login
             const form = document.getElementById("login-form");
             const LOGIN_URL = "http://localhost:3001/api/login-jwt";
 
-            if (!form) return;
-            
-            // VERIFICAR SI HAY UN RESULTADO DE REDIRECT DE FIREBASE
-            console.log("Verificando resultado de Firebase redirect...");
-            try {
-                const result = await window.firebaseAuth.getRedirectResult(window.firebaseAuth.auth);
-                console.log("Resultado de redirect:", result);
-                
-                if (result && result.user) {
-                    // Usuario autenticado con Firebase después del redirect
-                    console.log("Usuario de Firebase detectado:", result.user.email);
-                    showMessage("Procesando autenticación con Firebase...", "bg-blue-100 text-blue-700");
-                    await authenticateWithFirebase(result.user);
-                    return; // No continuar con el resto del código
-                } else {
-                    console.log("No hay resultado de redirect de Firebase");
-                }
-            } catch (error) {
-                console.error("Error al obtener resultado de redirect:", error);
-                if (error.code !== 'auth/popup-closed-by-user') {
-                    showMessage("Error: " + error.message, "bg-red-100 text-red-700");
-                }
-            }
-
-            // LOGIN TRADICIONAL CON EMAIL Y PASSWORD
-            form.addEventListener("submit", async (e) => {
-                e.preventDefault();
-
-                const correo = document.getElementById("email").value;
-                const contrasena = document.getElementById("password").value;
-
-                showMessage("Validando credenciales...", "bg-blue-100 text-blue-700");
-
+            if (form) {
                 try {
-                    const res = await fetch(LOGIN_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ correo, contrasena })
-                    });
+                    const result = await window.firebaseAuth.getRedirectResult(window.firebaseAuth.auth);
+                    
+                    if (result && result.user) {
+                        showMessage("Procesando autenticación...", "bg-blue-100 text-blue-700");
+                        await authenticateWithFirebase(result.user);
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Error en redirect Firebase:", error);
+                }
 
-                    const data = await res.json();
+                form.addEventListener("submit", async (e) => {
+                    e.preventDefault();
 
-                    if (res.ok) {
-                        localStorage.setItem('authToken', data.token);
-                        localStorage.setItem('token', data.token);
-                        localStorage.setItem('usuarioId', data.usuarioId);
-                        localStorage.setItem('correoUsuario', data.correo);
+                    const correo = document.getElementById("email").value;
+                    const contrasena = document.getElementById("password").value;
 
-                        // Obtener rol por correo y guardarlo
-                        try {
-                            const roleData = await fetchRoleByCorreo(correo);
-                            if (roleData) {
-                                localStorage.setItem('usuarioRol', roleData.rol || '');
-                                localStorage.setItem('usuarioRolId', roleData.id_rol || '');
+                    showMessage("Validando credenciales...", "bg-blue-100 text-blue-700");
+
+                    try {
+                        const res = await fetch(LOGIN_URL, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ correo, contrasena })
+                        });
+
+                        const data = await res.json();
+
+                        if (res.ok) {
+                            localStorage.setItem('authToken', data.token);
+                            localStorage.setItem('token', data.token);
+                            localStorage.setItem('usuarioId', data.usuarioId);
+                            localStorage.setItem('correoUsuario', data.correo);
+
+                            try {
+                                const roleData = await fetchRoleByCorreo(correo);
+                                if (roleData) {
+                                    localStorage.setItem('usuarioRol', roleData.rol || '');
+                                    localStorage.setItem('usuarioRolId', roleData.id_rol || '');
+                                }
+                            } catch (e) {
+                                console.warn('Error obteniendo rol:', e);
                             }
-                        } catch (e) {
-                            console.warn('No se pudo obtener rol después del login:', e);
+
+                            showMessage("Sesión iniciada. Redirigiendo...", "bg-green-100 text-green-700");
+
+                            setTimeout(() => {
+                                window.location.href = "Descubrir.html"; 
+                            }, 1000);
+
+                        } else {
+                            showMessage("Error: " + (data.error || "Error de sesión"), "bg-red-100 text-red-700");
                         }
 
-                        showMessage("Redirigiendo al descubrir...", "bg-green-100 text-green-700");
-
-                        setTimeout(() => {
-                            window.location.href = "Descubrir.html"; 
-                        }, 1000); 
-
-                    } else {
-                        showMessage("Error: " + (data.error || "Error de Descubrir de sesión"), "bg-red-100 text-red-700");
+                    } catch (error) {
+                        console.error("Error al conectar:", error);
+                        showMessage("Error de conexión con el servidor.", "bg-yellow-100 text-yellow-700");
                     }
-
-                } catch (error) {
-                    console.error("Error al conectar con el backend:", error);
-                    showMessage("Error de conexión con el servidor.", "bg-yellow-100 text-yellow-700");
-                }
-            });
-            
-            // LOGIN CON GOOGLE (SIN FIREBASE - USANDO BACKEND)
-            const googleBtn = document.getElementById("google-login-btn");
-            if (googleBtn) {
-                googleBtn.addEventListener("click", () => {
-                    console.log("Click en Google login");
-                    showMessage("Redirigiendo a Google...", "bg-blue-100 text-blue-700");
-                    // Redirigir al endpoint del backend
-                    window.location.href = 'http://localhost:3001/api/auth/google';
                 });
+                
+                const googleBtn = document.getElementById("google-login-btn");
+                if (googleBtn) {
+                    googleBtn.addEventListener("click", () => {
+                        showMessage("Redirigiendo a Google...", "bg-blue-100 text-blue-700");
+                        window.location.href = 'http://localhost:3001/api/auth/google';
+                    });
+                }
             }
         });
     </script>
 
-    
+    <!-- Control del Menú Móvil -->
+    <script>
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
+        const closeIcon = document.getElementById('close-icon');
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                menuIcon.classList.toggle('hidden');
+                closeIcon.classList.toggle('hidden');
+            });
+
+            const menuLinks = mobileMenu.querySelectorAll('a');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    menuIcon.classList.remove('hidden');
+                    closeIcon.classList.add('hidden');
+                });
+            });
+        }
+    </script>
+
 </body>
 </html>
