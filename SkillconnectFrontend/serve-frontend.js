@@ -24,6 +24,9 @@ const mime = {
   '.woff2': 'font/woff2',
   '.woff': 'font/woff',
   '.ttf': 'font/ttf',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.ogg': 'video/ogg',
 };
 
 function sendFile(res, filePath, statusCode = 200) {
@@ -42,12 +45,13 @@ function sendFile(res, filePath, statusCode = 200) {
 const server = http.createServer((req, res) => {
   try {
     // Cabecera CSP permisiva para DESARROLLO local (ajustar en producción)
-   const csp = "default-src 'self' data:; " +
+    const csp = "default-src 'self' data:; " +
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: https://unpkg.com https://cdnjs.cloudflare.com; " +
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com; " +
             "font-src 'self' https://fonts.gstatic.com data:; " +
-            "img-src 'self' data: https:; " +
-            "connect-src 'self' http://127.0.0.1:3001 http://localhost:3001 ws: https://unpkg.com https://nominatim.openstreetmap.org https://*.tile.openstreetmap.org https://api.iconify.design https://api.unisvg.com https://api.simplesvg.com;";
+            "img-src 'self' data: blob: https: https://pub-ada139691018466fa48df5ea9f22ee6c.r2.dev; " +
+            "media-src 'self' data: blob: https://pub-ada139691018466fa48df5ea9f22ee6c.r2.dev; " +
+            "connect-src 'self' http://127.0.0.1:5050 http://localhost:5050 http://127.0.0.1:3001 http://localhost:3001 ws: https://unpkg.com https://nominatim.openstreetmap.org https://*.tile.openstreetmap.org https://api.iconify.design https://api.unisvg.com https://api.simplesvg.com;";
     res.setHeader('Content-Security-Policy', csp);
 
     const decoded = decodeURIComponent(req.url.split('?')[0]);

@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Principal- SkillConnect</title>
 
+    <!-- CSP local para desarrollo: permite reproducir vídeos desde R2 específico y previews blob/data -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: https://pub-ada139691018466fa48df5ea9f22ee6c.r2.dev; media-src 'self' data: blob: https://pub-ada139691018466fa48df5ea9f22ee6c.r2.dev; connect-src 'self' http://127.0.0.1:5050 http://localhost:5050 http://127.0.0.1:3001 http://localhost:3001 ws: https://cdn.jsdelivr.net;">
+
     <script>
         // Escapa texto para prevenir inyección de HTML
         function escapeHtml(str) {
@@ -1259,6 +1262,78 @@
             margin: 0.25rem;
         }
 
+        /* Estilos para progreso de subida en previews */
+        .attach-progress-outer {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 8px;
+            background: rgba(0,0,0,0.06);
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            overflow: hidden;
+            display: none; /* visible mientras sube */
+        }
+        .attach-progress-inner {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg,#7c3aed,#2563eb);
+            transition: width 0.2s linear;
+        }
+        .attach-progress-text {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 11px;
+            color: #374151;
+            display: none;
+        }
+        .attach-circle {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            font-size: 11px;
+            color: #111827;
+            z-index: 30;
+            transition: transform 0.12s;
+        }
+        .attach-circle .circle-bg {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: conic-gradient(#7c3aed 0deg, #e5e7eb 0deg);
+            z-index: 1;
+        }
+        .attach-circle .circle-label {
+            position: relative; z-index: 2; font-weight:700; font-size:11px;
+        }
+        .attach-cancel {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 60;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        #attachments-overall-progress { margin-top:8px }
+
         /* Badge de estado online */
         .online-badge {
             width: 16px;
@@ -1737,15 +1812,29 @@
                                     </div>
 
                                     <!-- Input de Mensaje -->
-                                    <div id="chat-input-dashboard" class="p-4 border-t bg-white">
-                                        <form id="chat-form-dashboard" class="flex space-x-3">
-                                            <input type="text" id="message-input-dashboard"
-                                                placeholder="Escribe un mensaje..." required
-                                                class="flex-grow px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                            <button type="submit"
-                                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-full transition duration-150 ease-in-out shadow-lg">
-                                                Enviar
-                                            </button>
+                                    <div id="chat-input-dashboard" class="relative p-4 border-t bg-white">
+                                        <form id="chat-form-dashboard" class="flex flex-col space-y-2">
+                                            <div class="flex items-center space-x-3">
+                                                <input type="text" id="message-input-dashboard"
+                                                    placeholder="Escribe un mensaje..."
+                                                    class="flex-grow px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+                                                <!-- Botón para seleccionar archivos -->
+                                                <label for="file-input-dashboard" title="Adjuntar archivo" class="cursor-pointer inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-full hover:bg-gray-50">
+                                                    <span class="iconify" data-icon="mdi:paperclip" data-width="20"></span>
+                                                </label>
+
+                                                <input id="file-input-dashboard" type="file" accept="image/*,video/*,image/gif" multiple style="display:none">
+
+                                                <button type="submit" id="send-message-btn-dashboard"
+                                                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-full transition duration-150 ease-in-out shadow-lg">
+                                                    Enviar
+                                                </button>
+                                            </div>
+
+                                            <!-- Previsualización de adjuntos seleccionados (overlay sobre el input) -->
+                                            <div id="attachments-preview-dashboard" class="hidden" style="position:absolute; bottom:72px; left:12px; right:12px; background: #ffffff; padding:8px; border-radius:12px; gap:8px; overflow-x:auto; align-items:center; z-index:60; box-shadow: 0 6px 18px rgba(15,23,42,0.08); border:1px solid rgba(15,23,42,0.06);">
+                                            </div>
                                         </form>
                                     </div>
                                 </div>
@@ -5587,6 +5676,8 @@ function volverAlGrid() {
         // SISTEMA DE MENSAJERÍA DEL DASHBOARD
         // ============================================
         let conversacionesDashboard = [];
+        // Archivos seleccionados en el chat (antes de subir)
+        let selectedFilesDashboard = []; // array de File
         let conversacionActivaDashboard = null;
         let mensajeriaInterval = null;
 
@@ -5599,8 +5690,28 @@ function volverAlGrid() {
                     // Iniciar actualización automática
                     if (mensajeriaInterval) clearInterval(mensajeriaInterval);
                     mensajeriaInterval = setInterval(() => {
-                        if (conversacionActivaDashboard) {
+                        if (!conversacionActivaDashboard) return;
+
+                        try {
+                            const container = document.getElementById('mensajes-container-dashboard');
+
+                            // Evitar refrescar si existe cualquier elemento <video> en el contenedor.
+                            // Motivo: al recargar mensajes recreamos el DOM y esto reinicia el <video>,
+                            // provocando parpadeos/área negra cuando el usuario pausa o la reproducción
+                            // ha cargado un frame. Esta heurística prioriza UX de reproducción.
+                            if (container) {
+                                const anyVideo = container.querySelector('video');
+                                if (anyVideo) {
+                                    // Saltamos el refresco para no reiniciar el reproductor
+                                    return;
+                                }
+                            }
+
+                            // Si no hay videos en la vista, refrescamos normalmente
                             cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion, false);
+                        } catch (err) {
+                            console.warn('Error en intervalo de mensajería:', err);
+                            try { cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion, false); } catch(e){}
                         }
                     }, 3000);
                 });
@@ -5888,65 +5999,723 @@ function volverAlGrid() {
 
             container.innerHTML = mensajes.map(msg => {
                 const esMio = msg.es_remitente_actual === 1 || msg.es_remitente_actual === true;
+                const ahora = new Date();
+                // Manejar diferentes formatos de fecha que puedan venir del backend
+                let fechaRaw = msg.fecha_envio || msg.fechaEnvio || msg.fecha || null;
+                if (typeof fechaRaw === 'string' && fechaRaw.indexOf('T') === -1 && fechaRaw.indexOf(' ') !== -1) {
+                    // convertir 'YYYY-MM-DD HH:MM:SS' -> 'YYYY-MM-DDTHH:MM:SS' para parseo confiable
+                    fechaRaw = fechaRaw.replace(' ', 'T');
+                }
+                const fechaMensaje = fechaRaw ? new Date(fechaRaw) : new Date();
+                let minutosDiferencia = (ahora - fechaMensaje) / (1000 * 60);
+                if (!isFinite(minutosDiferencia) || minutosDiferencia < 0) minutosDiferencia = 0;
+
+                // Aceptar varios nombres de campo para compatibilidad con la API
+                const veceEditado = msg.veces_editado || msg.vecesEditado || msg.vecesEditadas || 0;
+                const fueBorrado = (msg.borrado_para_todos === 1) || (msg.borradoParaTodos === 1) || (msg.borrado === 1);
+
+                // Determinar qué acciones son permitidas
+                // Edición: límite de 2 minutos (ajustable)
+                const LIMITE_MINUTOS_EDICION = 2;
+                const puedeEditar = esMio && veceEditado < 3 && minutosDiferencia <= LIMITE_MINUTOS_EDICION && !fueBorrado;
+                const puedeBorrarParaTodos = esMio && minutosDiferencia <= 2 && !fueBorrado;
+                // Permitir que cualquier usuario (emisor o receptor) oculte el mensaje solo para sí mismo
+                const puedeBorrarParaMi = !fueBorrado;
+
+                if (fueBorrado) {
+                    // Mensaje borrado para todos
+                    return `
+                        <div class="${esMio ? 'flex justify-end' : 'flex justify-start'}">
+                            <div class="bg-gray-100 text-gray-500 p-3 rounded-xl max-w-md text-sm italic">
+                                Este mensaje fue eliminado
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const contenidoMostrado = msg.contenido_editado || msg.contenido;
+                const badgeEdicion = veceEditado > 0 ? `<span class="text-xs text-gray-400 ml-1">(editado)</span>` : '';
 
                 if (esMio) {
-                    // Mensaje enviado por mí (derecha, azul/morado)
+                    // Mensaje enviado por mí
                     return `
-                        <div class="flex justify-end">
-                            <div class="bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-3 rounded-xl rounded-tr-none max-w-md text-sm shadow-lg cursor-pointer relative message-item" 
-                                 data-message-id="${msg.id_mensaje}" 
-                                 data-message-content="${msg.contenido.replace(/"/g, '&quot;')}"
-                                 oncontextmenu="mostrarMenuContextual(event, ${msg.id_mensaje}, '${msg.contenido.replace(/'/g, "\\'")}'); return false;">
-                                ${msg.contenido}
-                                <span class="block text-right text-xs text-indigo-200 mt-1">${formatearHoraDashboard(msg.fecha_envio)}</span>
+                        <div class="flex justify-end group">
+                            <div class="relative">
+                                <div class="bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-3 rounded-xl rounded-tr-none max-w-md text-sm shadow-lg message-item" 
+                                     data-message-id="${msg.id_mensaje}"
+                                     data-message-content="${contenidoMostrado.replace(/"/g, '&quot;')}"
+                                     data-puede-editar="${puedeEditar}"
+                                     oncontextmenu="mostrarMenuContextual(event, ${msg.id_mensaje}, '${contenidoMostrado.replace(/'/g, "\\'")}', ${puedeEditar}, ${puedeBorrarParaTodos}, ${puedeBorrarParaMi}); return false;">
+                                    <p class="text-white">${contenidoMostrado}</p>
+                                    ${renderAdjuntosHTML(msg.adjuntos || [])}
+                                    <span class="block text-right text-xs text-indigo-200 mt-1">
+                                        ${formatearHoraDashboard(msg.fecha_envio)}
+                                        ${badgeEdicion}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     `;
                 } else {
                     // Mensaje recibido (izquierda, blanco/gris)
+                    // Añadir attributes y oncontextmenu para permitir "Borrar solo para mí" al receptor
                     return `
-                        <div class="flex justify-start">
-                            <div class="bg-white border border-gray-200 p-3 rounded-xl rounded-tl-none max-w-md text-sm shadow-md">
-                                <p class="text-gray-800">${msg.contenido}</p>
-                                <span class="block text-left text-xs text-gray-400 mt-1">${formatearHoraDashboard(msg.fecha_envio)}</span>
+                        <div class="flex justify-start group">
+                            <div class="relative">
+                                <div class="bg-white border border-gray-200 p-3 rounded-xl rounded-tl-none max-w-md text-sm shadow-md message-item"
+                                     data-message-id="${msg.id_mensaje}"
+                                     data-message-content="${(contenidoMostrado || '').replace(/\"/g, '&quot;') }"
+                                     data-puede-editar="${puedeEditar}"
+                                     oncontextmenu="mostrarMenuContextual(event, ${msg.id_mensaje}, '${(contenidoMostrado || '').replace(/'/g, "\\'")}', ${puedeEditar}, ${puedeBorrarParaTodos}, ${puedeBorrarParaMi}); return false;">
+                                    <p class="text-gray-800">${contenidoMostrado}</p>
+                                    ${renderAdjuntosHTML(msg.adjuntos || [])}
+                                    <span class="block text-left text-xs text-gray-400 mt-1">
+                                        ${formatearHoraDashboard(msg.fecha_envio)}
+                                        ${badgeEdicion}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     `;
                 }
             }).join('');
 
-            // Agregar soporte para long-press en móvil
             agregarLongPressListeners();
         }
 
-        // Enviar mensaje
+        // Renderizar adjuntos: imágenes y videos
+        function renderAdjuntosHTML(adjuntos) {
+            if (!adjuntos || !Array.isArray(adjuntos) || adjuntos.length === 0) return '';
+
+            // Separar por tipo y buscar thumbnails que acompañen vídeos
+            const images = [];
+            const videos = [];
+
+            adjuntos.forEach(a => {
+                const mime = (a.mime || a.tipo_mime || '').toLowerCase();
+                const url = a.url || a.ruta || a.url_publica || a.url_public;
+                const nombre = a.nombre_original || a.nombre || '';
+                const tipo = (a.tipo || a.tipo_adjunto || '').toLowerCase();
+                if (!url) return;
+                if (mime.startsWith('video/')) videos.push({ ...a, url, mime, nombre, tipo });
+                else if (mime.startsWith('image/')) images.push({ ...a, url, mime, nombre, tipo });
+                else images.push({ ...a, url, mime, nombre, tipo });
+            });
+
+            const usedThumbs = new Set();
+            const parts = [];
+
+            // Para cada video, intentar encontrar su thumbnail correspondiente
+            for (const v of videos) {
+                let posterUrl = null;
+                // buscar thumbnail marcado explícitamente
+                let match = images.find(img => (img.tipo === 'thumbnail' || img.tipo === 'thumb' || img.tipo === 'thumbnail_image'));
+                if (match) {
+                    posterUrl = match.url; usedThumbs.add(match.url);
+                } else {
+                    // intentar emparejar por nombre: video 'foo.mp4' -> thumb 'foo-thumb.png' o 'foo-thumb'
+                    const baseV = (v.nombre || '').replace(/\.[^/.]+$/, '');
+                    if (baseV) {
+                        match = images.find(img => {
+                            const baseImg = (img.nombre || '').replace(/\.[^/.]+$/, '');
+                            if (!baseImg) return false;
+                            if (baseImg === `${baseV}-thumb` || baseImg === `${baseV}_thumb` || baseImg === baseV) return true;
+                            return baseImg.includes(baseV) || baseV.includes(baseImg);
+                        });
+                        if (match) { posterUrl = match.url; usedThumbs.add(match.url); }
+                    }
+                }
+
+                const safePoster = posterUrl ? ` poster="${posterUrl}"` : '';
+                parts.push(`<div class="mt-2"><video controls class="max-w-xs rounded"${safePoster}><source src="${v.url}" type="${v.mime}"></video></div>`);
+            }
+
+            // Renderizar imágenes que no fueron usadas como thumbnails
+            for (const img of images) {
+                if (usedThumbs.has(img.url)) continue;
+                parts.push(`<div class="mt-2"><img src="${img.url}" alt="adjunto" class="max-w-xs rounded cursor-pointer" onclick="openImageFullscreen('${img.url}')"></div>`);
+            }
+
+            // Si no hay video ni imagens interpretables, mostrar enlaces para los adjuntos restantes
+            if (parts.length === 0) {
+                return adjuntos.map(a => {
+                    const url = a.url || a.ruta || a.url_publica || a.url_public;
+                    if (!url) return '';
+                    return `<div class="mt-2"><a href="${url}" target="_blank" class="text-indigo-600 underline">Ver archivo adjunto</a></div>`;
+                }).join('');
+            }
+
+            return parts.join('');
+        }
+
+        // === ENVIAR MENSAJE / EDICIÓN ===
+        let mensajeEnEdicion = null;
+
         async function enviarMensajeDashboard(e) {
-            e.preventDefault();
+            if (e && e.preventDefault) e.preventDefault();
 
             const input = document.getElementById('message-input-dashboard');
-            const contenido = input.value.trim();
+            const contenido = (input && input.value) ? input.value.trim() : '';
 
-            if (!contenido || !conversacionActivaDashboard) return;
+            if ((!contenido && selectedFilesDashboard.length === 0) || !conversacionActivaDashboard) return;
 
             try {
                 const personaId = await obtenerPersonaIdActual();
-                const response = await fetch('http://localhost:3001/api/mensajeria/enviar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        conversacionId: conversacionActivaDashboard.id_conversacion,
-                        personaEnviaId: personaId,
-                        contenido: contenido
-                    })
-                });
 
-                if (!response.ok) throw new Error('Error al enviar mensaje');
+                // Si estamos editando
+                if (mensajeEnEdicion) {
+                    const msgElement = document.querySelector(`[data-message-id="${mensajeEnEdicion.idMensaje}"]`);
+                    const puedeEditar = msgElement ? msgElement.getAttribute('data-puede-editar') === 'true' : false;
 
-                input.value = '';
-                await cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion, true);
+                    if (!puedeEditar) {
+                        Swal.fire({ icon: 'error', title: 'No puedes editar este mensaje', text: 'Solo puedes editar mensajes durante 2 minutos después de enviarlos', confirmButtonColor: '#3b82f6' });
+                        cancelarEdicion();
+                        return;
+                    }
+
+                    const response = await fetch(`http://localhost:3001/api/mensajeria/mensajes/${mensajeEnEdicion.idMensaje}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contenido: contenido, timestamp: new Date().toISOString() })
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 410) {
+                            Swal.fire({ icon: 'error', title: 'Tiempo de edición expirado', text: 'Solo puedes editar un mensaje durante 2 minutos después de enviarlo', confirmButtonColor: '#3b82f6' });
+                            cancelarEdicion();
+                            await cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion, true);
+                            return;
+                        }
+                        const err = await response.json().catch(()=>({}));
+                        throw new Error(err.error || 'Error al editar mensaje');
+                    }
+
+                    const data = await response.json();
+                    if (data.success) {
+                        Swal.fire({ icon: 'success', title: 'Mensaje editado', timer: 1500, showConfirmButton: false });
+                        input.value = '';
+                        const indicador = document.querySelector('.edicion-indicador'); if (indicador) indicador.remove();
+                        mensajeEnEdicion = null;
+                        await cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion, true);
+                    }
+
+                } else {
+                    // Enviar nuevo mensaje: si hay archivos seleccionados, subir primero
+                    let adjuntosMetadata = [];
+                    if (selectedFilesDashboard.length > 0) {
+                        try {
+                            // Mostrar la previsualización y preparar UI de carga (skeleton/progress)
+                            refreshAttachmentsPreview();
+
+                            // Asegurar que el overlay global de progreso esté visible y en 0
+                            const overall = document.getElementById('attachments-overall-progress');
+                            if (overall) {
+                                overall.classList.remove('hidden');
+                                const inner = document.getElementById('attachments-overall-progress-inner');
+                                if (inner) inner.style.width = '0%';
+                            }
+
+                            // Preparar cada tile para mostrar progress circular al iniciar la subida
+                            selectedFilesDashboard.forEach((f, idx) => {
+                                const tile = document.querySelector(`#attachments-preview-dashboard [data-attach-index="${idx}"]`);
+                                if (!tile) return;
+                                const circle = tile.querySelector('.attach-circle');
+                                const cancelBtn = tile.querySelector('.attach-cancel');
+                                const progressOuter = tile.querySelector('.attach-progress-outer');
+                                const progressText = tile.querySelector('.attach-progress-text');
+                                // reset visuals
+                                if (circle) {
+                                    const bg = circle.querySelector('.circle-bg');
+                                    const label = circle.querySelector('.circle-label');
+                                    if (bg) bg.style.background = 'conic-gradient(#7c3aed 0deg, #e5e7eb 0deg)';
+                                    if (label) label.textContent = '0%';
+                                    circle.style.display = 'flex';
+                                }
+                                if (cancelBtn) cancelBtn.style.display = 'none';
+                                if (progressOuter) progressOuter.style.display = 'none';
+                                if (progressText) progressText.style.display = 'none';
+                            });
+
+                            // ahora sí iniciar subidas (uploadSelectedFiles habilita el botón Enviar y muestra progreso por tile)
+                            adjuntosMetadata = await uploadSelectedFiles(selectedFilesDashboard);
+                        } catch (err) {
+                            console.error('Error subiendo adjuntos:', err);
+                            Swal.fire({ icon: 'error', title: 'Error al subir archivos', text: 'No fue posible subir los archivos seleccionados', confirmButtonColor: '#3b82f6' });
+                            return;
+                        }
+                    }
+
+                    const personaRecibeId = conversacionActivaDashboard.id_contacto || conversacionActivaDashboard.id_persona_contacto || null;
+                    const payload = { conversacionId: conversacionActivaDashboard.id_conversacion, personaEnviaId: personaId, contenido: contenido };
+                    if (personaRecibeId) payload.personaRecibeId = personaRecibeId;
+                    if (adjuntosMetadata && adjuntosMetadata.length > 0) payload.adjuntos = adjuntosMetadata;
+
+                    const response = await fetch('http://localhost:3001/api/mensajeria/enviar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        let errBody = null; try { errBody = await response.json(); } catch(e){ errBody = await response.text().catch(()=>null); }
+                        console.error('Error al enviar mensaje - status:', response.status, 'body:', errBody);
+                        throw new Error('Error al enviar mensaje');
+                    }
+
+                    // Limpieza: input y previsualización
+                    if (input) input.value = '';
+                    clearSelectedAttachmentsPreview();
+
+                    await cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion, true);
+                }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error al enviar el mensaje');
+                Swal.fire({ icon: 'error', title: 'Error', text: error.message || 'Error al procesar el mensaje', confirmButtonColor: '#3b82f6' });
+            }
+        }
+
+        // ---- Helpers para adjuntos ----
+        // Convertir File -> data URL (evita CSP que bloquea blob:)
+        function fileToDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (err) => reject(err);
+                reader.readAsDataURL(file);
+            });
+        }
+        // Generar miniatura de vídeo en el cliente (extraer un frame)
+        async function generateVideoThumbnail(file, maxWidth = 480) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const url = URL.createObjectURL(file);
+                    const video = document.createElement('video');
+                    video.preload = 'metadata';
+                    video.muted = true;
+                    video.src = url;
+                    video.playsInline = true;
+
+                    const cleanup = () => { try { URL.revokeObjectURL(url); } catch(e){} };
+
+                    const onError = (e) => { cleanup(); reject(new Error('Error cargando vídeo para miniatura')); };
+
+                    video.addEventListener('loadeddata', () => {
+                        try {
+                            // intenta posicionar a 0.25s para evitar frames en negro
+                            const target = Math.min(0.25, (video.duration || 0) / 2);
+                            video.currentTime = target;
+                        } catch (seekErr) {
+                            // ignore
+                        }
+                    });
+
+                    video.addEventListener('seeked', () => {
+                        try {
+                            const canvas = document.createElement('canvas');
+                            const vw = video.videoWidth || maxWidth;
+                            const vh = video.videoHeight || (maxWidth * 0.56);
+                            const scale = Math.min(1, maxWidth / vw);
+                            canvas.width = Math.round(vw * scale);
+                            canvas.height = Math.round(vh * scale);
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            canvas.toBlob((blob) => {
+                                cleanup();
+                                if (!blob) return reject(new Error('No se generó blob desde canvas'));
+                                const thumbFile = new File([blob], file.name.replace(/\.[^/.]+$/, '') + '-thumb.png', { type: 'image/png' });
+                                resolve(thumbFile);
+                            }, 'image/png', 0.9);
+                        } catch (err) {
+                            cleanup();
+                            reject(err);
+                        }
+                    });
+
+                    video.addEventListener('error', onError);
+
+                    // safety timeout
+                    setTimeout(() => {
+                        if (!video.readyState) {
+                            cleanup();
+                            reject(new Error('Tiempo agotado generando miniatura'));
+                        }
+                    }, 5000);
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        }
+
+        // Subir archivos; si hay vídeos, generar y subir miniatura antes
+        async function uploadSelectedFiles(filesArray) {
+            const uploaded = [];
+
+            const sendBtn = document.getElementById('send-message-btn-dashboard');
+            if (sendBtn) sendBtn.disabled = true;
+
+            // prepare arrays for overall progress (only main files)
+            const totalMainBytes = filesArray.reduce((s, f) => s + (f.size || 0), 0);
+            const mainUploadedBytes = new Array(filesArray.length).fill(0);
+
+            // utility to update overall bar
+            const updateOverall = () => {
+                try {
+                    const overallEl = document.getElementById('attachments-overall-progress');
+                    const inner = document.getElementById('attachments-overall-progress-inner');
+                    if (!overallEl || !inner) return;
+                    overallEl.classList.remove('hidden');
+                    const totalUploaded = mainUploadedBytes.reduce((a,b) => a + (b||0), 0);
+                    const pct = totalMainBytes > 0 ? Math.round((totalUploaded / totalMainBytes) * 100) : 0;
+                    inner.style.width = pct + '%';
+                } catch (e) { }
+            };
+
+            for (let i = 0; i < filesArray.length; i++) {
+                const file = filesArray[i];
+                const preview = document.querySelector(`#attachments-preview-dashboard [data-attach-index="${i}"]`);
+                const circle = preview ? preview.querySelector('.attach-circle') : null;
+                const cancelEl = preview ? preview.querySelector('.attach-cancel') : null;
+
+                // create cancellable XHR
+                let currentXhr = null;
+                if (cancelEl) {
+                    cancelEl.style.display = 'none';
+                    cancelEl.onclick = (e) => {
+                        e.stopPropagation();
+                        if (currentXhr) currentXhr.abort();
+                        if (preview) preview.remove();
+                    };
+                }
+
+                const uploadSingle = (fileToSend, onProgress) => {
+                    return new Promise((resolve, reject) => {
+                        try {
+                            const form = new FormData();
+                            form.append('file', fileToSend, fileToSend.name);
+                            const xhr = new XMLHttpRequest();
+                            currentXhr = xhr;
+                            xhr.open('POST', 'http://localhost:3001/api/mensajeria/upload');
+
+                            if (cancelEl) cancelEl.style.display = 'flex';
+
+                            xhr.upload.onprogress = (ev) => {
+                                if (!ev.lengthComputable) return;
+                                onProgress && onProgress(ev.loaded, ev.total);
+                                const percent = Math.round((ev.loaded / ev.total) * 100);
+                                if (circle) {
+                                    const bg = circle.querySelector('.circle-bg');
+                                    const label = circle.querySelector('.circle-label');
+                                    if (bg) bg.style.background = `conic-gradient(#7c3aed ${percent * 3.6}deg, #e5e7eb 0deg)`;
+                                    if (label) label.textContent = percent + '%';
+                                }
+                            };
+
+                            xhr.onload = () => {
+                                currentXhr = null;
+                                if (cancelEl) cancelEl.style.display = 'none';
+                                if (xhr.status >= 200 && xhr.status < 300) {
+                                    let json = {};
+                                    try { json = JSON.parse(xhr.responseText); } catch(e) { json = {}; }
+                                    resolve(json);
+                                } else {
+                                    reject(new Error('Error en subida: ' + xhr.status));
+                                }
+                            };
+
+                            xhr.onerror = () => { currentXhr = null; reject(new Error('Error de red al subir archivo')); };
+                            xhr.onabort = () => { currentXhr = null; reject(new Error('Cancelado por el usuario')); };
+                            xhr.send(form);
+                        } catch (err) { reject(err); }
+                    });
+                };
+
+                // If video: generate thumb and upload it (smaller, but don't count in main progress)
+                let thumbMeta = null;
+                if (file.type && file.type.startsWith('video/')) {
+                    try {
+                        const thumbFile = await generateVideoThumbnail(file, 480);
+                        // upload thumbnail with simple progress to circle
+                        try {
+                            await uploadSingle(thumbFile, () => {});
+                        } catch (errThumb) {
+                            console.warn('Thumb upload failed', errThumb);
+                        }
+                    } catch (err) { console.warn('Thumb gen failed', err); }
+                }
+
+                // upload main and update overall progress using ev.loaded
+                try {
+                    const resp = await uploadSingle(file, (loaded, total) => {
+                        // update mainUploadedBytes for this index
+                        mainUploadedBytes[i] = loaded;
+                        updateOverall();
+                    });
+                    const mainMeta = { url: resp.url || resp.url_publica || resp.location || resp.publicUrl, mime: resp.mime || file.type, nombre_original: resp.nombre_original || file.name, tamano_bytes: resp.tamano_bytes || file.size, tipo: file.type && file.type.startsWith('video/') ? 'video' : 'image' };
+                    uploaded.push(mainMeta);
+                    if (thumbMeta) uploaded.push(thumbMeta);
+                    // finish circle to 100%
+                    if (circle) {
+                        const bg = circle.querySelector('.circle-bg');
+                        const label = circle.querySelector('.circle-label');
+                        if (bg) bg.style.background = `conic-gradient(#7c3aed 360deg, #e5e7eb 0deg)`;
+                        if (label) label.textContent = '✓';
+                    }
+                } catch (err) {
+                    if (circle) {
+                        const label = circle.querySelector('.circle-label'); if (label) label.textContent = '✕';
+                    }
+                    throw err;
+                }
+            }
+
+            if (sendBtn) sendBtn.disabled = false;
+            return uploaded;
+        }
+
+        function clearSelectedAttachmentsPreview() {
+            selectedFilesDashboard = [];
+            const preview = document.getElementById('attachments-preview-dashboard');
+            if (preview) {
+                preview.innerHTML = '';
+                preview.classList.add('hidden');
+                preview.classList.remove('flex');
+            }
+            const fileInput = document.getElementById('file-input-dashboard');
+            if (fileInput) fileInput.value = null;
+        }
+
+        function createAttachmentPreview(file, index) {
+            const container = document.createElement('div');
+            container.className = 'relative inline-block bg-white rounded-lg border border-gray-300 overflow-visible';
+            container.style.width = '80px';
+            container.style.height = '80px';
+            container.setAttribute('data-attach-index', String(index));
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'absolute -top-2 -right-2 bg-white text-gray-700 rounded-full w-5 h-5 flex items-center justify-center text-lg font-bold shadow-md hover:bg-gray-100 z-10 border border-gray-300';
+            removeBtn.innerHTML = '×';
+            removeBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                selectedFilesDashboard.splice(index, 1);
+                refreshAttachmentsPreview();
+            };
+            // asegurar que el botón esté por encima de cualquier borde/overlay
+            removeBtn.style.zIndex = '9999';
+            
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.className = 'w-full h-full object-cover';
+                img.style.display = 'block';
+                // usar data URL en vez de blob: para evitar CSP
+                fileToDataURL(file).then(dataURL => {
+                    img.src = dataURL;
+                    img.onclick = () => openImageFullscreen(dataURL);
+                }).catch(err => {
+                    console.error('Error al convertir imagen a dataURL:', err);
+                    img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23f3f4f6" width="80" height="80"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%236b7280"%3E?%3C/text%3E%3C/svg%3E';
+                });
+                img.onerror = () => {
+                    console.error('Error al cargar imagen:', file.name);
+                };
+                container.appendChild(img);
+            } else if (file.type.startsWith('video/')) {
+                const vid = document.createElement('video');
+                vid.className = 'w-full h-full object-cover';
+                vid.style.display = 'block';
+                vid.controls = false;
+                vid.muted = true;
+                // Convertir a dataURL para preview (puede ser pesado pero evita CSP)
+                fileToDataURL(file).then(dataURL => {
+                    vid.src = dataURL;
+                }).catch(err => {
+                    console.error('Error al convertir video a dataURL:', err);
+                });
+                container.appendChild(vid);
+            } else {
+                const box = document.createElement('div');
+                box.className = 'w-full h-full flex flex-col items-center justify-center p-2 bg-gray-50';
+                const fileName = file.name.length > 12 ? file.name.substring(0, 12) + '...' : file.name;
+                box.innerHTML = `<div class="text-2xl mb-1">📄</div><div class="text-xs text-gray-600 text-center break-words">${fileName}</div>`;
+                container.appendChild(box);
+            }
+            // Circular progress indicator (shows percent while uploading)
+            const circle = document.createElement('div');
+            circle.className = 'attach-circle';
+            circle.innerHTML = `<div class="circle-bg"></div><div class="circle-label">0%</div>`;
+            container.appendChild(circle);
+
+            // Cancel upload button (visible only durante upload)
+            const cancelBtn = document.createElement('button');
+            cancelBtn.type = 'button';
+            cancelBtn.className = 'attach-cancel';
+            cancelBtn.innerHTML = '✕';
+            cancelBtn.title = 'Cancelar subida';
+            cancelBtn.style.display = 'none';
+            container.appendChild(cancelBtn);
+
+            // Barra de progreso (oculta por defecto)
+            const progressOuter = document.createElement('div');
+            progressOuter.className = 'attach-progress-outer';
+            progressOuter.innerHTML = `<div class="attach-progress-inner"></div>`;
+            container.appendChild(progressOuter);
+
+            // Texto de porcentaje
+            const progressText = document.createElement('div');
+            progressText.className = 'attach-progress-text';
+            progressText.textContent = '0%';
+            container.appendChild(progressText);
+
+            container.appendChild(removeBtn);
+            return container;
+        }
+
+        function refreshAttachmentsPreview() {
+            const preview = document.getElementById('attachments-preview-dashboard');
+            if (!preview) return;
+            preview.innerHTML = '';
+            // overall progress bar
+            const overallBar = document.createElement('div');
+            overallBar.id = 'attachments-overall-progress';
+            overallBar.className = 'hidden';
+            overallBar.innerHTML = `<div id="attachments-overall-progress-inner" style="width:0%;height:6px;background:linear-gradient(90deg,#7c3aed,#2563eb);border-radius:8px"></div>`;
+            preview.appendChild(overallBar);
+            if (!selectedFilesDashboard || selectedFilesDashboard.length === 0) {
+                preview.classList.add('hidden');
+                preview.classList.remove('flex');
+                return;
+            }
+
+            preview.classList.remove('hidden');
+            preview.classList.add('flex');
+            selectedFilesDashboard.forEach((f, idx) => {
+                const node = createAttachmentPreview(f, idx);
+                preview.appendChild(node);
+            });
+        }
+
+        // Inicializar listeners del input de archivos y form
+        (function initAttachmentsUI(){
+            const fileInput = document.getElementById('file-input-dashboard');
+            const form = document.getElementById('chat-form-dashboard');
+            if (fileInput) {
+                fileInput.addEventListener('change', (ev) => {
+                    const files = Array.from(ev.target.files || []);
+                    // Limitar número/size si se desea (puedes ajustar aquí)
+                    files.forEach(f => selectedFilesDashboard.push(f));
+                    refreshAttachmentsPreview();
+                });
+            }
+
+            if (form) {
+                form.addEventListener('submit', enviarMensajeDashboard);
+            }
+        })();
+
+        // ============================================
+        // 🟦 FUNCIONES DE EDICIÓN / BORRADO
+        // ============================================
+
+        function iniciarEdicionMensaje(idMensaje, contenidoActual) {
+            mensajeEnEdicion = { idMensaje };
+            
+            const input = document.getElementById('message-input-dashboard');
+            input.value = contenidoActual;
+            input.focus();
+            input.style.borderColor = '#3b82f6';
+            input.style.borderWidth = '2px';
+
+            const form = document.querySelector('form') || document.getElementById('form-mensaje-dashboard');
+            let indicador = form.querySelector('.edicion-indicador');
+            
+            if (!indicador) {
+                indicador = document.createElement('div');
+                indicador.className = 'edicion-indicador text-xs text-blue-600 font-semibold mb-2 flex items-center gap-2';
+                form.insertBefore(indicador, form.firstChild);
+            }
+            
+            indicador.innerHTML = `
+                <span class="iconify" data-icon="mdi:pencil" data-width="14"></span>
+                Editando mensaje...
+                <button type="button" onclick="cancelarEdicion()" class="text-red-500 hover:text-red-700 font-bold">✕</button>
+            `;
+        }
+
+        function cancelarEdicion() {
+            mensajeEnEdicion = null;
+            const input = document.getElementById('message-input-dashboard');
+            input.value = '';
+            input.style.borderColor = '';
+            input.style.borderWidth = '';
+            
+            const indicador = document.querySelector('.edicion-indicador');
+            if (indicador) {
+                indicador.remove();
+            }
+        }
+
+        async function confirmarBorrarMensaje(idMensaje, tipo) {
+            const mensaje = tipo === 'todos' 
+                ? '¿Borrar este mensaje para todos? No podrán verlo'
+                : '¿Borrar este mensaje solo para ti? El otro usuario seguirá viéndolo';
+            
+            const result = await Swal.fire({
+                title: tipo === 'todos' ? 'Borrar para todos' : 'Borrar solo para mí',
+                text: mensaje,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sí, borrar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                // Usar endpoint existente en backend: DELETE /mensajeria/mensajes/:idMensaje?tipo=...&personaId=...
+                const personaId = await obtenerPersonaIdActual();
+                const qs = new URLSearchParams({ tipo: tipo, personaId: personaId });
+                const response = await fetch(`http://localhost:3001/api/mensajeria/mensajes/${idMensaje}?${qs.toString()}`, {
+                    method: 'DELETE'
+                });
+
+                // Capturar ventana expirada (410) y manejar correctamente
+                if (response.status === 410) {
+                    await response.json().catch(()=>{});
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Tiempo de eliminación expirado',
+                        text: 'Solo puedes eliminar mensajes para todos durante 3 minutos después de enviarlos',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                    await cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion, false);
+                    return;
+                }
+
+                if (!response.ok) throw new Error('Error al borrar mensaje');
+
+                const data = await response.json();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Mensaje eliminado',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+
+                    await cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion, false);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo eliminar el mensaje',
+                    confirmButtonColor: '#3b82f6'
+                });
             }
         }
 
@@ -6418,19 +7187,27 @@ function volverAlGrid() {
         }
 
         // ============================================
-        // MENÚ CONTEXTUAL PARA MENSAJES
+        // MENÚ CONTEXTUAL PARA MENSAJES (ACTUALIZADO)
         // ============================================
         let mensajeSeleccionadoId = null;
         let mensajeSeleccionadoContenido = '';
 
-        function mostrarMenuContextual(event, messageId, messageContent) {
+        function mostrarMenuContextual(event, messageId, messageContent, puedeEditar, puedeBorrarParaTodos, puedeBorrarParaMi) {
             event.preventDefault();
 
             const menu = document.getElementById('messageContextMenu');
             mensajeSeleccionadoId = messageId;
             mensajeSeleccionadoContenido = messageContent;
 
-            // Posicionar el menú
+            // Actualizar opciones del menú basado en permisos
+            const editarBtn = menu.querySelector('[data-action="editar"]');
+            const borrarTodosBtn = menu.querySelector('[data-action="borrar-todos"]');
+            const borrarMiBtn = menu.querySelector('[data-action="borrar-mi"]');
+
+            if (editarBtn) editarBtn.style.display = puedeEditar ? 'flex' : 'none';
+            if (borrarTodosBtn) borrarTodosBtn.style.display = puedeBorrarParaTodos ? 'flex' : 'none';
+            if (borrarMiBtn) borrarMiBtn.style.display = puedeBorrarParaMi ? 'flex' : 'none';
+
             menu.style.left = event.pageX + 'px';
             menu.style.top = event.pageY + 'px';
             menu.classList.remove('hidden');
@@ -6446,7 +7223,7 @@ function volverAlGrid() {
             }
         });
 
-        // Long-press para móvil
+        // Long-press para móvil (mantener pero pasar permisos reales cuando no los tenemos)
         function agregarLongPressListeners() {
             const messages = document.querySelectorAll('.message-item');
             let longPressTimer;
@@ -6459,12 +7236,13 @@ function volverAlGrid() {
 
                     longPressTimer = setTimeout(() => {
                         const touch = e.touches[0];
+                        // Si no conocemos permisos, mostramos todas las opciones posibles
                         mostrarMenuContextual({
                             preventDefault: () => { },
                             pageX: touch.pageX,
                             pageY: touch.pageY
-                        }, messageId, messageContent);
-                    }, 500); // 500ms para activar long-press
+                        }, messageId, messageContent, true, true, true);
+                    }, 500);
                 });
 
                 msg.addEventListener('touchend', function () {
@@ -6477,119 +7255,20 @@ function volverAlGrid() {
             });
         }
 
-        // Editar mensaje
+        // Editar mensaje (inicia el modo edición)
         async function editarMensaje() {
             const menu = document.getElementById('messageContextMenu');
             menu.classList.add('hidden');
 
-            const { value: nuevoContenido } = await Swal.fire({
-                title: 'Editar Mensaje',
-                input: 'textarea',
-                inputValue: mensajeSeleccionadoContenido,
-                inputPlaceholder: 'Escribe tu mensaje...',
-                inputAttributes: {
-                    'aria-label': 'Escribe tu mensaje'
-                },
-                showCancelButton: true,
-                confirmButtonText: 'Guardar',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#3b82f6',
-                inputValidator: (value) => {
-                    if (!value || !value.trim()) {
-                        return 'El mensaje no puede estar vacío';
-                    }
-                }
-            });
-
-            if (nuevoContenido && nuevoContenido.trim() !== mensajeSeleccionadoContenido) {
-                try {
-                    const response = await fetch(`http://localhost:3001/api/mensajeria/mensajes/${mensajeSeleccionadoId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            contenido: nuevoContenido.trim()
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Mensaje editado',
-                            text: 'El mensaje se actualizó correctamente',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-
-                        // Recargar mensajes
-                        if (conversacionActivaDashboard && conversacionActivaDashboard.id_conversacion) {
-                            await cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion);
-                        }
-                    } else {
-                        throw new Error(data.message);
-                    }
-                } catch (error) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'No se pudo editar el mensaje',
-                        confirmButtonColor: '#3b82f6'
-                    });
-                }
-            }
+            iniciarEdicionMensaje(mensajeSeleccionadoId, mensajeSeleccionadoContenido);
         }
 
-        // Eliminar mensaje
+        // Eliminar mensaje (confirmación con opción para todos)
         async function eliminarMensaje() {
             const menu = document.getElementById('messageContextMenu');
             menu.classList.add('hidden');
 
-            const result = await Swal.fire({
-                title: '¿Eliminar mensaje?',
-                text: 'Esta acción no se puede deshacer',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar'
-            });
-
-            if (result.isConfirmed) {
-                try {
-                    const response = await fetch(`http://localhost:3001/api/mensajeria/mensajes/${mensajeSeleccionadoId}`, {
-                        method: 'DELETE'
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Mensaje eliminado',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-
-                        // Recargar mensajes
-                        if (conversacionActivaDashboard && conversacionActivaDashboard.id_conversacion) {
-                            await cargarMensajesDashboard(conversacionActivaDashboard.id_conversacion);
-                        }
-                    } else {
-                        throw new Error(data.message);
-                    }
-                } catch (error) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'No se pudo eliminar el mensaje',
-                        confirmButtonColor: '#3b82f6'
-                    });
-                }
-            }
+            await confirmarBorrarMensaje(mensajeSeleccionadoId, 'todos');
         }
 
         // Limpiar intervalo al cambiar de vista
@@ -6601,25 +7280,18 @@ function volverAlGrid() {
     </script>
 
     <!-- Menú Contextual para Mensajes -->
-    <div id="messageContextMenu" class="hidden fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
-        style="min-width: 150px;">
-        <button onclick="editarMensaje()"
-            class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-gray-700">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                </path>
-            </svg>
+    <div id="messageContextMenu" class="hidden fixed bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50" style="min-width: 150px;">
+        <button onclick="editarMensaje()" data-action="editar" class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 text-gray-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
             Editar
         </button>
-        <button onclick="eliminarMensaje()"
-            class="w-full px-4 py-2 text-left hover:bg-red-50 flex items-center gap-2 text-red-600">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                </path>
-            </svg>
-            Eliminar
+        <button onclick="eliminarMensaje()" data-action="borrar-todos" class="w-full px-4 py-2 text-left hover:bg-red-50 flex items-center gap-2 text-red-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            Eliminar para todos
+        </button>
+        <button onclick="confirmarBorrarMensaje(mensajeSeleccionadoId, 'mi')" data-action="borrar-mi" class="w-full px-4 py-2 text-left hover:bg-orange-50 flex items-center gap-2 text-orange-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            Borrar solo para mí
         </button>
     </div>
 
