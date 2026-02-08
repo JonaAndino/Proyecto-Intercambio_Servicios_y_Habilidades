@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Perfil de Usuario - TruequeHub</title>
-  
+  <script src="../config.js"></script>
+
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
@@ -16,10 +18,9 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background-color: #f4f7f9;
+      background: transparent;
       color: #1f2937;
-      min-height: 100vh;
-      padding: 20px;
+      padding: 20px 20px 0;
     }
 
     .app-container {
@@ -75,14 +76,16 @@
       align-items: center;
       gap: 8px;
     }
-/* Review Reply Styles */
-.review-reply {
-  margin-top: 16px;
-  padding: 12px;
-  background: #f0f9ff;
-  border-left: 4px solid #2563eb;
-  border-radius: 4px;
-}
+
+    /* Review Reply Styles */
+    .review-reply {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f0f9ff;
+      border-left: 4px solid #2563eb;
+      border-radius: 4px;
+    }
+
     .logout-button:hover {
       background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
       transform: translateY(-2px);
@@ -106,8 +109,13 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
 
     .custom-modal {
@@ -121,11 +129,12 @@
     }
 
     @keyframes slideUp {
-      from { 
+      from {
         opacity: 0;
         transform: translateY(20px);
       }
-      to { 
+
+      to {
         opacity: 1;
         transform: translateY(0);
       }
@@ -291,7 +300,7 @@
     .editable:hover {
       background: #f3f4f6;
     }
-    
+
     .editable:hover::after {
       content: 'Editar';
       position: absolute;
@@ -313,7 +322,7 @@
       border: 2px solid #2563eb;
       min-width: 200px;
     }
-    
+
     .editable.editing::after {
       display: none;
     }
@@ -331,7 +340,7 @@
       padding: 0;
       margin: 0;
     }
-    
+
     .editable input::placeholder,
     .editable textarea::placeholder {
       color: #9ca3af;
@@ -583,7 +592,7 @@
       align-items: stretch;
       width: 100%;
     }
-    
+
 
     .gallery-item {
       position: relative;
@@ -634,16 +643,19 @@
       max-width: 320px;
       min-height: 180px;
       margin: 0 auto;
-    @media (max-width: 900px) {
-      .gallery-grid {
-        grid-template-columns: 1fr 1fr;
+
+      @media (max-width: 900px) {
+        .gallery-grid {
+          grid-template-columns: 1fr 1fr;
+        }
       }
-    }
-    @media (max-width: 600px) {
-      .gallery-grid {
-        grid-template-columns: 1fr;
+
+      @media (max-width: 600px) {
+        .gallery-grid {
+          grid-template-columns: 1fr;
+        }
       }
-    }
+
       backdrop-filter: blur(10px);
     }
 
@@ -734,6 +746,71 @@
       transform: translateY(-2px);
     }
 
+    /* Skill Description Wrapper */
+    .skill-description-wrapper {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .skill-description-wrapper .modal-textarea {
+      margin-bottom: 0;
+      min-height: 80px;
+      resize: vertical;
+      padding-right: 100px;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+
+    .generate-description-btn {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .generate-description-btn:hover {
+      background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+    }
+
+    .generate-description-btn:active {
+      transform: translateY(0);
+    }
+
+    .generate-description-btn:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .generate-description-btn.loading svg {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     /* Context Menu */
     .context-menu-backdrop {
       position: fixed;
@@ -755,16 +832,18 @@
       z-index: 1000;
       min-width: 150px;
     }
-.pixel-chart-svg-container {
-  width: 100%;
-  margin-top: 12px;
-}
 
-.pixel-chart-svg {
-  display: block;
-  max-width: 100%;
-  height: auto;
-}
+    .pixel-chart-svg-container {
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    .pixel-chart-svg {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
     .context-menu-item {
       width: 100%;
       padding: 10px 14px;
@@ -793,9 +872,20 @@
     }
 
     /* Icons */
-    .icon-xs { width: 16px; height: 16px; }
-    .icon-sm { width: 20px; height: 20px; }
-    .icon-md { width: 24px; height: 24px; }
+    .icon-xs {
+      width: 16px;
+      height: 16px;
+    }
+
+    .icon-sm {
+      width: 20px;
+      height: 20px;
+    }
+
+    .icon-md {
+      width: 24px;
+      height: 24px;
+    }
 
     /* Loading */
     .loading-container {
@@ -837,7 +927,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     /* Reviews Section */
@@ -1038,6 +1130,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="app-container">
     <!-- Loading State -->
@@ -1053,7 +1146,8 @@
       <div>
         <h2 style="color: #ef4444;">Error al cargar datos</h2>
         <p id="errorMessage"></p>
-        <button onclick="cargarUsuario()" style="margin-top: 20px; padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer;">
+        <button onclick="cargarUsuario()"
+          style="margin-top: 20px; padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer;">
           Reintentar
         </button>
       </div>
@@ -1072,9 +1166,11 @@
         <div class="action-buttons action-buttons-desktop">
           <button class="logout-button" onclick="showLogoutModal()" title="Cerrar Sesión">
             <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
+              <path fill-rule="evenodd"
+                d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z"
+                clip-rule="evenodd" />
             </svg>
-            Cerrar Sesión
+            <span data-i18n="logout">Cerrar Sesión</span>
           </button>
         </div>
 
@@ -1099,17 +1195,21 @@
             </div>
             <div class="verified-badge">
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                <path fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd" />
               </svg>
-              <span>Usuario Verificado</span>
+              <span data-i18n="verifiedUser">Usuario Verificado</span>
             </div>
 
             <div class="action-buttons action-buttons-mobile">
               <button class="logout-button" onclick="showLogoutModal()" title="Cerrar Sesión">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
+                  <path fill-rule="evenodd"
+                    d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z"
+                    clip-rule="evenodd" />
                 </svg>
-                Cerrar Sesión
+                <span data-i18n="logout">Cerrar Sesión</span>
               </button>
             </div>
           </div>
@@ -1124,12 +1224,14 @@
           <div class="glass-card location-section">
             <h2 class="section-title-primary">
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-md" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                <path fill-rule="evenodd"
+                  d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                  clip-rule="evenodd" />
               </svg>
-              Datos Personales
+              <span data-i18n="personalData">Datos Personales</span>
             </h2>
             <ul class="data-list" id="datosPersonales">
-     <!-- Se llenará dinámicamente -->
+              <!-- Se llenará dinámicamente -->
             </ul>
           </div>
 
@@ -1137,82 +1239,138 @@
           <div class="glass-card stats-section">
             <h2 class="section-title-secondary">
               <svg xmlns="http://www.w3.org/2000/svg" class="icon-md" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a6 6 0 015.917 5h-2.09a4.001 4.001 0 00-3.827-3V5zM4.173 10A6.002 6.002 0 0110 4v2a4.002 4.002 0 00-3.827 3H4.173zm5.827 6a6.002 6.002 0 01-5.827-5h2.09A4.001 4.001 0 0010 14v2zm0 0v-2a4.002 4.002 0 003.827-3h2.09A6.002 6.002 0 0110 16z" clip-rule="evenodd" />
+                <path fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a6 6 0 015.917 5h-2.09a4.001 4.001 0 00-3.827-3V5zM4.173 10A6.002 6.002 0 0110 4v2a4.002 4.002 0 00-3.827 3H4.173zm5.827 6a6.002 6.002 0 01-5.827-5h2.09A4.001 4.001 0 0010 14v2zm0 0v-2a4.002 4.002 0 003.827-3h2.09A6.002 6.002 0 0110 16z"
+                  clip-rule="evenodd" />
               </svg>
-              Estadísticas
+              <span data-i18n="statistics">Estadísticas</span>
             </h2>
             <div class="stats-grid">
               <div class="stat">
                 <p class="stat-number-primary" id="statIntercambios">0</p>
-                <p class="stat-label">Intercambios (HU 13)</p>
+                <p class="stat-label" data-i18n="exchanges">Intercambios (HU 13)</p>
               </div>
               <div class="stat">
                 <p class="stat-number-secondary" id="statFavoritos">0</p>
-                <p class="stat-label">Favoritos (HU 10)</p>
+                <p class="stat-label" data-i18n="favorites">Favoritos (HU 10)</p>
               </div>
               <div class="stat">
                 <p class="stat-number-primary" id="statOfferedSkills">0</p>
-                <p class="stat-label">Habilidades Ofrecidas</p>
+                <p class="stat-label" data-i18n="offeredSkills">Habilidades Ofrecidas</p>
               </div>
             </div>
 
             <!-- Pixel Bar Chart -->
             <div class="pixel-chart">
               <div class="pixel-chart-title">Resumen</div>
-              
-           
+
+
             </div>
 
             <!-- Map -->
             <div class="map-container">
-              <h3 style="color: #e5e7eb; font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+              <h3
+                style="color: #e5e7eb; font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                  <path fill-rule="evenodd"
+                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                    clip-rule="evenodd" />
                 </svg>
-                Ubicación
+                <span data-i18n="location">Ubicación</span>
               </h3>
-              
+
               <button id="locationBtn" class="location-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                  <path fill-rule="evenodd"
+                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                    clip-rule="evenodd" />
                 </svg>
-                Obtener mi ubicación
+                <span data-i18n="getMyLocation">Obtener mi ubicación</span>
               </button>
 
-              <div id="locationMessage" style="display: none; padding: 10px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 12px;"></div>
+              <div id="locationMessage"
+                style="display: none; padding: 10px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 12px;">
+              </div>
 
               <div id="map"></div>
             </div>
           </div>
         </div>
 
-        <!-- Skills Offered -->
+        <!-- Especialidades Técnicas (antes Habilidades que Ofrezco) -->
         <div class="glass-card skills-offered-section">
-          <h2 class="section-title-secondary">Habilidades que Ofrezco</h2>
-          <p class="section-description">Estas son las habilidades que ofrezco para un intercambio.</p>
+          <h2 class="section-title-secondary" data-i18n="technicalSpecialties">Especialidades Técnicas</h2>
+          <p class="section-description" data-i18n="technicalSpecialtiesDesc">Estas son las especialidades técnicas que domino.</p>
           <div class="skills-container" id="offeredSkillsContainer">
             <!-- Se llenará dinámicamente -->
           </div>
           <div id="selectedOfferedDetail" style="display: none;"></div>
         </div>
 
-        <!-- Skills Required -->
-        <div class="glass-card skills-required-section">
-          <h2 class="section-title-primary">Habilidades que Necesito</h2>
-          <p class="section-description">Busca a otros usuarios con estas habilidades para iniciar un trueque.</p>
-          <div class="skills-container" id="requiredSkillsContainer">
+        <!-- Sección de Certificaciones -->
+        <div class="glass-card" id="certificacionesSection">
+          <h2 class="section-title-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon-md" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span data-i18n="certifications">Certificaciones</span>
+          </h2>
+          
+          <!-- Lista de certificaciones existentes -->
+          <div id="certificacionesList" style="margin-bottom: 16px;">
             <!-- Se llenará dinámicamente -->
           </div>
-          <div id="selectedRequiredDetail" style="display: none;"></div>
+          
+          <!-- Formulario para agregar certificación -->
+          <div class="certificacion-form" style="background: rgba(37, 99, 235, 0.1); border-radius: 12px; padding: 16px; border: 1px dashed #2563eb;">
+            <h4 style="color: #2563eb; margin-bottom: 12px; font-size: 14px; font-weight: 600;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style="vertical-align: middle; margin-right: 6px;">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+              </svg>
+              Agregar Nueva Certificación
+            </h4>
+            
+            <div style="display: grid; gap: 12px;">
+              <div>
+                <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Título de la Certificación *</label>
+                <input type="text" id="tituloCertificacion" placeholder="Ej: Electricista Industrial Certificado" 
+                       style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px;">
+              </div>
+              
+              <div>
+                <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Institución</label>
+                <input type="text" id="institucionCertificacion" placeholder="Ej: SENA, Universidad Nacional, etc." 
+                       style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px;">
+              </div>
+              
+              <div>
+                <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Documento (PDF o Imagen)</label>
+                <input type="file" id="documentoCertificacion" accept=".pdf,image/jpeg,image/png,image/gif" 
+                       style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 13px; background: white;">
+              </div>
+              
+              <button type="button" id="btnAgregarCertificacion" 
+                      style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; padding: 12px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Guardar Certificación
+              </button>
+            </div>
+            
+            <div id="mensajeCertificacion" style="margin-top: 10px; font-size: 13px; display: none;"></div>
+          </div>
         </div>
 
         <!-- Gallery -->
         <div class="glass-card">
           <h2 class="section-title-primary">
             <svg xmlns="http://www.w3.org/2000/svg" class="icon-md" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+              <path fill-rule="evenodd"
+                d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                clip-rule="evenodd" />
             </svg>
-            Galería de Imágenes
+            <span data-i18n="imageGallery">Galería de Imágenes</span>
           </h2>
           <div class="gallery-grid" id="galleryGrid">
             <!-- Se llenará dinámicamente -->
@@ -1224,9 +1382,10 @@
         <div class="glass-card reviews-section">
           <h2 class="section-title-white">
             <svg xmlns="http://www.w3.org/2000/svg" class="icon-md" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              <path
+                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
-            Calificaciones y Reseñas
+            <span data-i18n="ratingsReviews">Calificaciones y Reseñas</span>
           </h2>
 
           <div class="rating-summary">
@@ -1234,19 +1393,24 @@
             <div>
               <div class="stars-container">
                 <svg class="star-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
                 <svg class="star-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
                 <svg class="star-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
                 <svg class="star-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
                 <svg class="star-empty" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
               </div>
               <p class="rating-text">Basado en 12 intercambios.</p>
@@ -1256,58 +1420,71 @@
           <div class="reviews-container">
             <div class="review-card">
               <div class="review-header">
-                <img class="review-avatar" src="https://ui-avatars.com/api/?name=JP&background=10B981&color=ffffff&size=40&bold=true&rounded=true" alt="Usuario">
+                <img class="review-avatar"
+                  src="https://ui-avatars.com/api/?name=JP&background=10B981&color=ffffff&size=40&bold=true&rounded=true"
+                  alt="Usuario">
                 <div>
                   <p class="review-name">JuanPerez</p>
                   <div class="review-rating">
                     <span>5.0</span>
                     <svg class="star-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                      <path
+                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   </div>
                 </div>
               </div>
-              <p class="review-text">"Ana me dio una tutoría de inglés excelente. Muy paciente y con material de apoyo de calidad. ¡Definitivamente la recomiendo!"</p>
+              <p class="review-text">"Ana me dio una tutoría de inglés excelente. Muy paciente y con material de apoyo
+                de calidad. ¡Definitivamente la recomiendo!"</p>
               <p class="review-date">Hace 2 días - Intercambio por Clases de Guitarra</p>
             </div>
 
             <div class="review-card">
               <div class="review-header">
-                <img class="review-avatar" src="https://ui-avatars.com/api/?name=MC&background=4F46E5&color=ffffff&size=40&bold=true&rounded=true" alt="Usuario">
+                <img class="review-avatar"
+                  src="https://ui-avatars.com/api/?name=MC&background=4F46E5&color=ffffff&size=40&bold=true&rounded=true"
+                  alt="Usuario">
                 <div>
                   <p class="review-name">Manuel_C</p>
                   <div class="review-rating">
                     <span>4.0</span>
                     <svg class="star-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                      <path
+                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   </div>
                 </div>
               </div>
-              <p class="review-text">"La sesión de diseño gráfico fue útil, aunque tardó un poco en responder al inicio. El resultado final fue bueno."</p>
+              <p class="review-text">"La sesión de diseño gráfico fue útil, aunque tardó un poco en responder al inicio.
+                El resultado final fue bueno."</p>
               <p class="review-date">Hace 1 semana - Intercambio por Reparación de Scooter</p>
             </div>
 
             <div class="review-card">
               <div class="review-header">
-                <img class="review-avatar" src="https://ui-avatars.com/api/?name=DR&background=14B8A6&color=ffffff&size=40&bold=true&rounded=true" alt="Usuario">
+                <img class="review-avatar"
+                  src="https://ui-avatars.com/api/?name=DR&background=14B8A6&color=ffffff&size=40&bold=true&rounded=true"
+                  alt="Usuario">
                 <div>
                   <p class="review-name">DianaR</p>
                   <div class="review-rating">
                     <span>5.0</span>
                     <svg class="star-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                      <path
+                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                     </svg>
                   </div>
                 </div>
               </div>
-              <p class="review-text">"¡Un trabajo de SEO excelente! Me ayudó a posicionar mi pequeño negocio en tiempo récord. La mejor opción."</p>
+              <p class="review-text">"¡Un trabajo de SEO excelente! Me ayudó a posicionar mi pequeño negocio en tiempo
+                récord. La mejor opción."</p>
               <p class="review-date">Hace 3 semanas - Intercambio por Tutoría de Álgebra</p>
             </div>
           </div>
 
           <div class="view-all-button">
-            <button id="btnViewAllReviews" onclick="viewAllReviews()" style="display: none;">Ver todas las reseñas</button>
+            <button id="btnViewAllReviews" onclick="viewAllReviews()" style="display: none;">Ver todas las
+              reseñas</button>
           </div>
         </div>
       </div>
@@ -1316,15 +1493,32 @@
     <!-- Modal for Skills -->
     <div id="skillModal" class="modal-overlay" style="display: none;">
       <div class="modal-content glass-card">
-        <h3 class="modal-title" id="modalTitle">Añadir Habilidad</h3>
+        <h3 class="modal-title" id="modalTitle" data-i18n="addSkillTitle">Añadir Habilidad</h3>
         <select id="skillCategory" class="modal-input">
-          <option value="">Seleccione una categoría (opcional)</option>
+          <option value="" data-i18n="selectCategory">Seleccione una categoría (opcional)</option>
         </select>
-        <input type="text" id="skillInput" class="modal-input" placeholder="Ej: Programación en Python">
-        <input type="text" id="skillDescription" class="modal-input" placeholder="Descripción corta (opcional)">
+        <input type="text" id="skillInput" class="modal-input" data-i18n-placeholder="skillExample"
+          placeholder="Ej: Programación en Python">
+
+        <!-- Descripción con botón de generar -->
+        <div class="skill-description-wrapper">
+          <textarea id="skillDescription" class="modal-input modal-textarea" data-i18n-placeholder="shortDescription"
+            placeholder="Descripción corta (opcional)" rows="3"></textarea>
+          <button type="button" id="generateDescriptionBtn" class="generate-description-btn"
+            onclick="generateSkillDescription()" title="Generar descripción automáticamente">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M12 3v4m0 14v-4M5.636 5.636l2.828 2.828M15.536 15.536l2.828 2.828M3 12h4m14 0h-4M5.636 18.364l2.828-2.828M15.536 8.464l2.828-2.828" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span>Generar</span>
+          </button>
+        </div>
+
         <div class="modal-buttons">
-          <button class="modal-button-cancel" onclick="hideSkillModal()">Cancelar</button>
-          <button class="modal-button-submit" onclick="addSkill()">Agregar</button>
+          <button class="modal-button-cancel" onclick="hideSkillModal()" data-i18n="cancel">Cancelar</button>
+          <button class="modal-button-submit" onclick="addSkill()" data-i18n="add">Agregar</button>
         </div>
       </div>
     </div>
@@ -1333,62 +1527,77 @@
     <div id="contextMenuBackdrop" class="context-menu-backdrop" style="display: none;"></div>
     <div id="contextMenu" class="context-menu" style="display: none;">
       <button class="context-menu-item" onclick="handleEditSkill()">
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
-          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor"
+          style="margin-right: 8px;">
+          <path
+            d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
         </svg>
-        Editar
+        <span data-i18n="edit">Editar</span>
       </button>
       <button class="context-menu-item danger" onclick="handleDeleteSkill()">
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
-          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor"
+          style="margin-right: 8px;">
+          <path fill-rule="evenodd"
+            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+            clip-rule="evenodd" />
         </svg>
-        Eliminar
+        <span data-i18n="delete">Eliminar</span>
       </button>
     </div>
 
     <!-- Image Context Menu -->
     <div id="imageContextMenu" class="context-menu" style="display: none;">
       <button class="context-menu-item" onclick="handleChangeImage()">
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
-          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor"
+          style="margin-right: 8px;">
+          <path
+            d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
         </svg>
-        Cambiar
+        <span data-i18n="change">Cambiar</span>
       </button>
       <button class="context-menu-item danger" onclick="handleDeleteImage()">
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
-          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor"
+          style="margin-right: 8px;">
+          <path fill-rule="evenodd"
+            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+            clip-rule="evenodd" />
         </svg>
-        Eliminar
+        <span data-i18n="delete">Eliminar</span>
       </button>
     </div>
 
     <!-- Profile Context Menu -->
     <div id="profileContextMenu" class="context-menu" style="display: none;">
       <button class="context-menu-item" onclick="handleEditProfileImage()">
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
-          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor"
+          style="margin-right: 8px;">
+          <path
+            d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
         </svg>
-        Editar
+        <span data-i18n="edit">Editar</span>
       </button>
       <button class="context-menu-item danger" onclick="handleDeleteProfileImage()">
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
-          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor"
+          style="margin-right: 8px;">
+          <path fill-rule="evenodd"
+            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+            clip-rule="evenodd" />
         </svg>
-        Eliminar
+        <span data-i18n="delete">Eliminar</span>
       </button>
     </div>
   </div>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  
+
   <!-- Componentes personalizados -->
   <script src="js/SelectEditable.js"></script>
   <script src="js/InlineEditable.js"></script>
   <script src="js/BlurFade.js"></script>
   <script src="js/GaleriaUniforme.js"></script>
   <script src="js/PixelBarChart.js"></script>
-  
+
   <script>
     // ======================
     // VARIABLES GLOBALES
@@ -1420,7 +1629,7 @@
     // ======================
     // API BASE URL
     // ======================
-    const API_BASE = 'http://localhost:3001/api';
+    const API_BASE = window.API_BASE;
 
     // ======================
     // INICIALIZACIÓN
@@ -1441,7 +1650,7 @@
 
       // Event listeners
       setupEventListeners();
-      
+
       // Configurar actualización automática de estadísticas
       configurarActualizacionAutomatica();
     });
@@ -1457,7 +1666,7 @@
           cargarEstadisticasUsuario();
         }
       });
-      
+
       // 2. Escuchar eventos de localStorage (cuando se actualiza desde otra pestaña/página)
       window.addEventListener('storage', (e) => {
         if (e.key === 'actualizarEstadisticas' && perfilPersonaId) {
@@ -1465,17 +1674,17 @@
           cargarEstadisticasUsuario();
         }
       });
-      
+
       // 3. Polling cada 30 segundos (opcional, solo si el usuario está activo)
       let lastActivity = Date.now();
-      
+
       // Detectar actividad del usuario
       ['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(event => {
         document.addEventListener(event, () => {
           lastActivity = Date.now();
         }, true);
       });
-      
+
       // Polling inteligente: solo actualiza si el usuario estuvo activo en los últimos 2 minutos
       setInterval(() => {
         const timeSinceActivity = Date.now() - lastActivity;
@@ -1541,7 +1750,7 @@
         // 1. Consultar persona por usuario ID
         const resPersona = await fetch(`${API_BASE}/personas/by-usuario/${usuarioId}`);
         const dataPersona = await resPersona.json();
-        
+
         if (!resPersona.ok || !dataPersona.success || !dataPersona.data) {
           throw new Error('No se pudo obtener el perfil de la persona');
         }
@@ -1564,17 +1773,25 @@
                 }
               }
             })
-            .catch(() => {});
+            .catch(() => { });
         } catch (err) {
           // No mostrar nada
         }
 
-        // 3. Mapear datos
+        // 3. Mapear datos con defaults inteligentes
+        const correoUsuario = localStorage.getItem('correoUsuario') || '';
+        const nombreDelCorreo = correoUsuario.split('@')[0] || 'Usuario';
+
+        // Capitalizar primera letra
+        const nombreDefault = nombreDelCorreo.charAt(0).toUpperCase() + nombreDelCorreo.slice(1);
+
+        const avatarDefault = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombreDefault)}&background=3b82f6&color=fff&size=200&bold=true&rounded=true`;
+
         usuario = {
-          nombre_Usuario: personaDB.nombre_Persona || '',
+          nombre_Usuario: personaDB.nombre_Persona || nombreDefault,
           apellido_Usuario: personaDB.apellido_Persona || '',
-          descripcion_Usuario: personaDB.descripcionPerfil_Persona || '',
-          imagenUrl_Usuario: personaDB.imagenUrl_Persona || '',
+          descripcion_Usuario: personaDB.descripcionPerfil_Persona || '¡Hola! Soy nuevo en SkillConnect y estoy listo para intercambiar habilidades.',
+          imagenUrl_Usuario: personaDB.imagenUrl_Persona || avatarDefault,
           imagen1Url_Usuario: personaDB.imagen1Url_Persona || '',
           imagen2Url_Usuario: personaDB.imagen2Url_Persona || '',
           imagen3Url_Usuario: personaDB.imagen3Url_Persona || '',
@@ -1586,7 +1803,8 @@
           genero_Usuario: personaDB.genero_Persona || 'Otro',
           tipoIdentificacion_Usuario: personaDB.tipoIdentificacion_Persona || 'DNI',
           identificacion_usuario: personaDB.identificacion_Persona || '',
-          fechaNacimiento: personaDB.fechaNac_Persona || ''
+          fechaNacimiento: personaDB.fechaNac_Persona || '',
+          anios_experiencia: personaDB.anios_experiencia || 0
         };
 
         // 4. Cargar imágenes de galería
@@ -1600,7 +1818,7 @@
         if (personaDB.imagen3Url_Persona) {
           galeriaImagenes.push({ id: 3, url: personaDB.imagen3Url_Persona });
         }
-        
+
         console.log('Imágenes de galería cargadas desde BD:', galeriaImagenes);
         console.log('URLs de la BD:', {
           imagen1: personaDB.imagen1Url_Persona,
@@ -1681,52 +1899,74 @@
     // RENDERIZAR USUARIO
     // ======================
     function renderUsuario() {
-            // Sección de solicitud de verificación
-            const badge = document.querySelector('.verified-badge');
-            if (badge) {
-              // Agregar formulario solo si no está verificado
-              setTimeout(() => {
-                if (badge.textContent.includes('No verificado')) {
-                  if (!document.getElementById('solicitudVerificacionForm')) {
-                    const form = document.createElement('form');
-                    form.id = 'solicitudVerificacionForm';
-                    form.innerHTML = `
-                      <div style="margin-top: 16px;">
-                        <label for="correoVerificacion" style="font-weight:600;">Correo para contacto:</label>
-                        <input type="email" id="correoVerificacion" required placeholder="tu@email.com" style="margin-left:8px;padding:6px 12px;border-radius:8px;border:1px solid #e5e7eb;">
-                        <button type="submit" style="background:#2563eb;color:white;padding:6px 18px;border-radius:8px;margin-left:8px;font-weight:600;">Solicitar verificación</button>
+      // Sección de solicitud de verificación
+      const badge = document.querySelector('.verified-badge');
+      if (badge) {
+        // Agregar formulario solo si no está verificado
+        setTimeout(() => {
+          const notVerifiedText = t('notVerified');
+          if (badge.textContent.includes('No verificado') || badge.textContent.includes(notVerifiedText)) {
+            if (!document.getElementById('solicitudVerificacionForm')) {
+              const form = document.createElement('form');
+              form.id = 'solicitudVerificacionForm';
+              form.innerHTML = `
+                      <div style="margin-top: 20px; padding: 16px 18px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 10px; border: 2px solid #bae6fd; max-width: 650px;">
+                        <label for="correoVerificacion" style="font-weight: 600; color: #0c4a6e; font-size: 13px; display: block; margin-bottom: 8px;" data-i18n="contactEmail">${t('contactEmail')}</label>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                          <input type="email" id="correoVerificacion" required placeholder="${t('emailPlaceholder')}" data-i18n-placeholder="emailPlaceholder" style="flex: 1; min-width: 180px; padding: 9px 12px; border-radius: 7px; border: 2px solid #0ea5e9; font-size: 13px; transition: all 0.2s;" onfocus="this.style.borderColor='#0284c7'; this.style.boxShadow='0 0 0 3px rgba(14, 165, 233, 0.1)'" onblur="this.style.borderColor='#0ea5e9'; this.style.boxShadow='none'">
+                          <button type="submit" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 9px 20px; border-radius: 7px; font-weight: 600; font-size: 13px; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); white-space: nowrap;" data-i18n="requestVerification" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(37, 99, 235, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(37, 99, 235, 0.3)'">${t('requestVerification')}</button>
+                        </div>
                       </div>
-                      <div id="mensajeVerificacion" style="margin-top:8px;font-size:14px;"></div>
+                      <div id="mensajeVerificacion" style="margin-top: 10px; font-size: 13px; font-weight: 500; padding: 9px; border-radius: 7px; max-width: 650px;"></div>
                     `;
-                    badge.parentNode.insertBefore(form, badge.nextSibling);
-                    form.addEventListener('submit', async function(e) {
-                      e.preventDefault();
-                      const correo = document.getElementById('correoVerificacion').value.trim();
-                      const mensaje = document.getElementById('mensajeVerificacion');
-                      mensaje.textContent = 'Enviando solicitud...';
-                      try {
-                        const resp = await fetch('http://localhost:3001/api/verificacion-usuarios', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ id_Perfil: perfilPersonaId, correo })
-                        });
-                        const data = await resp.json();
-                        if (resp.ok && data.ok) {
-                          mensaje.textContent = '¡Solicitud enviada! El administrador revisará tu cuenta.';
-                          form.querySelector('button').disabled = true;
-                          form.querySelector('button').style.opacity = '0.6';
-                          mostrarEstadoVerificacion();
-                        } else {
-                          mensaje.textContent = data.error || 'No se pudo enviar la solicitud.';
-                        }
-                      } catch (err) {
-                        mensaje.textContent = 'Error de conexión.';
-                      }
-                    });
+              badge.parentNode.insertBefore(form, badge.nextSibling);
+
+              // Aplicar traducciones al formulario
+              applyTranslations();
+
+              form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const correo = document.getElementById('correoVerificacion').value.trim();
+                const mensaje = document.getElementById('mensajeVerificacion');
+                mensaje.textContent = t('sendingRequest');
+                mensaje.style.background = '#dbeafe';
+                mensaje.style.color = '#1e40af';
+                mensaje.style.border = '1px solid #93c5fd';
+                try {
+                  const resp = await fetch(`${window.API_BASE}/verificacion-usuarios`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_Perfil: perfilPersonaId, correo })
+                  });
+                  const data = await resp.json();
+                  if (resp.ok && data.ok) {
+                    mensaje.textContent = t('requestSentAdmin');
+                    mensaje.style.background = '#dcfce7';
+                    mensaje.style.color = '#166534';
+                    mensaje.style.border = '1px solid #86efac';
+                    form.querySelector('button').disabled = true;
+                    form.querySelector('button').style.opacity = '0.6';
+                    form.querySelector('input').disabled = true;
+                    mostrarEstadoVerificacion();
+                    // Iniciar polling para verificar cambios en tiempo real
+                    iniciarPollingVerificacion();
+                  } else {
+                    mensaje.textContent = data.error || t('requestError');
+                    mensaje.style.background = '#fee2e2';
+                    mensaje.style.color = '#991b1b';
+                    mensaje.style.border = '1px solid #fca5a5';
                   }
+                } catch (err) {
+                  mensaje.textContent = t('requestError');
+                  mensaje.style.background = '#fee2e2';
+                  mensaje.style.color = '#991b1b';
+                  mensaje.style.border = '1px solid #fca5a5';
                 }
-              }, 800);
+              });
             }
+          }
+        }, 800);
+      }
       // Profile pic
       const profilePic = document.getElementById('profilePic');
       profilePic.src = getImagenPerfil();
@@ -1792,48 +2032,86 @@
 
       // Pixel chart
       renderPixelChart();
-      
+
       // Cargar calificaciones y reseñas
       cargarCalificacionesYResenas();
-        // ======================
-        // MOSTRAR ESTADO DE VERIFICACIÓN
-        // ======================
-        async function mostrarEstadoVerificacion() {
-          const badge = document.querySelector('.verified-badge');
-          if (!badge) return;
-          badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-check" style="color: #2563eb; font-size: 20px; margin-right: 4px;"></span>Verificando...';
-          try {
-            const resp = await fetch(`http://localhost:3001/api/verificacion-usuarios/perfil/${perfilPersonaId}`);
-            const perfil = await resp.json();
-            if (perfil && perfil.estado_verificacion === 'aprobada') {
-              badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-check" style="color: #22c55e; font-size: 20px; margin-right: 4px;"></span>Usuario Verificado';
-              badge.style.background = 'rgba(34,197,94,0.1)';
-              badge.style.color = '#22c55e';
-              badge.style.border = '1px solid #22c55e';
-            } else if (perfil && perfil.estado_verificacion === 'pendiente') {
-              badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-alert" style="color: #eab308; font-size: 20px; margin-right: 4px;"></span>Verificación pendiente';
-              badge.style.background = 'rgba(234,179,8,0.1)';
-              badge.style.color = '#eab308';
-              badge.style.border = '1px solid #eab308';
-            } else {
-              badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-off" style="color: #ef4444; font-size: 20px; margin-right: 4px;"></span>No verificado';
-              badge.style.background = 'rgba(239,68,68,0.1)';
-              badge.style.color = '#ef4444';
-              badge.style.border = '1px solid #ef4444';
+      
+      // Cargar certificaciones
+      cargarCertificaciones();
+      
+      // Configurar eventos de certificaciones
+      setupCertificacionesEventListeners();
+      // ======================
+      // MOSTRAR ESTADO DE VERIFICACIÓN
+      // ======================
+      // Variable global para almacenar el estado actual
+      window.currentVerificationStatus = null;
+
+      async function mostrarEstadoVerificacion() {
+        const badge = document.querySelector('.verified-badge');
+        if (!badge) return;
+        badge.innerHTML = `<span class="iconify" data-icon="mdi:shield-check" style="color: #2563eb; font-size: 20px; margin-right: 4px;"></span><span>${t('verifying')}</span>`;
+        try {
+          const resp = await fetch(`${window.API_BASE}/verificacion-usuarios/perfil/${perfilPersonaId}`);
+          const perfil = await resp.json();
+
+          // Almacenar el estado actual
+          window.currentVerificationStatus = perfil?.estado_verificacion || 'no_verificado';
+
+          if (perfil && perfil.estado_verificacion === 'aprobada') {
+            badge.innerHTML = `<span class="iconify" data-icon="mdi:shield-check" style="color: #22c55e; font-size: 20px; margin-right: 4px;"></span><span>${t('verifiedUser')}</span>`;
+            badge.style.background = 'rgba(34,197,94,0.1)';
+            badge.style.color = '#22c55e';
+            badge.style.border = '1px solid #22c55e';
+            // Detener polling si fue aprobada
+            if (window.verificationPollingInterval) {
+              clearInterval(window.verificationPollingInterval);
+              window.verificationPollingInterval = null;
             }
-          } catch (error) {
-            badge.innerHTML = '<span class="iconify" data-icon="mdi:shield-alert" style="color: #eab308; font-size: 20px; margin-right: 4px;"></span>Error al verificar';
+            // Remover formulario de solicitud si existe
+            const form = document.getElementById('solicitudVerificacionForm');
+            if (form) form.remove();
+          } else if (perfil && perfil.estado_verificacion === 'pendiente') {
+            badge.innerHTML = `<span class="iconify" data-icon="mdi:shield-alert" style="color: #eab308; font-size: 20px; margin-right: 4px;"></span><span>${t('verificationPending')}</span>`;
             badge.style.background = 'rgba(234,179,8,0.1)';
             badge.style.color = '#eab308';
             badge.style.border = '1px solid #eab308';
+          } else {
+            badge.innerHTML = `<span class="iconify" data-icon="mdi:shield-off" style="color: #ef4444; font-size: 20px; margin-right: 4px;"></span><span>${t('notVerified')}</span>`;
+            badge.style.background = 'rgba(239,68,68,0.1)';
+            badge.style.color = '#ef4444';
+            badge.style.border = '1px solid #ef4444';
           }
+          return perfil;
+        } catch (error) {
+          window.currentVerificationStatus = 'error';
+          badge.innerHTML = `<span class="iconify" data-icon="mdi:shield-alert" style="color: #eab308; font-size: 20px; margin-right: 4px;"></span><span>${t('verificationError')}</span>`;
+          badge.style.background = 'rgba(234,179,8,0.1)';
+          badge.style.color = '#eab308';
+          badge.style.border = '1px solid #eab308';
+          return null;
         }
+      }
+
+      // Función para iniciar polling de verificación
+      function iniciarPollingVerificacion() {
+        // Verificar cada 5 segundos si el estado cambió
+        if (window.verificationPollingInterval) {
+          clearInterval(window.verificationPollingInterval);
+        }
+
+        window.verificationPollingInterval = setInterval(async () => {
+          await mostrarEstadoVerificacion();
+        }, 5000); // Cada 5 segundos
+
+        console.log('Polling de verificación iniciado');
+      }
     }
 
     // ======================
     // SISTEMA DE RESPUESTAS A RESEÑAS
     // ======================
-    
+
     // Variables globales para manejar respuestas
     let reviewContextMenuData = { reviewId: null, reviewIndex: null };
     let reviewsData = []; // Almacenar datos de reseñas con respuestas
@@ -1845,12 +2123,12 @@
       try {
         const resEstadisticas = await fetch(`${API_BASE}/intercambios/estadisticas/${perfilPersonaId}`);
         const dataEstadisticas = await resEstadisticas.json();
-        
+
         let promedio = 0;
         let totalCalificaciones = 0;
         let totalIntercambios = 0;
         let distribucion = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-        
+
         if (resEstadisticas.ok && dataEstadisticas.success && dataEstadisticas.data) {
           const stats = dataEstadisticas.data;
           promedio = stats.promedio_calificacion || 0;
@@ -1858,34 +2136,34 @@
           totalIntercambios = stats.total_intercambios_completados || 0;
           distribucion = stats.distribucion_calificaciones || distribucion;
         }
-        
+
         const ratingScore = document.querySelector('.rating-score');
         const ratingText = document.querySelector('.rating-text');
-        
+
         if (ratingScore) {
           ratingScore.textContent = promedio > 0 ? promedio.toFixed(1) : '0.0';
         }
-        
+
         if (ratingText) {
-          ratingText.textContent = totalIntercambios > 0 
+          ratingText.textContent = totalIntercambios > 0
             ? `Basado en ${totalIntercambios} intercambio${totalIntercambios !== 1 ? 's' : ''}.`
             : 'Sin intercambios completados aún.';
         }
-        
+
         actualizarEstrellas(promedio);
-        
+
         const urlCalificaciones = `${API_BASE}/intercambios/calificaciones/${perfilPersonaId}?page=${page}&limit=${limit}`;
-        
+
         const resCalificaciones = await fetch(urlCalificaciones);
         const dataCalificaciones = await resCalificaciones.json();
-        
+
         const reviewsContainer = document.querySelector('.reviews-container');
         if (!reviewsContainer) {
           return;
         }
-        
+
         reviewsContainer.innerHTML = '';
-        
+
         if (resCalificaciones.ok && dataCalificaciones.success && dataCalificaciones.data && dataCalificaciones.data.length > 0) {
           const calificaciones = dataCalificaciones.data;
           // Normalizar nombres de campo de id para evitar 'undefined'
@@ -1895,7 +2173,7 @@
           });
 
           reviewsData = calificaciones; // Guardar datos para uso posterior
-          
+
           // Cargar respuestas para cada reseña
           for (let i = 0; i < calificaciones.length; i++) {
             const cal = calificaciones[i];
@@ -1920,7 +2198,7 @@
               console.log('No hay respuesta para esta reseña', err);
             }
           }
-          
+
           // Renderizar todas las reseñas
           calificaciones.forEach((cal, index) => {
             renderReviewCard(cal, index);
@@ -1950,7 +2228,7 @@
             </div>
           `;
         }
-        
+
       } catch (error) {
         console.error('Error al cargar calificaciones:', error);
       }
@@ -1978,16 +2256,16 @@
       reviewCard.className = 'review-card';
       reviewCard.dataset.reviewId = cal.id_Calificacion;
       reviewCard.dataset.reviewIndex = index;
-      
+
       const nombreCalificador = cal.nombre_calificador || 'Usuario';
       const apellidoCalificador = cal.apellido_calificador || '';
       const nombreCompleto = `${nombreCalificador} ${apellidoCalificador}`.trim();
       const iniciales = `${nombreCalificador.charAt(0)}${apellidoCalificador.charAt(0) || ''}`.toUpperCase();
-      
-      const fechaCalificacion = cal.fecha_calificacion 
+
+      const fechaCalificacion = cal.fecha_calificacion
         ? new Date(cal.fecha_calificacion).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
         : 'Fecha no disponible';
-      
+
       let reviewHTML = `
         <div class="review-card-content" style="position: relative;">
           <div class="review-header">
@@ -2005,7 +2283,7 @@
               </div>
             </div>
           </div>
-          <p class="review-text">"${cal.comentario || 'Sin comentario'}"</p>
+          <p class="review-text">"${cal.comentario || t('noComment')}"</p>
           <p class="review-date">${fechaCalificacion}</p>
           
           <!-- Respuesta si existe -->
@@ -2015,23 +2293,23 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style="color: #2563eb;">
                   <path d="M3 6a3 3 0 013-3h10a1 1 0 01.82.055l.487.979A2 2 0 0116 6v10a3 3 0 01-3 3H6a3 3 0 01-3-3V6z"/>
                 </svg>
-                <span style="font-weight: 600; color: #1f2937; font-size: 13px;">Tu respuesta</span>
+                <span style="font-weight: 600; color: #1f2937; font-size: 13px;">${t('yourReply')}</span>
               </div>
               <p style="color: #4b5563; font-size: 14px; margin: 0; line-height: 1.5;">"${cal.respuesta_del_dueno}"</p>
-              <p style="color: #9ca3af; font-size: 12px; margin-top: 8px; margin-bottom: 0;">Respondido ${new Date(cal.fecha_respuesta).toLocaleDateString('es-ES')}</p>
+              <p style="color: #9ca3af; font-size: 12px; margin-top: 8px; margin-bottom: 0;">${t('replied')} ${new Date(cal.fecha_respuesta).toLocaleDateString(currentLanguage === 'es' ? 'es-ES' : 'en-US')}</p>
             </div>
           ` : ''}
         </div>
       `;
-      
+
       reviewCard.innerHTML = reviewHTML;
-      
+
       // Event listener para clic derecho
       reviewCard.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         showReviewContextMenu(e.clientX, e.clientY, cal.id_Calificacion, index, !!cal.respuesta_del_dueno, cal.id_respuesta);
       });
-      
+
       reviewsContainer.appendChild(reviewCard);
     }
 
@@ -2040,11 +2318,11 @@
     // ======================
     function showReviewContextMenu(x, y, reviewId, reviewIndex, hasReply, replyId) {
       reviewContextMenuData = { reviewId, reviewIndex, replyId };
-      
+
       // Cerrar menú anterior si existe
       const oldMenu = document.getElementById('reviewContextMenu');
       if (oldMenu) oldMenu.remove();
-      
+
       const menu = document.createElement('div');
       menu.className = 'context-menu';
       menu.id = 'reviewContextMenu';
@@ -2052,7 +2330,7 @@
       menu.style.left = x + 'px';
       menu.style.top = y + 'px';
       menu.style.zIndex = '1000';
-      
+
       if (hasReply) {
         // Si ya hay respuesta: Editar y Borrar
         menu.innerHTML = `
@@ -2060,13 +2338,13 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
               <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
             </svg>
-            Editar respuesta
+            ${t('editReply')}
           </button>
           <button class="context-menu-item danger" onclick="showDeleteReplyConfirm(${reviewId})">
             <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
               <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
             </svg>
-            Borrar respuesta
+            ${t('deleteReply')}
           </button>
         `;
       } else {
@@ -2076,19 +2354,19 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
               <path fill-rule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.82.055l.487.979A2 2 0 0116 6v10a3 3 0 01-3 3H6a3 3 0 01-3-3V6z" clip-rule="evenodd" />
             </svg>
-            Contestar
+            ${t('reply')}
           </button>
         `;
       }
-      
+
       document.body.appendChild(menu);
-      
+
       // Agregar backdrop
       const backdrop = document.getElementById('contextMenuBackdrop');
       if (backdrop) {
         backdrop.style.display = 'block';
       }
-      
+
       // Cerrar menú al hacer clic fuera
       setTimeout(() => {
         document.addEventListener('click', closeReviewContextMenu);
@@ -2132,10 +2410,10 @@
       // Insertar editor inline
       const editorHtml = `
         <div style="margin-top:8px;">
-          <textarea id="inlineReply_${reviewId}" style="width:100%; min-height:90px; padding:10px; font-family:inherit; border:2px solid #2563eb; border-radius:6px;" placeholder="Escribe tu respuesta aquí..."></textarea>
+          <textarea id="inlineReply_${reviewId}" style="width:100%; min-height:90px; padding:10px; font-family:inherit; border:2px solid #2563eb; border-radius:6px;" placeholder="${t('description')}..."></textarea>
           <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
-            <button class="modal-button-cancel" onclick="cancelInlineReply(${reviewId})">Cancelar</button>
-            <button class="modal-button-submit" onclick="submitReviewReplyInline(${reviewId})">Enviar respuesta</button>
+            <button class="modal-button-cancel" onclick="cancelInlineReply(${reviewId})">${t('cancel')}</button>
+            <button class="modal-button-submit" onclick="submitReviewReplyInline(${reviewId})">${t('reply')}</button>
           </div>
         </div>
       `;
@@ -2230,8 +2508,8 @@
         <div style="margin-top: 8px;">
           <textarea id="inlineEditReply_${reviewId}" style="width:100%; min-height:90px; padding:10px; font-family:inherit; border:2px solid #2563eb; border-radius:6px;">${currentReply}</textarea>
           <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
-            <button class="modal-button-cancel" onclick="cancelInlineEdit(${reviewId})">Cancelar</button>
-            <button class="modal-button-submit" onclick="submitEditReviewReplyInline(${reviewId})">Guardar cambios</button>
+            <button class="modal-button-cancel" onclick="cancelInlineEdit(${reviewId})">${t('cancel')}</button>
+            <button class="modal-button-submit" onclick="submitEditReviewReplyInline(${reviewId})">${t('saveChanges')}</button>
           </div>
         </div>
       `;
@@ -2314,12 +2592,12 @@
     // ======================
     async function submitReviewReply(reviewId) {
       const replyText = document.getElementById('replyText').value.trim();
-      
+
       if (!replyText) {
         alert('La respuesta no puede estar vacía');
         return;
       }
-      
+
       try {
         // Validaciones previas
         if (!reviewId) {
@@ -2332,7 +2610,7 @@
         }
 
         setGuardando(true);
-        
+
         // Usar endpoint POST /respuestas-resenia/insertar
         const payload = { id_calificacion: reviewId, id_usuario: usuarioId, respuesta: replyText };
         console.debug('Enviar POST /respuestas-resenia/insertar payload:', payload);
@@ -2341,7 +2619,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        
+
         const result = await response.json();
         console.debug('Respuesta POST insertar:', { status: response.status, body: result });
 
@@ -2351,7 +2629,7 @@
         } else {
           alert(result.message || result.error || 'Error al guardar la respuesta');
         }
-        
+
         setGuardando(false);
       } catch (error) {
         console.error('Error al enviar respuesta:', error);
@@ -2365,21 +2643,21 @@
     // ======================
     async function submitEditReviewReply(reviewId) {
       const replyText = document.getElementById('editReplyText').value.trim();
-      
+
       if (!replyText) {
         alert('La respuesta no puede estar vacía');
         return;
       }
-      
+
       try {
         setGuardando(true);
-        
+
         // Obtener el ID de la respuesta actual
         const reviewData = reviewsData.find(r => r.id_Calificacion == reviewId);
         if (!reviewData || !reviewData.id_respuesta) {
           throw new Error('No se encontró el ID de la respuesta');
         }
-        
+
         // Usar endpoint PUT para actualizar
         const payload = { respuesta: replyText };
         console.debug('Enviar PUT /respuestas-resenia/actualizar/', reviewData.id_respuesta, 'payload:', payload);
@@ -2388,7 +2666,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        
+
         const result = await response.json();
         if (response.ok && (result.success === true || result.success === 1)) {
           closeEditReplyModal();
@@ -2396,7 +2674,7 @@
         } else {
           alert(result.message || result.error || 'Error al actualizar la respuesta');
         }
-        
+
         setGuardando(false);
       } catch (error) {
         console.error('Error al actualizar respuesta:', error);
@@ -2421,12 +2699,12 @@
           <div class="custom-modal" style="max-width:420px;">
             <div class="modal-header">
               <div class="modal-icon" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #dc2626;">🗑️</div>
-              <div class="modal-title">Borrar respuesta</div>
+              <div class="modal-title">${t('deleteReplyTitle')}</div>
             </div>
-            <div class="modal-message" style="margin-bottom: 16px;">¿Estás seguro de que deseas borrar tu respuesta?</div>
+            <div class="modal-message" style="margin-bottom: 16px;">${t('deleteReplyMessage')}</div>
             <div class="modal-actions">
-              <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('deleteReplyConfirmModal')?.remove()">Cancelar</button>
-              <button class="modal-btn modal-btn-confirm" onclick="performDeleteReviewResponse(${reviewId})" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">Borrar respuesta</button>
+              <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('deleteReplyConfirmModal')?.remove()">${t('cancel')}</button>
+              <button class="modal-btn modal-btn-confirm" onclick="performDeleteReviewResponse(${reviewId})" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">${t('deleteReplyConfirm')}</button>
             </div>
           </div>
         </div>
@@ -2469,17 +2747,17 @@
         setGuardando(false);
       }
     }
-    
+
     // Función auxiliar para actualizar las estrellas del resumen
     function actualizarEstrellas(promedio) {
       const starsContainer = document.querySelector('.rating-summary .stars-container');
       if (!starsContainer) return;
-      
+
       const estrellasLlenas = Math.floor(promedio);
       const tieneMedia = promedio % 1 >= 0.5;
-      
+
       starsContainer.innerHTML = '';
-      
+
       // Estrellas llenas
       for (let i = 0; i < estrellasLlenas; i++) {
         starsContainer.innerHTML += `
@@ -2488,7 +2766,7 @@
           </svg>
         `;
       }
-      
+
       // Estrella media (opcional, si quieres mostrarla)
       if (tieneMedia && estrellasLlenas < 5) {
         starsContainer.innerHTML += `
@@ -2497,7 +2775,7 @@
           </svg>
         `;
       }
-      
+
       // Estrellas vacías
       const estrellasVacias = 5 - Math.ceil(promedio);
       for (let i = 0; i < estrellasVacias; i++) {
@@ -2514,7 +2792,7 @@
     // ======================
     function formatearFecha(fechaISO) {
       if (!fechaISO) return 'No especificado';
-      
+
       try {
         const fecha = new Date(fechaISO);
         const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -2526,7 +2804,7 @@
 
     function formatearFechaParaInput(fechaISO) {
       if (!fechaISO) return '';
-      
+
       try {
         const fecha = new Date(fechaISO);
         const year = fecha.getFullYear();
@@ -2546,34 +2824,41 @@
       datosPersonales.innerHTML = '';
 
       const campos = [
-        { label: 'País', field: 'pais', value: usuario.pais },
-        { label: 'Departamento', field: 'departamento', value: usuario.departamento },
-        { label: 'Ciudad', field: 'ciudad', value: usuario.ciudad },
-        { label: 'Código Postal', field: 'codigoPostal', value: usuario.codigoPostal },
-        { label: 'Estado Civil', field: 'estadoCivil_Usuario', value: usuario.estadoCivil_Usuario, type: 'select', options: [
-          { value: 'Soltero', label: 'Soltero' },
-          { value: 'Casado', label: 'Casado' },
-          { value: 'Divorciado', label: 'Divorciado' },
-          { value: 'Viudo', label: 'Viudo' }
-        ]},
-        { label: 'Género', field: 'genero_Usuario', value: usuario.genero_Usuario, type: 'select', options: [
-          { value: 'Masculino', label: 'Masculino' },
-          { value: 'Femenino', label: 'Femenino' },
-          { value: 'Otro', label: 'Otro' }
-        ]},
-        { label: 'Tipo de Identificación', field: 'tipoIdentificacion_Usuario', value: usuario.tipoIdentificacion_Usuario, type: 'select', options: [
-          { value: 'DNI', label: 'DNI' },
-          { value: 'Pasaporte', label: 'Pasaporte' }
-        ]},
-        { label: 'Numero Identificación', field: 'identificacion_usuario', value: usuario.identificacion_usuario },
-        { label: 'Fecha de Nacimiento', field: 'fechaNacimiento', value: usuario.fechaNacimiento, type: 'date', displayValue: formatearFecha(usuario.fechaNacimiento) }
+        { label: t('country'), field: 'pais', value: usuario.pais },
+        { label: t('department'), field: 'departamento', value: usuario.departamento },
+        { label: t('city'), field: 'ciudad', value: usuario.ciudad },
+        { label: t('postalCode'), field: 'codigoPostal', value: usuario.codigoPostal },
+        {
+          label: t('maritalStatus'), field: 'estadoCivil_Usuario', value: usuario.estadoCivil_Usuario, type: 'select', options: [
+            { value: 'Soltero', label: t('single') },
+            { value: 'Casado', label: t('married') },
+            { value: 'Divorciado', label: t('divorced') },
+            { value: 'Viudo', label: t('widowed') }
+          ]
+        },
+        {
+          label: t('gender'), field: 'genero_Usuario', value: usuario.genero_Usuario, type: 'select', options: [
+            { value: 'Masculino', label: t('male') },
+            { value: 'Femenino', label: t('female') },
+            { value: 'Otro', label: t('other') }
+          ]
+        },
+        {
+          label: t('idType'), field: 'tipoIdentificacion_Usuario', value: usuario.tipoIdentificacion_Usuario, type: 'select', options: [
+            { value: 'DNI', label: t('dni') },
+            { value: 'Pasaporte', label: t('passport') }
+          ]
+        },
+        { label: t('idNumber'), field: 'identificacion_usuario', value: usuario.identificacion_usuario },
+        { label: t('birthDate'), field: 'fechaNacimiento', value: usuario.fechaNacimiento, type: 'date', displayValue: formatearFecha(usuario.fechaNacimiento) },
+        { label: 'Años de Experiencia', field: 'anios_experiencia', value: usuario.anios_experiencia || 0, type: 'number' }
       ];
 
       campos.forEach(campo => {
         const li = document.createElement('li');
-        const displayValue = campo.displayValue || campo.value || 'Haz clic para agregar';
+        const displayValue = campo.displayValue || campo.value || t('clickToAddField');
         const needsPlaceholderStyle = !campo.value || campo.value === '';
-        
+
         li.innerHTML = `
           <span class="label">${campo.label}:</span>
           <span class="editable" data-field="${campo.field}" ${needsPlaceholderStyle ? 'style="color: #9ca3af; font-style: italic;"' : ''}>${displayValue}</span>
@@ -2585,6 +2870,8 @@
           makeSelectEditable(editableSpan, campo.field, campo.options, (value) => updateUsuario(campo.field, value));
         } else if (campo.type === 'date') {
           makeEditable(editableSpan, campo.field, (value) => updateUsuario(campo.field, value), false, 'date');
+        } else if (campo.type === 'number') {
+          makeEditable(editableSpan, campo.field, (value) => updateUsuario(campo.field, parseInt(value) || 0), false, 'number');
         } else {
           makeEditable(editableSpan, campo.field, (value) => updateUsuario(campo.field, value));
         }
@@ -2600,28 +2887,28 @@
 
         const currentDisplayValue = element.textContent;
         let currentValue = currentDisplayValue;
-        
+
         // Detectar si es un placeholder (texto gris en itálica)
-        const isPlaceholder = element.style.color === 'rgb(156, 163, 175)' || 
-                             element.style.fontStyle === 'italic' ||
-                             currentDisplayValue.includes('Haz clic') ||
-                             currentDisplayValue.includes('añadir') ||
-                             currentDisplayValue === 'No especificado';
-        
+        const isPlaceholder = element.style.color === 'rgb(156, 163, 175)' ||
+          element.style.fontStyle === 'italic' ||
+          currentDisplayValue.includes('Haz clic') ||
+          currentDisplayValue.includes('añadir') ||
+          currentDisplayValue === 'No especificado';
+
         if (isPlaceholder) {
           currentValue = ''; // Limpiar el placeholder al editar
         }
-        
+
         // Si es un campo de fecha, convertir el texto formateado a formato ISO para el input
         if (inputType === 'date') {
           currentValue = formatearFechaParaInput(usuario[field]);
         }
-        
+
         element.classList.add('editing');
 
         if (multiline) {
-          const placeholderText = field === 'descripcion_Usuario' 
-            ? 'Escribe algo sobre ti...' 
+          const placeholderText = field === 'descripcion_Usuario'
+            ? 'Escribe algo sobre ti...'
             : 'Escribe aquí...';
           element.innerHTML = `<textarea rows="3" placeholder="${placeholderText}">${currentValue}</textarea>`;
         } else {
@@ -2630,7 +2917,7 @@
           else if (field === 'email_Usuario') placeholderText = 'correo@ejemplo.com';
           else if (field === 'celular_Usuario') placeholderText = 'Número de celular';
           else if (field === 'identificacion_usuario') placeholderText = 'Número de identificación';
-          
+
           element.innerHTML = `<input type="${inputType}" value="${currentValue}" placeholder="${placeholderText}">`;
         }
 
@@ -2642,7 +2929,7 @@
 
         const save = () => {
           const newValue = input.value.trim();
-          
+
           // Si es fecha, mostrar formateado pero guardar en formato ISO
           if (inputType === 'date') {
             element.textContent = formatearFecha(newValue);
@@ -2671,9 +2958,9 @@
               element.style.fontStyle = '';
             }
           }
-          
+
           element.classList.remove('editing');
-          
+
           if (newValue !== currentValue) {
             onSave(newValue);
           }
@@ -2696,24 +2983,24 @@
     // ======================
     // HACER SELECT EDITABLE
     // ======================
-   function makeSelectEditable(element, field, options, onSave) {
-  element.innerHTML = '';
-  
-  const selectEditable = new SelectEditable(element, {
-    value: usuario[field] || '',
-    options: options.map(opt => ({
-      value: opt.value,
-      label: opt.label
-    })),
-    onSave: (newValue) => {
-      onSave(newValue);
-    },
-    placeholder: 'Seleccionar...'
-  });
-  
-  element._selectEditableInstance = selectEditable;
-  return selectEditable;
-}
+    function makeSelectEditable(element, field, options, onSave) {
+      element.innerHTML = '';
+
+      const selectEditable = new SelectEditable(element, {
+        value: usuario[field] || '',
+        options: options.map(opt => ({
+          value: opt.value,
+          label: opt.label
+        })),
+        onSave: (newValue) => {
+          onSave(newValue);
+        },
+        placeholder: 'Seleccionar...'
+      });
+
+      element._selectEditableInstance = selectEditable;
+      return selectEditable;
+    }
 
     // ======================
     // ACTUALIZAR USUARIO
@@ -2776,7 +3063,8 @@
           'genero_Usuario': 'genero_Persona',
           'tipoIdentificacion_Usuario': 'tipoIdentificacion_Persona',
           'identificacion_usuario': 'identificacion_Persona',
-          'fechaNacimiento': 'fechaNac_Persona'
+          'fechaNacimiento': 'fechaNac_Persona',
+          'anios_experiencia': 'anios_experiencia'
         };
 
         const campoDB = camposBD[campo];
@@ -2833,7 +3121,7 @@
         // Guardar en localStorage para que el Dashboard la lea
         localStorage.setItem('perfilImagenActualizada', nuevaImagenUrl || getDefaultAvatar());
         localStorage.setItem('perfilImagenTimestamp', Date.now().toString());
-        
+
         // Disparar evento personalizado para notificar cambios
         window.dispatchEvent(new CustomEvent('perfilActualizado', {
           detail: { imagenUrl: nuevaImagenUrl || getDefaultAvatar() }
@@ -2908,14 +3196,18 @@
     }
 
     // ======================
-    // SKILLS
+    // SKILLS (Solo Especialidades Técnicas - antes "Habilidades que Ofrezco")
     // ======================
     function renderSkills() {
       const offeredContainer = document.getElementById('offeredSkillsContainer');
-      const requiredContainer = document.getElementById('requiredSkillsContainer');
+      
+      // Verificar que el contenedor existe
+      if (!offeredContainer) {
+        console.warn('No se encontró offeredSkillsContainer');
+        return;
+      }
 
       offeredContainer.innerHTML = '';
-      requiredContainer.innerHTML = '';
 
       offeredSkills.forEach((skill, index) => {
         const tag = document.createElement('span');
@@ -2940,38 +3232,23 @@
       addOfferedBtn.addEventListener('click', () => showSkillModal('offered'));
       offeredContainer.appendChild(addOfferedBtn);
 
-      requiredSkills.forEach((skill, index) => {
-        const tag = document.createElement('span');
-        tag.className = 'skill-tag-required';
-        tag.textContent = skill.name;
-        tag.addEventListener('click', () => showSkillDetail(skill, 'required'));
-        tag.addEventListener('contextmenu', (e) => {
-          e.preventDefault();
-          showSkillContextMenu(e.clientX, e.clientY, 'required', index);
-        });
-        requiredContainer.appendChild(tag);
-      });
-
-      const addRequiredBtn = document.createElement('button');
-      addRequiredBtn.className = 'add-skill-button-secondary';
-      addRequiredBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-        </svg>
-        Añadir
-      `;
-      addRequiredBtn.addEventListener('click', () => showSkillModal('required'));
-      requiredContainer.appendChild(addRequiredBtn);
+      // Ya no renderizamos requiredSkills - sección eliminada del frontend
 
       updateStats();
     }
 
     function showSkillDetail(skill, type) {
-      const detailId = type === 'offered' ? 'selectedOfferedDetail' : 'selectedRequiredDetail';
+      // Solo manejamos 'offered' ya que 'required' fue eliminado
+      const detailId = 'selectedOfferedDetail';
       const detailDiv = document.getElementById(detailId);
-      
+
+      if (!detailDiv) {
+        console.warn('No se encontró el contenedor de detalle de habilidad');
+        return;
+      }
+
       const categoryName = getNombreCategoria(skill.categoryId);
-      
+
       detailDiv.innerHTML = `
         <div class="skill-detail-card">
           <p class="skill-detail-title">${skill.name}</p>
@@ -2999,14 +3276,14 @@
       currentSkillType = type;
       editSkillIndex = null;
       editSkillId = null;
-      
-      document.getElementById('modalTitle').textContent = 
+
+      document.getElementById('modalTitle').textContent =
         type === 'offered' ? 'Añadir Habilidad Ofrecida' : 'Añadir Habilidad Requerida';
-      
+
       document.getElementById('skillInput').value = '';
       document.getElementById('skillDescription').value = '';
       document.getElementById('skillCategory').value = '';
-      
+
       // Populate categories
       const categorySelect = document.getElementById('skillCategory');
       categorySelect.innerHTML = '<option value="">Seleccione una categoría (opcional)</option>';
@@ -3016,12 +3293,271 @@
         option.textContent = cat.nombre_categoria_Habilidad;
         categorySelect.appendChild(option);
       });
-      
+
       document.getElementById('skillModal').style.display = 'flex';
     }
 
     function hideSkillModal() {
       document.getElementById('skillModal').style.display = 'none';
+    }
+
+    // ======================
+    // GENERADOR DE DESCRIPCIONES DE HABILIDADES
+    // ======================
+    async function generateSkillDescription() {
+      const skillInput = document.getElementById('skillInput').value.trim();
+      const skillCategory = document.getElementById('skillCategory');
+      const skillDescription = document.getElementById('skillDescription');
+      const generateBtn = document.getElementById('generateDescriptionBtn');
+
+      // Validar que haya un nombre de habilidad
+      if (!skillInput) {
+        alert('Por favor, primero ingresa el nombre de la habilidad para generar una descripción.');
+        document.getElementById('skillInput').focus();
+        return;
+      }
+
+      // Obtener el nombre de la categoría
+      const categoryName = skillCategory.options[skillCategory.selectedIndex]?.text || '';
+      const categoryId = skillCategory.value;
+
+      // Mostrar estado de carga
+      generateBtn.disabled = true;
+      generateBtn.classList.add('loading');
+      generateBtn.querySelector('span').textContent = 'Generando...';
+
+      try {
+        // Generar descripción basada en plantillas y contexto
+        const description = await generateContextualDescription(skillInput, categoryName, categoryId);
+
+        // Aplicar la descripción generada con efecto de escritura
+        await typewriterEffect(skillDescription, description);
+
+      } catch (error) {
+        console.error('Error al generar descripción:', error);
+        alert('Hubo un error al generar la descripción. Por favor, intenta de nuevo.');
+      } finally {
+        // Restaurar el botón
+        generateBtn.disabled = false;
+        generateBtn.classList.remove('loading');
+        generateBtn.querySelector('span').textContent = 'Generar';
+      }
+    }
+
+    // Función para generar descripción usando IA (Proxy a través de nuestro Backend)
+    // Función para generar descripción usando plantillas locales (Rápido, robusto y sin errores de API)
+    function generateContextualDescription(skillName, categoryName, categoryId) {
+      return new Promise((resolve) => {
+        // Simulamos un retraso aleatorio para dar sensación de "pensar" (300-800ms)
+        const delay = Math.floor(Math.random() * 500) + 300;
+
+        setTimeout(() => {
+          // Base de datos de plantillas ampliada y variada
+          const templates = {
+            'Tecnología': [
+              `Ofrezco servicios profesionales de ${skillName}. Cuento con experiencia sólida en resolución de problemas técnicos y optimización de sistemas.`,
+              `Especialista en ${skillName} con enfoque práctico. Puedo ayudarte a configurar y mejorar tus herramientas para maximizar tu productividad.`,
+              `Servicio técnico de ${skillName} confiable y rápido. Diagnóstico preciso y reparación garantizada para tus equipos y software.`,
+              `Asesoría experta en ${skillName}. Te guío paso a paso para dominar las herramientas digitales que necesitas en tu día a día.`
+            ],
+            'Programación': [
+              `Desarrollador con experiencia en ${skillName}. Creo código limpio, escalable y bien documentado para llevar tus ideas a la realidad.`,
+              `Programador especializado en ${skillName}. Ofrezco servicios de desarrollo a medida, debugging y refactorización de código existente.`,
+              `Experto en ${skillName} listo para colaborar en tu proyecto. Desde scripts de automatización hasta aplicaciones completas.`,
+              `Mentoría y desarrollo en ${skillName}. Te ayudo a superar bloqueos técnicos y a implementar las mejores prácticas de la industria.`
+            ],
+            'Idiomas': [
+              `Clases de ${skillName} dinámicas y personalizadas. Enfocadas en conversación real y situaciones prácticas para ganar fluidez.`,
+              `Tutor nativo/experto de ${skillName}. Te ayudo a perfeccionar tu pronunciación, gramática y vocabulario con un método natural.`,
+              `Aprende ${skillName} a tu propio ritmo. Sesiones adaptadas a tus objetivos (viajes, negocios, certificación) y nivel actual.`,
+              `Traducción e interpretación de ${skillName}. Servicios precisos y culturalmente adecuados para tus documentos y reuniones.`
+            ],
+            'Música': [
+              `Clases de ${skillName} para todos los niveles. Aprende con un método progresivo que combina técnica, teoría y diversión.`,
+              `Músico profesional ofreciendo lecciones de ${skillName}. Desarrolla tu musicalidad, oído y creatividad en un ambiente relajado.`,
+              `Taller intensivo de ${skillName}. Domina los fundamentos y avanza rápidamente con ejercicios prácticos y feedback personalizado.`,
+              `Sesiones de ${skillName} enfocadas en la expresión artística. Descubre tu propio sonido y disfruta del proceso de hacer música.`
+            ],
+            'Diseño': [
+              `Servicios de diseño en ${skillName}. Transformo conceptos abstractos en piezas visuales impactantes que comunican tu mensaje.`,
+              `Diseñador creativo especializado en ${skillName}. Soluciones estéticas y funcionales adaptadas a la identidad de tu marca.`,
+              `Experto en ${skillName} con atención al detalle. Desde bocetos iniciales hasta el arte final, garantizo calidad profesional.`,
+              `Asesoría y creación en ${skillName}. Renueva tu imagen visual con diseños modernos, limpios y efectivos.`
+            ],
+            'Marketing': [
+              `Estratega de ${skillName} orientado a resultados. Ayudo a crecer tu audiencia y convertir seguidores en clientes leales.`,
+              `Consultoría en ${skillName} para potenciar tu marca. Análisis de mercado y planes de acción personalizados para tu negocio.`,
+              `Servicios de ${skillName} para mejorar tu visibilidad online. Campañas creativas que conectan emocionalmente con tu público.`,
+              `Experto en ${skillName} digital. Optimización de conversiones y estrategias de contenido que generan impacto real.`
+            ],
+            'Educación': [
+              `Tutorías de ${skillName} con paciencia y dedicación. Metodología adaptada a tu estilo de aprendizaje para garantizar la comprensión.`,
+              `Apoyo escolar y universitario en ${skillName}. Refuerzo de conceptos clave, resolución de dudas y preparación para exámenes.`,
+              `Profesor particular de ${skillName}. Clases estructuradas y material didáctico incluido para facilitar tu progreso académico.`,
+              `Mentoría académica en ${skillName}. Desarrolla hábitos de estudio efectivos y supera cualquier dificultad en la materia.`
+            ],
+            'Negocios': [
+              `Consultoría de negocios en ${skillName}. Estrategias prácticas para optimizar procesos y aumentar la rentabilidad de tu empresa.`,
+              `Asesoría financiera y administrativa en ${skillName}. Ordena tus números y toma decisiones informadas para el crecimiento de tu negocio.`,
+              `Gestión de proyectos con enfoque en ${skillName}. Liderazgo efectivo para cumplir plazos y objetivos con recursos optimizados.`,
+              `Coaching ejecutivo en ${skillName}. Potencia tus habilidades de liderazgo y lleva tu carrera profesional al siguiente nivel.`
+            ],
+            'Salud': [
+              `Sesiones de ${skillName} para mejorar tu bienestar integral. Un enfoque holístico que cuida tu cuerpo y tu mente.`,
+              `Profesional de la salud especializado en ${skillName}. Atención personalizada y planes de tratamiento basados en evidencia.`,
+              `Clases y terapias de ${skillName}. Descubre herramientas prácticas para reducir el estrés y aumentar tu vitalidad.`,
+              `Asesoría en ${skillName} para una vida saludable. Hábitos sostenibles y cambios positivos que perduran en el tiempo.`
+            ],
+            'Hogar': [
+              `Servicios de ${skillName} para el hogar. Trabajo impecable, puntual y con materiales de primera calidad.`,
+              `Especialista en renovaciones y ${skillName}. Transformo tus espacios para que sean más cómodos, funcionales y bellos.`,
+              `Mantenimiento y reparaciones de ${skillName}. Soluciones rápidas y efectivas para cualquier desperfecto en tu casa.`,
+              `Ayuda doméstica experta en ${skillName}. Confianza, limpieza y organización garantizadas para tu tranquilidad.`
+            ],
+            'Deportes': [
+              `Entrenador personal de ${skillName}. Planes de entrenamiento a medida para alcanzar tus metas físicas de forma segura.`,
+              `Clases de ${skillName} dinámicas y motivadoras. Mejora tu condición física, técnica y resistencia mientras te diviertes.`,
+              `Coaching deportivo en ${skillName}. Preparación física y mental para competiciones o simplemente para mantenerte en forma.`,
+              `Instrucción técnica de ${skillName}. Corrige errores, perfecciona movimientos y evita lesiones con guía profesional.`
+            ],
+            'Arte': [
+              `Clases de ${skillName} para explorar tu creatividad. Técnicas clásicas y modernas para expresar tu visión artística.`,
+              `Servicios artísticos de ${skillName} por encargo. Obras únicas y personalizadas que capturan emociones y momentos especiales.`,
+              `Taller de ${skillName} para principiantes y avanzados. Aprende a observar, componer y crear con confianza.`,
+              `Restauración y conservación en ${skillName}. Cuidado experto para preservar la belleza y valor de tus obras de arte.`
+            ],
+            'default': [
+              `Profesional apasionado por ${skillName}. Ofrezco servicios de alta calidad, compromiso y atención personalizada a tus necesidades.`,
+              `Servicios de ${skillName} confiables y eficientes. Mi prioridad es tu satisfacción y superar tus expectativas en cada proyecto.`,
+              `Experiencia comprobada en ${skillName}. Trabajo con dedicación para entregarte los mejores resultados en tiempo y forma.`,
+              `¿Necesitas ayuda con ${skillName}? Estoy aquí para ofrecerte soluciones prácticas, creativas y adaptadas a lo que buscas.`
+            ]
+          };
+
+          let selectedTemplates = templates['default'];
+
+          // 1. Intentar coincidir por Categoría seleccionada
+          for (const [key, list] of Object.entries(templates)) {
+            if (key !== 'default' && categoryName && categoryName.toLowerCase().includes(key.toLowerCase())) {
+              selectedTemplates = list;
+              break;
+            }
+          }
+
+          // 2. Intentar coincidir por palabras clave en el nombre de la habilidad
+          const lowerSkill = skillName.toLowerCase();
+
+          // Mapeo detallado de palabras clave a categorías
+          const keyMap = {
+            'java': 'Programación', 'js': 'Programación', 'php': 'Programación', 'html': 'Programación', 'css': 'Programación', 'react': 'Programación',
+            'python': 'Programación', 'c++': 'Programación', 'sql': 'Programación', 'app': 'Programación', 'web': 'Programación', 'code': 'Programación',
+            'inglés': 'Idiomas', 'frances': 'Idiomas', 'alemán': 'Idiomas', 'italiano': 'Idiomas', 'chino': 'Idiomas', 'japonés': 'Idiomas', 'idioma': 'Idiomas',
+            'guitarra': 'Música', 'piano': 'Música', 'violín': 'Música', 'voz': 'Música', 'canto': 'Música', 'batería': 'Música', 'musical': 'Música',
+            'logo': 'Diseño', 'banner': 'Diseño', 'flyer': 'Diseño', 'photoshop': 'Diseño', 'illustrator': 'Diseño', 'ux': 'Diseño', 'ui': 'Diseño',
+            'seo': 'Marketing', 'sem': 'Marketing', 'facebook': 'Marketing', 'instagram': 'Marketing', 'redes': 'Marketing', 'publicidad': 'Marketing',
+            'matemáticas': 'Educación', 'física': 'Educación', 'química': 'Educación', 'historia': 'Educación', 'tutoría': 'Educación', 'clase': 'Educación',
+            'finanzas': 'Negocios', 'contabilidad': 'Negocios', 'admin': 'Negocios', 'ventas': 'Negocios', 'consultoría': 'Negocios',
+            'yoga': 'Salud', 'meditación': 'Salud', 'masaje': 'Salud', 'terapia': 'Salud', 'nutrición': 'Salud', 'psicología': 'Salud',
+            'plomería': 'Hogar', 'electricidad': 'Hogar', 'limpieza': 'Hogar', 'jardinería': 'Hogar', 'carpintería': 'Hogar', 'pintura': 'Hogar',
+            'fitness': 'Deportes', 'gym': 'Deportes', 'entrenamiento': 'Deportes', 'fútbol': 'Deportes', 'tenis': 'Deportes', 'natación': 'Deportes',
+            'dibujo': 'Arte', 'escultura': 'Arte', 'fotografía': 'Arte', 'video': 'Arte', 'cine': 'Arte', 'edición': 'Arte'
+          };
+
+          for (const [key, cat] of Object.entries(keyMap)) {
+            if (lowerSkill.includes(key)) {
+              selectedTemplates = templates[cat];
+              break;
+            }
+          }
+
+          // Selección aleatoria para dar variedad
+          const randomIndex = Math.floor(Math.random() * selectedTemplates.length);
+          const description = selectedTemplates[randomIndex];
+
+          resolve(description);
+
+        }, delay);
+      });
+    }
+
+    // Función de fallback con plantillas locales
+    function generateLocalDescription(skillName, categoryName) {
+      const templates = {
+        'Tecnología': [
+          `Ofrezco servicios profesionales de ${skillName}. Experiencia sólida en desarrollo y solución de problemas técnicos.`,
+          `Especialista en ${skillName} con habilidades comprobadas en proyectos reales.`
+        ],
+        'Programación': [
+          `Desarrollo profesional en ${skillName}. Experiencia en creación de aplicaciones y soluciones de software.`,
+          `Programador especializado en ${skillName}. Ayuda con desarrollo, debugging y optimización de código.`
+        ],
+        'Idiomas': [
+          `Clases y tutorías de ${skillName} para todos los niveles. Metodología práctica enfocada en conversación.`,
+          `Enseñanza de ${skillName} con enfoque comunicativo para desarrollar fluidez y confianza.`
+        ],
+        'Música': [
+          `Clases de ${skillName} para principiantes y nivel intermedio. Método progresivo y divertido.`,
+          `Lecciones personalizadas de ${skillName} adaptadas a tus gustos musicales y objetivos.`
+        ],
+        'Diseño': [
+          `Diseñador profesional de ${skillName}. Soluciones visuales atractivas y funcionales.`,
+          `Servicios de ${skillName} con enfoque creativo y profesional.`
+        ],
+        'Educación': [
+          `Tutorías personalizadas de ${skillName}. Metodología adaptada a tu estilo de aprendizaje.`,
+          `Profesor particular de ${skillName} con experiencia comprobada.`
+        ],
+        'default': [
+          `Ofrezco mis servicios de ${skillName} con dedicación y profesionalismo.`,
+          `Profesional con experiencia en ${skillName}. Trabajo personalizado y de calidad.`
+        ]
+      };
+
+      // Buscar la categoría adecuada
+      let selectedTemplates = templates['default'];
+
+      for (const [category, templateList] of Object.entries(templates)) {
+        if (category !== 'default' && categoryName && categoryName.toLowerCase().includes(category.toLowerCase())) {
+          selectedTemplates = templateList;
+          break;
+        }
+      }
+
+      // Detección por palabras clave
+      const skillLower = skillName.toLowerCase();
+      if (skillLower.includes('python') || skillLower.includes('javascript') || skillLower.includes('programación')) {
+        selectedTemplates = templates['Programación'];
+      } else if (skillLower.includes('inglés') || skillLower.includes('idioma') || skillLower.includes('francés')) {
+        selectedTemplates = templates['Idiomas'];
+      } else if (skillLower.includes('guitarra') || skillLower.includes('piano') || skillLower.includes('música')) {
+        selectedTemplates = templates['Música'];
+      } else if (skillLower.includes('diseño') || skillLower.includes('photoshop') || skillLower.includes('figma')) {
+        selectedTemplates = templates['Diseño'];
+      }
+
+      const randomIndex = Math.floor(Math.random() * selectedTemplates.length);
+      return selectedTemplates[randomIndex];
+    }
+
+    // Efecto de escritura para la descripción
+    function typewriterEffect(element, text) {
+      return new Promise((resolve) => {
+        element.value = '';
+        let index = 0;
+        const speed = 15; // milisegundos entre caracteres
+
+        function type() {
+          if (index < text.length) {
+            element.value += text.charAt(index);
+            index++;
+            setTimeout(type, speed);
+          } else {
+            resolve();
+          }
+        }
+
+        type();
+      });
     }
 
     async function addSkill() {
@@ -3075,7 +3611,7 @@
             description: skill.description || '',
             categoryId: skill.categoryId
           };
-          
+
           if (isOffered) {
             offeredSkills.push(nuevaHabilidad);
           } else {
@@ -3094,13 +3630,13 @@
         setGuardando(true);
         const source = isOffered ? offeredSkills : requiredSkills;
         const habilidadActual = source[index];
-        
+
         if (!habilidadActual || !habilidadActual.id) {
           console.error('No se encontró el ID de la habilidad');
           setGuardando(false);
           return;
         }
-        
+
         const habilidadData = {
           tipoEstado: isOffered ? 'Ofrece' : 'Necesita',
           nombre: skill.name,
@@ -3108,13 +3644,13 @@
           idPersona: perfilPersonaId,
           idCategoria: skill.categoryId || null
         };
-        
+
         const response = await fetch(`${API_BASE}/habilidades/${habilidadActual.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(habilidadData)
         });
-        
+
         const result = await response.json();
         if (result.success) {
           habilidadActual.name = skill.name;
@@ -3133,17 +3669,17 @@
         setGuardando(true);
         const source = isOffered ? offeredSkills : requiredSkills;
         const habilidad = source[index];
-        
+
         if (!habilidad || !habilidad.id) {
           console.error('No se encontró el ID de la habilidad');
           setGuardando(false);
           return;
         }
-        
+
         const response = await fetch(`${API_BASE}/habilidades/${habilidad.id}`, {
           method: 'DELETE'
         });
-        
+
         const result = await response.json();
         if (result.success) {
           if (isOffered) {
@@ -3161,22 +3697,22 @@
 
     function handleEditSkill() {
       if (contextMenuData.type === null || contextMenuData.index === null) return;
-      
+
       const isOffered = contextMenuData.type === 'offered';
       const source = isOffered ? offeredSkills : requiredSkills;
       const skill = source[contextMenuData.index];
-      
+
       currentSkillType = contextMenuData.type;
       editSkillIndex = contextMenuData.index;
       editSkillId = skill?.id || null;
-      
-      document.getElementById('modalTitle').textContent = 
+
+      document.getElementById('modalTitle').textContent =
         isOffered ? 'Editar Habilidad Ofrecida' : 'Editar Habilidad Requerida';
-      
+
       document.getElementById('skillInput').value = skill?.name || '';
       document.getElementById('skillDescription').value = skill?.description || '';
       document.getElementById('skillCategory').value = skill?.categoryId || '';
-      
+
       // Populate categories
       const categorySelect = document.getElementById('skillCategory');
       categorySelect.innerHTML = '<option value="">Seleccione una categoría (opcional)</option>';
@@ -3189,17 +3725,17 @@
         }
         categorySelect.appendChild(option);
       });
-      
+
       document.getElementById('skillModal').style.display = 'flex';
       closeAllContextMenus();
     }
 
     async function handleDeleteSkill() {
       if (contextMenuData.type === null || contextMenuData.index === null) return;
-      
+
       const isOffered = contextMenuData.type === 'offered';
       await removeSkill(isOffered, contextMenuData.index);
-      
+
       closeAllContextMenus();
       renderSkills();
     }
@@ -3207,7 +3743,7 @@
     // ======================
     // GALERÍA
     // ======================
-  
+
     function renderGallery() {
       const galleryGrid = document.getElementById('galleryGrid');
       if (!galleryGrid) return;
@@ -3231,7 +3767,7 @@
             </svg>
           `;
           };
-          
+
           item.appendChild(imgElement);
           item.addEventListener('contextmenu', (e) => {
             e.preventDefault();
@@ -3266,10 +3802,10 @@
       if (file && galeriaImagenes.length < 3) {
         try {
           setGuardando(true);
-          
+
           console.log('Subiendo imagen de galería...', file.name);
           console.log('Imágenes actuales antes de subir:', galeriaImagenes.length);
-          
+
           const formData = new FormData();
           formData.append('image', file);
 
@@ -3281,27 +3817,27 @@
           const result = await response.json();
           if (result.success) {
             const newImageId = Date.now();
-            
+
             console.log('Imagen subida exitosamente a R2:', result.url);
-            
+
             // Añadir la nueva imagen a la galería con la URL de R2
             const nuevasImagenes = [
               ...galeriaImagenes,
-              { 
-                id: newImageId, 
-                title: result.fileName || `Imagen ${newImageId}`, 
+              {
+                id: newImageId,
+                title: result.fileName || `Imagen ${newImageId}`,
                 url: result.url
               }
             ].slice(0, 3); // Asegurar que no excedamos el límite
-            
+
             galeriaImagenes = nuevasImagenes;
-            
+
             console.log('Array de imágenes actualizado:', galeriaImagenes);
 
             // Guardar las URLs en la base de datos
             await guardarImagenesGaleria();
             renderGallery();
-            
+
             console.log('Proceso de subida completado');
           } else {
             console.error('Error al subir imagen:', result.error);
@@ -3314,7 +3850,7 @@
           setGuardando(false);
         }
       }
-      
+
       // Limpiar el valor del input file para permitir seleccionar el mismo archivo nuevamente
       event.target.value = '';
     }
@@ -3328,18 +3864,18 @@
         const imagen1 = imagenesValidas[0]?.url || '';
         const imagen2 = imagenesValidas[1]?.url || '';
         const imagen3 = imagenesValidas[2]?.url || '';
-        
+
         console.log('Guardando imágenes en BD:', { imagen1, imagen2, imagen3 });
-        
+
         // Actualizar los tres campos secuencialmente con delay
         await updateUsuario('imagen1Url_Usuario', imagen1);
         await new Promise(resolve => setTimeout(resolve, 100));
-        
+
         await updateUsuario('imagen2Url_Usuario', imagen2);
         await new Promise(resolve => setTimeout(resolve, 100));
-        
+
         await updateUsuario('imagen3Url_Usuario', imagen3);
-        
+
         console.log('Imágenes guardadas exitosamente en BD');
       } catch (error) {
         console.error('Error al guardar imágenes de galería:', error);
@@ -3348,28 +3884,28 @@
 
     async function handleChangeImage() {
       if (imageContextMenuIndex === null) return;
-      
+
       // Guardar el índice actual antes de cerrar el menú
       const currentIndex = imageContextMenuIndex;
-      
+
       // Disparar el input de archivo para seleccionar nueva imagen
       const fileInput = document.createElement('input');
       fileInput.type = 'file';
       fileInput.accept = 'image/jpeg, image/png, image/gif';
-      
+
       fileInput.onchange = async (e) => {
         const file = e.target.files[0];
         if (file) {
           try {
             setGuardando(true);
-            
+
             // Obtener URL de imagen antigua
             const oldImageUrl = galeriaImagenes[currentIndex]?.url;
-            
+
             // Crear FormData para enviar el archivo
             const formData = new FormData();
             formData.append('image', file);
-            
+
             // Si existe una imagen antigua en R2, enviarla para que se elimine
             if (oldImageUrl && oldImageUrl.includes('r2.dev')) {
               formData.append('oldImageUrl', oldImageUrl);
@@ -3393,7 +3929,7 @@
               // Guardar los cambios en la base de datos
               await guardarImagenesGaleria();
               renderGallery();
-              
+
               console.log('Imagen de galería reemplazada en R2:', result.url);
               if (result.replacedOld) {
                 console.log('Imagen anterior eliminada de R2');
@@ -3411,7 +3947,7 @@
           }
         }
       };
-      
+
       fileInput.click();
       closeAllContextMenus();
     }
@@ -3499,7 +4035,7 @@
         });
 
         window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-         
+
           maxZoom: 19,
           minZoom: 2
         }).addTo(map);
@@ -3507,7 +4043,7 @@
         if (geolocalizacion.ubicacionReal) {
           window.L.marker([geolocalizacion.latitud, geolocalizacion.longitud])
             .addTo(map)
-            .bindPopup('Tu ubicación')
+            .bindPopup(t('yourLocation'))
             .openPopup();
         }
 
@@ -3536,10 +4072,10 @@
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        Obteniendo ubicación...
+        ${t('gettingLocation')}
       `;
 
-      showLocationMessage('Obteniendo ubicación...', 'info');
+      showLocationMessage(t('gettingLocation'), 'info');
 
       const options = { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 };
 
@@ -3611,7 +4147,7 @@
               }
             }
 
-            showLocationMessage('¡Ubicación y dirección obtenidas exitosamente!', 'success');
+            showLocationMessage(t('locationSuccess'), 'success');
             renderDatosPersonales();
             initMap();
 
@@ -3634,28 +4170,28 @@
         },
         (err) => {
           let mensaje = '';
-          switch(err.code) {
+          switch (err.code) {
             case err.PERMISSION_DENIED:
-              mensaje = 'Permiso denegado. Permite el acceso a tu ubicación.';
+              mensaje = t('permissionDenied');
               break;
             case err.POSITION_UNAVAILABLE:
-              mensaje = 'Ubicación no disponible.';
+              mensaje = t('locationUnavailable');
               break;
             case err.TIMEOUT:
-              mensaje = 'La solicitud ha caducado.';
+              mensaje = t('locationTimeout');
               break;
             default:
-              mensaje = 'Error desconocido al obtener ubicación.';
+              mensaje = t('locationError');
               break;
           }
           showLocationMessage(mensaje, 'error');
-          
+
           locationBtn.disabled = false;
           locationBtn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
             </svg>
-            Obtener mi ubicación
+            ${t('getMyLocation')}
           `;
         },
         options
@@ -3666,14 +4202,14 @@
       const messageDiv = document.getElementById('locationMessage');
       messageDiv.textContent = message;
       messageDiv.style.display = 'block';
-      
+
       const colors = {
         success: { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: 'rgba(16, 185, 129, 0.2)' },
         error: { bg: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'rgba(239, 68, 68, 0.2)' },
         warning: { bg: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24', border: 'rgba(251, 191, 36, 0.2)' },
         info: { bg: 'rgba(79, 70, 229, 0.1)', color: '#a5b4fc', border: 'rgba(79, 70, 229, 0.2)' }
       };
-      
+
       const style = colors[type] || colors.info;
       messageDiv.style.backgroundColor = style.bg;
       messageDiv.style.color = style.color;
@@ -3684,294 +4220,294 @@
       document.getElementById('locationMessage').style.display = 'none';
     }
 
-// ======================
-// PIXEL BAR CHART - CON COLORES COORDINADOS
-// ======================
-// ======================
-// PIXEL BAR CHART - VERSIÓN COMPLETAMENTE DINÁMICA
-// ======================
-function renderPixelChart() {
-  const container = document.querySelector('.pixel-chart');
-  if (!container) return;
-  
-  // Buscar o crear el contenedor del SVG
-  let svgContainer = container.querySelector('.pixel-chart-svg-container');
-  if (!svgContainer) {
-    svgContainer = document.createElement('div');
-    svgContainer.className = 'pixel-chart-svg-container';
-    
-    // Insertar después del título
-    const title = container.querySelector('.pixel-chart-title');
-    if (title && title.nextSibling) {
-      container.insertBefore(svgContainer, title.nextSibling);
-    } else {
-      container.appendChild(svgContainer);
-    }
-  }
-  
-  // Limpiar contenido anterior
-  svgContainer.innerHTML = '';
-  
-  // ✅ LEER VALORES DEL DOM EN TIEMPO REAL
-  const intercambios = parseInt(document.getElementById('statIntercambios')?.textContent || '0');
-  const favoritos = parseInt(document.getElementById('statFavoritos')?.textContent || '0');
-  const habilidades = offeredSkills.length;
-  
-  console.log('📊 Renderizando gráfico con valores:', { intercambios, favoritos, habilidades });
-  
-  // 🎨 COLORES COORDINADOS (DINÁMICOS - NO HARDCODEADOS)
-  const data = [
-    { 
-      label: 'Int', 
-      value: intercambios,  // ✅ DINÁMICO - Lee del DOM
-      fill: '#2563eb',
-      highlight: '#1d4ed8'
-    },
-    { 
-      label: 'Fav', 
-      value: favoritos,     // ✅ DINÁMICO - Lee del DOM
-      fill: '#10B981',
-      highlight: '#059669'
-    },
-    { 
-      label: 'Hab', 
-      value: habilidades,   // ✅ DINÁMICO - Lee del array
-      fill: '#8B5CF6',
-      highlight: '#7C3AED'
-    }
-  ];
-  
-  // Configuración del SVG
-  const width = 320;
-  const height = 200;
-  const maxValue = Math.max(...data.map(d => d.value), 5);
-  
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-  svg.setAttribute('class', 'pixel-chart-svg');
-  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-  svg.style.width = '100%';
-  svg.style.height = 'auto';
-  
-  // 🎨 Fondo con gradiente
-  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-  const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
-  gradient.setAttribute('id', 'bgGradient');
-  gradient.setAttribute('x1', '0%');
-  gradient.setAttribute('y1', '0%');
-  gradient.setAttribute('x2', '0%');
-  gradient.setAttribute('y2', '100%');
-  
-  const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-  stop1.setAttribute('offset', '0%');
-  stop1.setAttribute('style', 'stop-color:#f9fafb;stop-opacity:1');
-  
-  const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-  stop2.setAttribute('offset', '100%');
-  stop2.setAttribute('style', 'stop-color:#e5e7eb;stop-opacity:1');
-  
-  gradient.appendChild(stop1);
-  gradient.appendChild(stop2);
-  defs.appendChild(gradient);
-  svg.appendChild(defs);
-  
-  // Fondo
-  const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  bgRect.setAttribute('x', '0');
-  bgRect.setAttribute('y', '0');
-  bgRect.setAttribute('width', width);
-  bgRect.setAttribute('height', height);
-  bgRect.setAttribute('fill', 'url(#bgGradient)');
-  bgRect.setAttribute('rx', '8');
-  svg.appendChild(bgRect);
-  
-  // Marco
-  const frameRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  frameRect.setAttribute('x', '8');
-  frameRect.setAttribute('y', '12');
-  frameRect.setAttribute('width', width - 16);
-  frameRect.setAttribute('height', height - 24);
-  frameRect.setAttribute('fill', 'transparent');
-  frameRect.setAttribute('stroke', '#d1d5db');
-  frameRect.setAttribute('stroke-width', '1');
-  frameRect.setAttribute('shape-rendering', 'crispEdges');
-  svg.appendChild(frameRect);
-  
-  // Grid horizontal
-  const gridYs = [152, 122, 92, 62, 32];
-  const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  gridGroup.setAttribute('stroke', '#e5e7eb');
-  gridGroup.setAttribute('stroke-width', '1');
-  gridGroup.setAttribute('stroke-dasharray', '2,2');
-  gridGroup.setAttribute('shape-rendering', 'crispEdges');
-  
-  gridYs.forEach(gy => {
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', '16');
-    line.setAttribute('y1', gy);
-    line.setAttribute('x2', '304');
-    line.setAttribute('y2', gy);
-    gridGroup.appendChild(line);
-  });
-  svg.appendChild(gridGroup);
-  
-  // Ejes
-  const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  xAxis.setAttribute('x1', '16');
-  xAxis.setAttribute('y1', '156');
-  xAxis.setAttribute('x2', '304');
-  xAxis.setAttribute('y2', '156');
-  xAxis.setAttribute('stroke', '#9ca3af');
-  xAxis.setAttribute('stroke-width', '2');
-  xAxis.setAttribute('shape-rendering', 'crispEdges');
-  svg.appendChild(xAxis);
-  
-  const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  yAxis.setAttribute('x1', '16');
-  yAxis.setAttribute('y1', '20');
-  yAxis.setAttribute('x2', '16');
-  yAxis.setAttribute('y2', '156');
-  yAxis.setAttribute('stroke', '#9ca3af');
-  yAxis.setAttribute('stroke-width', '2');
-  yAxis.setAttribute('shape-rendering', 'crispEdges');
-  svg.appendChild(yAxis);
-  
-  // Barras con animación
-  const groupOffsets = [48, 128, 208];
-  const barW = 44;
-  const capH = 4;
-  const baseY = 156;
-  
-  data.slice(0, 3).forEach((d, i) => {
-    const h = Math.round((d.value / maxValue) * 120);
-    const y = baseY - h;
-    const x = groupOffsets[i];
-    const capY = y - capH;
-    
-    const barGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    barGroup.setAttribute('transform', `translate(${x},0)`);
-    
-    // Sombra
-    const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    shadow.setAttribute('x', '2');
-    shadow.setAttribute('y', y + 2);
-    shadow.setAttribute('width', barW);
-    shadow.setAttribute('height', h);
-    shadow.setAttribute('fill', 'rgba(0,0,0,0.1)');
-    shadow.setAttribute('rx', '4');
-    barGroup.appendChild(shadow);
-    
-    // Barra principal
-    const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    bar.setAttribute('x', '0');
-    bar.setAttribute('y', y);
-    bar.setAttribute('width', barW);
-    bar.setAttribute('height', h);
-    bar.setAttribute('fill', d.fill);
-    bar.setAttribute('stroke', 'rgba(255,255,255,0.2)');
-    bar.setAttribute('stroke-width', '1');
-    bar.setAttribute('rx', '4');
-    bar.setAttribute('ry', '4');
-    
-    // Animación
-    const animate = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
-    animate.setAttribute('attributeName', 'height');
-    animate.setAttribute('from', '0');
-    animate.setAttribute('to', h);
-    animate.setAttribute('dur', '0.8s');
-    animate.setAttribute('fill', 'freeze');
-    bar.appendChild(animate);
-    
-    const animateY = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
-    animateY.setAttribute('attributeName', 'y');
-    animateY.setAttribute('from', baseY);
-    animateY.setAttribute('to', y);
-    animateY.setAttribute('dur', '0.8s');
-    animateY.setAttribute('fill', 'freeze');
-    bar.appendChild(animateY);
-    
-    barGroup.appendChild(bar);
-    
-    // Brillo
-    const shine = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    shine.setAttribute('x', '2');
-    shine.setAttribute('y', y + 2);
-    shine.setAttribute('width', barW - 4);
-    shine.setAttribute('height', Math.max(h / 3, 10));
-    shine.setAttribute('fill', 'rgba(255,255,255,0.3)');
-    shine.setAttribute('rx', '3');
-    barGroup.appendChild(shine);
-    
-    // Tapa superior
-    const cap = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    cap.setAttribute('x', '0');
-    cap.setAttribute('y', capY);
-    cap.setAttribute('width', barW);
-    cap.setAttribute('height', capH);
-    cap.setAttribute('fill', d.highlight);
-    cap.setAttribute('rx', '2');
-    barGroup.appendChild(cap);
-    
-    // Etiqueta
-    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    label.setAttribute('x', barW / 2);
-    label.setAttribute('y', '172');
-    label.setAttribute('text-anchor', 'middle');
-    label.setAttribute('fill', '#4b5563');
-    label.setAttribute('font-size', '12');
-    label.setAttribute('font-weight', '700');
-    label.textContent = d.label;
-    barGroup.appendChild(label);
-    
-    // Valor
-    const value = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    value.setAttribute('x', barW / 2);
-    value.setAttribute('y', y - 8);
-    value.setAttribute('text-anchor', 'middle');
-    value.setAttribute('fill', d.fill);
-    value.setAttribute('font-size', '13');
-    value.setAttribute('font-weight', '700');
-    value.textContent = d.value;
-    barGroup.appendChild(value);
-    
-    svg.appendChild(barGroup);
-  });
-  
-  svgContainer.appendChild(svg);
-}
+    // ======================
+    // PIXEL BAR CHART - CON COLORES COORDINADOS
+    // ======================
+    // ======================
+    // PIXEL BAR CHART - VERSIÓN COMPLETAMENTE DINÁMICA
+    // ======================
+    function renderPixelChart() {
+      const container = document.querySelector('.pixel-chart');
+      if (!container) return;
 
-// Función helper para oscurecer colores
-function darken(hex, amount = 0.3) {
-  try {
-    const c = hex.replace('#', '');
-    const num = parseInt(c, 16);
-    let r = (num >> 16) & 0xff;
-    let g = (num >> 8) & 0xff;
-    let b = num & 0xff;
-    r = Math.max(0, Math.round(r * (1 - amount)));
-    g = Math.max(0, Math.round(g * (1 - amount)));
-    b = Math.max(0, Math.round(b * (1 - amount)));
-    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-  } catch {
-    return hex;
-  }
-}
+      // Buscar o crear el contenedor del SVG
+      let svgContainer = container.querySelector('.pixel-chart-svg-container');
+      if (!svgContainer) {
+        svgContainer = document.createElement('div');
+        svgContainer.className = 'pixel-chart-svg-container';
+
+        // Insertar después del título
+        const title = container.querySelector('.pixel-chart-title');
+        if (title && title.nextSibling) {
+          container.insertBefore(svgContainer, title.nextSibling);
+        } else {
+          container.appendChild(svgContainer);
+        }
+      }
+
+      // Limpiar contenido anterior
+      svgContainer.innerHTML = '';
+
+      // LEER VALORES DEL DOM EN TIEMPO REAL
+      const intercambios = parseInt(document.getElementById('statIntercambios')?.textContent || '0');
+      const favoritos = parseInt(document.getElementById('statFavoritos')?.textContent || '0');
+      const habilidades = offeredSkills.length;
+
+      console.log('Renderizando gráfico con valores:', { intercambios, favoritos, habilidades });
+
+      // 🎨 COLORES COORDINADOS (DINÁMICOS - NO HARDCODEADOS)
+      const data = [
+        {
+          label: 'Int',
+          value: intercambios,  // DINÁMICO - Lee del DOM
+          fill: '#2563eb',
+          highlight: '#1d4ed8'
+        },
+        {
+          label: 'Fav',
+          value: favoritos,     // DINÁMICO - Lee del DOM
+          fill: '#10B981',
+          highlight: '#059669'
+        },
+        {
+          label: 'Hab',
+          value: habilidades,   // DINÁMICO - Lee del array
+          fill: '#8B5CF6',
+          highlight: '#7C3AED'
+        }
+      ];
+
+      // Configuración del SVG
+      const width = 320;
+      const height = 200;
+      const maxValue = Math.max(...data.map(d => d.value), 5);
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      svg.setAttribute('class', 'pixel-chart-svg');
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      svg.style.width = '100%';
+      svg.style.height = 'auto';
+
+      // 🎨 Fondo con gradiente
+      const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+      gradient.setAttribute('id', 'bgGradient');
+      gradient.setAttribute('x1', '0%');
+      gradient.setAttribute('y1', '0%');
+      gradient.setAttribute('x2', '0%');
+      gradient.setAttribute('y2', '100%');
+
+      const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+      stop1.setAttribute('offset', '0%');
+      stop1.setAttribute('style', 'stop-color:#f9fafb;stop-opacity:1');
+
+      const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+      stop2.setAttribute('offset', '100%');
+      stop2.setAttribute('style', 'stop-color:#e5e7eb;stop-opacity:1');
+
+      gradient.appendChild(stop1);
+      gradient.appendChild(stop2);
+      defs.appendChild(gradient);
+      svg.appendChild(defs);
+
+      // Fondo
+      const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bgRect.setAttribute('x', '0');
+      bgRect.setAttribute('y', '0');
+      bgRect.setAttribute('width', width);
+      bgRect.setAttribute('height', height);
+      bgRect.setAttribute('fill', 'url(#bgGradient)');
+      bgRect.setAttribute('rx', '8');
+      svg.appendChild(bgRect);
+
+      // Marco
+      const frameRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      frameRect.setAttribute('x', '8');
+      frameRect.setAttribute('y', '12');
+      frameRect.setAttribute('width', width - 16);
+      frameRect.setAttribute('height', height - 24);
+      frameRect.setAttribute('fill', 'transparent');
+      frameRect.setAttribute('stroke', '#d1d5db');
+      frameRect.setAttribute('stroke-width', '1');
+      frameRect.setAttribute('shape-rendering', 'crispEdges');
+      svg.appendChild(frameRect);
+
+      // Grid horizontal
+      const gridYs = [152, 122, 92, 62, 32];
+      const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      gridGroup.setAttribute('stroke', '#e5e7eb');
+      gridGroup.setAttribute('stroke-width', '1');
+      gridGroup.setAttribute('stroke-dasharray', '2,2');
+      gridGroup.setAttribute('shape-rendering', 'crispEdges');
+
+      gridYs.forEach(gy => {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', '16');
+        line.setAttribute('y1', gy);
+        line.setAttribute('x2', '304');
+        line.setAttribute('y2', gy);
+        gridGroup.appendChild(line);
+      });
+      svg.appendChild(gridGroup);
+
+      // Ejes
+      const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      xAxis.setAttribute('x1', '16');
+      xAxis.setAttribute('y1', '156');
+      xAxis.setAttribute('x2', '304');
+      xAxis.setAttribute('y2', '156');
+      xAxis.setAttribute('stroke', '#9ca3af');
+      xAxis.setAttribute('stroke-width', '2');
+      xAxis.setAttribute('shape-rendering', 'crispEdges');
+      svg.appendChild(xAxis);
+
+      const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      yAxis.setAttribute('x1', '16');
+      yAxis.setAttribute('y1', '20');
+      yAxis.setAttribute('x2', '16');
+      yAxis.setAttribute('y2', '156');
+      yAxis.setAttribute('stroke', '#9ca3af');
+      yAxis.setAttribute('stroke-width', '2');
+      yAxis.setAttribute('shape-rendering', 'crispEdges');
+      svg.appendChild(yAxis);
+
+      // Barras con animación
+      const groupOffsets = [48, 128, 208];
+      const barW = 44;
+      const capH = 4;
+      const baseY = 156;
+
+      data.slice(0, 3).forEach((d, i) => {
+        const h = Math.round((d.value / maxValue) * 120);
+        const y = baseY - h;
+        const x = groupOffsets[i];
+        const capY = y - capH;
+
+        const barGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        barGroup.setAttribute('transform', `translate(${x},0)`);
+
+        // Sombra
+        const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        shadow.setAttribute('x', '2');
+        shadow.setAttribute('y', y + 2);
+        shadow.setAttribute('width', barW);
+        shadow.setAttribute('height', h);
+        shadow.setAttribute('fill', 'rgba(0,0,0,0.1)');
+        shadow.setAttribute('rx', '4');
+        barGroup.appendChild(shadow);
+
+        // Barra principal
+        const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bar.setAttribute('x', '0');
+        bar.setAttribute('y', y);
+        bar.setAttribute('width', barW);
+        bar.setAttribute('height', h);
+        bar.setAttribute('fill', d.fill);
+        bar.setAttribute('stroke', 'rgba(255,255,255,0.2)');
+        bar.setAttribute('stroke-width', '1');
+        bar.setAttribute('rx', '4');
+        bar.setAttribute('ry', '4');
+
+        // Animación
+        const animate = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+        animate.setAttribute('attributeName', 'height');
+        animate.setAttribute('from', '0');
+        animate.setAttribute('to', h);
+        animate.setAttribute('dur', '0.8s');
+        animate.setAttribute('fill', 'freeze');
+        bar.appendChild(animate);
+
+        const animateY = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+        animateY.setAttribute('attributeName', 'y');
+        animateY.setAttribute('from', baseY);
+        animateY.setAttribute('to', y);
+        animateY.setAttribute('dur', '0.8s');
+        animateY.setAttribute('fill', 'freeze');
+        bar.appendChild(animateY);
+
+        barGroup.appendChild(bar);
+
+        // Brillo
+        const shine = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        shine.setAttribute('x', '2');
+        shine.setAttribute('y', y + 2);
+        shine.setAttribute('width', barW - 4);
+        shine.setAttribute('height', Math.max(h / 3, 10));
+        shine.setAttribute('fill', 'rgba(255,255,255,0.3)');
+        shine.setAttribute('rx', '3');
+        barGroup.appendChild(shine);
+
+        // Tapa superior
+        const cap = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        cap.setAttribute('x', '0');
+        cap.setAttribute('y', capY);
+        cap.setAttribute('width', barW);
+        cap.setAttribute('height', capH);
+        cap.setAttribute('fill', d.highlight);
+        cap.setAttribute('rx', '2');
+        barGroup.appendChild(cap);
+
+        // Etiqueta
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', barW / 2);
+        label.setAttribute('y', '172');
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('fill', '#4b5563');
+        label.setAttribute('font-size', '12');
+        label.setAttribute('font-weight', '700');
+        label.textContent = d.label;
+        barGroup.appendChild(label);
+
+        // Valor
+        const value = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        value.setAttribute('x', barW / 2);
+        value.setAttribute('y', y - 8);
+        value.setAttribute('text-anchor', 'middle');
+        value.setAttribute('fill', d.fill);
+        value.setAttribute('font-size', '13');
+        value.setAttribute('font-weight', '700');
+        value.textContent = d.value;
+        barGroup.appendChild(value);
+
+        svg.appendChild(barGroup);
+      });
+
+      svgContainer.appendChild(svg);
+    }
+
+    // Función helper para oscurecer colores
+    function darken(hex, amount = 0.3) {
+      try {
+        const c = hex.replace('#', '');
+        const num = parseInt(c, 16);
+        let r = (num >> 16) & 0xff;
+        let g = (num >> 8) & 0xff;
+        let b = num & 0xff;
+        r = Math.max(0, Math.round(r * (1 - amount)));
+        g = Math.max(0, Math.round(g * (1 - amount)));
+        b = Math.max(0, Math.round(b * (1 - amount)));
+        return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+      } catch {
+        return hex;
+      }
+    }
     // ======================
     // ESTADÍSTICAS
     // ======================
     async function updateStats() {
       // Actualizar habilidades ofrecidas (ya estaba)
       document.getElementById('statOfferedSkills').textContent = offeredSkills.length;
-      
-  // Cargar estadísticas desde el backend
-  await cargarEstadisticasUsuario();
-  renderPixelChart();
+
+      // Cargar estadísticas desde el backend
+      await cargarEstadisticasUsuario();
+      renderPixelChart();
     }
 
     async function cargarEstadisticasUsuario() {
       try {
-  // console.log eliminado
-        
+        // console.log eliminado
+
         // 1. Obtener intercambios completados
         const resIntercambios = await fetch(`${API_BASE}/intercambios/estadisticas/${perfilPersonaId}`);
         if (resIntercambios.ok) {
@@ -3985,21 +4521,21 @@ function darken(hex, amount = 0.3) {
 
         // 2. Obtener la lista de favoritos de ESTE usuario (cuántos usuarios tiene agregados)
         const resFavoritos = await fetch(`${API_BASE}/favoritos/${perfilPersonaId}`);
-  // console.log eliminado
-        
+        // console.log eliminado
+
         if (resFavoritos.ok) {
           const dataFavoritos = await resFavoritos.json();
           // console.log eliminado
-          
+
           if (dataFavoritos.success) {
             const totalFavoritos = dataFavoritos.total || 0;
             // console.log eliminado
             document.getElementById('statFavoritos').textContent = totalFavoritos;
           }
         }
-        
+
       } catch (error) {
-  // console.error eliminado
+        // console.error eliminado
         // Mantener valores por defecto en caso de error
       }
     }
@@ -4011,7 +4547,7 @@ function darken(hex, amount = 0.3) {
       contextMenuData = { type, index };
       const menu = document.getElementById('contextMenu');
       const backdrop = document.getElementById('contextMenuBackdrop');
-      
+
       menu.style.left = x + 'px';
       menu.style.top = y + 'px';
       menu.style.display = 'block';
@@ -4022,7 +4558,7 @@ function darken(hex, amount = 0.3) {
       imageContextMenuIndex = index;
       const menu = document.getElementById('imageContextMenu');
       const backdrop = document.getElementById('contextMenuBackdrop');
-      
+
       menu.style.left = x + 'px';
       menu.style.top = y + 'px';
       menu.style.display = 'block';
@@ -4032,7 +4568,7 @@ function darken(hex, amount = 0.3) {
     function showProfileContextMenu(x, y) {
       const menu = document.getElementById('profileContextMenu');
       const backdrop = document.getElementById('contextMenuBackdrop');
-      
+
       menu.style.left = x + 'px';
       menu.style.top = y + 'px';
       menu.style.display = 'block';
@@ -4091,9 +4627,9 @@ function darken(hex, amount = 0.3) {
           </div>
         </div>
       `;
-      
+
       document.body.insertAdjacentHTML('beforeend', modalHTML);
-      
+
       // Auto-redirigir después de 3 segundos
       setTimeout(() => {
         redirectToLogin();
@@ -4112,24 +4648,24 @@ function darken(hex, amount = 0.3) {
         <div class="custom-modal-overlay" id="logoutModal" onclick="closeLogoutModal(event)">
           <div class="custom-modal" onclick="event.stopPropagation()">
             <div class="modal-header">
-              <div class="modal-icon">⚠</div>
-              <div class="modal-title">Cerrar Sesión</div>
+              <div class="modal-icon">!</div>
+              <div class="modal-title">${t('logoutTitle')}</div>
             </div>
             <div class="modal-message">
-              ¿Estás seguro de que deseas cerrar sesión? Tendrás que iniciar sesión nuevamente para acceder a tu perfil.
+              ${t('logoutMessage')}
             </div>
             <div class="modal-actions">
               <button class="modal-btn modal-btn-cancel" onclick="closeLogoutModal()">
-                Cancelar
+                ${t('cancel')}
               </button>
               <button class="modal-btn modal-btn-confirm" onclick="confirmLogout()">
-                Cerrar Sesión
+                ${t('logoutConfirm')}
               </button>
             </div>
           </div>
         </div>
       `;
-      
+
       document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
 
@@ -4147,7 +4683,7 @@ function darken(hex, amount = 0.3) {
       localStorage.removeItem('usuarioId');
       localStorage.removeItem('token');
       localStorage.removeItem('usuario');
-      
+
       // Redirigir al login o página principal
       window.location.href = '../login.html'; // Ajusta la ruta según tu estructura
     }
@@ -4162,8 +4698,585 @@ function darken(hex, amount = 0.3) {
     `;
     document.head.appendChild(style);
   </script>
-  
+
+  <!-- ========================================== -->
+  <!-- SISTEMA DE TRADUCCIÓN / TRANSLATION SYSTEM -->
+  <!-- ========================================== -->
+  <script>
+    // Diccionario de traducciones
+    const translations = {
+      es: {
+        // Header y navegación
+        logout: 'Cerrar Sesión',
+        verifiedUser: 'Usuario Verificado',
+
+        // Secciones
+        personalData: 'Datos Personales',
+        statistics: 'Estadísticas',
+        exchanges: 'Intercambios (HU 13)',
+        favorites: 'Favoritos',
+        offeredSkills: 'Habilidades Ofrecidas',
+        skillsOffered: 'Habilidades que Ofrezco',
+        skillsOfferedDesc: 'Estas son las habilidades que ofrezco para un intercambio.',
+        skillsNeeded: 'Habilidades que Necesito',
+        skillsNeededDesc: 'Busca a otros usuarios con estas habilidades para iniciar un trueque.',
+        imageGallery: 'Galería de Imágenes',
+        ratingsReviews: 'Calificaciones y Reseñas',
+
+        // Botones y acciones
+        edit: 'Editar',
+        save: 'Guardar',
+        cancel: 'Cancelar',
+        add: 'Agregar',
+        delete: 'Eliminar',
+        reply: 'Contestar',
+        editReply: 'Editar respuesta',
+        deleteReply: 'Borrar respuesta',
+        saveChanges: 'Guardar cambios',
+
+        // Modales
+        logoutTitle: 'Cerrar Sesión',
+        logoutMessage: '¿Estás seguro de que deseas cerrar sesión? Tendrás que iniciar sesión nuevamente para acceder a tu perfil.',
+        logoutConfirm: 'Cerrar Sesión',
+
+        // Mensajes
+        noComment: 'Sin comentario',
+        yourReply: 'Tu respuesta',
+        replied: 'Respondido',
+        clickToAdd: 'Haz clic para agregar tu nombre',
+        clickToAddField: 'Haz clic para agregar',
+
+        // Labels de datos personales
+        country: 'País',
+        department: 'Departamento',
+        city: 'Ciudad',
+        postalCode: 'Código Postal',
+        maritalStatus: 'Estado Civil',
+        gender: 'Género',
+        idType: 'Tipo de Identificación',
+        idNumber: 'Numero Identificación',
+        birthDate: 'Fecha de Nacimiento',
+
+        // Opciones de estado civil
+        single: 'Soltero',
+        married: 'Casado',
+        divorced: 'Divorciado',
+        widowed: 'Viudo',
+
+        // Opciones de género
+        male: 'Masculino',
+        female: 'Femenino',
+        other: 'Otro',
+
+        // Tipos de identificación
+        dni: 'DNI',
+        passport: 'Pasaporte',
+
+        // Ubicación
+        location: 'Ubicación',
+        getMyLocation: 'Obtener mi ubicación',
+        yourLocation: 'Tu ubicación',
+        gettingLocation: 'Obteniendo ubicación...',
+        locationSuccess: '¡Ubicación y dirección obtenidas exitosamente!',
+        permissionDenied: 'Permiso denegado. Permite el acceso a tu ubicación.',
+        locationUnavailable: 'Ubicación no disponible.',
+        locationTimeout: 'Tiempo agotado al obtener ubicación.',
+        locationError: 'Error desconocido al obtener ubicación.',
+
+        // Menús contextuales
+        change: 'Cambiar',
+
+        // Placeholder texts
+        skillName: 'Nombre de la habilidad',
+        description: 'Descripción',
+        skillExample: 'Ej: Programación en Python',
+        shortDescription: 'Descripción corta (opcional)',
+        selectCategory: 'Seleccione una categoría (opcional)',
+        addSkillTitle: 'Añadir Habilidad',
+
+        // Reviews
+        editResponse: 'Editar respuesta',
+        deleteResponse: 'Borrar respuesta',
+        respond: 'Contestar',
+        deleteReplyTitle: 'Borrar respuesta',
+        deleteReplyMessage: '¿Estás seguro de que deseas borrar tu respuesta?',
+        deleteReplyConfirm: 'Borrar respuesta',
+
+        // Verificación
+        notVerified: 'No verificado',
+        contactEmail: 'Correo para contacto:',
+        emailPlaceholder: 'tu@email.com',
+        requestVerification: 'Solicitar verificación',
+        sendingRequest: 'Enviando solicitud...',
+        requestSent: 'Solicitud enviada con éxito. Te contactaremos pronto.',
+        requestSentAdmin: '¡Solicitud enviada! El administrador revisará tu cuenta.',
+        requestError: 'Error al enviar solicitud. Intenta de nuevo.',
+        verifying: 'Verificando...',
+        verifiedUser: 'Usuario Verificado',
+        verificationPending: 'Verificación pendiente',
+        verificationError: 'Error al verificar'
+      },
+      en: {
+        // Header and navigation
+        logout: 'Logout',
+        verifiedUser: 'Verified User',
+
+        // Sections
+        personalData: 'Personal Information',
+        statistics: 'Statistics',
+        exchanges: 'Exchanges (HU 13)',
+        favorites: 'Favorites',
+        offeredSkills: 'Offered Skills',
+        skillsOffered: 'Skills I Offer',
+        skillsOfferedDesc: 'These are the skills I offer for an exchange.',
+        skillsNeeded: 'Skills I Need',
+        skillsNeededDesc: 'Find other users with these skills to start a trade.',
+        imageGallery: 'Image Gallery',
+        ratingsReviews: 'Ratings and Reviews',
+
+        // Buttons and actions
+        edit: 'Edit',
+        save: 'Save',
+        cancel: 'Cancel',
+        add: 'Add',
+        delete: 'Delete',
+        reply: 'Reply',
+        editReply: 'Edit reply',
+        deleteReply: 'Delete reply',
+        saveChanges: 'Save changes',
+
+        // Modals
+        logoutTitle: 'Logout',
+        logoutMessage: 'Are you sure you want to log out? You will need to log in again to access your profile.',
+        logoutConfirm: 'Logout',
+
+        // Messages
+        noComment: 'No comment',
+        yourReply: 'Your reply',
+        replied: 'Replied',
+        clickToAdd: 'Click to add your name',
+        clickToAddField: 'Click to add',
+
+        // Personal data labels
+        country: 'Country',
+        department: 'Department',
+        city: 'City',
+        postalCode: 'Postal Code',
+        maritalStatus: 'Marital Status',
+        gender: 'Gender',
+        idType: 'ID Type',
+        idNumber: 'ID Number',
+        birthDate: 'Birth Date',
+
+        // Marital status options
+        single: 'Single',
+        married: 'Married',
+        divorced: 'Divorced',
+        widowed: 'Widowed',
+
+        // Gender options
+        male: 'Male',
+        female: 'Female',
+        other: 'Other',
+
+        // ID types
+        dni: 'National ID',
+        passport: 'Passport',
+
+        // Location
+        location: 'Location',
+        getMyLocation: 'Get my location',
+        yourLocation: 'Your location',
+        gettingLocation: 'Getting location...',
+        locationSuccess: 'Location and address obtained successfully!',
+        permissionDenied: 'Permission denied. Please allow location access.',
+        locationUnavailable: 'Location unavailable.',
+        locationTimeout: 'Location request timed out.',
+        locationError: 'Unknown error getting location.',
+
+        // Context menus
+        change: 'Change',
+
+        // Placeholder texts
+        skillName: 'Skill name',
+        description: 'Description',
+        skillExample: 'Ex: Python Programming',
+        shortDescription: 'Short description (optional)',
+        selectCategory: 'Select a category (optional)',
+        addSkillTitle: 'Add Skill',
+
+        // Reviews
+        editResponse: 'Edit response',
+        deleteResponse: 'Delete response',
+        respond: 'Reply',
+        deleteReplyTitle: 'Delete reply',
+        deleteReplyMessage: 'Are you sure you want to delete your reply?',
+        deleteReplyConfirm: 'Delete reply',
+
+        // Verification
+        notVerified: 'Not verified',
+        contactEmail: 'Contact email:',
+        emailPlaceholder: 'your@email.com',
+        requestVerification: 'Request verification',
+        sendingRequest: 'Sending request...',
+        requestSent: 'Request sent successfully. We will contact you soon.',
+        requestSentAdmin: 'Request sent! The administrator will review your account.',
+        requestError: 'Error sending request. Please try again.',
+        verifying: 'Verifying...',
+        verifiedUser: 'Verified User',
+        verificationPending: 'Verification pending',
+        verificationError: 'Verification error'
+      }
+    };
+
+    // Variable de idioma actual
+    let currentLanguage = localStorage.getItem('preferred_language') || 'es';
+
+    // Función para obtener traducción
+    function t(key) {
+      return translations[currentLanguage][key] || key;
+    }
+
+    // Función para aplicar traducciones a elementos con data-i18n
+    function applyTranslations() {
+      // Traducir elementos con data-i18n
+      document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        const translation = t(key);
+        if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+          element.value = translation;
+        } else {
+          element.textContent = translation;
+        }
+      });
+
+      // Traducir placeholders
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+        const key = element.getAttribute('data-i18n-placeholder');
+        element.placeholder = t(key);
+      });
+
+      // Traducir títulos
+      document.querySelectorAll('[data-i18n-title]').forEach(element => {
+        const key = element.getAttribute('data-i18n-title');
+        element.title = t(key);
+      });
+    }
+
+    // Función para cambiar idioma (llamada desde mensaje del parent)
+    function changeLanguage(lang) {
+      currentLanguage = lang;
+      localStorage.setItem('preferred_language', lang);
+      applyTranslations();
+
+      // Re-renderizar contenido dinámico si es necesario
+      retranslateProfile();
+    }
+
+    // Función para re-traducir contenido dinámico del perfil
+    function retranslateProfile() {
+      // Re-renderizar datos personales con las nuevas traducciones
+      if (typeof renderDatosPersonales === 'function' && usuario) {
+        renderDatosPersonales();
+      }
+
+      // Re-traducir badge de verificación usando el estado almacenado
+      const badge = document.querySelector('.verified-badge');
+      if (badge && window.currentVerificationStatus) {
+        const status = window.currentVerificationStatus;
+        const spans = badge.querySelectorAll('span');
+        const textSpan = spans[spans.length - 1]; // El último span contiene el texto
+
+        if (textSpan) {
+          if (status === 'aprobada') {
+            textSpan.textContent = t('verifiedUser');
+          } else if (status === 'pendiente') {
+            textSpan.textContent = t('verificationPending');
+          } else if (status === 'error') {
+            textSpan.textContent = t('verificationError');
+          } else {
+            textSpan.textContent = t('notVerified');
+          }
+        }
+      }
+
+      // Re-traducir formulario de verificación si existe
+      const verificationForm = document.getElementById('solicitudVerificacionForm');
+      if (verificationForm) {
+        const label = verificationForm.querySelector('label');
+        const input = verificationForm.querySelector('input[type="email"]');
+        const button = verificationForm.querySelector('button[type="submit"]');
+
+        if (label) label.textContent = t('contactEmail');
+        if (input) input.placeholder = t('emailPlaceholder');
+        if (button) button.textContent = t('requestVerification');
+      }
+
+      // Re-traducir modales si están abiertos
+      const logoutModal = document.getElementById('logoutModal');
+      if (logoutModal) {
+        const titleEl = logoutModal.querySelector('.modal-title');
+        const messageEl = logoutModal.querySelector('.modal-message');
+        const confirmBtn = logoutModal.querySelector('.modal-btn-confirm');
+        const cancelBtn = logoutModal.querySelector('.modal-btn-cancel');
+
+        if (titleEl) titleEl.textContent = t('logoutTitle');
+        if (messageEl) messageEl.textContent = t('logoutMessage');
+        if (confirmBtn) confirmBtn.textContent = t('logoutConfirm');
+        if (cancelBtn) cancelBtn.textContent = t('cancel');
+      }
+
+      // Re-traducir menús contextuales de reviews si están abiertos
+      const reviewContextMenu = document.getElementById('reviewContextMenu');
+      if (reviewContextMenu && reviewContextMenuData) {
+        const hasReply = reviewContextMenuData.replyId;
+        reviewContextMenu.remove();
+        // No podemos re-crear el menú aquí porque perdimos la posición, pero se actualizará en el próximo clic
+      }
+    }
+
+    // Aplicar traducciones al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+      applyTranslations();
+    });
+
+    // Escuchar cambios de idioma desde el parent (Descubrir.html)
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'languageChange') {
+        changeLanguage(event.data.language);
+      }
+    });
+
+    // Notificar al parent que el perfil está listo
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'profileReady', language: currentLanguage }, '*');
+    }
+
+    // ======================
+    // SISTEMA DE CERTIFICACIONES
+    // ======================
+    
+    // Variable global para almacenar certificaciones
+    let certificacionesUsuario = [];
+    
+    // Cargar certificaciones del usuario
+    async function cargarCertificaciones() {
+      if (!perfilPersonaId) return;
+      
+      try {
+        const res = await fetch(`${API_BASE}/certificaciones/persona/${perfilPersonaId}`);
+        const data = await res.json();
+        
+        if (res.ok && data.success) {
+          certificacionesUsuario = data.data || [];
+          renderCertificaciones();
+        }
+      } catch (error) {
+        console.error('Error al cargar certificaciones:', error);
+      }
+    }
+    
+    // Renderizar lista de certificaciones
+    function renderCertificaciones() {
+      const container = document.getElementById('certificacionesList');
+      if (!container) return;
+      
+      if (certificacionesUsuario.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 20px; color: #6b7280; font-style: italic;">
+            No tienes certificaciones registradas aún.
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = certificacionesUsuario.map(cert => `
+        <div class="certificacion-item" data-id="${cert.id_certificacion}" style="
+          display: flex; 
+          align-items: center; 
+          justify-content: space-between;
+          padding: 12px 16px; 
+          background: white; 
+          border-radius: 10px; 
+          margin-bottom: 10px;
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        ">
+          <div style="flex: 1;">
+            <div style="font-weight: 600; color: #1f2937; font-size: 14px;">
+              ${cert.titulo_certificacion}
+            </div>
+            ${cert.institucion ? `<div style="font-size: 12px; color: #6b7280;">${cert.institucion}</div>` : ''}
+            <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">
+              ${cert.fecha_registro ? new Date(cert.fecha_registro).toLocaleDateString('es-ES') : ''}
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 8px; align-items: center;">
+            ${cert.url_certificado ? `
+              <a href="${cert.url_certificado}" target="_blank" 
+                 style="padding: 6px 12px; background: #2563eb; color: white; border-radius: 6px; font-size: 12px; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd" />
+                </svg>
+                Ver
+              </a>
+            ` : ''}
+            <button onclick="eliminarCertificacion(${cert.id_certificacion})" 
+                    style="padding: 6px 10px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Configurar event listeners para certificaciones
+    function setupCertificacionesEventListeners() {
+      const btnAgregar = document.getElementById('btnAgregarCertificacion');
+      if (btnAgregar) {
+        btnAgregar.addEventListener('click', agregarCertificacion);
+      }
+    }
+    
+    // Agregar nueva certificación
+    async function agregarCertificacion() {
+      const titulo = document.getElementById('tituloCertificacion').value.trim();
+      const institucion = document.getElementById('institucionCertificacion').value.trim();
+      const fileInput = document.getElementById('documentoCertificacion');
+      const mensaje = document.getElementById('mensajeCertificacion');
+      
+      // Validar título
+      if (!titulo) {
+        mostrarMensajeCertificacion('El título de la certificación es requerido', 'error');
+        return;
+      }
+      
+      let urlCertificado = null;
+      
+      // Si hay archivo, subirlo primero
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        
+        mostrarMensajeCertificacion('Subiendo documento...', 'info');
+        
+        try {
+          const formData = new FormData();
+          formData.append('document', file);
+          
+          const resUpload = await fetch(`${API_BASE}/upload/document`, {
+            method: 'POST',
+            body: formData
+          });
+          
+          const dataUpload = await resUpload.json();
+          
+          if (!resUpload.ok || !dataUpload.success) {
+            throw new Error(dataUpload.error || 'Error al subir documento');
+          }
+          
+          urlCertificado = dataUpload.url;
+        } catch (error) {
+          mostrarMensajeCertificacion('Error al subir el documento: ' + error.message, 'error');
+          return;
+        }
+      }
+      
+      // Crear certificación en la base de datos
+      mostrarMensajeCertificacion('Guardando certificación...', 'info');
+      
+      try {
+        const res = await fetch(`${API_BASE}/certificaciones`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id_Perfil_Persona: perfilPersonaId,
+            titulo_certificacion: titulo,
+            institucion: institucion || null,
+            url_certificado: urlCertificado
+          })
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Error al guardar certificación');
+        }
+        
+        // Limpiar formulario
+        document.getElementById('tituloCertificacion').value = '';
+        document.getElementById('institucionCertificacion').value = '';
+        document.getElementById('documentoCertificacion').value = '';
+        
+        // Recargar certificaciones
+        await cargarCertificaciones();
+        
+        mostrarMensajeCertificacion('¡Certificación agregada exitosamente!', 'success');
+        
+        // Ocultar mensaje después de 3 segundos
+        setTimeout(() => {
+          mensaje.style.display = 'none';
+        }, 3000);
+        
+      } catch (error) {
+        mostrarMensajeCertificacion('Error: ' + error.message, 'error');
+      }
+    }
+    
+    // Eliminar certificación
+    async function eliminarCertificacion(idCertificacion) {
+      if (!confirm('¿Estás seguro de eliminar esta certificación?')) return;
+      
+      try {
+        const res = await fetch(`${API_BASE}/certificaciones/${idCertificacion}`, {
+          method: 'DELETE'
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Error al eliminar');
+        }
+        
+        // Recargar certificaciones
+        await cargarCertificaciones();
+        
+      } catch (error) {
+        alert('Error al eliminar: ' + error.message);
+      }
+    }
+    
+    // Mostrar mensaje en sección de certificaciones
+    function mostrarMensajeCertificacion(texto, tipo) {
+      const mensaje = document.getElementById('mensajeCertificacion');
+      if (!mensaje) return;
+      
+      mensaje.style.display = 'block';
+      mensaje.textContent = texto;
+      
+      switch (tipo) {
+        case 'success':
+          mensaje.style.background = '#dcfce7';
+          mensaje.style.color = '#166534';
+          mensaje.style.border = '1px solid #86efac';
+          break;
+        case 'error':
+          mensaje.style.background = '#fee2e2';
+          mensaje.style.color = '#991b1b';
+          mensaje.style.border = '1px solid #fca5a5';
+          break;
+        case 'info':
+        default:
+          mensaje.style.background = '#dbeafe';
+          mensaje.style.color = '#1e40af';
+          mensaje.style.border = '1px solid #93c5fd';
+          break;
+      }
+    }
+  </script>
+
 </body>
+
 </html>
-
-

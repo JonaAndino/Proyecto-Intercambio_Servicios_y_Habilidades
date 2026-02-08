@@ -1,7 +1,7 @@
 // server.js
 
 // 0. Configuración del Entorno (DEBE IR PRIMERO)
-require('dotenv').config(); 
+require('dotenv').config({ override: true }); 
 
 // 1. Importaciones de Librerías
 const express = require('express');
@@ -27,18 +27,31 @@ const favoritosRoutes = require('./routes/favoritos');
 const intercambiosRoutes = require('./routes/intercambios');
 const verificacionUsuariosRoutes = require('./routes/verificacionUsuarios');
 const reportesUsuariosRoutes = require('./routes/ReportesUsuarios');
+const respuestasReseniaRoutes = require('./routes/Respuestas_Resenia');
+const notificacionesRoutes = require('./routes/notificaciones_reseñas');
+const videollamadasRoutes = require('./routes/videollamadas');
+const callSignalsRoutes = require('./routes/call-signals');
+const certificacionesRoutes = require('./routes/Certificaciones');
+const metricasRoutes = require('./routes/MetricasDesempeno');
+const perfilCompletoRoutes = require('./routes/PerfilCompleto');
 
+// 2. Crear instancia de Express
 const app = express();
+
+// 3. Definir el puerto (CRÍTICO - FALTABA ESTO)
+const port = process.env.PORT || 3001;
+
+// 4. Configurar CORS
 app.use(cors({
-    // Permitir múltiples orígenes para desarrollo
-    origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'http://127.0.0.1:5050', 'http://localhost:3000'],
+    // Permitir múltiples orígenes para desarrollo y producción
+    origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'http://127.0.0.1:5050', 'http://localhost:5050', 'http://localhost:3000', 'http://localhost:3001', 'http://152.70.120.174:5050', 'http://152.70.120.174:3001', 'https://skillconnect.duckdns.org', 'http://skillconnect.duckdns.org'],
     credentials: true
 }));
 
-app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// 4. Configurar sesiones para Passport
+// 5. Configurar sesiones para Passport
 app.use(session({
     secret: process.env.SESSION_SECRET || 'tu_secreto_de_sesion_super_seguro_2025',
     resave: false,
@@ -49,18 +62,16 @@ app.use(session({
     }
 }));
 
-// 5. Inicializar Passport
+// 6. Inicializar Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 6. Configurar las rutas
+// 7. Configurar las rutas
 app.use('/api', authRoutes);
 app.use('/api/auth', authGoogleRoutes); // Rutas de Google OAuth
-app.use('/api',loginRoutes);
+app.use('/api', loginRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/personas', personasRoutes);
-    const respuestasReseniaRoutes = require('./routes/Respuestas_Resenia');
-    const notificacionesRoutes = require('./routes/notificaciones_reseñas');
 app.use('/api/habilidades', habilidadesRoutes);
 app.use('/api/direcciones', direccionesRoutes);
 app.use('/api/categorias', categoriasRoutes);
@@ -70,37 +81,44 @@ app.use('/api/mensajeria', mensajeriaRoutes);
 app.use('/api/password', recuperarPasswordRoutes); // Rutas de recuperación de contraseña
 app.use('/api/favoritos', favoritosRoutes); // Rutas de favoritos
 app.use('/api/intercambios', intercambiosRoutes); // Rutas de intercambios finalizados y calificaciones
+app.use('/api/verificacion-usuarios', verificacionUsuariosRoutes); // Rutas de verificación de usuarios
+app.use('/api/reportes', reportesUsuariosRoutes); // Rutas para reportes de usuarios
+app.use('/api/respuestas-resenia', respuestasReseniaRoutes); // Rutas de respuestas a reseñas
+app.use('/api/notificaciones', notificacionesRoutes); // Rutas de notificaciones
+// Rutas para señalización de videollamadas (offer/answer/candidates)
+app.use('/api/videollamadas', videollamadasRoutes);
+// Rutas para señalización sin sockets (polling puro)
+app.use('/api/call-signals', callSignalsRoutes);
+ 
+app.use('/api/certificaciones', certificacionesRoutes); // Rutas de certificaciones
+app.use('/api/metricas', metricasRoutes); // Rutas de métricas de desempeño
+app.use('/api/perfil-completo', perfilCompletoRoutes); // Rutas de perfil completo
 
-// Rutas de verificación de usuarios
-app.use('/api/verificacion-usuarios', verificacionUsuariosRoutes);
-// Rutas para reportes de usuarios (crear/listar/actualizar/eliminar)
-app.use('/api/reportes', reportesUsuariosRoutes);
-
-// Prueba básica de que el servidor Express funciona
+// 8. Prueba básica de que el servidor Express funciona
 app.get('/', (req, res) => {
-    res.send('Servidor Skill Connect Activo!');
+    res.send('Servidor Skill Connect Activo! ');
 });
 
-// Servir archivos estáticos del frontend (SkillconnectFrontend)
-// Colocamos un middleware que añade una cabecera Content-Security-Policy
-    app.use('/api/respuestas-resenia', respuestasReseniaRoutes); // Rutas de respuestas a reseñas
-app.use('/api/notificaciones', notificacionesRoutes); // Rutas de notificaciones (notificaciones_reseñas)
-// razonable para desarrollo antes de servir los archivos estáticos, porque
-// algunos servidores/entornos envían por defecto "default-src 'none'" y eso
-// bloquea fuentes externas (Google Fonts) y hojas de estilo.
+// 9. Servir archivos estáticos del frontend (SkillconnectFrontend)
 const frontendPath = path.join(__dirname, '..', 'SkillconnectFrontend');
 
-// Middleware para establecer CSP (relajada para desarrollo). Ajusta según
-// seguridad en producción.
+// Middleware para establecer CSP (relajada para desarrollo)
 app.use('/SkillconnectFrontend', (req, res, next) => {
     // Política de ejemplo: permite recursos propios, fuentes/estilos de Google
-    // y datos en-linea para facilitar desarrollo local.
+    // CSP relajada para desarrollo: permitimos recursos propios y datos,
+    // especificamos `img-src` y `media-src` para permitir reproducción desde
+    // Cloudflare R2 (si está configurado en R2_PUBLIC_URL) y previews `blob:`/`data:`.
+    let r2Host = process.env.R2_PUBLIC_URL || 'https:';
+    try { r2Host = new URL(r2Host).origin; } catch (e) { /* dejar r2Host tal cual si no es URL */ }
+
     const csp = "default-src 'self' data:; " +
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; " +
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: https://www.gstatic.com https://*.firebase.com https://*.googleapis.com https://meet.jit.si https://*.jitsi.net https://web-cdn.jitsi.net https://8x8.vc https://*.8x8.vc https://sso.8x8.com https://*.8x8.com https://alpha.jitsi.net https://beta.meet.jit.si; " +
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://meet.jit.si https://*.jitsi.net https://8x8.vc https://*.8x8.vc https://alpha.jitsi.net; " +
                 "font-src 'self' https://fonts.gstatic.com data:; " +
-                "img-src 'self' data: https:; " +
-                "connect-src 'self' http://127.0.0.1:5050 http://localhost:5050 ws:;";
+                "img-src 'self' data: blob: https: " + r2Host + " https://*.googleusercontent.com https://www.gstatic.com https://meet.jit.si https://*.jitsi.net https://8x8.vc https://*.8x8.vc https://alpha.jitsi.net; " +
+                "media-src 'self' data: blob: " + r2Host + " https://meet.jit.si https://8x8.vc https://*.8x8.vc https://alpha.jitsi.net; " +
+                "frame-src 'self' https://meet.jit.si https://*.jitsi.net https://web-cdn.jitsi.net https://8x8.vc https://*.8x8.vc https://sso.8x8.com https://*.8x8.com https://alpha.jitsi.net; " +
+                "connect-src 'self' http://127.0.0.1:5050 http://localhost:5050 http://127.0.0.1:3001 http://localhost:3001 ws: wss: https://meet.jit.si wss://meet.jit.si https://*.jitsi.net wss://*.jitsi.net https://8x8.vc https://*.8x8.vc wss://8x8.vc wss://*.8x8.vc https://alpha.jitsi.net wss://alpha.jitsi.net https://beta.meet.jit.si wss://beta.meet.jit.si https://cdn.jsdelivr.net https://*.googleapis.com https://api-inference.huggingface.co https://*.firebase.com https://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.gstatic.com;";
     res.setHeader('Content-Security-Policy', csp);
     next();
 });
@@ -109,14 +127,175 @@ app.use('/SkillconnectFrontend', (req, res, next) => {
 app.use('/SkillconnectFrontend', express.static(frontendPath, { index: 'index.html' }));
 
 // Si la petición comienza con /SkillconnectFrontend y no se encontró un archivo,
-// devolvemos la página 404 personalizada del frontend.
+// devolvemos la página 404 personalizada del frontend
 app.use('/SkillconnectFrontend', (req, res) => {
     res.status(404).sendFile(path.join(frontendPath, '404.html'));
 });
 
-// 5. Iniciar el servidor
-app.listen(port, () => {
-    // Asegúrate de que el db.js se importe y ejecute su conexión de prueba
-    require('./db');
-    console.log(`Servidor escuchando en http://localhost:${port}`);
+// 10. Manejo de errores global
+app.use((err, req, res, next) => {
+    console.error('Error del servidor:', err);
+    res.status(err.status || 500).json({ 
+        error: err.message || 'Error interno del servidor' 
+    });
+});
+
+// 11. Iniciar el servidor usando HTTP + Socket.io (para señalización en tiempo real)
+const http = require('http');
+const { Server } = require('socket.io');
+
+// Importar el pool de conexiones (pool.promise() desde db.js)
+const pool = require('./db');
+
+const server = http.createServer(app);
+
+// Configuración básica de CORS para Socket.io (ajusta orígenes en producción)
+const io = new Server(server, {
+    cors: {
+        origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'http://127.0.0.1:5050', 'http://localhost:5050', 'http://localhost:3000', 'http://localhost:3001', 'http://152.70.120.174:5050', 'http://152.70.120.174:3001', 'https://skillconnect.duckdns.org', 'http://skillconnect.duckdns.org'],
+        methods: ['GET', 'POST']
+    }
+});
+
+io.on('connection', (socket) => {
+    console.log('Socket conectado:', socket.id);
+    // map userId -> socket.id
+    // Se usa para entregar ofertas/directamente a un usuario concreto (callee)
+    // userId debe ser proporcionado por el cliente mediante el evento 'register'
+    socket.data.userId = null;
+
+    socket.on('join', (roomId) => {
+        try { socket.join(roomId); } catch(e) { console.warn('join room failed', e); }
+    });
+
+    // Registrar un userId asociado a este socket (opcional pero recomendado)
+    socket.on('register', (payload) => {
+        try{
+            const uid = (payload && payload.userId) ? String(payload.userId) : null;
+            if(uid){
+                socket.data.userId = uid;
+                // almacenar en un room privado por userId para facilitar targeting
+                try{ socket.join(`user_${uid}`); }catch(e){}
+                console.log('Registered socket', socket.id, 'for user', uid);
+            }
+        }catch(e){ console.warn('register payload error', e); }
+    });
+
+    socket.on('offer', async (data) => {
+        try{
+            if (!data || !data.roomId) return;
+            // Si se incluye id_mensaje, resolver participantes desde la tabla mensajes
+            if (data.id_mensaje) {
+                try {
+                    const [rows] = await pool.query('SELECT id_persona_envia, id_persona_recibe FROM mensajes WHERE id_mensaje = ? LIMIT 1', [data.id_mensaje]);
+                    const m = (rows && rows[0]) ? rows[0] : null;
+                    if (m) {
+                        const sender = String(data.callerId || socket.data.userId || '');
+                        const targets = [];
+                        if (m.id_persona_envia && String(m.id_persona_envia) !== sender) targets.push(String(m.id_persona_envia));
+                        if (m.id_persona_recibe && String(m.id_persona_recibe) !== sender) targets.push(String(m.id_persona_recibe));
+                        // Emitir offer a cada participante (excepto al emisor)
+                        targets.forEach(t => io.to(`user_${t}`).emit('offer', data));
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('Error buscando participantes por id_mensaje', e);
+                }
+            }
+
+            // Si el caller incluye calleeId y ese user está registrado, enviarle directamente
+            const calleeId = data.calleeId ? String(data.calleeId) : null;
+            if(calleeId){
+                io.to(`user_${calleeId}`).emit('offer', data);
+                return;
+            }
+
+            // reenviar offer a otros miembros de la sala por defecto
+            socket.to(data.roomId).emit('offer', data);
+        } catch(err) {
+            console.warn('offer handler error', err);
+        }
+    });
+
+    socket.on('answer', async (data) => {
+        try{
+            if (!data || !data.roomId) return;
+            // Si llega id_mensaje, enviar a participantes del mensaje
+            if (data.id_mensaje) {
+                try {
+                    const [rows] = await pool.query('SELECT id_persona_envia, id_persona_recibe FROM mensajes WHERE id_mensaje = ? LIMIT 1', [data.id_mensaje]);
+                    const m = (rows && rows[0]) ? rows[0] : null;
+                    if (m) {
+                        const sender = String(socket.data.userId || '');
+                        const targets = [];
+                        if (m.id_persona_envia && String(m.id_persona_envia) !== sender) targets.push(String(m.id_persona_envia));
+                        if (m.id_persona_recibe && String(m.id_persona_recibe) !== sender) targets.push(String(m.id_persona_recibe));
+                        targets.forEach(t => io.to(`user_${t}`).emit('answer', data));
+                        return;
+                    }
+                } catch (e) { console.warn('Error buscando participantes por id_mensaje (answer)', e); }
+            }
+
+            const targetId = data.targetUserId || data.userId || null;
+            if(targetId){ io.to(`user_${String(targetId)}`).emit('answer', data); return; }
+            socket.to(data.roomId).emit('answer', data);
+        } catch(err) { console.warn('answer handler error', err); }
+    });
+
+    socket.on('candidate', async (data) => {
+        try{
+            if (!data || !data.roomId) return;
+            if (data.id_mensaje) {
+                try {
+                    const [rows] = await pool.query('SELECT id_persona_envia, id_persona_recibe FROM mensajes WHERE id_mensaje = ? LIMIT 1', [data.id_mensaje]);
+                    const m = (rows && rows[0]) ? rows[0] : null;
+                    if (m) {
+                        const sender = String(socket.data.userId || '');
+                        const targets = [];
+                        if (m.id_persona_envia && String(m.id_persona_envia) !== sender) targets.push(String(m.id_persona_envia));
+                        if (m.id_persona_recibe && String(m.id_persona_recibe) !== sender) targets.push(String(m.id_persona_recibe));
+                        targets.forEach(t => io.to(`user_${t}`).emit('candidate', data));
+                        return;
+                    }
+                } catch (e) { console.warn('Error buscando participantes por id_mensaje (candidate)', e); }
+            }
+
+            const targetId = data.targetUserId || data.userId || null;
+            if(targetId){ io.to(`user_${String(targetId)}`).emit('candidate', data); return; }
+            socket.to(data.roomId).emit('candidate', data);
+        } catch(err) { console.warn('candidate handler error', err); }
+    });
+
+    socket.on('endCall', async (data) => {
+        try{
+            if (!data || !data.roomId) return;
+            if (data.id_mensaje) {
+                try {
+                    const [rows] = await pool.query('SELECT id_persona_envia, id_persona_recibe FROM mensajes WHERE id_mensaje = ? LIMIT 1', [data.id_mensaje]);
+                    const m = (rows && rows[0]) ? rows[0] : null;
+                    if (m) {
+                        const sender = String(socket.data.userId || '');
+                        const targets = [];
+                        if (m.id_persona_envia && String(m.id_persona_envia) !== sender) targets.push(String(m.id_persona_envia));
+                        if (m.id_persona_recibe && String(m.id_persona_recibe) !== sender) targets.push(String(m.id_persona_recibe));
+                        targets.forEach(t => io.to(`user_${t}`).emit('endCall', data));
+                        return;
+                    }
+                } catch (e) { console.warn('Error buscando participantes por id_mensaje (endCall)', e); }
+            }
+
+            const targetId = data.targetUserId || data.userId || null;
+            if(targetId){ io.to(`user_${String(targetId)}`).emit('endCall', data); return; }
+            socket.to(data.roomId).emit('endCall', data);
+        } catch(err) { console.warn('endCall handler error', err); }
+    });
+
+    socket.on('disconnect', () => {
+        // console.log('Socket desconectado:', socket.id);
+    });
+});
+
+server.listen(port, () => {
+    console.log(` Servidor escuchando en http://localhost:${port}`);
+    console.log(` Frontend disponible en http://localhost:${port}/SkillconnectFrontend`);
 });

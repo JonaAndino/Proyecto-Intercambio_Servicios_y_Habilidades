@@ -24,6 +24,9 @@ const mime = {
   '.woff2': 'font/woff2',
   '.woff': 'font/woff',
   '.ttf': 'font/ttf',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.ogg': 'video/ogg',
 };
 
 function sendFile(res, filePath, statusCode = 200) {
@@ -41,18 +44,30 @@ function sendFile(res, filePath, statusCode = 200) {
 
 const server = http.createServer((req, res) => {
   try {
-    // Cabecera CSP permisiva para DESARROLLO local (ajustar en producción)
-   const csp = "default-src 'self' data:; " +
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: https://unpkg.com https://cdnjs.cloudflare.com; " +
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com; " +
+    // Cabecera CSP permisiva para DESARROLLO local y PRODUCCIÓN
+    const csp = "default-src 'self' data:; " +
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https: https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.socket.io https://www.gstatic.com https://*.firebase.com https://*.firebaseapp.com https://*.googleapis.com https://meet.jit.si https://*.jitsi.net https://web-cdn.jitsi.net https://8x8.vc https://*.8x8.vc https://sso.8x8.com https://*.8x8.com https://alpha.jitsi.net; " +
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://meet.jit.si https://*.jitsi.net https://8x8.vc https://*.8x8.vc https://alpha.jitsi.net; " +
             "font-src 'self' https://fonts.gstatic.com data:; " +
-            "img-src 'self' data: https:; " +
-            "connect-src 'self' http://127.0.0.1:3001 http://localhost:3001 ws: https://unpkg.com https://nominatim.openstreetmap.org https://*.tile.openstreetmap.org https://api.iconify.design https://api.unisvg.com https://api.simplesvg.com;";
+            "img-src 'self' data: blob: https: https://pub-ada139691018466fa48df5ea9f22ee6c.r2.dev https://*.googleusercontent.com https://www.gstatic.com https://meet.jit.si https://*.jitsi.net https://8x8.vc https://*.8x8.vc https://alpha.jitsi.net; " +
+            "media-src 'self' data: blob: https://pub-ada139691018466fa48df5ea9f22ee6c.r2.dev https://meet.jit.si https://8x8.vc https://*.8x8.vc https://alpha.jitsi.net; " +
+            "frame-src 'self' https://meet.jit.si https://*.jitsi.net https://web-cdn.jitsi.net https://8x8.vc https://*.8x8.vc https://sso.8x8.com https://*.8x8.com https://alpha.jitsi.net; " +
+            "connect-src 'self' http://127.0.0.1:5050 http://localhost:5050 http://127.0.0.1:3001 http://localhost:3001 http://localhost:5678 http://127.0.0.1:5678 https://skillconnect.duckdns.org http://skillconnect.duckdns.org wss://skillconnect.duckdns.org ws: wss: https://meet.jit.si wss://meet.jit.si https://*.jitsi.net wss://*.jitsi.net https://8x8.vc https://*.8x8.vc wss://8x8.vc wss://*.8x8.vc https://alpha.jitsi.net wss://alpha.jitsi.net https://cdn.jsdelivr.net https://cdn.socket.io https://unpkg.com https://nominatim.openstreetmap.org https://*.tile.openstreetmap.org https://api.iconify.design https://api.unisvg.com https://api.simplesvg.com https://*.googleapis.com https://generativelanguage.googleapis.com https://api-inference.huggingface.co https://*.firebase.com https://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.gstatic.com;";
     res.setHeader('Content-Security-Policy', csp);
 
     const decoded = decodeURIComponent(req.url.split('?')[0]);
+    
+    // Ignorar rutas que deben ser manejadas por Nginx (phpMyAdmin, API, etc)
+    if (decoded.startsWith('/phpmyadmin') || decoded.startsWith('/api/') || decoded.startsWith('/socket.io')) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=UTF-8' });
+      return res.end('Not handled by this server');
+    }
+    
     // Normalizar y prevenir traversal
-    let safePath = path.normalize(decoded).replace(/^\/+/, '');
+    // Primero quitamos el slash inicial de la URL (que siempre es / en HTTP)
+    let urlPath = decoded.replace(/^\/+/, '');
+    // Luego normalizamos para el sistema operativo
+    let safePath = path.normalize(urlPath);
     // Si la petición tiene segmentos después de index.html (index.html/xxx)
     // tratamos como no encontrado y servimos 404.html
     if (/index\.html\/.+/.test(decoded)) {
@@ -122,6 +137,6 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Servidor estático escuchando en http://127.0.0.1:${PORT}/index.html`);
+  console.log(`Servidor estático escuchando en http://localhost:${PORT}`);
   console.log(`Sirviendo carpeta: ${PUBLIC_DIR}`);
 });

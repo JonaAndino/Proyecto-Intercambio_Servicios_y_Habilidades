@@ -41,7 +41,11 @@ router.get('/google/callback',
       
       // Redirigir al frontend con el token en la URL
       // El frontend capturará estos parámetros y los guardará en localStorage
-      const redirectUrl = `http://127.0.0.1:5050/login.html?token=${token}&userId=${user.id_usuario}&email=${encodeURIComponent(user.correo)}&source=google`;
+      // Auto-detectar entorno basado en el host de la request
+      const requestHost = req.get('host') || '';
+      const isLocal = requestHost.includes('localhost') || requestHost.includes('127.0.0.1');
+      const frontendUrl = isLocal ? 'http://localhost:5050' : (process.env.FRONTEND_URL || 'https://skillconnect.duckdns.org');
+      const redirectUrl = `${frontendUrl}/login.html?token=${token}&userId=${user.id_usuario}&email=${encodeURIComponent(user.correo)}&source=google`;
       
       console.log(' Redirigiendo a:', redirectUrl);
       

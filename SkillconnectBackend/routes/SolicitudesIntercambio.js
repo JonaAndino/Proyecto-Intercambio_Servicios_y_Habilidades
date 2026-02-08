@@ -286,9 +286,9 @@ router.get('/recibidas/:id', async (req, res) => {
                 p_sol.imagenUrl_Persona AS foto_solicitante
             FROM solicitudes_intercambio si
             INNER JOIN Personas p_sol ON si.id_persona_solicitante = p_sol.id_Perfil_Persona
-            WHERE si.id_persona_receptor = ? AND si.estado = 'Pendiente'
+            WHERE si.id_persona_receptor = ? AND si.estado = 'Pendiente' AND si.id_persona_solicitante != ?
             ORDER BY si.fecha_solicitud DESC`,
-            [personaId]
+            [personaId, personaId]
         );
 
         // Si hay habilidades, obtenerlas por separado

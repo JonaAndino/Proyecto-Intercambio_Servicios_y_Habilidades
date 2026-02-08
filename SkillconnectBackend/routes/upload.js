@@ -26,6 +26,23 @@ const upload = multer({
     }
 });
 
+// Configurar Multer para documentos (PDFs e imágenes para certificados)
+const uploadDocument = multer({ 
+    storage: storage,
+    limits: {
+        fileSize: 10 * 1024 * 1024, // Límite de 10MB para documentos
+    },
+    fileFilter: (req, file, cb) => {
+        // Aceptar imágenes y PDFs
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Solo se permiten imágenes (JPEG, PNG, GIF, WEBP) y PDFs'), false);
+        }
+    }
+});
+
 // ----------------------------------------------------
 // ENDPOINT: Subir imagen a R2 (POST /api/upload)
 // Soporta reemplazo automático si se envía oldImageUrl
@@ -131,6 +148,66 @@ router.get('/images', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Error al obtener las imágenes'
+        });
+    }
+});
+
+// ----------------------------------------------------
+// ENDPOINT: Subir documento/certificado (POST /api/upload/document)
+// Acepta imágenes y PDFs para certificaciones
+// ----------------------------------------------------
+router.post('/document', uploadDocument.single('document'), async (req, res) => {
+    try {
+        // Verificar que se haya subido un archivo
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: 'No se proporcionó ningún documento'
+            });
+        }
+
+        // Verificar si hay un documento antiguo para eliminar
+        const oldDocumentUrl = req.body.oldDocumentUrl;
+        
+        if (oldDocumentUrl) {
+            try {
+                await deleteFromR2(oldDocumentUrl);
+                console.log('Documento antiguo eliminado:', oldDocumentUrl);
+            } catch (deleteError) {
+                console.error('Error al eliminar documento antiguo (continuando):', deleteError);
+            }
+        }
+
+        // Determinar el nombre del archivo
+        let fileName = req.file.originalname;
+        
+        // Si es una imagen, agregarle extensión .pdf si se quiere convertir
+        // Por ahora, subimos el archivo tal cual (imagen o PDF)
+        const prefix = 'certificados/';
+        const fullFileName = prefix + fileName;
+
+        // Subir a Cloudflare R2
+        const documentUrl = await uploadToR2(
+            req.file.buffer,
+            fullFileName,
+            req.file.mimetype
+        );
+
+        // Responder con la URL del documento
+        res.json({
+            success: true,
+            message: 'Documento subido exitosamente',
+            url: documentUrl,
+            fileName: fileName,
+            mimeType: req.file.mimetype,
+            replacedOld: !!oldDocumentUrl
+        });
+
+    } catch (error) {
+        console.error('Error al subir documento:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al subir el documento'
         });
     }
 });

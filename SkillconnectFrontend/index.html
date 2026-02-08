@@ -1,974 +1,1102 @@
 <!DOCTYPE html>
-
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>SkillConnect - Intercambia, Aprende, Crece</title>
-
-
-
+    <meta name="description" content="Conecta con una comunidad global para intercambiar habilidades. Enseña lo que sabes, aprende lo que quieres. Sin pagos, solo conocimientos.">
     <script src="https://cdn.tailwindcss.com"></script>
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='%232563EB' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 10V3L4 14h7v7l9-11h-7z'/></svg>"
-        type="image/svg+xml">
-
-
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='%232563EB' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 10V3L4 14h7v7l9-11h-7z'/></svg>" type="image/svg+xml">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-
-
-
-    <style>
-        /* ======================================= */
-
-        /* ESTILOS DE LA LANDING PAGE (VISTA 1) */
-
-        /* ======================================= */
-
-
-
-        body {
-
-            font-family: 'Inter', sans-serif;
-
-            background-color: #f8f9fa;
-
-            scroll-behavior: smooth;
-
-        }
-
-
-
-        /* HERO SECTION */
-
-        .hero-gradient-bg {
-
-            /* Asegúrate de que tengas una imagen llamada pring.webp en la misma carpeta */
-
-            background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
-
-                url('pring.webp');
-
-            background-size: cover;
-
-            background-position: center;
-
-            background-repeat: no-repeat;
-
-            background-attachment: fixed;
-
-            color: white;
-
-            position: relative;
-
-        }
-
-
-
-        /* CTA PULSE ANIMATION */
-
-        @keyframes pulse-once {
-
-            0% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
-            }
-
-            70% {
-                transform: scale(1.05);
-                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-            }
-
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-            }
-
-        }
-
-        .cta-button-accent {
-
-            animation: pulse-once 1.5s ease-out infinite;
-
-        }
-
-
-
-        .hero-icon-card {
-
-            background-color: rgba(255, 255, 255, 0.15);
-
-            backdrop-filter: blur(5px);
-
-            border: 1px solid rgba(255, 255, 255, 0.3);
-
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-
-            transition: transform 0.3s ease;
-
-        }
-
-
-
-        /* PASOS/HOW IT WORKS SECTION */
-
-
-        .pasos-container-grid {
-
-            display: flex;
-
-            justify-content: space-around;
-
-            padding: 40px 20px;
-
-            gap: 20px;
-
-        }
-
-        .paso {
-
-            flex: 1;
-
-            position: relative;
-
-            min-height: 350px;
-
-            border-radius: 12px;
-
-            overflow: hidden;
-
-            background-size: cover;
-
-            background-position: center;
-
-            color: #f5f3f3;
-
-            padding: 30px;
-
-            z-index: 1;
-
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-
-            display: flex;
-
-            flex-direction: column;
-
-            justify-content: center;
-
-        }
-
-        .paso .overlay {
-
-            position: absolute;
-
-            top: 0;
-
-            left: 0;
-
-            width: 100%;
-
-            height: 100%;
-
-            background-color: rgba(0, 0, 0, 0.4);
-
-            z-index: -1;
-
-        }
-
-        /* Asegúrate de tener estas imágenes: one.jpeg, two.jpeg, thre.jpeg */
-
-        #paso-1 {
-            background-image: url('one.jpeg');
-        }
-
-        #paso-2 {
-            background-image: url('two.jpeg');
-        }
-
-        #paso-3 {
-            background-image: url('thre.jpeg');
-        }
-
-
-
-        .paso .titulo {
-            font-size: 1.8em;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .paso .descripcion {
-            font-size: 1.1em;
-            line-height: 1.4;
-        }
-
-
-
-        /* SKILL CARDS STYLES */
-
-        .skill-card {
-
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            background-color: white;
-            transition: all 0.3s ease;
-            border: 1px solid #e5e7eb;
-
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-
-        }
-
-        .icon-wrapper {
-
-            width: 3rem;
-            height: 3rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 9999px;
-            margin-bottom: 0.75rem;
-            color: white;
-
-        }
-
-        /* Colores de íconos (mantener los originales) */
-
-        .icon-design {
-            background-color: #f97316;
-        }
-
-        .icon-health {
-            background-color: #10b981;
-        }
-
-        .icon-language {
-            background-color: #3b82f6;
-        }
-
-        .icon-video {
-            background-color: #ef4444;
-        }
-
-        .icon-finance {
-            background-color: #8b5cf6;
-        }
-
-        .icon-food {
-            background-color: #f59e0b;
-        }
-
-        .icon-marketing {
-            background-color: #06b6d4;
-        }
-
-        .icon-more {
-            background-color: #4b5563;
-        }
-
-
-
-
-
-        /* ================================================= */
-
-        /* ESTILOS DE LA SECCIÓN DE ACCESO/REGISTRO (VISTA 2) */
-
-        /* ================================================= */
-
-        #login-section-container {
-
-            /* IMPORTANTE: La vista de login se oculta por defecto en el HTML, pero aquí se define el display cuando se muestra */
-
-            display: none;
-
-            background-image: linear-gradient(135deg, #6a85b6 0%, #bac8e0 100%);
-
-            min-height: 100vh;
-
-            justify-content: center;
-
-            align-items: center;
-
-            padding: 40px 0;
-
-            width: 100%;
-
-        }
-
-
-
-        .login-main-container {
-
-            display: flex;
-
-            flex-direction: column;
-
-            background-color: #ffffff;
-
-            border-radius: 15px;
-
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-
-            max-width: 900px;
-
-            width: 90%;
-
-            overflow: hidden;
-
-            border: 5px solid #1a2a4b;
-
-        }
-
-
-
-        .portada-section {
-            padding: 30px;
-            text-align: center;
-        }
-
-
-
-        .registro-btn,
-        .login-btn-auth {
-
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            margin-top: 15px;
-
-        }
-
-
-
-        .registro-btn {
-            background-color: #6a85b6;
-            color: white;
-        }
-
-        .registro-btn:hover {
-            background-color: #4a5a7b;
-        }
-
-
-
-        .acceso-section-login {
-            padding: 30px;
-            background-color: #f5f7fa;
-            border-top: 1px solid #ddd;
-        }
-
-
-
-        .login-btn-auth {
-            background-color: #1a2a4b;
-            color: white;
-        }
-
-        .login-btn-auth:hover {
-            background-color: #0d1a33;
-        }
-
-
-
-        @media (min-width: 768px) {
-
-            .login-main-container {
-                flex-direction: row;
-                max-width: 1100px;
-            }
-
-            .portada-section {
-                flex: 1;
-                padding: 40px;
-            }
-
-            .acceso-section-login {
-                flex: 1;
-                border-top: none;
-                border-left: 1px solid #ddd;
-            }
-
-        }
-    </style>
-
+<style>
+/* ======================================= */
+/* VARIABLES DE COLOR SKILLCONNECT */
+/* ======================================= */
+:root {
+    --primary-blue: #3b82f6;
+    --primary-blue-dark: #2563EB;
+    --header-navy: #1a2a4b;
+    --success-green: #10b981;
+    --accent-orange: #f97316;
+    --accent-red: #ef4444;
+    --accent-purple: #8b5cf6;
+    --accent-amber: #f59e0b;
+    --accent-cyan: #06b6d4;
+    --accent-gray: #4b5563;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    scroll-behavior: smooth;
+}
+
+/* --- ESTILOS PARA EL CARRUSEL DE COMENTARIOS --- */
+.scroller-wrapper {
+    overflow: hidden;
+    -webkit-mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
+    mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
+}
+
+.scroller-inner {
+    display: flex;
+    gap: 1rem;
+    padding-block: 1rem;
+    width: max-content;
+    animation: scroll 30s linear infinite;
+}
+
+.scroller-wrapper:hover .scroller-inner {
+    animation-play-state: paused;
+}
+
+@keyframes scroll {
+    to {
+        transform: translateX(calc(-50% - 0.5rem));
+    }
+}
+
+.comment-card {
+    width: 350px;
+    flex-shrink: 0;
+}
+
+.comment-card .card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.comment-card .card-text {
+    flex-grow: 1;
+    font-style: italic;
+}
+
+.comment-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.comment-author img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Sección del Héroe (Parallax) */
+.hero-section {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    color: white;
+}
+
+.parallax-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: bottom;
+    transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* z-index para las capas parallax */
+.parallax-layer:nth-of-type(1) { z-index: -7; }
+.parallax-layer:nth-of-type(2) { z-index: -6; }
+.parallax-layer:nth-of-type(3) { z-index: -5; }
+.parallax-layer:nth-of-type(4) { z-index: -4; }
+.parallax-layer:nth-of-type(5) { z-index: -3; }
+.parallax-layer:nth-of-type(6) { z-index: -2; }
+.parallax-layer:nth-of-type(7) { z-index: -1; }
+
+.parallax-layer.from-top {
+  transform: translateY(-100%);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+/* Transiciones de entrada (controladas por JS) */
+.parallax-layer.from-left {
+  transform: translateX(-100%);
+}
+.parallax-layer.from-right {
+  transform: translateX(100%);
+}
+.parallax-layer.from-top {
+  transform: translateY(-100%);
+}
+
+.parallax-layer.is-visible {
+  transform: translate(0, 0);
+}
+
+/* CTA PULSE ANIMATION */
+@keyframes pulse-once {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+    }
+    70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    }
+}
+
+.cta-button-accent {
+    animation: pulse-once 1.5s ease-out infinite;
+}
+
+
+
+/* Estilos para Desktop */
+.hero-panels-container {
+    display: flex;
+    width: 100%;
+    height: 100vh; 
+    overflow: hidden;
+    position: relative;
+}
+
+.hero-panel {
+    background-size: cover;
+    background-position: center;
+    flex: 1;
+    position: relative;
+    cursor: pointer;
+    transition: flex 0.7s cubic-bezier(0.61, .04, .36, .98);
+}
+
+.hero-panel:hover {
+    flex: 5; 
+}
+
+.hero-panel h3 {
+    font-size: 2rem;
+    color: white;
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    margin: 0;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.hero-panel:hover h3 {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.hero-panel::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.3);
+    transition: opacity 0.7s ease;
+}
+
+.hero-panel:hover::after {
+    opacity: 0; 
+}
+
+.hero-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    color: white;
+    text-align: center;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+    width: 90%;
+    max-width: 800px;
+}
+
+/* --- AJUSTES PARA MÓVIL --- */
+@media (max-width: 768px) {
+    .hero-panels-container {
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+    .hero-panel {
+        flex: 1;
+    }
+    .hero-panel:hover {
+        flex: 1;
+    }
+    .hero-panel h3 {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .hero-panel:nth-of-type(n+4) {
+        display: none;
+    }
+
+    .hero-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+    }
+    .hero-content h1 {
+        font-size: 2.5rem;
+    }
+    .hero-content .lead {
+        font-size: 1.2rem;
+        margin-top: 1rem;
+    }
+}
+
+/* PARK CARD STYLES */
+.park-card {
+    position: relative;
+    border: none;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    cursor: pointer;
+    height: 400px;
+}
+
+.park-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(59, 130, 246, 0.3);
+}
+
+.park-card .park-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.park-card:hover .park-card-img {
+    transform: scale(1.1);
+}
+
+.park-card .park-card-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem 1.5rem 1.5rem;
+    color: white;
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 10%, rgba(0,0,0,0) 100%);
+    transform: translateY(calc(100% - 4.5rem)); 
+    transition: transform 0.5s ease;
+}
+
+.park-card:hover .park-card-content {
+    transform: translateY(0);
+}
+
+.park-card .park-card-title {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.park-card .park-card-text {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.5s ease 0.1s;
+}
+
+.park-card:hover .park-card-text {
+    opacity: 1;
+}
+
+.park-card .park-card-btn {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.5s ease 0.2s;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 600;
+    background-color: var(--primary-blue) !important;
+    border-color: var(--primary-blue) !important;
+}
+
+.park-card:hover .park-card-btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.park-card .park-card-btn:hover {
+    background-color: var(--primary-blue-dark) !important;
+}
+
+@media (max-width: 992px) {
+    .park-card .park-card-content {
+        transform: translateY(0);
+    }
+    .park-card .park-card-text,
+    .park-card .park-card-btn {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Navbar customization - SkillConnect Style (index1.html) */
+.navbar {
+    background-color: #ffffff !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    position: fixed !important;
+    top: 0;
+    z-index: 1050 !important;
+    width: 100%;
+}
+
+.navbar * {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.navbar-brand {
+    color: #2563EB !important;
+    font-weight: 800 !important;
+    font-size: 1.5rem !important;
+    letter-spacing: -0.025em;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.navbar-nav .nav-item {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.navbar-nav .nav-link {
+    color: #000000 !important;
+    font-weight: 700 !important;
+    transition: color 0.15s ease;
+    margin-right: 1.5rem;
+    font-size: 1rem !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    text-decoration: none !important;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #2563EB !important;
+}
+
+/* Botones de la navbar - Estilo index1.html */
+.btn-login {
+    color: #000000 !important;
+    font-weight: 700 !important;
+    background-color: transparent !important;
+    border: 2px solid #2563EB !important;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    transition: all 0.15s ease;
+    opacity: 1 !important;
+    visibility: visible !important;
+    text-decoration: none !important;
+}
+
+.btn-login:hover {
+    color: #ffffff !important;
+    background-color: #2563EB !important;
+}
+
+.btn-register {
+    background-color: #2563EB !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    padding: 0.5rem 1.5rem;
+    border-radius: 9999px;
+    border: none;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transition: all 0.15s ease;
+    opacity: 1 !important;
+    visibility: visible !important;
+    text-decoration: none !important;
+}
+
+.btn-register:hover {
+    background-color: #1d4ed8 !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Toggler para móvil */
+.navbar-toggler {
+    border-color: rgba(75, 85, 99, 0.5);
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(75, 85, 99, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* Button styles - change from green to blue */
+.btn-primary {
+    background-color: var(--primary-blue) !important;
+    border-color: var(--primary-blue) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-blue-dark) !important;
+    border-color: var(--primary-blue-dark) !important;
+}
+
+.btn-success {
+    background-color: var(--primary-blue) !important;
+    border-color: var(--primary-blue) !important;
+}
+
+.btn-success:hover {
+    background-color: var(--primary-blue-dark) !important;
+    border-color: var(--primary-blue-dark) !important;
+}
+
+/* Feature icons */
+.feature-icon {
+    margin-bottom: 1.5rem;
+    display: inline-block;
+    position: relative;
+}
+
+.feature-icon svg {
+    width: 72px;
+    height: 72px;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    filter: drop-shadow(0 4px 6px rgba(59, 130, 246, 0.3));
+}
+
+.feature-icon:hover svg {
+    transform: scale(1.15) rotate(5deg);
+    filter: drop-shadow(0 8px 12px rgba(59, 130, 246, 0.5));
+}
+
+/* Animación de pulso para el ícono de bombilla */
+@keyframes pulse-glow {
+    0%, 100% {
+        filter: drop-shadow(0 4px 6px rgba(59, 130, 246, 0.3));
+    }
+    50% {
+        filter: drop-shadow(0 6px 12px rgba(59, 130, 246, 0.6));
+    }
+}
+
+.col-md-4:nth-child(1) .feature-icon svg {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Animación de búsqueda para la lupa */
+@keyframes search-bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.col-md-4:nth-child(2) .feature-icon:hover svg {
+    animation: search-bounce 0.6s ease-in-out;
+}
+
+/* Animación de conexión para usuarios */
+@keyframes connect-shake {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    25% {
+        transform: rotate(-5deg);
+    }
+    75% {
+        transform: rotate(5deg);
+    }
+}
+
+.col-md-4:nth-child(3) .feature-icon:hover svg {
+    animation: connect-shake 0.5s ease-in-out;
+}
+</style>
 </head>
 
-<body class="antialiased">
+<body>
 
-
-
-    <div id="message-box"
-        class="fixed top-4 right-4 z-50 p-4 rounded-lg shadow-xl text-white transition-opacity duration-300 opacity-0 hidden">
-    </div>
-
-
-
-
-
-    <div id="landing-page-container" class="w-full">
-
-        <header class="bg-white shadow-md sticky top-0 z-50">
-
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-
-                <a href="#presentacion" class="text-2xl font-extrabold tracking-tight text-blue-600">
-
-                    Skill<span class="text-blue-600">Connect</span>
-
-                </a>
-
-
-
-                <nav class="hidden md:flex space-x-6 text-gray-600 font-medium">
-
-                    <a href="#como-funciona" class="hover:text-blue-500 transition duration-150">Cómo Funciona</a>
-
-                    <a href="#habilidades" class="hover:text-blue-500 transition duration-150">Habilidades</a>
-
-                    <a href="#testimonios" class="hover:text-blue-500 transition duration-150">Comunidad</a>
-
-                </nav>
-
-                <nav>
-                    <ul class="flex space-x-4">
-                        <li>
-                                      <a href="login.html">
-                        <button class="text-gray-700 font-semibold hover:text-blue-600 transition duration-150 px-4 py-2 rounded-full">
-                            Iniciar Sesión
-                        </button>
-                    </a>
-                        </li>
-                        <li>
-                           <a href="registro_prueba.html">
-                        <button class="bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-150 px-6 py-2 rounded-full shadow-lg">
-                            Crear Cuenta
-                        </button>
-                    </a>
-                       
-                        </li>
-                    </ul>
-                </nav>
-
-            </div>
-
-        </header>
-
-
-
-        <main>
-
-            <section class="hero-gradient-bg py-20 sm:py-32" id="hero-start">
-
-                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-
-                    <h1 class="text-5xl sm:text-5xl lg:text-5xl font-extrabold mb-6 leading-tight">
-
-                        Intercambia Habilidades <br class="hidden sm:inline">Desbloquea Oportunidades
-
-                    </h1>
-
-                    <p class="text-xl sm:text-1xl mb-10 opacity-90 max-w-3xl mx-auto">
-
-                        SkillConnect te conecta con una comunidad global dispuesta a enseñar y aprender. ¿Qué sabes
-                        hacer? ¿Qué quieres aprender?
-
-                    </p>
-                    <a href="login.html" id="login-btn-redirect" class="login-btn">
-
-                        <button id="main-cta"
-                            class="inline-block cta-button-accent bg-blue-500 text-white text-xl font-bold py-4 px-10 rounded-full shadow-2xl hover:bg-blue-600 transition duration-300 transform hover:scale-105">
-
-                            Empieza Gratis Hoy
-
-                        </button>
-
-                    </a>
-
-
-                    <p class="mt-4 text-sm opacity-80">Sin Pagos. ¡Solo ganas conocimientos!</p>
-
-
-
-                    <div class="mt-16 flex justify-center space-x-8">
-
-                        <div
-                            class="hero-icon-card p-4 rounded-xl backdrop-blur-sm transform hover:scale-110 transition duration-300 text-center">
-
-                            <svg class="w-8 h-8 text-yellow-300 mx-auto" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+           <a class="navbar-brand" href="index.html">SkillConnect</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#como-funciona" data-i18n="nav.howItWorks">Cómo Funciona</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#habilidades" data-i18n="nav.skills">Habilidades</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#comunidad" data-i18n="nav.community">Comunidad</a>
+                    </li>
+                </ul>
+                <div class="d-flex gap-2 align-items-center">
+                    <!-- Selector de idioma -->
+                    <div class="position-relative">
+                        <button id="languageBtn" class="btn btn-sm border border-secondary rounded-pill d-flex align-items-center gap-2 px-3 py-2 bg-white" style="min-width: 80px;">
+                            <svg class="text-secondary" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
                             </svg>
-
-                            <p class="text-sm mt-1 font-semibold">Coding</p>
-
-                        </div>
-
-                        <div
-                            class="hero-icon-card p-4 rounded-xl backdrop-blur-sm transform hover:scale-110 transition duration-300 text-center">
-
-                            <svg class="w-8 h-8 text-pink-300 mx-auto" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.865-1.297A2 2 0 0111.975 3h.05A2 2 0 0114.31 4.81l.865 1.297c.36.54.912.89 1.664.89h1.93a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
-                                </path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <span id="currentLang" class="fw-semibold small">ES</span>
+                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
-
-                            <p class="text-sm mt-1 font-semibold">Fotografia</p>
-
-                        </div>
-
-                        <div
-                            class="hero-icon-card p-4 rounded-xl backdrop-blur-sm transform hover:scale-110 transition duration-300 text-center">
-
-                            <svg class="w-8 h-8 text-cyan-300 mx-auto" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 19V6a2 2 0 00-2-2H5a2 2 0 00-2 2v13M14 17l6 2 2-2M14 17l-3-3M14 17l-3 3M21 17l-3-3m3 3l-3 3M17 10l-3-3m3 3l-3 3M17 10l3-3m-3 3l3 3">
-                                </path>
-                            </svg>
-
-                            <p class="text-sm mt-1 font-semibold">Música</p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-            <section class="py-20 bg-white" id="como-funciona">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-                    <div class="encabezado-simple text-center mb-6">
-                        <h2 class="text-4xl font-extrabold text-gray-900 mb-4">La Conexión es Simple</h2>
-
-                        <p class="text-xl text-gray-500">Solo tres pasos para comenzar tu viaje de aprendizaje mutuo.
-                        </p>
-                    </div>
-
-                    <div class="pasos-container-grid">
-
-                        <div class="paso" id="paso-1">
-                            <div class="overlay"></div>
-                            <h3 class="titulo"> Ofrece tu Talento</h3>
-                            <p class="descripcion">Publica las habilidades que estás dispuesto a enseñar (ej. Excel,
-                                Yoga, Idiomas).</p>
-                        </div>
-
-                        <div class="paso" id="paso-2">
-                            <div class="overlay"></div>
-                            <h3 class="titulo"> Encuentra tu Maestro</h3>
-                            <p class="descripcion">Busca entre perfiles por la habilidad que quieres dominar (ej. Diseño
-                                Web, Cocina).</p>
-                        </div>
-
-                        <div class="paso" id="paso-3">
-                            <div class="overlay"></div>
-                            <h3 class="titulo">¡Conéctate e Intercambia!</h3>
-                            <p class="descripcion">Programa una sesión virtual o presencial. Tu conocimiento es tu
-                                moneda de cambio.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-
-
-
-            </section>
-
-
-
-            <section id="habilidades" class="py-20 bg-gray-100">
-
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-                    <h2 class="text-4xl font-bold text-center text-gray-800 mb-4">Un Universo de Habilidades</h2>
-
-                    <p class="text-xl text-center text-gray-600 mb-12">Desde lo profesional hasta tus hobbies más
-                        queridos.</p>
-
-
-
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-
-                        <div class="skill-card">
-                            <div class="icon-wrapper icon-design"><svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
-                                    <path d="M12 20H4L2 15L12 4L22 15L20 20H12Z" />
-                                    <path d="M12 4V15" />
-                                </svg></div>
-                            <p class="font-semibold text-gray-800 text-center">Diseño UX/UI</p>
-                        </div>
-
-                        <div class="skill-card">
-                            <div class="icon-wrapper icon-health"><svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
-                                    <path
-                                        d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                                </svg></div>
-                            <p class="font-semibold text-gray-800 text-center">Yoga</p>
-                        </div>
-
-                        <div class="skill-card">
-                            <div class="icon-wrapper icon-language"><svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <path d="M12 2a14.5 14.5 0 0 0 0 20M2 12h20" />
-                                </svg></div>
-                            <p class="font-semibold text-gray-800 text-center">Español Conversacional</p>
-                        </div>
-
-                        <div class="skill-card">
-                            <div class="icon-wrapper icon-video"><svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
-                                    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-                                    <line x1="7" y1="2" x2="7" y2="22" />
-                                    <line x1="17" y1="2" x2="17" y2="22" />
-                                    <line x1="2" y1="12" x2="22" y2="12" />
-                                    <line x1="2" y1="7" x2="7" y2="7" />
-                                    <line x1="2" y1="17" x2="7" y2="17" />
-                                    <line x1="17" y1="7" x2="22" y2="7" />
-                                    <line x1="17" y1="17" x2="22" y2="17" />
-                                </svg></div>
-                            <p class="font-semibold text-gray-800 text-center">Edición de Video</p>
-                        </div>
-
-                        <div class="skill-card">
-                            <div class="icon-wrapper icon-finance"><svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
-                                    <path d="M12 20V4" />
-                                    <path d="M16 4h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2" />
-                                    <path d="M8 4H6a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2" />
-                                    <path d="M16 10H8" />
-                                    <path d="M16 14h2a2 2 0 0 0 2-2V8" />
-                                    <path d="M8 14H6a2 2 0 0 1-2-2v-4" />
-                                    <path d="M16 14H8" />
-                                </svg></div>
-                            <p class="font-semibold text-gray-800 text-center">Finanzas</p>
-                        </div>
-
-                        <div class="skill-card">
-                            <div class="icon-wrapper icon-food"><svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
-                                    <path d="M20 8c0 3-4 5-4 5H8s-4-2-4-5" />
-                                    <path
-                                        d="M18 20a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1zM2 8h20" />
-                                    <path d="M12 4v4" />
-                                </svg></div>
-                            <p class="font-semibold text-gray-800 text-center">Cocina Mediterránea</p>
-                        </div>
-
-                        <div class="skill-card">
-                            <div class="icon-wrapper icon-marketing"><svg xmlns="http://www.w3.org/2000/svg" width="24"
-                                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
-                                    <path d="M18 11a4 4 0 0 1-4 4H7a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h7a4 4 0 0 1 4 4z" />
-                                    <path d="M21 12l-3-3m0 6l3-3m0 0h-3" />
-                                </svg></div>
-                            <p class="font-semibold text-gray-800 text-center">Marketing Digital</p>
-                        </div>
-
-                        <div class="skill-card bg-blue-100 border-blue-400">
-                            <div class="icon-wrapper icon-more bg-blue-600"><svg xmlns="http://www.w3.org/2000/svg"
-                                    width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
-                                    <path d="M12 5v14M5 12h14" />
-                                </svg></div>
-                            <p class="font-bold text-blue-700 text-center">¡Y Muchas Más!</p>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-
-            <section id="testimonios" class="py-20 bg-white">
-
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-                    <h2 class="text-4xl font-bold text-center text-gray-800 mb-4">Historias Reales de Intercambio</h2>
-
-                    <p class="text-xl text-center text-gray-600 mb-12">Conoce a quienes ya están conectando y creciendo.
-                    </p>
-
-
-
-                    <div class="grid md:grid-cols-2 gap-8">
-
-                        <div class="bg-gray-50 p-6 rounded-xl border-l-4 border-blue-500 shadow-md">
-
-                            <p class="text-lg italic text-gray-700 mb-4">"Le enseñé a Javier a usar Google Sheets
-                                avanzado, y a cambio, él me dio 4 clases de guitarra que siempre quise tomar. ¡El
-                                intercambio es justo y divertido!"</p>
-
-                            <div class="flex items-center">
-
-                                <img class="w-12 h-12 rounded-full mr-4"
-                                    src="https://placehold.co/100x100/10b981/ffffff?text=A"
-                                    onerror="this.onerror=null; this.src='https://placehold.co/100x100/10b981/ffffff?text=A'"
-                                    alt="Avatar de Ana">
-
-                                <div>
-                                    <p class="font-semibold text-gray-900">Ana Martinez</p>
-                                    <p class="text-sm text-gray-500">Instructora de Data & Alumna de Música</p>
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div class="bg-gray-50 p-6 rounded-xl border-l-4 border-blue-500 shadow-md">
-
-                            <p class="text-lg italic text-gray-700 mb-4">"Necesitaba ayuda con mi currículum
-                                profesional. Encontré a Carolina, una coach de carrera, y le enseñé fotografía básica
-                                para sus redes sociales. ¡Un win-win perfecto!"</p>
-
-                            <div class="flex items-center">
-
-                                <img class="w-12 h-12 rounded-full mr-4"
-                                    src="https://placehold.co/100x100/3b82f6/ffffff?text=C"
-                                    onerror="this.onerror=null; this.src='https://placehold.co/100x100/3b82f6/ffffff?text=C'"
-                                    alt="Avatar de Carlos">
-
-                                <div>
-                                    <p class="font-semibold text-gray-900">Carlos Raudales</p>
-                                    <p class="text-sm text-gray-500">Diseñador Gráfico & Alumno de Coaching</p>
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-
-            <section class="py-16 bg-blue-800 text-white">
-
-                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-
-                    <h2 class="text-4xl font-extrabold mb-4">¿Listo para Conectar?</h2>
-
-                    <p class="text-xl opacity-80 mb-8">Únete a la plataforma que está redefiniendo el aprendizaje
-                        colaborativo. ¡Es gratis!</p>
-                    <a href="registro_prueba.html" id="login-btn-redirect" class="login-btn">
-                        <button
-                            class="inline-block bg-white text-blue-800 text-xl font-bold py-4 px-10 rounded-full shadow-2xl hover:bg-gray-200 transition duration-300 transform hover:scale-105">
-
-                            Registrarse en SkillConnect
-
                         </button>
-                    </a>
-
-
+                        
+                        <div id="languageDropdown" class="dropdown-menu shadow-lg border-0 rounded-3" style="display: none; position: absolute; right: 0; min-width: 180px; z-index: 1050;">
+                            <button onclick="changeLanguage('es')" class="dropdown-item d-flex align-items-center gap-3 px-3 py-2">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                                </svg>
+                                <span class="small fw-semibold text-secondary">ES</span>
+                                <span class="fw-medium">Español</span>
+                            </button>
+                            <button onclick="changeLanguage('en')" class="dropdown-item d-flex align-items-center gap-3 px-3 py-2 border-top">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+                                </svg>
+                                <span class="small fw-semibold text-secondary">EN</span>
+                                <span class="fw-medium">English</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <a href="login.html" class="btext-gray-700 font-semibold hover:text-blue-600 transition duration-150 px-4 py-2 rounded-full" data-i18n="nav.login">Iniciar Sesión</a>
+                    <a href="registro_prueba.html" class="btn btn-register" data-i18n="nav.register">Crear Cuenta</a>
                 </div>
-
-            </section>
-
-        </main>
-
-        <footer class="bg-gray-800 text-white py-8">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
-                <p>&copy; 2025 SkillConnect. Todos los derechos reservados.</p>
-                <div class="mt-2 space-x-4">
-
-                    <a href="terminos_de_servicio.html" class="hover:text-blue-400">Términos de
-                        Servicio</a>
-                    <span class="text-gray-600">|</span>
-                    <a href="politica_de_privacidad.html" class="hover:text-blue-400">Política de
-                        Privacidad</a>
-                </div>
             </div>
-        </footer>
-
-
-
-
-
-    </div>
-
-    <div id="login-section-container" style="display: none;" class="w-full">
-
-        <div class="login-main-container">
-
-            <div class="portada-section">
-
-                <button onclick="toggleView('landing')"
-                    class="text-sm text-blue-600 hover:underline mb-4 flex items-center">
-
-                    <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i> Volver a la página principal
-
-                </button>
-
-
-
-                <img src="portada.jpeg" alt="Skill Connect - El Vínculo que Conecta Habilidades" class="portada-img"
-                    onerror="this.onerror=null; this.src='https://placehold.co/400x300/6a85b6/ffffff?text=SkillConnect+Portada';">
-
-
-
-                <h1 class="text-3xl font-extrabold text-[#1a2a4b] mb-4">Skill Connect</h1>
-
-                <p class="text-gray-600 mb-6">Conecta con personas talentosas, intercambia habilidades y expande tus
-                    conocimientos.</p>
-
-                <a href="registro_prueba.html" role="button">
-
-                </a>
-
-            </div>
-
-
-
-            <div class="acceso-section-login">
-
-                <h2 class="text-2xl font-bold text-[#1a2a4b] mb-5 border-b-2 border-[#6a85b6] pb-2">¿Ya eres miembro?
-                    Accede</h2>
-                <p class="text-gray-600 mb-4">Haz clic abajo para ir a la página de inicio de sesión seguro.</p>
-                <p class="text-sm text-gray-500 mt-5 text-center">
-                    Al hacer clic en "Iniciar Sesión" serás dirigido al formulario de autenticación segura.
-                </p>
-            </div>
-
+        </div>
+    </nav> 
+ 
+    <section id="inicio" class="hero-panels-container">
+        
+        <!-- Contenido superpuesto (título y botón) -->
+        <div class="hero-content">
+            <h1 class="display-4 fw-bold mb-4" data-i18n="hero.title">Intercambia Habilidades<br>Desbloquea Oportunidades</h1>
+            <p class="lead fs-4 mb-4" data-i18n="hero.subtitle">SkillConnect te conecta con una comunidad global dispuesta a enseñar y aprender.<br>¿Qué sabes hacer? ¿Qué quieres aprender?</p>
+            <a href="login.html" class="btn btn-primary btn-lg cta-button-accent" id="main-cta" data-i18n="hero.cta">Empieza Gratis Hoy</a>
+            <p class="mt-3 opacity-75"><small data-i18n="hero.nopayments">Sin Pagos. ¡Solo ganas conocimientos!</small></p>
         </div>
 
-    </div>
+        <!-- Paneles de fondo -->
+        <div class="hero-panel" style="background-image: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071');">
+            <h3>Programación</h3>
+        </div>
+        <div class="hero-panel" style="background-image: url('https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070');">
+            <h3>Diseño & UX</h3>
+        </div>
+        <div class="hero-panel" style="background-image: url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070');">
+            <h3>Marketing</h3>
+        </div>
+        <div class="hero-panel" style="background-image: url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070');">
+            <h3>Fotografía</h3>
+        </div>
+        <div class="hero-panel" style="background-image: url('https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=2070');">
+            <h3>Música</h3>
+        </div>
+    </section>
+
+    <section id="habilidades" class="section-padding mt-5" >
+        <div class="container">
+            <h2 class="text-center mb-3 fw-bold" data-i18n="skills.title">Un Universo de Habilidades</h2>
+            <p class="text-center text-muted mb-5 fs-5" data-i18n="skills.subtitle">Desde lo profesional hasta tus hobbies más queridos</p>
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                
+                <!-- Habilidad 1 -->
+                <div class="col">
+                    <div class="park-card">
+                        <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070" class="park-card-img" alt="Diseño UX/UI">
+                        <div class="park-card-content">
+                            <h5 class="park-card-title" data-i18n="skills.uxui">Diseño UX/UI</h5>
+                            <p class="park-card-text" data-i18n="skills.uxui.desc">Aprende a crear interfaces intuitivas y experiencias de usuario excepcionales con diseñadores profesionales.</p>
+                            <a href="login.html" class="btn btn-primary park-card-btn" data-i18n="skills.explore">Explorar</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Habilidad 2 -->
+                <div class="col">
+                    <div class="park-card">
+                        <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=2069" class="park-card-img" alt="Programación Web">
+                        <div class="park-card-content">
+                            <h5 class="park-card-title" data-i18n="skills.programming">Programación Web</h5>
+                            <p class="park-card-text" data-i18n="skills.programming.desc">Domina JavaScript, React, Node.js y más. Conecta con desarrolladores que comparten tu pasión por el código.</p>
+                            <a href="login.html" class="btn btn-primary park-card-btn" data-i18n="skills.explore">Explorar</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Habilidad 3 -->
+                <div class="col">
+                    <div class="park-card">
+                        <img src="https://images.unsplash.com/photo-1505778276668-26b3ff7af103?q=80&w=2086" class="park-card-img" alt="Marketing Digital">
+                        <div class="park-card-content">
+                            <h5 class="park-card-title" data-i18n="skills.marketing">Marketing Digital</h5>
+                            <p class="park-card-text" data-i18n="skills.marketing.desc">SEO, redes sociales, email marketing y estrategias de contenido. Impulsa tu marca con expertos.</p>
+                            <a href="login.html" class="btn btn-primary park-card-btn" data-i18n="skills.explore">Explorar</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Habilidad 4 -->
+                <div class="col">
+                    <div class="park-card">
+                        <img src="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?q=80&w=2074" class="park-card-img" alt="Idiomas">
+                        <div class="park-card-content">
+                            <h5 class="park-card-title" data-i18n="skills.languages">Idiomas</h5>
+                            <p class="park-card-text" data-i18n="skills.languages.desc">Inglés, español, francés, mandarín y más. Practica conversación con hablantes nativos de todo el mundo.</p>
+                            <a href="login.html" class="btn btn-primary park-card-btn" data-i18n="skills.explore">Explorar</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="como-funciona" class="section-padding bg-light mt-5">
+        <div class="container">
+            <h2 class="text-center mb-3 fw-bold" data-i18n="howItWorks.title">La Conexión es Simple</h2>
+            <p class="text-center text-muted mb-5 fs-5" data-i18n="howItWorks.subtitle">Solo tres pasos para comenzar tu viaje de aprendizaje mutuo</p>
+            <div class="row text-center">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="url(#gradient1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <defs>
+                                <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+                            <path d="M9 18h6"/>
+                            <path d="M10 22h4"/>
+                        </svg>
+                    </div>
+                    <h3 class="fw-bold" data-i18n="howItWorks.step1.title">Ofrece tu Talento</h3>
+                    <p class="text-muted" data-i18n="howItWorks.step1.desc">Publica las habilidades que estás dispuesto a enseñar (ej. Excel, Yoga, Idiomas).</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="url(#gradient2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <defs>
+                                <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                    </div>
+                    <h3 class="fw-bold" data-i18n="howItWorks.step2.title">Encuentra tu Maestro</h3>
+                    <p class="text-muted" data-i18n="howItWorks.step2.desc">Busca entre perfiles por la habilidad que quieres dominar (ej. Diseño Web, Cocina).</p>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="url(#gradient3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <defs>
+                                <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <h3 class="fw-bold" data-i18n="howItWorks.step3.title">¡Conéctate e Intercambia!</h3>
+                    <p class="text-muted" data-i18n="howItWorks.step3.desc">Programa una sesión virtual o presencial. Tu conocimiento es tu moneda de cambio.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="comunidad" class="section-padding">
+        <div class="container">
+            <h2 class="text-center mb-3 fw-bold" data-i18n="community.title">Historias Reales de Intercambio</h2>
+            <p class="text-center text-muted mb-5 fs-5" data-i18n="community.subtitle">Conoce a quienes ya están conectando y creciendo</p>
+        </div>
+        <div class="scroller-wrapper">
+            <div class="scroller-inner">
+                <div class="card comment-card shadow-sm">
+                    <div class="card-body">
+                        <p class="card-text">"Le enseñé a Javier a usar Google Sheets avanzado, y a cambio, él me dio 4 clases de guitarra que siempre quise tomar. ¡El intercambio es justo y divertido!"</p>
+                        <div class="comment-author">
+                            <img src="https://placehold.co/100x100/10b981/ffffff?text=A" alt="Avatar de Ana">
+                            <div>
+                                <h6 class="card-title mb-0">Ana Martínez</h6>
+                                <small class="text-muted">Instructora de Data & Alumna de Música</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card comment-card shadow-sm">
+                    <div class="card-body">
+                        <p class="card-text">"Necesitaba ayuda con mi currículum profesional. Encontré a Carolina, una coach de carrera, y le enseñé fotografía básica para sus redes sociales. ¡Un win-win perfecto!"</p>
+                        <div class="comment-author">
+                            <img src="https://placehold.co/100x100/3b82f6/ffffff?text=C" alt="Avatar de Carlos">
+                            <div>
+                                <h6 class="card-title mb-0">Carlos Raudales</h6>
+                                <small class="text-muted">Diseñador Gráfico & Alumno de Coaching</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card comment-card shadow-sm">
+                    <div class="card-body">
+                        <p class="card-text">"Aprendí Python desde cero con María, y le enseñé marketing en redes sociales. Ahora ambos tenemos nuevas habilidades para nuestras carreras."</p>
+                        <div class="comment-author">
+                            <img src="https://placehold.co/100x100/f59e0b/ffffff?text=L" alt="Avatar de Luis">
+                            <div>
+                                <h6 class="card-title mb-0">Luis Fernández</h6>
+                                <small class="text-muted">Community Manager & Dev Junior</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card comment-card shadow-sm">
+                    <div class="card-body">
+                        <p class="card-text">"Como jubilado quería aprender inglés. En SkillConnect encontré a jóvenes que querían aprender carpintería. ¡Todos ganamos!"</p>
+                        <div class="comment-author">
+                            <img src="https://placehold.co/100x100/8b5cf6/ffffff?text=J" alt="Avatar de Jorge">
+                            <div>
+                                <h6 class="card-title mb-0">Jorge Reyes</h6>
+                                <small class="text-muted">Carpintero & Estudiante de Inglés</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card comment-card shadow-sm">
+                    <div class="card-body">
+                        <p class="card-text">"Estoy mejorando mi español conversacional mientras enseño diseño UX. La plataforma hace que los intercambios sean súper fáciles de coordinar."</p>
+                        <div class="comment-author">
+                            <img src="https://placehold.co/100x100/ef4444/ffffff?text=S" alt="Avatar de Sarah">
+                            <div>
+                                <h6 class="card-title mb-0">Sarah Johnson</h6>
+                                <small class="text-muted">UX Designer & Spanish Learner</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p data-i18n="footer.rights">&copy; 2025 SkillConnect. Todos los derechos reservados.</p>
+            <div class="mt-2 space-x-4">
+                <a href="terminos_de_servicio.html" class="hover:text-blue-400" data-i18n="footer.terms">Términos de Servicio</a>
+                <span class="text-gray-600">|</span>
+                <a href="politica_de_privacidad.html" class="hover:text-blue-400" data-i18n="footer.privacy">Política de Privacidad</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // ========================================
+        // PARALLAX SCROLL EFFECT
+        // ========================================
+        document.addEventListener('scroll', function() {
+            const scrollY = window.scrollY;
+            const layers = document.querySelectorAll('.parallax-layer');
 
-        const landingContainer = document.getElementById('landing-page-container');
-
-        const loginContainer = document.getElementById('login-section-container');
-
-        /**
-
-         * Alterna la visibilidad entre la Landing Page y la sección de Login/Registro.
-
-         * @param {string} view 'landing' para mostrar la principal, 'login' para mostrar el formulario.
-
-         */
-
-        function toggleView(view) {
-
-            if (view === 'login') {
-
-                landingContainer.style.display = 'none';
-
-                // Usamos 'flex' para que el contenido del login se centre correctamente
-
-                loginContainer.style.display = 'flex';
-
-                window.scrollTo(0, 0);
-
-            } else if (view === 'landing') {
-
-                loginContainer.style.display = 'none';
-
-                // Usamos 'block' para que la landing ocupe el ancho completo
-
-                landingContainer.style.display = 'block';
-
-                window.scrollTo(0, 0);
-
-            }
-
-            // Asegura que los íconos de Lucide se rendericen en la vista nueva
-
-            if (typeof lucide !== 'undefined') {
-
-                lucide.createIcons();
-
-            }
-
-        }
-
-
-
-        // Función para mostrar mensajes de confirmación (restaurada)
-
-
-
-        // Script para detener la animación del CTA y crear íconos (restaurado)
-
-        document.addEventListener('DOMContentLoaded', () => {
-
-            const ctaButton = document.getElementById('main-cta');
-
-
-
-            // Si el botón principal existe (estamos en la landing view)
-
-            if (ctaButton) {
-
-                const stopAnimation = () => {
-
-                    ctaButton.style.animation = 'none';
-
-                    ctaButton.removeEventListener('mouseover', stopAnimation);
-
-                    ctaButton.removeEventListener('click', stopAnimation);
-
-                };
-
-
-
-                ctaButton.addEventListener('mouseover', stopAnimation);
-
-                ctaButton.addEventListener('click', stopAnimation);
-
-            }
-
-
-
-            // Inicializa todos los iconos de Lucide al cargar la página
-
-            if (typeof lucide !== 'undefined') {
-
-                lucide.createIcons();
-
-            }
-
+            layers.forEach(layer => {
+                const speed = layer.getAttribute('data-speed');
+                const yPos = -(scrollY * speed);
+                layer.style.transform = `translateY(${yPos}px)`;
+            });
         });
 
-    </script>
+        // ========================================
+        // PARALLAX LAYERS FADE-IN ANIMATION
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            const parallaxLayers = document.querySelectorAll('.parallax-layer');
 
+            setTimeout(() => {
+                parallaxLayers.forEach((layer, index) => {
+                    setTimeout(() => {
+                        layer.classList.add('is-visible');
+                    }, index * 100);
+                });
+            }, 100);
+
+            window.addEventListener('scroll', () => {
+                const scrollValue = window.scrollY;
+
+                parallaxLayers.forEach(layer => {
+                    const speed = layer.dataset.speed;
+                    const displacement = -scrollValue * speed;
+                    
+                    layer.style.transform = `translateY(${displacement}px)`;
+                });
+            });
+        });
+
+        // ========================================
+        // INFINITE COMMENTS CAROUSEL
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            const scrollerInner = document.querySelector('.scroller-inner');
+            if (scrollerInner) {
+                const scrollerContent = Array.from(scrollerInner.children);
+                
+                scrollerContent.forEach(item => {
+                    const duplicatedItem = item.cloneNode(true);
+                    duplicatedItem.setAttribute('aria-hidden', true);
+                    scrollerInner.appendChild(duplicatedItem);
+                });
+            }
+        });
+
+        // ========================================
+        // CTA BUTTON ANIMATION STOP (SkillConnect)
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctaButton = document.getElementById('main-cta');
+
+            if (ctaButton) {
+                const stopAnimation = () => {
+                    ctaButton.style.animation = 'none';
+                    ctaButton.removeEventListener('mouseover', stopAnimation);
+                    ctaButton.removeEventListener('click', stopAnimation);
+                };
+
+                ctaButton.addEventListener('mouseover', stopAnimation);
+                ctaButton.addEventListener('click', stopAnimation);
+            }
+
+            // ========================================
+            // LUCIDE ICONS INITIALIZATION (SkillConnect)
+            // ========================================
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+
+        // ========================================
+        // SMOOTH SCROLL FOR NAVIGATION LINKS
+        // ========================================
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // ========================================
+        // SISTEMA DE TRADUCCIÓN
+        // ========================================
+        const translations = {
+            es: {
+                // Navegación
+                'nav.howItWorks': 'Cómo Funciona',
+                'nav.skills': 'Habilidades',
+                'nav.community': 'Comunidad',
+                'nav.login': 'Iniciar Sesión',
+                'nav.register': 'Crear Cuenta',
+                
+                // Hero
+                'hero.title': 'Intercambia Habilidades<br>Desbloquea Oportunidades',
+                'hero.subtitle': 'SkillConnect te conecta con una comunidad global dispuesta a enseñar y aprender.<br>¿Qué sabes hacer? ¿Qué quieres aprender?',
+                'hero.cta': 'Empieza Gratis Hoy',
+                'hero.nopayments': 'Sin Pagos. ¡Solo ganas conocimientos!',
+                
+                // Sección de habilidades
+                'skills.title': 'Un Universo de Habilidades',
+                'skills.subtitle': 'Desde lo profesional hasta tus hobbies más queridos',
+                'skills.uxui': 'Diseño UX/UI',
+                'skills.uxui.desc': 'Aprende a crear interfaces intuitivas y experiencias de usuario excepcionales con diseñadores profesionales.',
+                'skills.programming': 'Programación Web',
+                'skills.programming.desc': 'Domina JavaScript, React, Node.js y más. Conecta con desarrolladores que comparten tu pasión por el código.',
+                'skills.marketing': 'Marketing Digital',
+                'skills.marketing.desc': 'SEO, redes sociales, email marketing y estrategias de contenido. Impulsa tu marca con expertos.',
+                'skills.languages': 'Idiomas',
+                'skills.languages.desc': 'Inglés, español, francés, mandarín y más. Practica conversación con hablantes nativos de todo el mundo.',
+                'skills.explore': 'Explorar',
+                
+                // Cómo funciona
+                'howItWorks.title': 'La Conexión es Simple',
+                'howItWorks.subtitle': 'Solo tres pasos para comenzar tu viaje de aprendizaje mutuo',
+                'howItWorks.step1.title': 'Ofrece tu Talento',
+                'howItWorks.step1.desc': 'Publica las habilidades que estás dispuesto a enseñar (ej. Excel, Yoga, Idiomas).',
+                'howItWorks.step2.title': 'Encuentra tu Maestro',
+                'howItWorks.step2.desc': 'Busca entre perfiles por la habilidad que quieres dominar (ej. Diseño Web, Cocina).',
+                'howItWorks.step3.title': '¡Conéctate e Intercambia!',
+                'howItWorks.step3.desc': 'Programa una sesión virtual o presencial. Tu conocimiento es tu moneda de cambio.',
+                
+                // Comunidad
+                'community.title': 'Historias Reales de Intercambio',
+                'community.subtitle': 'Conoce a quienes ya están conectando y creciendo',
+                
+                // Footer
+                'footer.rights': '© 2025 SkillConnect. Todos los derechos reservados.',
+                'footer.terms': 'Términos de Servicio',
+                'footer.privacy': 'Política de Privacidad'
+            },
+            en: {
+                // Navigation
+                'nav.howItWorks': 'How It Works',
+                'nav.skills': 'Skills',
+                'nav.community': 'Community',
+                'nav.login': 'Login',
+                'nav.register': 'Sign Up',
+                
+                // Hero
+                'hero.title': 'Exchange Skills<br>Unlock Opportunities',
+                'hero.subtitle': 'SkillConnect connects you with a global community ready to teach and learn.<br>What can you do? What do you want to learn?',
+                'hero.cta': 'Start Free Today',
+                'hero.nopayments': 'No Payments. Just knowledge!',
+                
+                // Skills section
+                'skills.title': 'A Universe of Skills',
+                'skills.subtitle': 'From professional to your most beloved hobbies',
+                'skills.uxui': 'UX/UI Design',
+                'skills.uxui.desc': 'Learn to create intuitive interfaces and exceptional user experiences with professional designers.',
+                'skills.programming': 'Web Programming',
+                'skills.programming.desc': 'Master JavaScript, React, Node.js and more. Connect with developers who share your passion for code.',
+                'skills.marketing': 'Digital Marketing',
+                'skills.marketing.desc': 'SEO, social media, email marketing and content strategies. Boost your brand with experts.',
+                'skills.languages': 'Languages',
+                'skills.languages.desc': 'English, Spanish, French, Mandarin and more. Practice conversation with native speakers from around the world.',
+                'skills.explore': 'Explore',
+                
+                // How it works
+                'howItWorks.title': 'The Connection is Simple',
+                'howItWorks.subtitle': 'Just three steps to start your mutual learning journey',
+                'howItWorks.step1.title': 'Offer Your Talent',
+                'howItWorks.step1.desc': 'Post the skills you are willing to teach (e.g. Excel, Yoga, Languages).',
+                'howItWorks.step2.title': 'Find Your Teacher',
+                'howItWorks.step2.desc': 'Search through profiles for the skill you want to master (e.g. Web Design, Cooking).',
+                'howItWorks.step3.title': 'Connect & Exchange!',
+                'howItWorks.step3.desc': 'Schedule a virtual or in-person session. Your knowledge is your currency.',
+                
+                // Community
+                'community.title': 'Real Exchange Stories',
+                'community.subtitle': 'Meet those who are already connecting and growing',
+                
+                // Footer
+                'footer.rights': '© 2025 SkillConnect. All rights reserved.',
+                'footer.terms': 'Terms of Service',
+                'footer.privacy': 'Privacy Policy'
+            }
+        };
+
+        // Idioma actual (por defecto español)
+        let currentLanguage = localStorage.getItem('preferred_language') || 'es';
+
+        // Función para cambiar idioma
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('preferred_language', lang);
+            
+            // Actualizar texto del idioma en el botón
+            const langSpan = document.getElementById('currentLang');
+            if (langSpan) {
+                langSpan.textContent = lang === 'es' ? 'ES' : 'EN';
+            }
+            
+            // Cerrar dropdown
+            const dropdown = document.getElementById('languageDropdown');
+            if (dropdown) {
+                dropdown.style.display = 'none';
+            }
+            
+            // Aplicar traducciones
+            applyTranslations();
+        }
+
+        // Función para aplicar traducciones
+        function applyTranslations() {
+            const t = (key) => translations[currentLanguage][key] || key;
+            
+            // Traducir todos los elementos con data-i18n
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                const translation = t(key);
+                
+                if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                    element.placeholder = translation;
+                } else {
+                    element.innerHTML = translation;
+                }
+            });
+        }
+
+        // Toggle dropdown de idiomas
+        document.getElementById('languageBtn')?.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('languageDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('languageDropdown');
+            const languageBtn = document.getElementById('languageBtn');
+            if (dropdown && languageBtn && !dropdown.contains(e.target) && !languageBtn.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+
+        // Aplicar idioma guardado al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            // Actualizar texto del idioma según idioma guardado
+            const langSpan = document.getElementById('currentLang');
+            if (langSpan) {
+                langSpan.textContent = currentLanguage === 'en' ? 'EN' : 'ES';
+            }
+            
+            // Aplicar traducciones
+            applyTranslations();
+        });
+    </script>
 </body>
 
 </html>
+
+
