@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3001/api";
+const API_URL = "http://152.70.120.174:3001/api";
 
 // 🔍 Buscar por habilidad
 async function buscarPorHabilidad() {
@@ -121,3 +121,4 @@ async function eliminarFavorito(id) {
     console.error(error);
   }
 }
+

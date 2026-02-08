@@ -413,7 +413,7 @@ router.put('/mensajes/:idMensaje', async (req, res) => {
         }
 
         // Obtener mensaje para validar ventana de edición y contador de ediciones
-        const [rows] = await pool.query('SELECT id_mensaje, fecha_envio, veces_editado FROM mensajes WHERE id_mensaje = ?', [mensajeId]);
+        const [rows] = await pool.query('SELECT id_mensaje, fecha_envio FROM mensajes WHERE id_mensaje = ?', [mensajeId]);
         const mensaje = rows && rows[0] ? rows[0] : null;
 
         if (!mensaje) {
@@ -437,18 +437,10 @@ router.put('/mensajes/:idMensaje', async (req, res) => {
             console.warn('No se pudo parsear fecha_envio para mensaje', mensajeId, err.message);
         }
 
-        // Validar número máximo de ediciones
-        const vecesEditado = mensaje.veces_editado || 0;
-        if (vecesEditado >= 3) {
-            return res.status(400).json({
-                success: false,
-                error: 'Máximo 3 ediciones permitidas'
-            });
-        }
 
         // Actualizar el contenido y aumentar contador de ediciones
         const [result] = await pool.query(
-            'UPDATE mensajes SET contenido = ?, veces_editado = IFNULL(veces_editado,0) + 1 WHERE id_mensaje = ?',
+            'UPDATE mensajes SET contenido = ? WHERE id_mensaje = ?',
             [contenido.trim(), mensajeId]
         );
 

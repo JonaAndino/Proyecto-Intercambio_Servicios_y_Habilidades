@@ -11,7 +11,10 @@ const transporter = nodemailer.createTransport({
 
 // Función para enviar correo de recuperación de contraseña
 const enviarCorreoRecuperacion = async (destinatario, token) => {
-    const enlaceRecuperacion = `http://127.0.0.1:5050/SkillconnectFrontend/restablecer-password.html?token=${token}`;
+    // Auto-detectar entorno: si NODE_ENV no es production, usar localhost
+    const isLocal = process.env.NODE_ENV !== 'production';
+    const frontendUrl = isLocal ? 'http://localhost:5050' : (process.env.FRONTEND_URL || 'https://skillconnect.duckdns.org');
+    const enlaceRecuperacion = `${frontendUrl}/restablecer-password.html?token=${token}`;
     
     const mailOptions = {
         from: `"SkillConnect" <${process.env.EMAIL_USER}>`,

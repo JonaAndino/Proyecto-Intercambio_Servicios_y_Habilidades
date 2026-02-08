@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enviar Solicitud de Intercambio | SkillConnect</title>
+    <script src="config.js"></script>
     <!-- Carga de Tailwind CSS para un diseño limpio y responsivo -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -107,7 +108,7 @@
 
             try {
                 // 3. Llamada al API (Asegúrate de que tu backend esté en localhost:3001)
-                const url = 'http://localhost:3001/api/solicitudes'; 
+                const url = '${window.APP_CONFIG.BACKEND_URL}/api/solicitudes'; 
                 
                 const response = await fetch(url, {
                     method: 'POST',
@@ -150,3 +151,5 @@
     <script src="js/auth-guard.js"></script>
 </body>
 </html>
+
+

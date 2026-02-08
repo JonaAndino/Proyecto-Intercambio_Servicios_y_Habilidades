@@ -1,0 +1,1126 @@
+/* ========================================
+   NUEVO PERFIL DE USUARIO - ESTILOS
+   Basado en Material UI Design
+   ======================================== */
+
+/* Variables CSS */
+:root {
+    --perfil-primary: #2563eb;
+    --perfil-primary-dark: #1d4ed8;
+    --perfil-success: #22c55e;
+    --perfil-warning: #f97316;
+    --perfil-danger: #ef4444;
+    --perfil-gray-50: #f9fafb;
+    --perfil-gray-100: #f3f4f6;
+    --perfil-gray-200: #e5e7eb;
+    --perfil-gray-300: #d1d5db;
+    --perfil-gray-400: #9ca3af;
+    --perfil-gray-500: #6b7280;
+    --perfil-gray-600: #4b5563;
+    --perfil-gray-700: #374151;
+    --perfil-gray-800: #1f2937;
+    --perfil-gray-900: #111827;
+    --perfil-yellow: #facc15;
+    --perfil-yellow-bg: #fef3c7;
+    --perfil-blue-light: #eff6ff;
+    --perfil-green-light: #f0fdf4;
+    --perfil-orange-light: #fff7ed;
+    --perfil-red-light: #fef2f2;
+}
+
+/* Contenedor principal del perfil */
+.nuevo-perfil-container {
+    min-height: 100vh;
+    background-color: #ffffff;
+    padding: 8px 0;
+}
+
+.nuevo-perfil-wrapper {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+@media (min-width: 1600px) {
+    .nuevo-perfil-wrapper {
+        max-width: 1500px;
+    }
+}
+
+/* Paper/Card base */
+.perfil-paper {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* ========================================
+   PROFILE HEADER
+   ======================================== */
+.perfil-header-banner {
+    height: 50px;
+    background: white;
+}
+
+.perfil-header-content {
+    padding: 0 32px 32px;
+    margin-top: -48px;
+}
+
+.perfil-header-flex {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+}
+
+@media (min-width: 640px) {
+    .perfil-header-flex {
+        flex-direction: row;
+        align-items: flex-end;
+    }
+}
+
+.perfil-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    object-fit: cover;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 40px;
+    font-weight: 700;
+}
+
+.perfil-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.perfil-header-info {
+    flex: 1;
+    text-align: center;
+    padding-bottom: 8px;
+}
+
+@media (min-width: 640px) {
+    .perfil-header-info {
+        text-align: left;
+    }
+}
+
+.perfil-header-nombre {
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--perfil-gray-900);
+    margin: 0 0 6px 0;
+}
+
+.perfil-header-profesion {
+    font-size: 20px;
+    color: var(--perfil-gray-500);
+    font-weight: 400;
+    margin: 0 0 10px 0;
+}
+
+/* Descripción completa debajo del nombre */
+.perfil-header-descripcion {
+    font-size: 16px;
+    color: var(--perfil-gray-600);
+    line-height: 1.6;
+    margin: 0 0 14px 0;
+    max-width: 700px;
+}
+
+@media (min-width: 640px) {
+    .perfil-header-descripcion {
+        text-align: left;
+    }
+}
+
+.perfil-header-ubicacion {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    color: var(--perfil-gray-500);
+    font-size: 16px;
+    margin-bottom: 16px;
+}
+
+@media (min-width: 640px) {
+    .perfil-header-ubicacion {
+        justify-content: flex-start;
+    }
+}
+
+.perfil-header-badges {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (min-width: 640px) {
+    .perfil-header-badges {
+        justify-content: flex-start;
+    }
+}
+
+/* Chips/Badges */
+.perfil-chip {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.perfil-chip-verified {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid #22c55e;
+}
+
+.perfil-chip-pending {
+    background-color: rgba(234, 179, 8, 0.1);
+    color: #eab308;
+    border: 1px solid #eab308;
+}
+
+.perfil-chip-not-verified {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+.perfil-chip-available {
+    background-color: var(--perfil-green-light);
+    color: var(--perfil-success);
+}
+
+.perfil-chip-working {
+    background-color: var(--perfil-orange-light);
+    color: var(--perfil-warning);
+}
+
+.perfil-chip-unavailable {
+    background-color: var(--perfil-red-light);
+    color: var(--perfil-danger);
+}
+
+.perfil-chip-status::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: currentColor;
+    animation: pulse-status 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-status {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Botones del header */
+.perfil-btn {
+    height: 32px;
+    padding: 0 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.perfil-btn-primary {
+    background-color: var(--perfil-primary);
+    color: white;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+}
+
+.perfil-btn-primary:hover {
+    background-color: var(--perfil-primary-dark);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+}
+
+.perfil-btn-outline {
+    background-color: transparent;
+    color: var(--perfil-gray-500);
+    border: 1px solid var(--perfil-gray-200);
+}
+
+.perfil-btn-outline:hover {
+    border-color: var(--perfil-danger);
+    color: var(--perfil-danger);
+    background-color: var(--perfil-red-light);
+}
+
+/* Estilos para mensajes de estado de solicitud */
+.perfil-solicitud-loading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+}
+
+.perfil-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--perfil-gray-200);
+    border-top-color: var(--perfil-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.perfil-solicitud-mensaje {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid;
+    white-space: nowrap;
+}
+
+.perfil-solicitud-mensaje.success {
+    background-color: var(--perfil-green-light);
+    border-color: #bbf7d0;
+    color: var(--perfil-success);
+}
+
+.perfil-solicitud-mensaje.info {
+    background-color: var(--perfil-blue-light);
+    border-color: #bfdbfe;
+    color: var(--perfil-primary);
+}
+
+.perfil-solicitud-mensaje.warning {
+    background-color: #fef3c7;
+    border-color: #fde68a;
+    color: #b45309;
+}
+
+.perfil-solicitud-mensaje.purple {
+    background-color: #f3e8ff;
+    border-color: #e9d5ff;
+    color: #7c3aed;
+}
+
+/* ========================================
+   QUICK STATS
+   ======================================== */
+.perfil-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .perfil-stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.perfil-stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.perfil-stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.perfil-stat-icon {
+    color: var(--perfil-primary);
+    margin-bottom: 8px;
+}
+
+.perfil-stat-icon.success {
+    color: var(--perfil-success);
+}
+
+.perfil-stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--perfil-gray-900);
+}
+
+.perfil-stat-sublabel {
+    color: var(--perfil-gray-500);
+    font-size: 14px;
+    margin-left: 4px;
+}
+
+.perfil-stat-label {
+    color: var(--perfil-gray-500);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+/* ========================================
+   LAYOUT DE 2 COLUMNAS
+   ======================================== */
+.perfil-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media (min-width: 768px) {
+    .perfil-layout-grid {
+        grid-template-columns: 1fr 280px;
+    }
+}
+
+.perfil-main-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.perfil-side-column {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .perfil-side-column {
+        display: block;
+    }
+}
+
+.perfil-mobile-portfolio {
+    display: block;
+}
+
+@media (min-width: 768px) {
+    .perfil-mobile-portfolio {
+        display: none;
+    }
+}
+
+/* ========================================
+   SPECIALTIES / ESPECIALIDADES
+   ======================================== */
+.perfil-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.perfil-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.perfil-section-title h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--perfil-gray-900);
+    margin: 0;
+}
+
+.perfil-section-title svg {
+    color: var(--perfil-primary);
+}
+
+.perfil-chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.perfil-specialty-chip {
+    background-color: var(--perfil-blue-light);
+    color: var(--perfil-primary);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.perfil-specialty-chip:hover {
+    background-color: #dbeafe;
+}
+
+.perfil-specialty-chip.active {
+    background-color: var(--perfil-primary);
+    color: white;
+}
+
+.perfil-specialty-detail {
+    padding: 16px;
+    background-color: var(--perfil-gray-50);
+    border-radius: 8px;
+    border-left: 3px solid var(--perfil-primary);
+    margin-top: 16px;
+}
+
+.perfil-specialty-detail h4 {
+    font-weight: 600;
+    color: var(--perfil-primary);
+    margin: 0 0 8px 0;
+    font-size: 14px;
+}
+
+.perfil-specialty-detail p {
+    color: var(--perfil-gray-600);
+    line-height: 1.6;
+    margin: 0;
+    font-size: 14px;
+}
+
+/* ========================================
+   PROFESSIONAL INFO
+   ======================================== */
+.perfil-info-item {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.perfil-info-icon {
+    color: var(--perfil-primary);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.perfil-info-label {
+    font-size: 14px;
+    color: var(--perfil-gray-500);
+    margin-bottom: 4px;
+}
+
+.perfil-info-value {
+    font-size: 16px;
+    color: var(--perfil-gray-900);
+}
+
+.perfil-cert-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: transparent;
+    border: 1px solid var(--perfil-gray-200);
+    border-radius: 8px;
+    color: var(--perfil-gray-700);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 8px;
+    width: 100%;
+    text-align: left;
+}
+
+.perfil-cert-btn:hover {
+    border-color: var(--perfil-primary);
+    background-color: var(--perfil-gray-50);
+}
+
+.perfil-divider {
+    height: 1px;
+    background-color: var(--perfil-gray-200);
+    margin: 20px 0;
+}
+
+.perfil-description {
+    color: var(--perfil-gray-600);
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+/* ========================================
+   PORTFOLIO / GALERÍA
+   ======================================== */
+.perfil-portfolio-sticky {
+    position: sticky;
+    top: 80px; /* Más espacio para el navbar */
+    padding-top: 8px;
+}
+
+.perfil-side-column .perfil-section-title {
+    margin-bottom: 16px;
+}
+
+.perfil-portfolio-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.perfil-portfolio-item {
+    position: relative;
+    aspect-ratio: 4/3;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+}
+
+.perfil-portfolio-item:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transform: scale(1.02);
+}
+
+.perfil-portfolio-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.perfil-portfolio-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+    display: flex;
+    align-items: flex-end;
+    padding: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.perfil-portfolio-item:hover .perfil-portfolio-overlay {
+    opacity: 1;
+}
+
+.perfil-portfolio-overlay span {
+    color: white;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+/* ========================================
+   WORK HISTORY / HISTORIAL
+   ======================================== */
+.perfil-work-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background-color: var(--perfil-gray-50);
+    border-radius: 12px;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+}
+
+.perfil-work-item:last-child {
+    margin-bottom: 0;
+}
+
+.perfil-work-item:hover {
+    background-color: var(--perfil-gray-100);
+}
+
+.perfil-work-info {
+    flex: 1;
+}
+
+.perfil-work-info h4,
+.perfil-work-project {
+    font-weight: 500;
+    color: var(--perfil-gray-900);
+    margin: 0 0 4px 0;
+    font-size: 16px;
+}
+
+.perfil-work-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    color: var(--perfil-gray-500);
+    font-size: 14px;
+}
+
+/* Chip de estado estilo Material UI - Basado en WorkHistory.tsx */
+.perfil-work-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.perfil-work-chip svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Compatibilidad con versión anterior */
+.perfil-work-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.perfil-work-status.completed {
+    background-color: var(--perfil-green-light);
+    color: var(--perfil-success);
+}
+
+.perfil-work-status.in-progress {
+    background-color: var(--perfil-blue-light);
+    color: var(--perfil-primary);
+}
+
+/* Lista de trabajos con espaciado correcto */
+.perfil-work-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Scroll para lista de trabajos cuando hay más de 5 */
+.perfil-work-list-scroll {
+    max-height: 400px; /* Aproximadamente 5 items */
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.perfil-work-list-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.perfil-work-list-scroll::-webkit-scrollbar-track {
+    background: var(--perfil-gray-100);
+    border-radius: 3px;
+}
+
+.perfil-work-list-scroll::-webkit-scrollbar-thumb {
+    background: var(--perfil-gray-300);
+    border-radius: 3px;
+}
+
+.perfil-work-list-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--perfil-gray-400);
+}
+
+/* Contador total en el título de la sección */
+.perfil-section-count {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--perfil-gray-400);
+    margin-left: 8px;
+}
+
+/* ========================================
+   CERTIFICACIONES
+   ======================================== */
+.perfil-certifications-container {
+    flex: 1;
+}
+
+.perfil-certifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.perfil-certification-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid var(--perfil-gray-200);
+    border-radius: 6px;
+    color: var(--perfil-gray-700);
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.perfil-certification-btn:hover {
+    border-color: var(--perfil-primary);
+    background-color: var(--perfil-blue-light);
+    color: var(--perfil-primary);
+}
+
+.perfil-info-muted {
+    color: var(--perfil-gray-400);
+    font-style: italic;
+}
+
+/* ========================================
+   TECHNICAL EVALUATION / EVALUACIÓN
+   ======================================== */
+.perfil-eval-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+    align-items: stretch;
+}
+
+@media (min-width: 768px) {
+    .perfil-eval-grid {
+        grid-template-columns: 200px 1fr;
+    }
+}
+
+@media (min-width: 1024px) {
+    .perfil-eval-grid {
+        grid-template-columns: 200px 1fr 280px;
+    }
+}
+
+.perfil-eval-rating {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.perfil-eval-rating-value {
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--perfil-gray-900);
+    margin-bottom: 8px;
+}
+
+.perfil-eval-stars {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.perfil-eval-label {
+    color: var(--perfil-gray-500);
+    font-size: 14px;
+}
+
+.perfil-criteria-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: center;
+}
+
+.perfil-criteria-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.perfil-criteria-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.perfil-criteria-name {
+    font-size: 14px;
+    color: var(--perfil-gray-700);
+}
+
+.perfil-criteria-stars {
+    display: flex;
+    gap: 2px;
+}
+
+.perfil-progress-bar {
+    height: 6px;
+    background-color: var(--perfil-gray-200);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.perfil-progress-fill {
+    height: 100%;
+    background-color: var(--perfil-primary);
+    border-radius: 3px;
+    transition: width 0.3s;
+}
+
+/* Reviews / Comentarios */
+.perfil-reviews-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--perfil-gray-900);
+    margin-bottom: 16px;
+}
+
+.perfil-reviews-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .perfil-reviews-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.perfil-review-item {
+    border-left: 3px solid #bfdbfe;
+    padding-left: 16px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.perfil-review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.perfil-review-author {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--perfil-gray-900);
+}
+
+.perfil-review-date {
+    font-size: 12px;
+    color: var(--perfil-gray-500);
+}
+
+.perfil-review-comment {
+    font-size: 14px;
+    color: var(--perfil-gray-600);
+    line-height: 1.5;
+    margin-top: 8px;
+}
+
+.perfil-review-response {
+    margin-top: 12px;
+    padding: 12px;
+    background-color: #f0f9ff;
+    border-left: 3px solid var(--perfil-primary);
+    border-radius: 4px;
+}
+
+.perfil-review-response-label {
+    font-size: 12px;
+    color: var(--perfil-primary);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.perfil-review-response-text {
+    font-size: 13px;
+    color: var(--perfil-gray-600);
+    line-height: 1.5;
+}
+
+/* ========================================
+   BOTÓN VOLVER
+   ======================================== */
+.perfil-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: var(--perfil-primary);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 16px;
+}
+
+.perfil-back-btn:hover {
+    background-color: var(--perfil-primary-dark);
+}
+
+/* ========================================
+   LOADING SKELETON
+   ======================================== */
+.perfil-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 8px;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ========================================
+   MODAL FULLSCREEN IMAGE - Basado en Portfolio.tsx Dialog
+   ======================================== */
+.perfil-image-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    cursor: zoom-out;
+    padding: 48px;
+}
+
+.perfil-image-modal-content {
+    position: relative;
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.perfil-image-modal-content img {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.perfil-image-modal-caption {
+    margin-top: 16px;
+    text-align: center;
+    color: white;
+    font-size: 16px;
+}
+
+.perfil-image-modal-close {
+    position: absolute;
+    top: -48px;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.perfil-image-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ========================================
+   LOCATION MAP - Mapa de ubicación
+   ======================================== */
+.perfil-location-map-container {
+    margin-top: 0;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--perfil-gray-200);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 200px;
+}
+
+.perfil-location-map-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--perfil-gray-50);
+    border-bottom: 1px solid var(--perfil-gray-200);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--perfil-gray-700);
+    flex-shrink: 0;
+}
+
+.perfil-location-map-header svg {
+    color: var(--perfil-primary);
+}
+
+.perfil-location-map {
+    width: 100%;
+    flex: 1;
+    min-height: 180px;
+    z-index: 1;
+}
+
+/* Estilos para el popup del mapa */
+.perfil-location-map .leaflet-popup-content-wrapper {
+    padding: 0;
+    border-radius: 6px;
+}
+
+.perfil-location-map .leaflet-popup-content {
+    margin: 8px 10px;
+    font-size: 12px;
+    line-height: 1.3;
+    max-width: 150px;
+    word-wrap: break-word;
+}
+
+.perfil-location-map .leaflet-popup-close-button {
+    width: 18px;
+    height: 18px;
+    font-size: 16px;
+    padding: 2px 4px 0 0;
+}
+
+/* En móvil el mapa ocupa todo el ancho */
+@media (max-width: 1023px) {
+    .perfil-location-map-container {
+        margin-top: 16px;
+    }
+}

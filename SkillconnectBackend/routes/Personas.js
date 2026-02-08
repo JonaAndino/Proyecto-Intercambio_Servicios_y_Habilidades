@@ -7,7 +7,9 @@ router.get('/by-usuario/:usuarioId', async (req, res) => {
         return res.status(400).json({ success: false, message: 'ID de usuario no válido' });
     }
     try {
-        const [rows] = await db.execute('SELECT * FROM Personas WHERE id_Usuario = ?', [usuarioId]);
+        const [rows] = await db.execute(`
+            SELECT *, IFNULL(anios_experiencia, 0) AS anios_experiencia 
+            FROM Personas WHERE id_Usuario = ?`, [usuarioId]);
         if (rows.length === 0) {
             return res.status(404).json({ success: false, message: 'No se encontró persona para este usuario' });
         }
@@ -64,10 +66,27 @@ function validarCamposReemplazo(body) {
 // ----------------------------------------------------
 router.get('/', async (req, res) => {
     try {
-        // Llamar al procedimiento almacenado que devuelve todas las personas
-        const [resultado] = await db.execute('CALL sp_Personas_ObtenerTodo()');
-        
-        const personas = resultado[0]; 
+        // Consulta directa para incluir todos los campos necesarios incluyendo disponibilidad y años de experiencia
+        const [personas] = await db.execute(`
+            SELECT 
+                id_Perfil_Persona,
+                nombre_Persona,
+                apellido_Persona,
+                fechaNac_Persona,
+                genero_Persona,
+                estadoCivil_Persona,
+                tipoIdentificacion_Persona,
+                identificacion_Persona,
+                imagenUrl_Persona,
+                imagen1Url_Persona,
+                imagen2Url_Persona,
+                imagen3Url_Persona,
+                descripcionPerfil_Persona,
+                disponibilidad,
+                IFNULL(anios_experiencia, 0) AS anios_experiencia,
+                id_Usuario
+            FROM Personas
+        `);
         
         res.json({
             success: true,
@@ -114,6 +133,7 @@ router.get('/:id', async (req, res) => {
                 p.imagen3Url_Persona,
                 p.descripcionPerfil_Persona,
                 p.disponibilidad,
+                IFNULL(p.anios_experiencia, 0) AS anios_experiencia,
                 p.id_Usuario,
                 u.correo,
                 u.nombre AS nombre_usuario_cuenta,
@@ -256,7 +276,7 @@ router.put('/:id', async (req, res) => {
         'nombre_Persona', 'apellido_Persona', 'fechaNac_Persona', 'genero_Persona',
         'estadoCivil_Persona', 'tipoIdentificacion_Persona', 'identificacion_Persona',
         'imagenUrl_Persona', 'imagen1Url_Persona', 'imagen2Url_Persona', 'imagen3Url_Persona',
-        'descripcionPerfil_Persona', 'disponibilidad'
+        'descripcionPerfil_Persona', 'disponibilidad', 'anios_experiencia'
     ];
     const camposActualizar = Object.keys(req.body).filter(campo => camposPermitidos.includes(campo));
     if (camposActualizar.length === 0) {
