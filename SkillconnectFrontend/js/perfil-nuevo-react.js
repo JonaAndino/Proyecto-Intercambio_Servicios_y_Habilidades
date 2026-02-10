@@ -190,14 +190,31 @@ const Icons = {
 // ========================================
 // COMPONENTE: ProfileHeader
 // ========================================
-function ProfileHeader({ persona, ubicacion, onSolicitar, onReportar, perfilId }) {
+function ProfileHeader({ persona, ubicacion, onSolicitar, onReportar, perfilId, onToggleStatus }) {
     const [estadoSolicitud, setEstadoSolicitud] = useState(null); // null, 'loading', 'pendiente', 'aceptada', 'enviada_por_otro', 'none'
     const [mensajeSolicitud, setMensajeSolicitud] = useState('');
     const [estadoVerificacion, setEstadoVerificacion] = useState('loading'); // 'loading', 'aprobada', 'pendiente', 'no_verificado'
     
+    // Identificar si es el propio perfil del usuario
+    const [esMiPerfil, setEsMiPerfil] = useState(false);
+
     const nombreCompleto = `${persona.nombre_Persona || ''} ${persona.apellido_Persona || ''}`.trim();
     const iniciales = `${(persona.nombre_Persona || 'U')[0]}${(persona.apellido_Persona || '')[0] || ''}`.toUpperCase();
     
+    // Verificar si es mi propio perfil
+    useEffect(() => {
+        async function checkMyProfile() {
+            let miPerfilId = window.miPerfilIdGlobal;
+            if (!miPerfilId && window.obtenerPersonaIdActual) {
+                miPerfilId = await window.obtenerPersonaIdActual();
+            }
+            if (miPerfilId && perfilId && parseInt(miPerfilId) === parseInt(perfilId)) {
+                setEsMiPerfil(true);
+            }
+        }
+        checkMyProfile();
+    }, [perfilId]);
+
     // Verificar estado de verificación del usuario
     useEffect(() => {
         async function verificarEstadoVerificacion() {
@@ -339,11 +356,19 @@ function ProfileHeader({ persona, ubicacion, onSolicitar, onReportar, perfilId }
     
     // Normalizar el valor para comparación
     const disponibilidadNormalizada = (disponibilidadRaw || '').toString().trim().toLowerCase();
-    const esDisponible = disponibilidadNormalizada === 'disponible';
+    
+    // Check robusto incluyendo 1/true/'1' como disponible
+    const esDisponible = (
+        disponibilidadNormalizada === 'disponible' || 
+        disponibilidadNormalizada === 'available' ||
+        persona.disponibilidad === 1 || 
+        persona.disponibilidad === true || 
+        persona.disponibilidad === '1'
+    );
     
     const statusConfig = {
         disponible: { className: 'perfil-chip-available', text: 'Disponible' },
-        noDisponible: { className: 'perfil-chip-unavailable', text: 'No disponible' }
+        noDisponible: { className: 'perfil-chip-unavailable', text: 'En obra' }
     };
     const status = esDisponible ? statusConfig.disponible : statusConfig.noDisponible;
 
@@ -413,7 +438,12 @@ function ProfileHeader({ persona, ubicacion, onSolicitar, onReportar, perfilId }
                                 </span>
                             )}
                             
-                            <span className={`perfil-chip perfil-chip-status ${status.className}`}>
+                            <span 
+                                className={`perfil-chip perfil-chip-status ${status.className} ${esMiPerfil ? 'cursor-pointer' : ''}`}
+                                onClick={esMiPerfil ? onToggleStatus : undefined}
+                                title={esMiPerfil ? 'Haz clic para cambiar tu estado' : undefined}
+                                style={esMiPerfil ? { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' } : { display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                            >
                                 {status.text}
                             </span>
 
@@ -438,13 +468,38 @@ function ProfileHeader({ persona, ubicacion, onSolicitar, onReportar, perfilId }
 // ========================================
 // COMPONENTE: QuickStats
 // ========================================
-function QuickStats({ aniosExperiencia, intercambiosCount, promedioCalificacion, disponibilidad }) {
+function QuickStats({ aniosExperiencia, intercambiosCount, promedioCalificacion, disponibilidad, onToggleStatus, perfilId }) {
+    // Identificar si es el propio perfil del usuario
+    const [esMiPerfil, setEsMiPerfil] = useState(false);
+    
+    // Verificar si es mi propio perfil
+    useEffect(() => {
+        async function checkMyProfile() {
+            let miPerfilId = window.miPerfilIdGlobal;
+            if (!miPerfilId && window.obtenerPersonaIdActual) {
+                miPerfilId = await window.obtenerPersonaIdActual();
+            }
+            if (miPerfilId && perfilId && parseInt(miPerfilId) === parseInt(perfilId)) {
+                setEsMiPerfil(true);
+            }
+        }
+        checkMyProfile();
+    }, [perfilId]);
+
     // Debug: ver qué valor llega
     console.log('QuickStats - disponibilidad recibida:', disponibilidad, '| tipo:', typeof disponibilidad);
     
     // Normalizar: quitar espacios y comparar
+    // Normalizar: quitar espacios y comparar
     const disponibilidadNormalizada = (disponibilidad || '').toString().trim().toLowerCase();
-    const esDisponible = disponibilidadNormalizada === 'available' || disponibilidadNormalizada === 'disponible';
+    
+    const esDisponible = (
+        disponibilidadNormalizada === 'available' || 
+        disponibilidadNormalizada === 'disponible' || 
+        disponibilidad === 1 ||
+        disponibilidad === '1' ||
+        disponibilidad === true
+    );
     
     console.log('QuickStats - esDisponible:', esDisponible);
     
@@ -472,27 +527,38 @@ function QuickStats({ aniosExperiencia, intercambiosCount, promedioCalificacion,
         { 
             icon: <Icons.Clock size={32} disponible={esDisponible} />, 
             label: 'Estado', 
-            value: esDisponible ? 'Disponible' : 'No disponible', 
+            value: esDisponible ? 'Disponible' : 'En obra', 
             color: esDisponible ? 'success' : 'primary' 
         }
     ];
 
     return (
         <div className="perfil-stats-grid">
-            {stats.map((stat, index) => (
-                <div key={index} className="perfil-stat-card">
-                    <div className={`perfil-stat-icon ${stat.color}`}>
-                        {stat.icon}
+            {stats.map((stat, index) => {
+                const isStatusCard = stat.label === 'Estado';
+                const canToggle = isStatusCard && esMiPerfil;
+                
+                return (
+                    <div 
+                        key={index} 
+                        className={`perfil-stat-card ${canToggle ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+                        onClick={canToggle ? onToggleStatus : undefined}
+                        title={canToggle ? 'Haz clic para cambiar tu estado' : undefined}
+                        style={canToggle ? { cursor: 'pointer' } : {}}
+                    >
+                        <div className={`perfil-stat-icon ${stat.color}`}>
+                            {stat.icon}
+                        </div>
+                        <div className="perfil-stat-value">
+                            {stat.value}
+                            {stat.sublabel && (
+                                <span className="perfil-stat-sublabel">{stat.sublabel}</span>
+                            )}
+                        </div>
+                        <div className="perfil-stat-label">{stat.label}</div>
                     </div>
-                    <div className="perfil-stat-value">
-                        {stat.value}
-                        {stat.sublabel && (
-                            <span className="perfil-stat-sublabel">{stat.sublabel}</span>
-                        )}
-                    </div>
-                    <div className="perfil-stat-label">{stat.label}</div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 }
@@ -1330,6 +1396,55 @@ function NuevoPerfilUsuario({ perfilId, onVolver, onSolicitar, onReportar }) {
         }
     };
 
+    const handleToggleStatus = async () => {
+        if (!persona) return;
+        
+        // 1. Determinar estado actual y nuevo
+        const currentRaw = persona.disponibilidad;
+        const currentStr = (currentRaw || '').toString().trim().toLowerCase();
+        
+        // Check robusto de "Disponible"
+        const isCurrentlyAvailable = (
+            currentRaw === 1 || 
+            currentRaw === true || 
+            currentRaw === '1' || 
+            currentStr === 'disponible' || 
+            currentStr === 'available'
+        );
+        
+        // Toggle entre "Disponible" y "No disponible" (Backend espera No disponible)
+        const nuevoEstado = isCurrentlyAvailable ? 'No disponible' : 'Disponible';
+        
+        console.log(`[Toggle] Cambiando estado de "${currentRaw}" a "${nuevoEstado}"`);
+        
+        // 2. Optimistic Update (Actualizar UI inmediatamente)
+        const previousPersona = { ...persona };
+        setPersona(prev => ({
+            ...prev,
+            disponibilidad: nuevoEstado
+        }));
+        
+        try {
+            // 3. Actualizar en el backend
+            const res = await fetch(`${window.API_BASE}/personas/${persona.id_Usuario}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ disponibilidad: nuevoEstado })
+            });
+            
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || 'Error del servidor');
+            }
+            console.log('Estado actualizado exitosamente en backend');
+        } catch (e) {
+            console.error('Error de red al actualizar estado:', e);
+            // 4. Revertir cambios en caso de error
+            setPersona(previousPersona);
+            alert('Error de conexión al actualizar el estado');
+        }
+    };
+
     // Loading state
     if (loading) {
         return (
@@ -1384,6 +1499,7 @@ function NuevoPerfilUsuario({ perfilId, onVolver, onSolicitar, onReportar }) {
                     perfilId={perfilId}
                     onSolicitar={handleSolicitar}
                     onReportar={handleReportar}
+                    onToggleStatus={handleToggleStatus}
                 />
 
                 {/* Estadísticas rápidas */}
@@ -1392,6 +1508,8 @@ function NuevoPerfilUsuario({ perfilId, onVolver, onSolicitar, onReportar }) {
                     intercambiosCount={estadisticas?.total_intercambios_completados || 0}
                     promedioCalificacion={estadisticas?.promedio_calificacion || 0}
                     disponibilidad={persona?.disponibilidad}
+                    onToggleStatus={handleToggleStatus}
+                    perfilId={perfilId}
                 />
 
                 {/* Layout de 2 columnas */}
