@@ -3358,97 +3358,6 @@
         }
 
         // ======================
-        // VALIDACIÓN DE DOCUMENTOS (HONDURAS)
-        // ======================
-        function validarIdentidadHonduras(numeroIdentidad) {
-            const num = numeroIdentidad.trim();
-            const conGuiones = /^\d{4}-\d{4}-\d{5}$/;
-            const sinGuiones = /^\d{13}$/;
-
-            if (!conGuiones.test(num) && !sinGuiones.test(num)) {
-                return {
-                    valido: false,
-                    mensaje: 'Formato inválido (Ej: 0801-1990-12345 o 0801199012345)',
-                    tipo: 'identidad'
-                };
-            }
-
-            let depto, anio, corr;
-            if (conGuiones.test(num)) {
-                [depto, anio, corr] = num.split('-');
-            } else {
-                depto = num.substring(0, 4);
-                anio = num.substring(4, 8);
-                corr = num.substring(8, 13);
-            }
-
-            const anioNum = parseInt(anio);
-            const anioActual = new Date().getFullYear();
-
-            if (anioNum < 1900 || anioNum > anioActual) {
-                return {
-                    valido: false,
-                    mensaje: `Año de nacimiento inválido: ${anio}`,
-                    tipo: 'identidad'
-                };
-            }
-
-            const codDepto = parseInt(depto);
-            if (codDepto < 101 || codDepto > 1899) {
-                return {
-                    valido: false,
-                    mensaje: 'Código de departamento/municipio inválido',
-                    tipo: 'identidad'
-                };
-            }
-
-            return {
-                valido: true,
-                mensaje: 'Identidad válida',
-                tipo: 'identidad',
-                datos: {
-                    departamentoMunicipio: depto,
-                    anioNacimiento: anio,
-                    correlativo: corr,
-                    formatoCompleto: `${depto}-${anio}-${corr}`,
-                    numeroLimpio: `${depto}${anio}${corr}`
-                }
-            };
-        }
-
-        function validarPasaporteHonduras(pasaporte) {
-            const pas = pasaporte.trim().toUpperCase();
-            const moderno = /^[AE]\d{6,7}$/;
-            const antiguo = /^\d{6,8}$/;
-
-            if (!moderno.test(pas) && !antiguo.test(pas)) {
-                return {
-                    valido: false,
-                    mensaje: 'Formato de pasaporte inválido (Ej: A1234567)',
-                    tipo: 'pasaporte'
-                };
-            }
-
-            let tipo = 'Desconocido';
-            if (moderno.test(pas)) {
-                tipo = pas[0] === 'A' ? 'Ordinario' : 'Servicio';
-            } else {
-                tipo = 'Formato antiguo';
-            }
-
-            return {
-                valido: true,
-                mensaje: 'Pasaporte válido',
-                tipo: 'pasaporte',
-                datos: {
-                    numeroPasaporte: pas,
-                    tipoPasaporte: tipo,
-                    numeroLimpio: pas
-                }
-            };
-        }
-
-        // ======================
         // RENDERIZAR DATOS PERSONALES
         // ======================
         function renderDatosPersonales() {
@@ -3477,7 +3386,7 @@
                 },
                 {
                     label: 'Tipo de Identificación', field: 'tipoIdentificacion_Usuario', value: usuario.tipoIdentificacion_Usuario, type: 'select', options: [
-                        { value: 'Identidad', label: 'Identidad (DNI)' },
+                        { value: 'DNI', label: 'Identidad (DNI)' },
                         { value: 'Pasaporte', label: 'Pasaporte' }
                     ]
                 },
@@ -3499,7 +3408,14 @@
 
                 const editableSpan = li.querySelector('.editable');
                 if (campo.type === 'select') {
-                    makeSelectEditable(editableSpan, campo.field, campo.options, (value) => updateUsuario(campo.field, value));
+                    makeSelectEditable(editableSpan, campo.field, campo.options, async (value) => {
+                        await updateUsuario(campo.field, value);
+                        // Si cambiamos el tipo de identificación, limpiar el número de identificación
+                        if (campo.field === 'tipoIdentificacion_Usuario') {
+                            await updateUsuario('identificacion_usuario', '');
+                            renderDatosPersonales(); // Re-renderizar para reflejar el cambio en la UI
+                        }
+                    });
                 } else if (campo.type === 'date') {
                     makeEditable(editableSpan, campo.field, (value) => updateUsuario(campo.field, value), false, 'date');
                 } else if (campo.type === 'number') {
@@ -3570,7 +3486,7 @@
                         const tipo = usuario.tipoIdentificacion_Usuario;
                         let valResult;
 
-                        if (tipo === 'Identidad' || tipo === 'DNI') {
+                        if (tipo === 'DNI' || tipo === 'Identidad') {
                             valResult = validarIdentidadHonduras(newValue);
                         } else if (tipo === 'Pasaporte') {
                             valResult = validarPasaporteHonduras(newValue);
