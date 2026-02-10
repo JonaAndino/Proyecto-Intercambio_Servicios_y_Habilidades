@@ -9,6 +9,7 @@
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="../css/toast.css">
     <style>
         * {
             margin: 0;
@@ -549,8 +550,8 @@
 
         #map {
             width: 100%;
-            height: 250px;
-            border-radius: 8px;
+            height: 450px;
+            border-radius: 12px;
             border: 1px solid #e5e7eb;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
@@ -1062,6 +1063,11 @@
                 text-align: center;
             }
 
+            .profile-info {
+                text-align: center;
+                width: 100%;
+            }
+
             .action-buttons-desktop {
                 display: none;
             }
@@ -1079,6 +1085,48 @@
 
             .gallery-grid {
                 grid-template-columns: 1fr;
+            }
+
+            #header-badges-row {
+                align-items: center;
+                flex-direction: column;
+                gap: 16px;
+                width: 100%;
+                margin: 20px auto 0;
+            }
+
+            .status-toggle-group {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .verified-badge {
+                width: auto;
+                max-width: fit-content;
+            }
+
+            .verification-pill {
+                height: auto !important;
+                min-height: 40px;
+                flex-direction: column;
+                padding: 12px 16px !important;
+                border-radius: 16px !important;
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .verification-pill input {
+                width: 100% !important;
+                text-align: center;
+                margin: 4px 0 8px;
+            }
+
+            .verification-pill span {
+                text-align: center;
+            }
+
+            .verification-pill button {
+                width: 100%;
             }
         }
 
@@ -1183,15 +1231,23 @@
             transform: translateX(20px);
         }
 
-        .perfil-chip-status {
-            padding: 8px 16px;
+        .perfil-chip-status,
+        .verified-badge {
+            height: 40px;
+            padding: 0 18px;
             border-radius: 20px;
             font-size: 14px;
             font-weight: 600;
-            margin-left: 8px;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            gap: 10px;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .perfil-chip-status {
+            margin-left: 0;
         }
 
         .perfil-chip-available {
@@ -1273,6 +1329,7 @@
             <div class="spinner"></div>
             Guardando...
         </div>
+    </div>
 
         <!-- Main Content -->
         <div id="mainContent" class="max-w-5xl">
@@ -1311,22 +1368,31 @@
                         <div class="profile-bio">
                             <div class="editable" id="descripcion" data-field="descripcion_Usuario"></div>
                         </div>
-                        <div class="verified-badge">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            <span data-i18n="verifiedUser">Usuario Verificado</span>
+                        <div id="header-badges-row"
+                            style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                            <div class="verified-badge">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span data-i18n="verifiedUser">Usuario Verificado</span>
+                            </div>
+
+                            <div class="status-toggle-group"
+                                style="display: flex; align-items: center; gap: 8px; height: 40px;">
+                                <span id="statusChip" class="perfil-chip-status perfil-chip-unavailable">
+                                    <span class="status-dot"
+                                        style="width: 8px; height: 8px; background-color: currentColor; border-radius: 50%;"></span>
+                                    <span id="statusChipText">En obra</span>
+                                </span>
+                                <label class="switch" style="margin: 0;">
+                                    <input type="checkbox" id="availabilityToggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
                         </div>
-                        <!-- Status Chip -->
-                        <span id="statusChip" class="perfil-chip-status perfil-chip-unavailable"
-                            style="display: inline-flex; align-items: center; gap: 8px;">
-                            <span class="status-dot"
-                                style="width: 8px; height: 8px; background-color: currentColor; border-radius: 50%;"></span>
-                            <span id="statusChipText">En obra</span>
-                        </span>
 
                         <div class="action-buttons action-buttons-mobile">
                             <button class="logout-button" onclick="showLogoutModal()" title="Cerrar Sesión">
@@ -1361,6 +1427,199 @@
                         <ul class="data-list" id="datosPersonales">
                             <!-- Se llenará dinámicamente -->
                         </ul>
+
+                        <!-- Sección de Documento de Identidad -->
+                        <div class="id-card-section"
+                            style="margin-top: 24px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+                            <h3 class="section-title-primary" style="font-size: 16px; margin-bottom: 12px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon-md"
+                                    style="width: 20px; height: 20px; color: #4b5563;" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                <span>Tarjeta de Identidad</span>
+                            </h3>
+
+                            <div class="file-upload-area" id="idCardUploadArea"
+                                style="border: 2px dashed #d1d5db; border-radius: 12px; padding: 24px; text-align: center; background-color: #f9fafb; transition: all 0.3s; cursor: pointer;">
+                                <input type="file" id="idCardInput" accept="image/*" style="display: none;">
+                                <label for="idCardInput" style="cursor: pointer; width: 100%; display: block;">
+                                    <div class="upload-placeholder" id="idCardPlaceholder">
+                                        <div
+                                            style="width: 48px; height: 48px; background: #e5e7eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                style="width: 24px; height: 24px; color: #6b7280;" viewBox="0 0 24 24"
+                                                fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                <polyline points="17 8 12 3 7 8"></polyline>
+                                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                                            </svg>
+                                        </div>
+                                        <p style="font-weight: 500; color: #374151; margin-bottom: 4px;">Sube una foto
+                                            de tu DNI</p>
+                                        <p style="font-size: 12px; color: #6b7280;">PNG, JPG hasta 5MB</p>
+                                    </div>
+                                    <div id="idCardPreview" style="display: none; position: relative;">
+                                        <img id="idCardImage" src="" alt="Vista previa"
+                                            style="max-width: 100%; max-height: 200px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                                        <button type="button" id="removeIdCard"
+                                            style="position: absolute; top: -10px; right: -10px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const idCardInput = document.getElementById('idCardInput');
+                                const idCardUploadArea = document.getElementById('idCardUploadArea');
+                                const idCardPlaceholder = document.getElementById('idCardPlaceholder');
+                                const idCardPreview = document.getElementById('idCardPreview');
+                                const idCardImage = document.getElementById('idCardImage');
+                                const removeIdCard = document.getElementById('removeIdCard');
+
+                                // Highlight drop area on drag
+                                ['dragenter', 'dragover'].forEach(eventName => {
+                                    idCardUploadArea.addEventListener(eventName, (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        idCardUploadArea.style.borderColor = '#2563eb';
+                                        idCardUploadArea.style.backgroundColor = '#eff6ff';
+                                    }, false);
+                                });
+
+                                ['dragleave', 'drop'].forEach(eventName => {
+                                    idCardUploadArea.addEventListener(eventName, (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        idCardUploadArea.style.borderColor = '#d1d5db';
+                                        idCardUploadArea.style.backgroundColor = '#f9fafb';
+                                    }, false);
+                                });
+
+                                // Handle file input change
+                                idCardInput.addEventListener('change', function (e) {
+                                    handleFiles(this.files);
+                                });
+
+                                // Handle file drop
+                                idCardUploadArea.addEventListener('drop', function (e) {
+                                    const dt = e.dataTransfer;
+                                    const files = dt.files;
+                                    handleFiles(files);
+
+                                    // Update input files (optional/hacky but good for consistency)
+                                    if (files.length > 0) {
+                                        idCardInput.files = files;
+                                    }
+                                });
+
+                                function handleFiles(files) {
+                                    if (files && files[0]) {
+                                        const file = files[0];
+                                        if (!file.type.startsWith('image/')) {
+                                            alert('Por favor selecciona un archivo de imagen válido.');
+                                            return;
+                                        }
+
+                                        // Mostrar estado de carga
+                                        idCardPlaceholder.style.display = 'none';
+                                        idCardPreview.style.display = 'none';
+
+                                        // Crear elemento de carga si no existe
+                                        let loadingEl = idCardUploadArea.querySelector('.upload-loading');
+                                        if (!loadingEl) {
+                                            loadingEl = document.createElement('div');
+                                            loadingEl.className = 'upload-loading';
+                                            loadingEl.innerHTML = `
+                                                <div class="spinner" style="border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #2563eb; animation: spin 1s linear infinite; margin: 0 auto 12px;"></div>
+                                                <p style="font-size: 14px; color: #4b5563;">Subiendo a Cloudflare...</p>
+                                                <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+                                            `;
+                                            idCardUploadArea.appendChild(loadingEl);
+                                        } else {
+                                            loadingEl.style.display = 'block';
+                                        }
+
+                                        const formData = new FormData();
+                                        formData.append('image', file);
+
+                                        // Subir a Cloudflare
+                                        fetch(`${API_BASE}/upload`, {
+                                            method: 'POST',
+                                            body: formData
+                                        })
+                                            .then(res => res.json())
+                                            .then(result => {
+                                                loadingEl.style.display = 'none';
+                                                if (result.success) {
+                                                    console.log('ID Card subida a Cloudflare:', result.url);
+                                                    idCardImage.src = result.url;
+                                                    idCardPreview.style.display = 'block';
+                                                    // Guardar la URL en un atributo para uso posterior
+                                                    idCardUploadArea.setAttribute('data-cloudflare-url', result.url);
+
+                                                    // Persistir en la base de datos automáticamente
+                                                    if (typeof updateUsuario === 'function') {
+                                                        updateUsuario('url_Dni', result.url);
+                                                    }
+
+                                                    // Mostrar mensaje de éxito temporal
+                                                    const successMsg = document.createElement('p');
+                                                    successMsg.style.color = '#059669';
+                                                    successMsg.style.fontSize = '12px';
+                                                    successMsg.style.marginTop = '8px';
+                                                    successMsg.textContent = '¡Subido correctamente!';
+                                                    idCardPreview.appendChild(successMsg);
+                                                    setTimeout(() => successMsg.remove(), 3000);
+                                                } else {
+                                                    throw new Error(result.error || 'Error al subir');
+                                                }
+                                            })
+                                            .catch(err => {
+                                                console.error('Error subiendo ID Card:', err);
+                                                loadingEl.style.display = 'none';
+                                                idCardPlaceholder.style.display = 'block';
+                                                alert('Error al subir la imagen a Cloudflare. Por favor intenta de nuevo.');
+                                            });
+                                    }
+                                }
+
+                                // Remove image
+                                removeIdCard.addEventListener('click', function (e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+
+                                    const currentUrl = idCardUploadArea.getAttribute('data-cloudflare-url');
+                                    if (currentUrl && currentUrl.includes('r2.dev')) {
+                                        // Opcional: Eliminar de Cloudflare también
+                                        fetch(`${API_BASE}/upload`, {
+                                            method: 'DELETE',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ imageUrl: currentUrl })
+                                        }).catch(err => console.error('Error al eliminar de R2:', err));
+                                    }
+
+                                    idCardInput.value = '';
+                                    idCardImage.src = '';
+                                    idCardPreview.style.display = 'none';
+                                    idCardPlaceholder.style.display = 'block';
+                                    idCardUploadArea.removeAttribute('data-cloudflare-url');
+                                });
+                            });
+                        </script>
                     </div>
 
                     <!-- Stats Section -->
@@ -1389,25 +1648,6 @@
                             </div>
                         </div>
 
-                        <!-- Status Card with Toggle -->
-                        <div class="perfil-stat-card" style="margin-top: 16px;">
-                            <div class="perfil-stat-icon" id="statusIcon" style="background: #fef2f2; color: #dc2626;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-                                    <line x1="12" y1="2" x2="12" y2="12"></line>
-                                </svg>
-                            </div>
-                            <div class="switch-group">
-                                <label class="switch">
-                                    <input type="checkbox" id="availabilityToggle">
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <div class="perfil-stat-value" id="statusText">En obra</div>
-                            <div class="perfil-stat-label">Estado</div>
-                        </div>
 
                         <!-- Pixel Bar Chart -->
                         <div class="pixel-chart">
@@ -1986,7 +2226,8 @@
                     tipoIdentificacion_Usuario: personaDB.tipoIdentificacion_Persona || 'DNI',
                     identificacion_usuario: personaDB.identificacion_Persona || '',
                     fechaNacimiento: personaDB.fechaNac_Persona || '',
-                    anios_experiencia: personaDB.anios_experiencia || 0
+                    anios_experiencia: personaDB.anios_experiencia || 0,
+                    url_Dni: personaDB.url_Dni || ''
                 };
 
                 // 4. Cargar imágenes de galería
@@ -2091,29 +2332,36 @@
                         if (!document.getElementById('solicitudVerificacionForm')) {
                             const form = document.createElement('form');
                             form.id = 'solicitudVerificacionForm';
+                            form.style.display = 'contents'; // Para que flote en el flex-row sin romperlo
                             form.innerHTML = `
-                      <div style="margin-top: 20px; padding: 16px 18px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 10px; border: 2px solid #bae6fd; max-width: 650px;">
-                        <label for="correoVerificacion" style="font-weight: 600; color: #0c4a6e; font-size: 13px; display: block; margin-bottom: 8px;" data-i18n="contactEmail">${t('contactEmail')}</label>
-                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                          <input type="email" id="correoVerificacion" required placeholder="${t('emailPlaceholder')}" data-i18n-placeholder="emailPlaceholder" style="flex: 1; min-width: 180px; padding: 9px 12px; border-radius: 7px; border: 2px solid #0ea5e9; font-size: 13px; transition: all 0.2s;" onfocus="this.style.borderColor='#0284c7'; this.style.boxShadow='0 0 0 3px rgba(14, 165, 233, 0.1)'" onblur="this.style.borderColor='#0ea5e9'; this.style.boxShadow='none'">
-                          <button type="submit" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 9px 20px; border-radius: 7px; font-weight: 600; font-size: 13px; border: none; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); white-space: nowrap;" data-i18n="requestVerification" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(37, 99, 235, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(37, 99, 235, 0.3)'">${t('requestVerification')}</button>
-                        </div>
+                      <div class="verification-pill" style="display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 20px; padding: 0 6px 0 18px; border: 1px solid #bae6fd; height: 40px; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <span style="font-size: 13px; font-weight: 700; color: #0c4a6e; white-space: nowrap;">${t('contactEmail')}:</span>
+                        <input type="email" id="correoVerificacion" required placeholder="tu@email.com" style="background: transparent; border: none; font-size: 13px; color: #0c4a6e; width: 140px; outline: none; padding: 0; font-family: inherit;">
+                        <button type="submit" style="background: #2563eb; color: white; padding: 0 14px; border-radius: 20px; font-weight: 700; font-size: 12px; border: none; cursor: pointer; transition: all 0.2s; height: 30px; white-space: nowrap; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);">${t('requestVerification')}</button>
                       </div>
-                      <div id="mensajeVerificacion" style="margin-top: 10px; font-size: 13px; font-weight: 500; padding: 9px; border-radius: 7px; max-width: 650px;"></div>
+                      <div id="mensajeVerificacion" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; font-size: 13px; font-weight: 500; padding: 12px 20px; border-radius: 10px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></div>
                     `;
                             badge.parentNode.insertBefore(form, badge.nextSibling);
 
-                            // Aplicar traducciones al formulario
+                            // Aplicar traducciones
                             applyTranslations();
 
                             form.addEventListener('submit', async function (e) {
                                 e.preventDefault();
                                 const correo = document.getElementById('correoVerificacion').value.trim();
                                 const mensaje = document.getElementById('mensajeVerificacion');
-                                mensaje.textContent = t('sendingRequest');
-                                mensaje.style.background = '#dbeafe';
-                                mensaje.style.color = '#1e40af';
-                                mensaje.style.border = '1px solid #93c5fd';
+
+                                const showMsg = (text, bg, color, border) => {
+                                    mensaje.textContent = text;
+                                    mensaje.style.background = bg;
+                                    mensaje.style.color = color;
+                                    mensaje.style.border = border;
+                                    mensaje.style.display = 'block';
+                                    setTimeout(() => { mensaje.style.display = 'none'; }, 5000);
+                                };
+
+                                showMsg(t('sendingRequest'), '#dbeafe', '#1e40af', '1px solid #93c5fd');
+
                                 try {
                                     const resp = await fetch(`${window.API_BASE}/verificacion-usuarios`, {
                                         method: 'POST',
@@ -2122,27 +2370,17 @@
                                     });
                                     const data = await resp.json();
                                     if (resp.ok && data.ok) {
-                                        mensaje.textContent = t('requestSentAdmin');
-                                        mensaje.style.background = '#dcfce7';
-                                        mensaje.style.color = '#166534';
-                                        mensaje.style.border = '1px solid #86efac';
+                                        showMsg(t('requestSentAdmin'), '#dcfce7', '#166534', '1px solid #86efac');
                                         form.querySelector('button').disabled = true;
                                         form.querySelector('button').style.opacity = '0.6';
                                         form.querySelector('input').disabled = true;
                                         mostrarEstadoVerificacion();
-                                        // Iniciar polling para verificar cambios en tiempo real
                                         iniciarPollingVerificacion();
                                     } else {
-                                        mensaje.textContent = data.error || t('requestError');
-                                        mensaje.style.background = '#fee2e2';
-                                        mensaje.style.color = '#991b1b';
-                                        mensaje.style.border = '1px solid #fca5a5';
+                                        showMsg(data.error || t('requestError'), '#fee2e2', '#991b1b', '1px solid #fca5a5');
                                     }
                                 } catch (err) {
-                                    mensaje.textContent = t('requestError');
-                                    mensaje.style.background = '#fee2e2';
-                                    mensaje.style.color = '#991b1b';
-                                    mensaje.style.border = '1px solid #fca5a5';
+                                    showMsg(t('requestError'), '#fee2e2', '#991b1b', '1px solid #fca5a5');
                                 }
                             });
                         }
@@ -2223,6 +2461,21 @@
 
             // Inicializar Toggle de Disponibilidad
             initAvailabilityToggle();
+
+            // Inicializar vista previa de DNI si existe
+            if (usuario.url_Dni) {
+                const idCardImage = document.getElementById('idCardImage');
+                const idCardPlaceholder = document.getElementById('idCardPlaceholder');
+                const idCardPreview = document.getElementById('idCardPreview');
+                const idCardUploadArea = document.getElementById('idCardUploadArea');
+
+                if (idCardImage && idCardPlaceholder && idCardPreview) {
+                    idCardImage.src = usuario.url_Dni;
+                    idCardPlaceholder.style.display = 'none';
+                    idCardPreview.style.display = 'block';
+                    idCardUploadArea.setAttribute('data-cloudflare-url', usuario.url_Dni);
+                }
+            }
 
             // Configurar eventos de certificaciones
             setupCertificacionesEventListeners();
@@ -3003,6 +3256,199 @@
         }
 
         // ======================
+        // VALIDACIÓN DE DOCUMENTOS (HONDURAS)
+        // ======================
+        function validarIdentidadHonduras(numeroIdentidad) {
+            const num = numeroIdentidad.trim();
+            const conGuiones = /^\d{4}-\d{4}-\d{5}$/;
+            const sinGuiones = /^\d{13}$/;
+
+            if (!conGuiones.test(num) && !sinGuiones.test(num)) {
+                return {
+                    valido: false,
+                    mensaje: 'Formato inválido (Ej: 0801-1990-12345 o 0801199012345)',
+                    tipo: 'identidad'
+                };
+            }
+
+            let depto, anio, corr;
+            if (conGuiones.test(num)) {
+                [depto, anio, corr] = num.split('-');
+            } else {
+                depto = num.substring(0, 4);
+                anio = num.substring(4, 8);
+                corr = num.substring(8, 13);
+            }
+
+            const anioNum = parseInt(anio);
+            const anioActual = new Date().getFullYear();
+
+            if (anioNum < 1900 || anioNum > anioActual) {
+                return {
+                    valido: false,
+                    mensaje: `Año de nacimiento inválido: ${anio}`,
+                    tipo: 'identidad'
+                };
+            }
+
+            const codDepto = parseInt(depto);
+            if (codDepto < 101 || codDepto > 1899) {
+                return {
+                    valido: false,
+                    mensaje: 'Código de departamento/municipio inválido',
+                    tipo: 'identidad'
+                };
+            }
+
+            return {
+                valido: true,
+                mensaje: 'Identidad válida',
+                tipo: 'identidad',
+                datos: {
+                    departamentoMunicipio: depto,
+                    anioNacimiento: anio,
+                    correlativo: corr,
+                    formatoCompleto: `${depto}-${anio}-${corr}`,
+                    numeroLimpio: `${depto}${anio}${corr}`
+                }
+            };
+        }
+
+        function validarPasaporteHonduras(pasaporte) {
+            const pas = pasaporte.trim().toUpperCase();
+            const moderno = /^[AE]\d{6,7}$/;
+            const antiguo = /^\d{6,8}$/;
+
+            if (!moderno.test(pas) && !antiguo.test(pas)) {
+                return {
+                    valido: false,
+                    mensaje: 'Formato de pasaporte inválido (Ej: A1234567)',
+                    tipo: 'pasaporte'
+                };
+            }
+
+            let tipo = 'Desconocido';
+            if (moderno.test(pas)) {
+                tipo = pas[0] === 'A' ? 'Ordinario' : 'Servicio';
+            } else {
+                tipo = 'Formato antiguo';
+            }
+
+            return {
+                valido: true,
+                mensaje: 'Pasaporte válido',
+                tipo: 'pasaporte',
+                datos: {
+                    numeroPasaporte: pas,
+                    tipoPasaporte: tipo,
+                    numeroLimpio: pas
+                }
+            };
+        }
+
+        function calcularEdad(fechaNacimiento) {
+            const hoy = new Date();
+            const cumple = new Date(fechaNacimiento);
+            let edad = hoy.getFullYear() - cumple.getFullYear();
+            const m = hoy.getMonth() - cumple.getMonth();
+            if (m < 0 || (m === 0 && hoy.getDate() < cumple.getDate())) {
+                edad--;
+            }
+            return edad;
+        }
+
+        // ======================
+        // VALIDACIÓN DE DOCUMENTOS (HONDURAS)
+        // ======================
+        function validarIdentidadHonduras(numeroIdentidad) {
+            const num = numeroIdentidad.trim();
+            const conGuiones = /^\d{4}-\d{4}-\d{5}$/;
+            const sinGuiones = /^\d{13}$/;
+
+            if (!conGuiones.test(num) && !sinGuiones.test(num)) {
+                return {
+                    valido: false,
+                    mensaje: 'Formato inválido (Ej: 0801-1990-12345 o 0801199012345)',
+                    tipo: 'identidad'
+                };
+            }
+
+            let depto, anio, corr;
+            if (conGuiones.test(num)) {
+                [depto, anio, corr] = num.split('-');
+            } else {
+                depto = num.substring(0, 4);
+                anio = num.substring(4, 8);
+                corr = num.substring(8, 13);
+            }
+
+            const anioNum = parseInt(anio);
+            const anioActual = new Date().getFullYear();
+
+            if (anioNum < 1900 || anioNum > anioActual) {
+                return {
+                    valido: false,
+                    mensaje: `Año de nacimiento inválido: ${anio}`,
+                    tipo: 'identidad'
+                };
+            }
+
+            const codDepto = parseInt(depto);
+            if (codDepto < 101 || codDepto > 1899) {
+                return {
+                    valido: false,
+                    mensaje: 'Código de departamento/municipio inválido',
+                    tipo: 'identidad'
+                };
+            }
+
+            return {
+                valido: true,
+                mensaje: 'Identidad válida',
+                tipo: 'identidad',
+                datos: {
+                    departamentoMunicipio: depto,
+                    anioNacimiento: anio,
+                    correlativo: corr,
+                    formatoCompleto: `${depto}-${anio}-${corr}`,
+                    numeroLimpio: `${depto}${anio}${corr}`
+                }
+            };
+        }
+
+        function validarPasaporteHonduras(pasaporte) {
+            const pas = pasaporte.trim().toUpperCase();
+            const moderno = /^[AE]\d{6,7}$/;
+            const antiguo = /^\d{6,8}$/;
+
+            if (!moderno.test(pas) && !antiguo.test(pas)) {
+                return {
+                    valido: false,
+                    mensaje: 'Formato de pasaporte inválido (Ej: A1234567)',
+                    tipo: 'pasaporte'
+                };
+            }
+
+            let tipo = 'Desconocido';
+            if (moderno.test(pas)) {
+                tipo = pas[0] === 'A' ? 'Ordinario' : 'Servicio';
+            } else {
+                tipo = 'Formato antiguo';
+            }
+
+            return {
+                valido: true,
+                mensaje: 'Pasaporte válido',
+                tipo: 'pasaporte',
+                datos: {
+                    numeroPasaporte: pas,
+                    tipoPasaporte: tipo,
+                    numeroLimpio: pas
+                }
+            };
+        }
+
+        // ======================
         // RENDERIZAR DATOS PERSONALES
         // ======================
         function renderDatosPersonales() {
@@ -3030,13 +3476,13 @@
                     ]
                 },
                 {
-                    label: t('idType'), field: 'tipoIdentificacion_Usuario', value: usuario.tipoIdentificacion_Usuario, type: 'select', options: [
-                        { value: 'DNI', label: t('dni') },
-                        { value: 'Pasaporte', label: t('passport') }
+                    label: 'Tipo de Identificación', field: 'tipoIdentificacion_Usuario', value: usuario.tipoIdentificacion_Usuario, type: 'select', options: [
+                        { value: 'Identidad', label: 'Identidad (DNI)' },
+                        { value: 'Pasaporte', label: 'Pasaporte' }
                     ]
                 },
                 { label: t('idNumber'), field: 'identificacion_usuario', value: usuario.identificacion_usuario },
-                { label: t('birthDate'), field: 'fechaNacimiento', value: usuario.fechaNacimiento, type: 'date', displayValue: formatearFecha(usuario.fechaNacimiento) },
+                { label: 'Fecha de Nacimiento', field: 'fechaNacimiento', value: usuario.fechaNacimiento, type: 'date', displayValue: formatearFecha(usuario.fechaNacimiento) },
                 { label: 'Años de Experiencia', field: 'anios_experiencia', value: usuario.anios_experiencia || 0, type: 'number' }
             ];
 
@@ -3113,8 +3559,78 @@
                     input.select();
                 }
 
-                const save = () => {
+                let guardado = false;
+                const save = async () => {
+                    if (guardado) return;
+                    guardado = true;
                     const newValue = input.value.trim();
+
+                    // VALIDACIONES DE IDENTIDAD Y EDAD
+                    if (field === 'identificacion_usuario' && newValue !== '') {
+                        const tipo = usuario.tipoIdentificacion_Usuario;
+                        let valResult;
+
+                        if (tipo === 'Identidad' || tipo === 'DNI') {
+                            valResult = validarIdentidadHonduras(newValue);
+                        } else if (tipo === 'Pasaporte') {
+                            valResult = validarPasaporteHonduras(newValue);
+                        }
+
+                        if (valResult && !valResult.valido) {
+                            if (window.Toast) {
+                                Toast.error('Error de Formato', valResult.mensaje);
+                            } else {
+                                alert(valResult.mensaje);
+                            }
+                            element.textContent = currentDisplayValue;
+                            element.classList.remove('editing');
+                            return;
+                        }
+
+                        // VERIFICAR DUPLICADOS EN LA BASE DE DATOS
+                        try {
+                            const resVerify = await fetch(`${API_BASE}/personas/verificar-identificacion/${encodeURIComponent(newValue)}?excludeId=${usuarioId}`);
+                            const dataVerify = await resVerify.json();
+                            if (dataVerify.success && dataVerify.exists) {
+                                const errorMsg = `El número de identificación ${newValue} ya está registrado en otro perfil.`;
+                                if (window.Toast) {
+                                    Toast.error('Documento Duplicado', errorMsg);
+                                } else {
+                                    alert(`Error: ${errorMsg}`);
+                                }
+                                element.textContent = currentDisplayValue;
+                                element.classList.remove('editing');
+                                return;
+                            }
+                        } catch (err) {
+                            console.error('Error al verificar duplicados:', err);
+                        }
+
+                    } else if (field === 'fechaNacimiento' && newValue !== '') {
+                        const edad = calcularEdad(newValue);
+                        if (edad < 18) {
+                            const ageMsg = 'Debes ser mayor de 18 años para usar SkillConnect.';
+                            if (window.Toast) {
+                                Toast.warning('Restricción de Edad', ageMsg);
+                            } else {
+                                alert(ageMsg);
+                            }
+                            element.textContent = currentDisplayValue;
+                            element.classList.remove('editing');
+                            return;
+                        }
+                        if (edad > 110) {
+                            const invMsg = 'Por favor ingresa una fecha de nacimiento válida.';
+                            if (window.Toast) {
+                                Toast.error('Fecha Inválida', invMsg);
+                            } else {
+                                alert(invMsg);
+                            }
+                            element.textContent = currentDisplayValue;
+                            element.classList.remove('editing');
+                            return;
+                        }
+                    }
 
                     // Si es fecha, mostrar formateado pero guardar en formato ISO
                     if (inputType === 'date') {
@@ -3159,6 +3675,7 @@
                         save();
                     }
                     if (e.key === 'Escape') {
+                        guardado = true; // Evitar que el blur dispare el save
                         element.textContent = currentDisplayValue;
                         element.classList.remove('editing');
                     }
@@ -3250,7 +3767,8 @@
                     'tipoIdentificacion_Usuario': 'tipoIdentificacion_Persona',
                     'identificacion_usuario': 'identificacion_Persona',
                     'fechaNacimiento': 'fechaNac_Persona',
-                    'anios_experiencia': 'anios_experiencia'
+                    'anios_experiencia': 'anios_experiencia',
+                    'url_Dni': 'url_Dni'
                 };
 
                 const campoDB = camposBD[campo];
@@ -5522,7 +6040,11 @@
                     // Revertir UI
                     toggle.checked = !newStatus;
                     updateStatusUI(!newStatus);
-                    alert('No se pudo actualizar el estado: ' + error.message);
+                    if (window.Toast) {
+                        Toast.error('Error', 'No se pudo actualizar el estado: ' + error.message);
+                    } else {
+                        alert('No se pudo actualizar el estado: ' + error.message);
+                    }
                 }
             };
         }
@@ -5564,7 +6086,7 @@
             }
         }
     </script>
-
+    <script src="../js/toast.js"></script>
 </body>
 
 </html>

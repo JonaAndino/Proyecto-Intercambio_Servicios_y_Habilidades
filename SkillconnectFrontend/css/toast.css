@@ -1,7 +1,7 @@
 /* Contenedor fijo para los toasts - Centrado arriba */
 #toast-container {
     position: fixed;
-    top: 32px;
+    top: 12px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 10000;
