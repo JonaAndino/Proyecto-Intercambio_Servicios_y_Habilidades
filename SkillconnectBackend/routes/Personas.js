@@ -43,7 +43,7 @@ const CAMPOS_REQUERIDOS_REEMPLAZO = [
     'nombre_Persona', 'apellido_Persona', 'fechaNac_Persona', 'genero_Persona', // ✅ CORREGIDO: fechaNac_Persona
     'estadoCivil_Persona', 'tipoIdentificacion_Persona', 'identificacion_Persona',
     'imagenUrl_Persona', 'imagen1Url_Persona', 'imagen2Url_Persona', 'imagen3Url_Persona',
-    'descripcionPerfil_Persona', 'disponibilidad'
+    'descripcionPerfil_Persona', 'disponibilidad', 'url_Dni'
 ];
 
 /**
@@ -59,6 +59,35 @@ function validarCamposReemplazo(body) {
     }
     return true;
 }
+
+// ----------------------------------------------------
+// ENDPOINT: Verificar si una identificación ya existe (GET /personas/verificar-identificacion/:identificacion)
+// ----------------------------------------------------
+router.get('/verificar-identificacion/:identificacion', async (req, res) => {
+    const { identificacion } = req.params;
+    const excludeId = req.query.excludeId;
+
+    try {
+        let sql = 'SELECT id_Usuario FROM Personas WHERE identificacion_Persona = ?';
+        const params = [identificacion];
+
+        if (excludeId) {
+            sql += ' AND id_Usuario != ?';
+            params.push(excludeId);
+        }
+
+        const [rows] = await db.execute(sql, params);
+
+        res.json({
+            success: true,
+            exists: rows.length > 0
+        });
+    } catch (error) {
+        console.error('Error al verificar identificación:', error.message);
+        res.status(500).json({ success: false, error: 'Error al verificar la identificación' });
+    }
+});
+
 
 
 // ----------------------------------------------------
@@ -83,6 +112,7 @@ router.get('/', async (req, res) => {
                 imagen3Url_Persona,
                 descripcionPerfil_Persona,
                 disponibilidad,
+                url_Dni,
                 IFNULL(anios_experiencia, 0) AS anios_experiencia,
                 id_Usuario
             FROM Personas
@@ -133,6 +163,7 @@ router.get('/:id', async (req, res) => {
                 p.imagen3Url_Persona,
                 p.descripcionPerfil_Persona,
                 p.disponibilidad,
+                p.url_Dni,
                 IFNULL(p.anios_experiencia, 0) AS anios_experiencia,
                 p.id_Usuario,
                 u.correo,
@@ -200,7 +231,9 @@ router.post('/', async (req, res) => {
         imagen2Url_Persona,
         imagen3Url_Persona,
         descripcionPerfil_Persona,
-        disponibilidad
+        disponibilidad,
+        url_Dni,
+        anios_experiencia
     } = req.body;
     
     // Validación de campos mínimos
@@ -225,7 +258,7 @@ router.post('/', async (req, res) => {
     try {
         // Llamar al SP de REEMPLAZO (DELETE + INSERT)
         await db.execute(
-             `CALL SP_REEMPLAZAR_PERFIL_PERSONA(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             `CALL SP_REEMPLAZAR_PERFIL_PERSONA(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
              [
                  id_Usuario,
                  nombre_Persona,
@@ -240,7 +273,9 @@ router.post('/', async (req, res) => {
                  imagen2Url_Persona || null,
                  imagen3Url_Persona || null,
                  descripcionPerfil_Persona || null,
-                 disponibilidad || null
+                 disponibilidad || null,
+                 url_Dni || null,
+                 anios_experiencia || 0
              ]
          );
         
@@ -276,7 +311,7 @@ router.put('/:id', async (req, res) => {
         'nombre_Persona', 'apellido_Persona', 'fechaNac_Persona', 'genero_Persona',
         'estadoCivil_Persona', 'tipoIdentificacion_Persona', 'identificacion_Persona',
         'imagenUrl_Persona', 'imagen1Url_Persona', 'imagen2Url_Persona', 'imagen3Url_Persona',
-        'descripcionPerfil_Persona', 'disponibilidad', 'anios_experiencia'
+        'descripcionPerfil_Persona', 'disponibilidad', 'anios_experiencia', 'url_Dni'
     ];
     const camposActualizar = Object.keys(req.body).filter(campo => camposPermitidos.includes(campo));
     if (camposActualizar.length === 0) {
