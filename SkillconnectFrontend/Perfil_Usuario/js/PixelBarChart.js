@@ -1,3 +1,0 @@
-// PixelBarChart.js
-window.PixelBarChart = function() { return null; };
-
