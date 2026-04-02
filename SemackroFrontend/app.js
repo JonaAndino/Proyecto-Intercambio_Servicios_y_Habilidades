@@ -1,4 +1,4 @@
-const API_URL = "http://152.70.120.174:3001/api";
+const API_URL = window.APP_CONFIG ? window.APP_CONFIG.API_BASE : 'https://tu-backend.railway.app/api';
 
 // 🔍 Buscar por habilidad
 async function buscarPorHabilidad() {

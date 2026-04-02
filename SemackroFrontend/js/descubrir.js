@@ -6777,7 +6777,7 @@ window.addEventListener("beforeunload", () => {
 
   // n8n Webhook URL for the AI agent
   const N8N_WEBHOOK_URL =
-    "http://localhost:5678/webhook/e198fe85-0b97-4d32-8a5a-889aa29cd142/chat";
+    "https://tu-n8n-publico.com/webhook/e198fe85-0b97-4d32-8a5a-889aa29cd142/chat";
 
   // Session ID for conversation memory
   let sessionId = localStorage.getItem("aiChatSessionId");
@@ -7152,7 +7152,7 @@ window.addEventListener("beforeunload", () => {
         error.message.includes("NetworkError")
       ) {
         errorMsg +=
-          "Por favor verifica que el servidor n8n esté activo en http://localhost:5678";
+          "Por favor verifica que el servidor n8n esté activo";
       } else {
         errorMsg += "Por favor intenta de nuevo.";
       }
