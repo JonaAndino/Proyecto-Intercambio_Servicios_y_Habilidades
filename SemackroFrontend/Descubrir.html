@@ -997,15 +997,18 @@
 
                         <!-- Ubicación de Obra -->
                         <div>
-                            <div class="flex items-center justify-between mb-1">
-                                <label class="block text-sm font-medium text-gray-700">Ubicación de Obra</label>
-                                <button type="button" id="btnToggleMapaOT" class="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded border border-emerald-200 hover:bg-emerald-200 transition flex items-center gap-1">
-                                    <span class="iconify" data-icon="mdi:map-marker-radius"></span>
+                            <div class="mb-1.5">
+                                <label class="block text-sm font-medium text-gray-700">Ubicación de Obra <span class="text-red-500">*</span></label>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" id="ordenUbicacion" placeholder="Ej: Col. La Paz, Tegucigalpa"
+                                    class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-blue-50">
+                                <button type="button" id="btnToggleMapaOT" onclick="if(window.MapaOT) window.MapaOT.togglePanel()"
+                                    class="shrink-0 font-bold px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl border border-emerald-200 hover:bg-emerald-200 transition-all flex items-center gap-2 shadow-sm whitespace-nowrap">
+                                    <span class="iconify text-lg" data-icon="mdi:map-marker-radius"></span>
                                     <span>Mapa</span>
                                 </button>
                             </div>
-                            <input type="text" id="ordenUbicacion" placeholder="Ej: Col. La Paz, Tegucigalpa"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-blue-50">
                             
                             <!-- Panel de Mapa Colapsable -->
                             <div id="panelMapaOT" class="hidden mt-2 border border-gray-200 rounded-xl overflow-hidden bg-gray-50 shadow-inner">
@@ -1459,7 +1462,179 @@
         <!-- Leaflet JS -->
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-        <script src="js/descubrir.js"></script>
+    </footer>
+
+    <!-- Modal para Ver Perfil de Postulante (SCRUM-25) -->
+    <div id="modalPerfilPostulante" class="fixed inset-0 z-[10002] hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300">
+            <!-- Header del Modal -->
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                        <span class="iconify text-xl" data-icon="mdi:account-details-outline"></span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Perfil del Postulante</h3>
+                        <p class="text-xs text-gray-500">Vista detallada del técnico</p>
+                    </div>
+                </div>
+                <button onclick="cerrarModalPerfil()" class="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600">
+                    <span class="iconify text-2xl" data-icon="mdi:close"></span>
+                </button>
+            </div>
+            
+            <!-- Cuerpo del Modal (Iframe) -->
+            <div class="flex-1 bg-gray-50/50">
+                <iframe id="iframePerfilPostulante" src="about:blank" class="w-full h-full border-none"></iframe>
+            </div>
+
+            <!-- Footer con Botón de Cerrar (Opcional) -->
+            <div class="px-6 py-3 border-t border-gray-100 bg-gray-50 flex justify-end">
+                <button onclick="cerrarModalPerfil()" class="px-5 py-2 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all text-sm">
+                    Cerrar Detalle
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRUM-25: Lógica de Mapa y Perfil en Modal -->
+    <script>
+        window.MapaOT = {
+            map: null,
+            marker: null,
+            initialized: false,
+
+            init: function() {
+                if (this.initialized) return;
+                const lat = Number(localStorage.getItem('userLat')) || 14.0650;
+                const lon = Number(localStorage.getItem('userLon')) || -87.1715;
+
+                if (typeof L === 'undefined') {
+                    console.error('Leaflet is not loaded!');
+                    return;
+                }
+
+                this.map = L.map('mapaOrdenTrabajo').setView([lat, lon], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(this.map);
+
+                this.map.on('click', (e) => this.onMapClick(e));
+                
+                const btnBuscar = document.getElementById('btnBuscarMapaOT');
+                if (btnBuscar) btnBuscar.onclick = () => this.buscar();
+                
+                const inputBuscar = document.getElementById('inputBuscarMapaOT');
+                if (inputBuscar) {
+                    inputBuscar.onkeypress = (e) => {
+                        if (e.key === 'Enter') { e.preventDefault(); this.buscar(); }
+                    };
+                }
+                this.initialized = true;
+            },
+
+            togglePanel: function() {
+                const panel = document.getElementById('panelMapaOT');
+                const btn = document.getElementById('btnToggleMapaOT');
+                if (!panel || !btn) return;
+                
+                const isHidden = panel.classList.toggle('hidden');
+                if (!isHidden) {
+                    this.init();
+                    setTimeout(() => this.map && this.map.invalidateSize(), 150);
+                    btn.innerHTML = '<span class="iconify" data-icon="mdi:close-circle-outline"></span><span>Cerrar mapa</span>';
+                    btn.className = "shrink-0 font-bold px-4 py-2.5 bg-emerald-600 text-white rounded-xl border border-emerald-700 hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-md whitespace-nowrap";
+                } else {
+                    btn.innerHTML = '<span class="iconify" data-icon="mdi:map-marker-radius"></span><span>Mapa</span>';
+                    btn.className = "shrink-0 font-bold px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl border border-emerald-200 hover:bg-emerald-200 transition-all flex items-center gap-2 shadow-sm whitespace-nowrap";
+                }
+            },
+
+            reset: function() {
+                const panel = document.getElementById('panelMapaOT');
+                if (panel) panel.classList.add('hidden');
+                const btn = document.getElementById('btnToggleMapaOT');
+                if (btn) {
+                    btn.innerHTML = '<span class="iconify" data-icon="mdi:map-marker-radius"></span><span>Mapa</span>';
+                    btn.className = "shrink-0 font-bold px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-xl border border-emerald-200 hover:bg-emerald-200 transition-all flex items-center gap-2 shadow-sm whitespace-nowrap";
+                }
+                if (this.marker && this.map) {
+                    this.map.removeLayer(this.marker);
+                    this.marker = null;
+                }
+            },
+
+            onMapClick: async function(e) {
+                const { lat, lng } = e.latlng;
+                if (this.marker) this.map.removeLayer(this.marker);
+                this.marker = L.marker([lat, lng]).addTo(this.map);
+
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                    const data = await res.json();
+                    if (data && data.display_name) {
+                        const input = document.getElementById('ordenUbicacion');
+                        if (input) input.value = data.display_name;
+                    }
+                } catch (err) {
+                    console.error('Error in Reverse Geocoding:', err);
+                }
+            },
+
+            buscar: async function() {
+                const query = document.getElementById('inputBuscarMapaOT').value.trim();
+                if (!query) return;
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+                    const data = await res.json();
+                    if (data && data.length > 0) {
+                        const { lat, lon } = data[0];
+                        this.map.setView([lat, lon], 16);
+                        if (this.marker) this.map.removeLayer(this.marker);
+                        this.marker = L.marker([lat, lon]).addTo(this.map);
+                        const input = document.getElementById('ordenUbicacion');
+                        if (input) input.value = data[0].display_name;
+                    }
+                } catch (err) {
+                    console.error('Error searching:', err);
+                }
+            }
+        };
+
+        window.abrirModalPerfilPostulante = function(idUsuario) {
+            console.log('🚀 Abriendo modal para Usuario ID:', idUsuario);
+            if (!idUsuario) {
+                console.error('❌ Error: No se recibió ID de usuario.');
+                return;
+            }
+            const modal = document.getElementById('modalPerfilPostulante');
+            const iframe = document.getElementById('iframePerfilPostulante');
+            
+            if (!modal || !iframe) {
+                console.warn('⚠️ Modal no encontrado, redireccionando...');
+                window.location.href = `Perfil_Usuario/perfil.html?usuario_id=${idUsuario}`;
+                return;
+            }
+
+            // Cambiar URL del iframe
+            const url = `Perfil_Usuario/perfil.html?usuario_id=${idUsuario}&minimal=true`;
+            console.log('🔗 Cargando URL:', url);
+            iframe.src = url;
+            
+            // Mostrar modal
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; 
+        };
+
+        window.cerrarModalPerfil = function() {
+            const modal = document.getElementById('modalPerfilPostulante');
+            const iframe = document.getElementById('iframePerfilPostulante');
+            if (modal) modal.classList.add('hidden');
+            if (iframe) iframe.src = 'about:blank';
+            document.body.style.overflow = ''; 
+        };
+    </script>
+    <script src="js/descubrir.js"></script>
 
         <!-- Sistema de Traducción -->
         <script src="js/translations.js"></script>

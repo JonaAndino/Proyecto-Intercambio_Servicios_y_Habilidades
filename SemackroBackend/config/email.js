@@ -11,9 +11,7 @@ const transporter = nodemailer.createTransport({
 
 // Función para enviar correo de recuperación de contraseña
 const enviarCorreoRecuperacion = async (destinatario, token) => {
-    // Auto-detectar entorno: si NODE_ENV no es production, usar localhost
-    const isLocal = process.env.NODE_ENV !== 'production';
-    const frontendUrl = isLocal ? 'http://localhost:5050' : (process.env.FRONTEND_URL || 'https://SEMACKRO.duckdns.org');
+    const frontendUrl = process.env.FRONTEND_URL || 'https://semackro.vercel.app';
     const enlaceRecuperacion = `${frontendUrl}/restablecer-password.html?token=${token}`;
     
     const mailOptions = {
@@ -125,7 +123,7 @@ const enviarNotificacionContextual = async (destinatario, alertas, frontendUrl) 
     if (!destinatario || !alertas || alertas.length === 0) return { success: false };
 
     // Prioridad: 1) URL enviada como parámetro  2) variable de entorno  3) localhost
-    const appUrl = (frontendUrl || process.env.FRONTEND_URL || 'http://localhost:5050').replace(/\/$/, '');
+    const appUrl = (frontendUrl || process.env.FRONTEND_URL || 'https://semackro.vercel.app').replace(/\/$/, '');
     const urlDestino = `${appUrl}/Descubrir.html`;
 
     const filasHtml = alertas.map(a => {

@@ -6777,7 +6777,7 @@ window.addEventListener("beforeunload", () => {
 
   // n8n Webhook URL for the AI agent
   const N8N_WEBHOOK_URL =
-    "http://localhost:5678/webhook/e198fe85-0b97-4d32-8a5a-889aa29cd142/chat";
+    "https://tu-n8n-publico.com/webhook/e198fe85-0b97-4d32-8a5a-889aa29cd142/chat";
 
   // Session ID for conversation memory
   let sessionId = localStorage.getItem("aiChatSessionId");
@@ -7152,7 +7152,7 @@ window.addEventListener("beforeunload", () => {
         error.message.includes("NetworkError")
       ) {
         errorMsg +=
-          "Por favor verifica que el servidor n8n esté activo en http://localhost:5678";
+          "Por favor verifica que el servidor n8n esté activo";
       } else {
         errorMsg += "Por favor intenta de nuevo.";
       }
@@ -8293,6 +8293,9 @@ async function editarOrden(id) {
   document.getElementById('modalOrdenTitulo').textContent = 'Editar Orden de Trabajo';
   document.getElementById('btnGuardarOrden').textContent = 'Guardar Cambios';
   document.getElementById('modalOrdenTrabajo').classList.remove('hidden');
+
+  // SCRUM-25: Resetear mapa al editar para evitar estados anteriores
+  if (window.MapaOT) MapaOT.reset();
 }
 
 /** Cancela (cambia estado a 'cancelada') una orden */
@@ -8470,10 +8473,10 @@ async function verDetalleOrden(id) {
             ${barra('Comunic.',    com,  'bg-violet-400')}
           </div>` : '';
 
-        // ── Botón Ver Perfil ──────────────────────────────────────────────────
-        const idUsuarioPostulante = p.usuario_id;
+        // ── Botón Ver Perfil (SCRUM-25) ─────────────────────────────────────────
+        const idUsuarioPostulante = p.usuario_id || p.id_usuario || p.id_Usuario;
         const btnPerfil = idUsuarioPostulante
-          ? `<button onclick="verPerfilPostulante(${idUsuarioPostulante})"
+          ? `<button onclick="window.abrirModalPerfilPostulante(${idUsuarioPostulante})"
                class="mt-2 inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[10px] font-semibold rounded-lg transition-colors border border-indigo-200">
                <span class="iconify" data-icon="mdi:account-circle-outline" style="font-size:13px;"></span>
                Ver perfil completo
@@ -9237,125 +9240,3 @@ function refrescarOrdenesTrabajo() {
     if (icon) { icon.style.transition = 'transform 0.6s'; icon.style.transform = 'rotate(360deg)'; setTimeout(() => { icon.style.transform = ''; }, 650); }
     cargarOrdenesTrabajo();
 }
-
-/** 
- * MODULO: Mapa para Órdenes de Trabajo (SCRUM-25)
- * Encapsula la lógica de Leaflet para el modal de OT
- */
-const MapaOT = {
-  map: null,
-  marker: null,
-  initialized: false,
-
-  init() {
-    if (this.initialized) return;
-    
-    // 1. Inicializar mapa (Tegucigalpa por defecto si no hay coordenadas)
-    // Intentamos obtener lat/long del usuario o usamos fallback
-    const lat = Number(localStorage.getItem('userLat')) || 14.0650;
-    const lon = Number(localStorage.getItem('userLon')) || -87.1715;
-
-    this.map = L.map('mapaOrdenTrabajo').setView([lat, lon], 13);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(this.map);
-
-    // 2. Click en el mapa para seleccionar ubicación
-    this.map.on('click', (e) => this.onMapClick(e));
-
-    // 3. Setup de botones
-    document.getElementById('btnToggleMapaOT').onclick = () => this.togglePanel();
-    document.getElementById('btnBuscarMapaOT').onclick = () => this.buscar();
-    document.getElementById('inputBuscarMapaOT').onkeypress = (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); this.buscar(); }
-    };
-
-    this.initialized = true;
-  },
-
-  togglePanel() {
-    const panel = document.getElementById('panelMapaOT');
-    const btn = document.getElementById('btnToggleMapaOT');
-    const isHidden = panel.classList.toggle('hidden');
-    
-    if (!isHidden) {
-      this.init();
-      // Forzar redraw de Leaflet al mostrar panel oculto
-      setTimeout(() => this.map.invalidateSize(), 100);
-      btn.innerHTML = '<span class="iconify" data-icon="mdi:close-circle-outline"></span><span>Cerrar</span>';
-      btn.classList.replace('bg-emerald-100', 'bg-red-100');
-      btn.classList.replace('text-emerald-700', 'text-red-700');
-      btn.classList.replace('border-emerald-200', 'border-red-200');
-    } else {
-      btn.innerHTML = '<span class="iconify" data-icon="mdi:map-marker-radius"></span><span>Mapa</span>';
-      btn.classList.replace('bg-red-100', 'bg-emerald-100');
-      btn.classList.replace('text-red-700', 'text-emerald-700');
-      btn.classList.replace('border-red-200', 'border-emerald-200');
-    }
-  },
-
-  reset() {
-    const panel = document.getElementById('panelMapaOT');
-    if (panel) panel.classList.add('hidden');
-    const btn = document.getElementById('btnToggleMapaOT');
-    if (btn) {
-      btn.innerHTML = '<span class="iconify" data-icon="mdi:map-marker-radius"></span><span>Mapa</span>';
-      btn.className = "text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded border border-emerald-200 hover:bg-emerald-200 transition flex items-center gap-1";
-    }
-    if (this.marker) {
-      this.map.removeLayer(this.marker);
-      this.marker = null;
-    }
-  },
-
-  async onMapClick(e) {
-    const { lat, lng } = e.latlng;
-    
-    // Poner marcador
-    if (this.marker) this.map.removeLayer(this.marker);
-    this.marker = L.marker([lat, lng]).addTo(this.map);
-
-    // Geocoding inverso con Nominatim
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-      const data = await res.json();
-      if (data && data.display_name) {
-        document.getElementById('ordenUbicacion').value = data.display_name;
-      }
-    } catch (err) {
-      console.error('Error in Reverse Geocoding:', err);
-      document.getElementById('ordenUbicacion').value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-    }
-  },
-
-  async buscar() {
-    const query = document.getElementById('inputBuscarMapaOT').value.trim();
-    if (!query) return;
-
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
-      const data = await res.json();
-      if (data && data.length > 0) {
-        const { lat, lon } = data[0];
-        this.map.setView([lat, lon], 16);
-        if (this.marker) this.map.removeLayer(this.marker);
-        this.marker = L.marker([lat, lon]).addTo(this.map);
-        document.getElementById('ordenUbicacion').value = data[0].display_name;
-      } else {
-        Toast.info('Sin resultados', 'No se encontró la ubicación buscada.');
-      }
-    } catch (err) {
-      console.error('Error en búsqueda de mapa:', err);
-    }
-  }
-};
-
-/** 
- * Función global para ver perfil de un postulante (SCRUM-25)
- */
-window.verPerfilPostulante = function(idUsuario) {
-  if (!idUsuario) return;
-  // Redirigir a la página de perfil con el ID del usuario
-  window.location.href = `Perfil_Usuario/perfil.html?usuario_id=${idUsuario}`;
-};
