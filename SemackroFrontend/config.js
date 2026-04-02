@@ -1,6 +1,6 @@
 // Configuración global de URLs — PRODUCCIÓN
 (function() {
-    const API_BASE_URL = 'https://tu-backend.railway.app'; // Reemplazar con tu URL de Railway/Render
+    const API_BASE_URL = 'https://serversemackro.up.railway.app'; // Reemplazar con tu URL de Railway/Render
 
     window.APP_CONFIG = {
         BACKEND_URL: API_BASE_URL,
