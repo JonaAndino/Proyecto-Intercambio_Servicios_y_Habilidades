@@ -1096,8 +1096,8 @@
         /* Vista de mensajería con fondo transparente */
         #mensajesView {
             background: transparent !important;
-            height: calc(100dvh - 80px);
-            min-height: calc(100dvh - 80px);
+            height: calc(100dvh - var(--app-header-height, 56px));
+            min-height: calc(100dvh - var(--app-header-height, 56px));
             width: 100%;
             margin-bottom: 0;
             padding-bottom: 0;
@@ -2087,8 +2087,8 @@
            MESSAGING: SOLO SCROLL INTERNO
            ======================================== */
         #mensajesView.active {
-            height: calc(100vh - 80px);
-            min-height: calc(100vh - 80px);
+            height: calc(100dvh - var(--app-header-height, 56px));
+            min-height: calc(100dvh - var(--app-header-height, 56px));
             overflow: hidden;
             margin-bottom: 0 !important;
         }
@@ -2120,8 +2120,8 @@
 
         @media (max-width: 767px) {
             #mensajesView.active {
-                height: calc(100vh - 72px);
-                min-height: calc(100vh - 72px);
+                height: calc(100dvh - var(--app-header-height, 56px));
+                min-height: calc(100dvh - var(--app-header-height, 56px));
             }
 
             #mensajesView.active #chat-input-dashboard {

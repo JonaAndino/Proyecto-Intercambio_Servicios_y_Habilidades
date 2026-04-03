@@ -18,6 +18,18 @@ const closeSidebar = document.getElementById("closeSidebar");
 const usersGrid = document.getElementById("usersGrid");
 const mainContent = document.getElementById("mainContent");
 
+function syncAppHeaderHeight() {
+  const header = document.querySelector("#mainContent > header");
+  if (!header) return;
+  document.documentElement.style.setProperty(
+    "--app-header-height",
+    `${header.offsetHeight}px`,
+  );
+}
+
+window.addEventListener("resize", syncAppHeaderHeight);
+window.addEventListener("load", syncAppHeaderHeight);
+
 // Comprobación de sesión: si no hay usuario o token en localStorage, redirigir al login
 try {
   const hasUser = localStorage.getItem("usuarioId");
@@ -37,6 +49,8 @@ try {
 let currentView = "descubrir";
 
 async function navigateTo(viewName) {
+  syncAppHeaderHeight();
+
   // Actualizar el estado activo del sidebar inmediatamente
   try {
     document.querySelectorAll(".sidebar-item").forEach((item) => {
@@ -172,6 +186,9 @@ async function navigateTo(viewName) {
   if (viewName !== "mensajes") {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  // Recalcular tras render para evitar desfases visuales por fuentes/cambios de layout.
+  setTimeout(syncAppHeaderHeight, 0);
 }
 
 // Función para abrir el sidebar
