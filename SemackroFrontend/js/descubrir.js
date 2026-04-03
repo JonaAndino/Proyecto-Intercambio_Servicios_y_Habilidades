@@ -6688,6 +6688,7 @@ function scrollToBottomDashboard() {
 // ============================================
 let mensajeSeleccionadoId = null;
 let mensajeSeleccionadoContenido = "";
+window.mensajeSeleccionadoId = null;
 
 function mostrarMenuContextual(
   event,
@@ -6702,6 +6703,13 @@ function mostrarMenuContextual(
   const menu = document.getElementById("messageContextMenu");
   mensajeSeleccionadoId = messageId;
   mensajeSeleccionadoContenido = messageContent;
+  window.mensajeSeleccionadoId = messageId;
+
+  // Fallback defensivo: si el menú no está en el DOM, abrir confirmación directa.
+  if (!menu) {
+    confirmarBorrarMensaje(messageId, puedeBorrarParaTodos ? "todos" : "mi");
+    return false;
+  }
 
   // Actualizar opciones del menú basado en permisos
   const editarBtn = menu.querySelector('[data-action="editar"]');
@@ -6852,9 +6860,22 @@ async function editarMensaje() {
 // Eliminar mensaje (confirmación con opción para todos)
 async function eliminarMensaje() {
   const menu = document.getElementById("messageContextMenu");
-  menu.classList.add("hidden");
+  if (menu) menu.classList.add("hidden");
 
   await confirmarBorrarMensaje(mensajeSeleccionadoId, "todos");
+}
+
+async function eliminarMensajeParaMi() {
+  const menu = document.getElementById("messageContextMenu");
+  if (menu) menu.classList.add("hidden");
+
+  const idMensaje = mensajeSeleccionadoId || window.mensajeSeleccionadoId;
+  if (!idMensaje) {
+    Toast.warning("Selecciona un mensaje", "No se detectó el mensaje a eliminar.");
+    return;
+  }
+
+  await confirmarBorrarMensaje(idMensaje, "mi");
 }
 
 // Limpiar intervalo al cambiar de vista

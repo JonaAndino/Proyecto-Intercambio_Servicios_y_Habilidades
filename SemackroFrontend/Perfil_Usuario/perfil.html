@@ -3704,20 +3704,20 @@
                 }
             } else {
                 const camposBD = {
-                    'nombre_Usuario': 'Nombre_persona',
-                    'apellido_Usuario': 'Apellido_persona',
-                    'descripcion_Usuario': 'Descripcionperfil_persona',
-                    'imagenUrl_Usuario': 'Imagenurl_persona',
-                    'imagen1Url_Usuario': 'Imagen1url_persona',
-                    'imagen2Url_Usuario': 'Imagen2url_persona',
-                    'imagen3Url_Usuario': 'Imagen3url_persona',
-                    'estadoCivil_Usuario': 'Estadocivil_persona',
-                    'genero_Usuario': 'Genero_persona',
-                    'tipoIdentificacion_Usuario': 'Tipoidentificacion_persona',
-                    'identificacion_usuario': 'Identificacion_persona',
-                    'fechaNacimiento': 'Fechanac_persona',
-                    'anios_experiencia': 'Anios_experiencia',
-                    'url_Dni': 'Url_dni'
+                    'nombre_Usuario': 'nombre_Persona',
+                    'apellido_Usuario': 'apellido_Persona',
+                    'descripcion_Usuario': 'descripcionPerfil_Persona',
+                    'imagenUrl_Usuario': 'imagenUrl_Persona',
+                    'imagen1Url_Usuario': 'imagen1Url_Persona',
+                    'imagen2Url_Usuario': 'imagen2Url_Persona',
+                    'imagen3Url_Usuario': 'imagen3Url_Persona',
+                    'estadoCivil_Usuario': 'estadoCivil_Persona',
+                    'genero_Usuario': 'genero_Persona',
+                    'tipoIdentificacion_Usuario': 'tipoIdentificacion_Persona',
+                    'identificacion_usuario': 'identificacion_Persona',
+                    'fechaNacimiento': 'fechaNac_Persona',
+                    'anios_experiencia': 'anios_experiencia',
+                    'url_Dni': 'url_Dni'
                 };
 
                 const campoDB = camposBD[campo];
@@ -3732,7 +3732,11 @@
                         });
                         const resJson = await resultado.json();
                         if (!resultado.ok || !resJson.success) {
-                            console.error('Error al actualizar en BD:', resJson.error);
+                            const backendError = resJson.error || resJson.message || 'Error desconocido del backend';
+                            console.error('Error al actualizar en BD:', backendError);
+                            if (window.Toast) {
+                                Toast.error('No se pudo actualizar', backendError);
+                            }
                         }
                         setGuardando(false);
                     } catch (error) {
