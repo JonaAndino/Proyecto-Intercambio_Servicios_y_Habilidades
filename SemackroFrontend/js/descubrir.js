@@ -297,7 +297,7 @@ document.addEventListener("keydown", (e) => {
 // ========================================
 // CARGAR INFORMACIÓN DEL USUARIO EN SIDEBAR
 // ========================================
-const API_BASE = `${window.BACKEND_URL}/api`;
+const API_BASE = window.APP_CONFIG?.API_BASE || `${window.BACKEND_URL}/api`;
 
 // Variable global para el usuario actual
 let miPerfilIdGlobal = null;
@@ -8064,7 +8064,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
     // Badge de restricción por ubicación (solo visible para admin)
     const idOrden = o.id_orden || o.id;
     const restriccionBadge = esAdmin && o.restringir_por_ubicacion
-      ? `<div class="mx-5 mb-2 flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg px-2.5 py-1 text-[10px] font-semibold" title="Solo usuarios de: ${escapehtml(o.ubicacion_obra || o.ubicacion || 'ubicación no definida')}">
+      ? `<div class="mx-5 mb-2 flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg px-2.5 py-1 text-[10px] font-semibold" title="Solo usuarios de: ${escapeHtml(o.ubicacion_obra || o.ubicacion || 'ubicación no definida')}">
            <span class="iconify shrink-0" data-icon="mdi:map-marker-lock" style="font-size:12px;"></span>
            Solo zona coincidente
          </div>`
