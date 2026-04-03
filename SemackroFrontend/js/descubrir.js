@@ -6889,7 +6889,7 @@ window.addEventListener("beforeunload", () => {
   const aiChatSend = document.getElementById("aiChatSend");
 
   if (!aiChatBtn || !aiChatModal) {
-    console.warn("AI Chat elements not found");
+    // AI Chat esta deshabilitado si los elementos no existen en el DOM.
     return;
   }
 
@@ -8989,6 +8989,7 @@ let _alertasLeidas = new Set(           // IDs de alertas ya leídas/descartadas
     JSON.parse(sessionStorage.getItem('alertasLeidas') || '[]')
 );
 let _alertasAnteriorIds = new Set();    // IDs de la vez anterior (para detectar nuevas)
+let _alertaEmailCrossOriginWarned = false;
 let _solicitudesPendientesCount = 0;    // Contador de solicitudes (para badge combinado)
 
 /** Cambia entre las pestañas Solicitudes / Alertas del dropdown */
@@ -9246,11 +9247,19 @@ async function cargarAlertasContextuales() {
         if (realesNuevas.length > 0) {
             const usuarioId = localStorage.getItem('usuarioId');
             if (usuarioId) {
-                fetch(`${API_BASE}/ordenes-trabajo/enviar-alerta-email`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usuario_id: usuarioId, alertas: realesNuevas })
-                }).catch(e => console.debug('[H8 email]', e));
+            // En despliegues cross-origin (ej. Vercel -> Railway) este endpoint puede fallar por CORS/502.
+            // El disparo de correo debe vivir en backend (job/trigger server-side).
+            const esMismoOrigenApi = API_BASE.startsWith(`${window.location.origin}/api`);
+            if (esMismoOrigenApi) {
+              fetch(`${API_BASE}/ordenes-trabajo/enviar-alerta-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuario_id: usuarioId, alertas: realesNuevas })
+              }).catch(e => console.debug('[H8 email]', e));
+            } else if (!_alertaEmailCrossOriginWarned) {
+              _alertaEmailCrossOriginWarned = true;
+              console.info('[H8 email] envio desde frontend omitido en cross-origin; mover a backend.');
+            }
             }
         }
 
