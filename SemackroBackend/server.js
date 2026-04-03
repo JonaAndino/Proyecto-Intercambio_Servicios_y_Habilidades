@@ -67,6 +67,11 @@ app.use(cors({
         if (origin.includes('.ngrok-free.dev') || origin.includes('.ngrok.io')) {
             return callback(null, true);
         }
+
+        // Permitir previews/despliegues de Vercel
+        if (origin.includes('.vercel.app')) {
+            return callback(null, true);
+        }
         
         // Rechazar otros orígenes
         callback(new Error('No permitido por CORS'));
