@@ -7551,8 +7551,18 @@ window.addEventListener("beforeunload", () => {
     // Limpiar contenedor
     container.innerHTML = "";
 
+    // Asegurar que el modal no quede atrapado en contenedores con overflow/transform.
+    if (modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
+
     // Mostrar modal
     modal.classList.remove("hidden");
+    modal.style.display = "block";
+    modal.style.visibility = "visible";
+    modal.style.opacity = "1";
+    modal.style.zIndex = "2147483000";
+    document.body.style.overflow = "hidden";
     statusEl.textContent = `Conectando con ${nombreContacto}...`;
 
     // Crear instancia de Jitsi con configuración compatible
@@ -7641,8 +7651,13 @@ window.addEventListener("beforeunload", () => {
 
     if (modal) {
       modal.classList.add("hidden");
+      modal.style.display = "";
+      modal.style.visibility = "";
+      modal.style.opacity = "";
+      modal.style.zIndex = "";
     }
 
+    document.body.style.overflow = "";
     currentJitsiRoomId = null;
     console.log("📞 Videollamada cerrada");
   };
