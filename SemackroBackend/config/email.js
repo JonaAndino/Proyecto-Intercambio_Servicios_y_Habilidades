@@ -1,16 +1,33 @@
 const nodemailer = require('nodemailer');
 
+const EMAIL_TIMEOUT_MS = 15000;
+
 // Configuración del transporte de correo (Gmail)
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: process.env.EMAIL_USER, // Tu correo de Gmail
         pass: process.env.EMAIL_PASSWORD // Contraseña de aplicación de Gmail
-    }
+    },
+    // Evita que el envío de correo se quede esperando indefinidamente
+    connectionTimeout: EMAIL_TIMEOUT_MS,
+    greetingTimeout: EMAIL_TIMEOUT_MS,
+    socketTimeout: EMAIL_TIMEOUT_MS
 });
+
+const sendMailWithTimeout = (mailOptions, timeoutMs = EMAIL_TIMEOUT_MS) => Promise.race([
+    transporter.sendMail(mailOptions),
+    new Promise((_, reject) => {
+        setTimeout(() => reject(new Error(`Tiempo de espera excedido al enviar correo (${timeoutMs}ms)`)), timeoutMs);
+    })
+]);
 
 // Función para enviar correo de recuperación de contraseña
 const enviarCorreoRecuperacion = async (destinatario, token) => {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+        return { success: false, error: 'Variables EMAIL_USER/EMAIL_PASSWORD no configuradas' };
+    }
+
     const frontendUrl = process.env.FRONTEND_URL || 'https://semackro.vercel.app';
     const enlaceRecuperacion = `${frontendUrl}/restablecer-password.html?token=${token}`;
     
@@ -109,7 +126,7 @@ const enviarCorreoRecuperacion = async (destinatario, token) => {
     };
 
     try {
-        const info = await transporter.sendMail(mailOptions);
+        const info = await sendMailWithTimeout(mailOptions);
         console.log('Correo enviado:', info.messageId);
         return { success: true, messageId: info.messageId };
     } catch (error) {
@@ -121,6 +138,9 @@ const enviarCorreoRecuperacion = async (destinatario, token) => {
 // Función para enviar notificación contextual (H8)
 const enviarNotificacionContextual = async (destinatario, alertas, frontendUrl) => {
     if (!destinatario || !alertas || alertas.length === 0) return { success: false };
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+        return { success: false, error: 'Variables EMAIL_USER/EMAIL_PASSWORD no configuradas' };
+    }
 
     // Prioridad: 1) URL enviada como parámetro  2) variable de entorno  3) localhost
     const appUrl = (frontendUrl || process.env.FRONTEND_URL || 'https://semackro.vercel.app').replace(/\/$/, '');
@@ -169,7 +189,7 @@ const enviarNotificacionContextual = async (destinatario, alertas, frontendUrl) 
     };
 
     try {
-        const info = await transporter.sendMail(mailOptions);
+        const info = await sendMailWithTimeout(mailOptions);
         console.log('Notificación contextual enviada:', info.messageId);
         return { success: true };
     } catch (error) {
