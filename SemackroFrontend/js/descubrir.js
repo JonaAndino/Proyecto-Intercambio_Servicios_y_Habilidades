@@ -4754,7 +4754,8 @@ function mostrarMensajesDashboard(mensajes) {
         return `
                         <div class="flex justify-end group ${animationClass} w-full">
                             <div class="flex flex-col items-end max-w-[90%] md:max-w-[85%]">
-                                <div class="bg-gradient-to-br from-indigo-600 via-indigo-600 to-purple-600 text-white p-2.5 px-3.5 rounded-2xl rounded-tr-none shadow-md message-item hover:shadow-lg w-fit"
+                                  <div class="bg-gradient-to-br from-indigo-600 via-indigo-600 to-purple-600 text-white p-2.5 px-3.5 rounded-2xl rounded-tr-none shadow-md message-item hover:shadow-lg w-fit relative"
+                                    oncontextmenu="return abrirMenuMensajeDesdeInline(event, this)"
                                      data-message-id="${msg.id_mensaje}"
                                      data-message-content="${contenidoMostrado.replace(/"/g, "&quot;")}"
                                      data-puede-editar="${puedeEditar}"
@@ -4766,6 +4767,9 @@ function mostrarMensajesDashboard(mensajes) {
                                         <span class="whitespace-nowrap">${formatearHoraDashboard(msg.fecha_envio)}</span>
                                         ${badgeEdicion}
                                         <span class="iconify" data-icon="${msg.leido ? "mdi:check-all" : "mdi:check"}" style="${msg.leido ? "color: #7dd3fc;" : ""}" data-width="19"></span>
+                                      <button type="button" onclick="abrirMenuMensajeDesdeBoton(event, this.closest('.message-item'))" class="ml-1 text-indigo-200 hover:text-white transition-colors" title="Opciones de mensaje">
+                                        <span class="iconify" data-icon="mdi:dots-vertical" data-width="14"></span>
+                                      </button>
                                     </div>
                                 </div>
                             </div>
@@ -4780,7 +4784,8 @@ function mostrarMensajesDashboard(mensajes) {
                         <div class="flex justify-start group ${animationClass} w-full">
                             <div class="flex flex-col items-start max-w-[90%] md:max-w-[85%]">
                                 ${nombreEmisorHtml}
-                                <div class="bg-white border border-slate-200 p-2.5 px-3.5 rounded-2xl rounded-tl-none shadow-sm message-item hover:shadow-md w-fit"
+                                  <div class="bg-white border border-slate-200 p-2.5 px-3.5 rounded-2xl rounded-tl-none shadow-sm message-item hover:shadow-md w-fit relative"
+                                    oncontextmenu="return abrirMenuMensajeDesdeInline(event, this)"
                                      data-message-id="${msg.id_mensaje}"
                                      data-message-content="${(contenidoMostrado || "").replace(/\"/g, "&quot;")}"
                                      data-puede-editar="${puedeEditar}"
@@ -4791,6 +4796,9 @@ function mostrarMensajesDashboard(mensajes) {
                                     <div class="flex items-center justify-start gap-1.5 text-[10px] text-slate-400 mt-1">
                                         <span class="whitespace-nowrap">${formatearHoraDashboard(msg.fecha_envio)}</span>
                                         ${badgeEdicion}
+                                      <button type="button" onclick="abrirMenuMensajeDesdeBoton(event, this.closest('.message-item'))" class="ml-1 text-slate-400 hover:text-slate-700 transition-colors" title="Opciones de mensaje">
+                                        <span class="iconify" data-icon="mdi:dots-vertical" data-width="14"></span>
+                                      </button>
                                     </div>
                                 </div>
                             </div>
@@ -6689,6 +6697,70 @@ function scrollToBottomDashboard() {
 let mensajeSeleccionadoId = null;
 let mensajeSeleccionadoContenido = "";
 window.mensajeSeleccionadoId = null;
+
+function obtenerDatosMenuDesdeElemento(element) {
+  const asBool = (v, fallback = false) => {
+    if (v === "true") return true;
+    if (v === "false") return false;
+    return fallback;
+  };
+
+  if (!element) return null;
+
+  return {
+    messageId: element.getAttribute("data-message-id"),
+    messageContent: element.getAttribute("data-message-content") || "",
+    puedeEditar: asBool(element.getAttribute("data-puede-editar"), false),
+    puedeBorrarTodos: asBool(
+      element.getAttribute("data-puede-borrar-todos"),
+      false,
+    ),
+    puedeBorrarMi: asBool(element.getAttribute("data-puede-borrar-mi"), true),
+  };
+}
+
+function abrirMenuMensajeDesdeInline(event, element) {
+  if (event && typeof event.preventDefault === "function") event.preventDefault();
+  if (event && typeof event.stopPropagation === "function") event.stopPropagation();
+
+  const datos = obtenerDatosMenuDesdeElemento(element);
+  if (!datos || !datos.messageId) return false;
+
+  mostrarMenuContextual(
+    event || { preventDefault: () => {}, pageX: 0, pageY: 0 },
+    datos.messageId,
+    datos.messageContent,
+    datos.puedeEditar,
+    datos.puedeBorrarTodos,
+    datos.puedeBorrarMi,
+  );
+
+  return false;
+}
+
+function abrirMenuMensajeDesdeBoton(event, element) {
+  if (event && typeof event.preventDefault === "function") event.preventDefault();
+  if (event && typeof event.stopPropagation === "function") event.stopPropagation();
+
+  const datos = obtenerDatosMenuDesdeElemento(element);
+  if (!datos || !datos.messageId) return;
+
+  const rect = element.getBoundingClientRect();
+  const syntheticEvent = {
+    preventDefault: () => {},
+    pageX: window.scrollX + rect.right - 8,
+    pageY: window.scrollY + rect.bottom - 8,
+  };
+
+  mostrarMenuContextual(
+    syntheticEvent,
+    datos.messageId,
+    datos.messageContent,
+    datos.puedeEditar,
+    datos.puedeBorrarTodos,
+    datos.puedeBorrarMi,
+  );
+}
 
 function mostrarMenuContextual(
   event,
