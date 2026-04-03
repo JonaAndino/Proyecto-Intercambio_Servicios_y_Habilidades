@@ -1336,7 +1336,7 @@ function mostrarFavoritos(favoritos) {
                                         ${
                                           imagenUrl
                                             ? `<img src="${imagenUrl}"
-                                                   alt="${Nombrecompleto}"
+                                                   alt="${nombreCompleto}"
                                                    class="user-avatar object-cover"
                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                                <div class="user-avatar hidden">
@@ -1350,8 +1350,8 @@ function mostrarFavoritos(favoritos) {
                                 </div>
 
                                 <!-- Información del usuario -->
-                                <h3 class="text-xl font-bold text-gray-800 mb-1 truncate" title="${Nombrecompleto}">${nombreCompleto}</h3>
-                                <p class="text-blue-600 font-semibold mb-2 truncate" title="${Profesion}">${profesion}</p>
+                                <h3 class="text-xl font-bold text-gray-800 mb-1 truncate" title="${nombreCompleto}">${nombreCompleto}</h3>
+                                <p class="text-blue-600 font-semibold mb-2 truncate" title="${profesion}">${profesion}</p>
 
                                 <!-- Ubicación -->
                                 <div class="flex items-center text-gray-600 text-sm mb-3">
@@ -1363,7 +1363,7 @@ function mostrarFavoritos(favoritos) {
                                 </div>
 
                                 <!-- Bio -->
-                                <p class="text-gray-600 text-sm user-bio mb-3" title="${Bio}">${bio}</p>
+                                <p class="text-gray-600 text-sm user-bio mb-3" title="${bio}">${bio}</p>
 
                                 <!-- Habilidades -->
                                 <div class="skills-container-card">
@@ -1507,7 +1507,7 @@ function renderUserCardsReal() {
                     <button type="button"
                             onclick="toggleFavorite(event, ${user.id}, '${user.name.replace(/'/g, "\\'")}')"
                             class="favorite-btn ${esFavorito(user.id) ? "active" : ""}"
-                            title="${Esfavorito(user.id) ? "Quitar de favoritos" : "Agregar a favoritos"}"
+                        title="${esFavorito(user.id) ? "Quitar de favoritos" : "Agregar a favoritos"}"
                             data-user-id="${user.id}">
                         <span class="iconify favorite-icon" data-icon="${esFavorito(user.id) ? "ph:heart-fill" : "ph:heart"}"></span>
                     </button>
@@ -1526,7 +1526,7 @@ function renderUserCardsReal() {
                                 <div class="relative inline-block">
                                     ${
                                       user.avatar
-                                        ? `<img src="${user.avatar}" alt="${User.name}" class="user-avatar object-cover">`
+                                  ? `<img src="${user.avatar}" alt="${user.name}" class="user-avatar object-cover">`
                                         : `<div class="user-avatar"><span class="text-white text-3xl font-bold">${user.avatarInitials}</span></div>`
                                     }
                                     ${user.online ? '<div class="online-badge"></div>' : ""}
@@ -1534,8 +1534,8 @@ function renderUserCardsReal() {
                             </div>
 
                             <!-- Información del usuario -->
-                            <h3 class="text-xl font-bold text-gray-800 mb-1 truncate" title="${User.name}">${user.name}</h3>
-                            <p class="text-blue-600 font-semibold mb-2 truncate" title="${User.profession}">${user.profession}</p>
+                            <h3 class="text-xl font-bold text-gray-800 mb-1 truncate" title="${user.name}">${user.name}</h3>
+                            <p class="text-blue-600 font-semibold mb-2 truncate" title="${user.profession}">${user.profession}</p>
 
                             <!-- Ubicación -->
                             <div class="flex items-center text-gray-600 text-sm mb-3">
@@ -1547,7 +1547,7 @@ function renderUserCardsReal() {
                             </div>
 
                             <!-- Bio -->
-                            <p class="text-gray-600 text-sm user-bio mb-3" title="${User.bio}">${user.bio}</p>
+                            <p class="text-gray-600 text-sm user-bio mb-3" title="${user.bio}">${user.bio}</p>
 
                             <!-- Habilidades -->
                             <div class="skills-container-card">
@@ -3840,7 +3840,7 @@ function mostrarSolicitudesEnDropdown(solicitudes) {
                         <div class="flex items-start gap-3">
                             ${
                               solicitud.foto_solicitante
-                                ? `<img src="${solicitud.foto_solicitante}" alt="${Nombrecompleto}" class="w-12 h-12 rounded-full object-cover flex-shrink-0" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                ? `<img src="${solicitud.foto_solicitante}" alt="${nombreCompleto}" class="w-12 h-12 rounded-full object-cover flex-shrink-0" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 items-center justify-center text-white font-bold text-lg flex-shrink-0" style="display:none;">
                                     ${inicial}
                                    </div>`
@@ -4077,7 +4077,7 @@ function mostrarSolicitudesEnviadas(solicitudes) {
                                   imagenUrl
                                     ? `<img src="${imagenUrl}"
                                          class="w-16 h-16 rounded-full object-cover border-2 border-blue-500 shadow-md"
-                                         alt="${Nombrecompleto}"
+                                         alt="${nombreCompleto}"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                      <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full items-center justify-center text-white font-bold text-xl shadow-md hidden">
                                         ${initials}
