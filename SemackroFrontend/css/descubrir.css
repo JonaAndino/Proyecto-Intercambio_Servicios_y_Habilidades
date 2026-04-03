@@ -118,8 +118,20 @@
             width: 100%;
         }
 
+        #solicitudesEnviadasGrid {
+            align-items: start;
+            grid-auto-rows: min-content;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+            gap: 1.25rem;
+            width: 100%;
+        }
+
         #favoritosGrid > *,
         #ordenesTrabajoGrid > * {
+            align-self: start;
+        }
+
+        #solicitudesEnviadasGrid > * {
             align-self: start;
         }
 
