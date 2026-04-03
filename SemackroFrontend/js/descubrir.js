@@ -4341,7 +4341,7 @@ function mostrarConversacionesDashboard(conversaciones) {
                                 : tieneImagen
                                 ? `<img src="${conv.imagenUrl_contacto}"
                                      class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
-                                     alt="${Nombrecontacto}"
+                                     alt="${nombreContacto}"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                  <div class="w-12 h-12 ${colorClass} rounded-full items-center justify-center text-white font-semibold shadow-sm hidden">
                                     ${initials}
@@ -4466,7 +4466,7 @@ function actualizarHeaderChatDashboard(conv) {
     : tieneImagen
     ? `<img src="${conv.imagenUrl_contacto}"
               class="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-white shadow-sm"
-              alt="${Nombrecontacto}"
+            alt="${nombreContacto}"
               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
          <div class="w-10 h-10 md:w-12 md:h-12 ${colorClass} rounded-full items-center justify-center text-white font-bold text-sm md:text-base hidden shadow-sm">
             ${initials}
