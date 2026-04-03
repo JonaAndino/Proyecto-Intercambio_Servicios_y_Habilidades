@@ -4553,9 +4553,7 @@ function actualizarHeaderChatDashboard(conv) {
     : `<p class="text-[10px] md:text-xs text-green-500 font-medium">${t("messages.activeConversation")}</p>`;
 
   const botonesAccionHtml = esGrupo
-    ? `<button id="vaciarMensajesBtn" class="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-all" title="Vaciar chat">
-         <span class="iconify" data-icon="mdi:delete-sweep" data-width="22"></span>
-       </button>`
+    ? ``
     : `<button id="verPerfilBtnDashboard" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-all" title="${t("messages.viewProfile")}">
            <span class="iconify" data-icon="mdi:account-circle" data-width="22"></span>
        </button>
@@ -4564,9 +4562,6 @@ function actualizarHeaderChatDashboard(conv) {
        </button>
        <button id="finalizarIntercambioBtn" class="p-2 text-red-600 hover:bg-red-50 rounded-full transition-all" title="${t("messages.finishExchange")}">
            <span class="iconify" data-icon="mdi:check-circle" data-width="22"></span>
-       </button>
-       <button id="vaciarMensajesBtn" class="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-all" title="Vaciar chat">
-           <span class="iconify" data-icon="mdi:delete-sweep" data-width="22"></span>
        </button>`;
 
   document.getElementById("chat-header-dashboard").innerHTML = `
@@ -5839,22 +5834,6 @@ async function vaciarMensajesParaMi() {
 // ============================================
 // FINALIZAR INTERCAMBIO DESDE DASHBOARD
 // ============================================
-
-// Event listener para el botón Vaciar Mensajes
-document.addEventListener(
-  "click",
-  (e) => {
-    if (
-      e.target.id === "vaciarMensajesBtn" ||
-      e.target.closest("#vaciarMensajesBtn")
-    ) {
-      e.preventDefault();
-      e.stopPropagation();
-      vaciarMensajesParaMi();
-    }
-  },
-  true,
-);
 
 // Event listener para el botón Finalizar Intercambio
 document.addEventListener(
