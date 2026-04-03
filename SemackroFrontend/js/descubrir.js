@@ -6706,11 +6706,19 @@ function mostrarMenuContextual(
   const borrarTodosBtn = menu.querySelector('[data-action="borrar-todos"]');
   const borrarMiBtn = menu.querySelector('[data-action="borrar-mi"]');
 
-  if (editarBtn) editarBtn.style.display = puedeEditar ? "flex" : "None";
+  // Fallback defensivo: si el inline handler llega con args incompletos,
+  // mantener disponible al menos "borrar para mi".
+  const allowEditar = typeof puedeEditar === "boolean" ? puedeEditar : false;
+  const allowBorrarTodos =
+    typeof puedeBorrarParaTodos === "boolean" ? puedeBorrarParaTodos : false;
+  const allowBorrarMi =
+    typeof puedeBorrarParaMi === "boolean" ? puedeBorrarParaMi : true;
+
+  if (editarBtn) editarBtn.style.display = allowEditar ? "flex" : "none";
   if (borrarTodosBtn)
-    borrarTodosBtn.style.display = puedeBorrarParaTodos ? "flex" : "None";
+    borrarTodosBtn.style.display = allowBorrarTodos ? "flex" : "none";
   if (borrarMiBtn)
-    borrarMiBtn.style.display = puedeBorrarParaMi ? "flex" : "None";
+    borrarMiBtn.style.display = allowBorrarMi ? "flex" : "none";
 
   // Ajustar posición del menú para que no se salga de la pantalla
   const menuWidth = 200; // ancho aproximado del menú
