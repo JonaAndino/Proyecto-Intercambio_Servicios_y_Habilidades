@@ -3491,7 +3491,7 @@
                     const placeholderText = field === 'descripcion_Usuario'
                         ? 'Escribe algo sobre ti...'
                         : 'Escribe aquí...';
-                    element.innerHTML = `<textarea rows="3" placeholder="${Placeholdertext}">${currentValue}</textarea>`;
+                    element.innerHTML = `<textarea rows="3" placeholder="${placeholderText}">${currentValue}</textarea>`;
                 } else {
                     let placeholderText = 'Escribe aquí...';
                     if (field === 'nombre_Usuario') placeholderText = 'Nombre completo';
@@ -3499,10 +3499,10 @@
                     else if (field === 'celular_Usuario') placeholderText = 'Número de celular';
                     else if (field === 'identificacion_usuario') placeholderText = 'Número de identificación';
 
-                    element.innerHTML = `<input type="${inputType}" value="${Currentvalue}" placeholder="${Placeholdertext}">`;
+                    element.innerHTML = `<input type="${inputType}" value="${currentValue}" placeholder="${placeholderText}">`;
                 }
 
-                const input = element.querySelector(multiline ? 'textarea' : 'Input');
+                const input = element.querySelector(multiline ? 'textarea' : 'input');
                 input.focus();
                 if (inputType !== 'date') {
                     input.select();
