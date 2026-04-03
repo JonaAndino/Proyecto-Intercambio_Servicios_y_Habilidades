@@ -6728,6 +6728,7 @@ let mensajeSeleccionadoContenido = "";
 window.mensajeSeleccionadoId = null;
 let panelAccionesMensajeActivo = null;
 let hostPanelAccionesMensaje = null;
+let handlersPanelAccionesMensaje = null;
 
 function obtenerDatosMenuDesdeElemento(element) {
   const asBool = (v, fallback = false) => {
@@ -6786,6 +6787,39 @@ function cerrarPanelAccionesMensaje() {
     panelAccionesMensajeActivo = null;
     hostPanelAccionesMensaje = null;
   }
+
+  if (handlersPanelAccionesMensaje) {
+    const { onResize, onWheel, onScroll } = handlersPanelAccionesMensaje;
+    window.removeEventListener("resize", onResize);
+    window.removeEventListener("wheel", onWheel, true);
+    window.removeEventListener("scroll", onScroll, true);
+    handlersPanelAccionesMensaje = null;
+  }
+}
+
+function posicionarPanelAccionesMensaje(element, panel) {
+  if (!element || !panel) return;
+
+  const rect = element.getBoundingClientRect();
+  const panelRect = panel.getBoundingClientRect();
+  const gap = 8;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const esMio = element.getAttribute("data-es-mio") === "true";
+
+  // Preferir abajo como WhatsApp; si no cabe, subir.
+  let top = rect.bottom + gap;
+  if (top + panelRect.height > vh - 8) {
+    top = rect.top - panelRect.height - gap;
+  }
+  if (top < 8) top = 8;
+
+  let left = esMio ? rect.right - panelRect.width : rect.left;
+  if (left + panelRect.width > vw - 8) left = vw - panelRect.width - 8;
+  if (left < 8) left = 8;
+
+  panel.style.top = `${Math.round(top)}px`;
+  panel.style.left = `${Math.round(left)}px`;
 }
 
 function abrirPanelAccionesMensaje(element, datos) {
@@ -6810,12 +6844,7 @@ function abrirPanelAccionesMensaje(element, datos) {
 
   const panel = document.createElement("div");
   panel.className =
-    "absolute z-[10090] min-w-[190px] bg-white border border-slate-200 rounded-xl shadow-2xl p-2";
-  panel.style.top = "calc(100% + 6px)";
-
-  const esMio = element.getAttribute("data-es-mio") === "true";
-  if (esMio) panel.style.right = "0px";
-  else panel.style.left = "0px";
+    "fixed z-[10090] min-w-[190px] bg-white border border-slate-200 rounded-xl shadow-2xl p-2";
 
   const botones = [];
   if (allowEditar) {
@@ -6844,8 +6873,9 @@ function abrirPanelAccionesMensaje(element, datos) {
   }
 
   panel.innerHTML = botones.join("");
-  element.appendChild(panel);
+  document.body.appendChild(panel);
   if (window.Iconify) Iconify.scan(panel);
+  posicionarPanelAccionesMensaje(element, panel);
 
   panel.addEventListener("click", async (ev) => {
     const btn = ev.target.closest("button[data-accion-msg]");
@@ -6869,6 +6899,27 @@ function abrirPanelAccionesMensaje(element, datos) {
 
   panelAccionesMensajeActivo = panel;
   hostPanelAccionesMensaje = element;
+
+  const onResize = () => {
+    if (!panelAccionesMensajeActivo || !hostPanelAccionesMensaje) return;
+    posicionarPanelAccionesMensaje(hostPanelAccionesMensaje, panelAccionesMensajeActivo);
+  };
+
+  const onWheel = (ev) => {
+    if (!panelAccionesMensajeActivo) return;
+    const dentroPanel = panelAccionesMensajeActivo.contains(ev.target);
+    const enMensaje = hostPanelAccionesMensaje && hostPanelAccionesMensaje.contains(ev.target);
+    if (!dentroPanel && !enMensaje) cerrarPanelAccionesMensaje();
+  };
+
+  const onScroll = () => {
+    cerrarPanelAccionesMensaje();
+  };
+
+  window.addEventListener("resize", onResize);
+  window.addEventListener("wheel", onWheel, true);
+  window.addEventListener("scroll", onScroll, true);
+  handlersPanelAccionesMensaje = { onResize, onWheel, onScroll };
 }
 
 function mostrarMenuContextual(
