@@ -4759,6 +4759,7 @@ function mostrarMensajesDashboard(mensajes) {
                                      data-message-id="${msg.id_mensaje}"
                                      data-message-content="${contenidoMostrado.replace(/"/g, "&quot;")}"
                                      data-puede-editar="${puedeEditar}"
+                                    data-es-mio="true"
                                     data-puede-borrar-todos="${puedeBorrarParaTodos}"
                                     data-puede-borrar-mi="${puedeBorrarParaMi}">
                                     <p class="leading-relaxed text-sm">${contenidoMostrado}</p>
@@ -4767,7 +4768,7 @@ function mostrarMensajesDashboard(mensajes) {
                                         <span class="whitespace-nowrap">${formatearHoraDashboard(msg.fecha_envio)}</span>
                                         ${badgeEdicion}
                                         <span class="iconify" data-icon="${msg.leido ? "mdi:check-all" : "mdi:check"}" style="${msg.leido ? "color: #7dd3fc;" : ""}" data-width="19"></span>
-                                      <button type="button" onclick="abrirAccionesMensajeDesdeBoton(event, this.closest('.message-item'))" class="ml-1 text-indigo-200 hover:text-white transition-colors" title="Opciones de mensaje">
+                                      <button type="button" onclick="abrirAccionesMensajeDesdeBoton(event, this.closest('.message-item'))" class="btn-opciones-mensaje ml-1 text-indigo-200 hover:text-white transition-colors" title="Opciones de mensaje">
                                         <span class="iconify" data-icon="mdi:dots-vertical" data-width="14"></span>
                                       </button>
                                     </div>
@@ -4789,6 +4790,7 @@ function mostrarMensajesDashboard(mensajes) {
                                      data-message-id="${msg.id_mensaje}"
                                      data-message-content="${(contenidoMostrado || "").replace(/\"/g, "&quot;")}"
                                      data-puede-editar="${puedeEditar}"
+                                    data-es-mio="false"
                                     data-puede-borrar-todos="${puedeBorrarParaTodos}"
                                     data-puede-borrar-mi="${puedeBorrarParaMi}">
                                     <p class="text-slate-800 leading-relaxed text-sm">${contenidoMostrado}</p>
@@ -4796,7 +4798,7 @@ function mostrarMensajesDashboard(mensajes) {
                                     <div class="flex items-center justify-start gap-1.5 text-[10px] text-slate-400 mt-1">
                                         <span class="whitespace-nowrap">${formatearHoraDashboard(msg.fecha_envio)}</span>
                                         ${badgeEdicion}
-                                      <button type="button" onclick="abrirAccionesMensajeDesdeBoton(event, this.closest('.message-item'))" class="ml-1 text-slate-400 hover:text-slate-700 transition-colors" title="Opciones de mensaje">
+                                      <button type="button" onclick="abrirAccionesMensajeDesdeBoton(event, this.closest('.message-item'))" class="btn-opciones-mensaje ml-1 text-slate-400 hover:text-slate-700 transition-colors" title="Opciones de mensaje">
                                         <span class="iconify" data-icon="mdi:dots-vertical" data-width="14"></span>
                                       </button>
                                     </div>
@@ -6697,7 +6699,8 @@ function scrollToBottomDashboard() {
 let mensajeSeleccionadoId = null;
 let mensajeSeleccionadoContenido = "";
 window.mensajeSeleccionadoId = null;
-let ultimoAperturaMenuMensajes = 0;
+let panelAccionesMensajeActivo = null;
+let hostPanelAccionesMensaje = null;
 
 function obtenerDatosMenuDesdeElemento(element) {
   const asBool = (v, fallback = false) => {
@@ -6734,6 +6737,7 @@ function abrirMenuMensajeDesdeInline(event, element) {
     datos.puedeEditar,
     datos.puedeBorrarTodos,
     datos.puedeBorrarMi,
+    element,
   );
 
   return false;
@@ -6746,99 +6750,82 @@ function abrirAccionesMensajeDesdeBoton(event, element) {
   const datos = obtenerDatosMenuDesdeElemento(element);
   if (!datos || !datos.messageId) return;
 
-  abrirModalAccionesMensaje(
-    datos.messageId,
-    datos.messageContent,
-    datos.puedeEditar,
-    datos.puedeBorrarTodos,
-    datos.puedeBorrarMi,
-  );
+  abrirPanelAccionesMensaje(element, datos);
 }
 
-function abrirModalAccionesMensaje(
-  messageId,
-  messageContent,
-  puedeEditar,
-  puedeBorrarParaTodos,
-  puedeBorrarParaMi,
-) {
-  mensajeSeleccionadoId = messageId;
-  mensajeSeleccionadoContenido = messageContent || "";
-  window.mensajeSeleccionadoId = messageId;
+function cerrarPanelAccionesMensaje() {
+  if (panelAccionesMensajeActivo) {
+    panelAccionesMensajeActivo.remove();
+    panelAccionesMensajeActivo = null;
+    hostPanelAccionesMensaje = null;
+  }
+}
 
-  const allowEditar = typeof puedeEditar === "boolean" ? puedeEditar : false;
-  const allowBorrarTodos =
-    typeof puedeBorrarParaTodos === "boolean" ? puedeBorrarParaTodos : false;
-  const allowBorrarMiBase =
-    typeof puedeBorrarParaMi === "boolean" ? puedeBorrarParaMi : true;
-  const allowBorrarMi = allowBorrarMiBase || (!allowEditar && !allowBorrarTodos);
+function abrirPanelAccionesMensaje(element, datos) {
+  if (!element || !datos || !datos.messageId) return;
 
-  const modalId = "acciones-mensaje-modal";
-  const existing = document.getElementById(modalId);
-  if (existing) existing.remove();
+  mensajeSeleccionadoId = datos.messageId;
+  mensajeSeleccionadoContenido = datos.messageContent || "";
+  window.mensajeSeleccionadoId = datos.messageId;
 
-  const btnEditar = allowEditar
-    ? `
-      <button data-accion="editar" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-left hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-2">
-        <span class="iconify" data-icon="mdi:pencil" data-width="18"></span>
-        Editar mensaje
+  const allowEditar = !!datos.puedeEditar;
+  const allowBorrarTodos = !!datos.puedeBorrarTodos;
+  const allowBorrarMi =
+    !!datos.puedeBorrarMi || (!allowEditar && !allowBorrarTodos);
+
+  // Toggle si se vuelve a tocar el mismo mensaje
+  if (panelAccionesMensajeActivo && hostPanelAccionesMensaje === element) {
+    cerrarPanelAccionesMensaje();
+    return;
+  }
+
+  cerrarPanelAccionesMensaje();
+
+  const panel = document.createElement("div");
+  panel.className =
+    "absolute z-[10090] min-w-[190px] bg-white border border-slate-200 rounded-xl shadow-2xl p-2";
+  panel.style.top = "calc(100% + 6px)";
+
+  const esMio = element.getAttribute("data-es-mio") === "true";
+  if (esMio) panel.style.right = "0px";
+  else panel.style.left = "0px";
+
+  const botones = [];
+  if (allowEditar) {
+    botones.push(`
+      <button data-accion-msg="editar" class="w-full px-3 py-2 rounded-lg text-left hover:bg-slate-50 text-slate-700 text-sm font-medium flex items-center gap-2">
+        <span class="iconify" data-icon="mdi:pencil" data-width="16"></span>
+        Editar
       </button>
-    `
-    : "";
-
-  const btnBorrarTodos = allowBorrarTodos
-    ? `
-      <button data-accion="borrar-todos" class="w-full px-4 py-3 rounded-xl border border-red-200 text-left hover:bg-red-50 text-red-700 font-medium flex items-center gap-2">
-        <span class="iconify" data-icon="mdi:delete-outline" data-width="18"></span>
+    `);
+  }
+  if (allowBorrarTodos) {
+    botones.push(`
+      <button data-accion-msg="borrar-todos" class="w-full px-3 py-2 rounded-lg text-left hover:bg-red-50 text-red-700 text-sm font-medium flex items-center gap-2">
+        <span class="iconify" data-icon="mdi:delete-outline" data-width="16"></span>
         Eliminar para todos
       </button>
-    `
-    : "";
-
-  const btnBorrarMi = allowBorrarMi
-    ? `
-      <button data-accion="borrar-mi" class="w-full px-4 py-3 rounded-xl border border-amber-200 text-left hover:bg-amber-50 text-amber-700 font-medium flex items-center gap-2">
-        <span class="iconify" data-icon="mdi:delete-sweep-outline" data-width="18"></span>
+    `);
+  }
+  if (allowBorrarMi) {
+    botones.push(`
+      <button data-accion-msg="borrar-mi" class="w-full px-3 py-2 rounded-lg text-left hover:bg-amber-50 text-amber-700 text-sm font-medium flex items-center gap-2">
+        <span class="iconify" data-icon="mdi:delete-sweep-outline" data-width="16"></span>
         Borrar solo para mí
       </button>
-    `
-    : "";
+    `);
+  }
 
-  const html = `
-    <div id="${modalId}" class="fixed inset-0 z-[10080] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-3">
-      <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-bold text-slate-800">Opciones del mensaje</h3>
-          <button data-accion="cerrar" class="p-1 rounded-md hover:bg-slate-100 text-slate-500">
-            <span class="iconify" data-icon="mdi:close" data-width="18"></span>
-          </button>
-        </div>
-        <div class="space-y-2">
-          ${btnEditar}
-          ${btnBorrarTodos}
-          ${btnBorrarMi}
-        </div>
-      </div>
-    </div>
-  `;
+  panel.innerHTML = botones.join("");
+  element.appendChild(panel);
+  if (window.Iconify) Iconify.scan(panel);
 
-  document.body.insertAdjacentHTML("beforeend", html);
-  if (window.Iconify) Iconify.scan();
+  panel.addEventListener("click", async (ev) => {
+    const btn = ev.target.closest("button[data-accion-msg]");
+    if (!btn) return;
 
-  const modal = document.getElementById(modalId);
-  if (!modal) return;
-
-  const close = () => modal.remove();
-
-  modal.addEventListener("click", async (ev) => {
-    const targetBtn = ev.target.closest("button[data-accion]");
-    if (!targetBtn) {
-      if (ev.target === modal) close();
-      return;
-    }
-
-    const accion = targetBtn.getAttribute("data-accion");
-    close();
+    const accion = btn.getAttribute("data-accion-msg");
+    cerrarPanelAccionesMensaje();
 
     if (accion === "editar") {
       iniciarEdicionMensaje(mensajeSeleccionadoId, mensajeSeleccionadoContenido);
@@ -6850,9 +6837,11 @@ function abrirModalAccionesMensaje(
     }
     if (accion === "borrar-mi") {
       await confirmarBorrarMensaje(mensajeSeleccionadoId, "mi");
-      return;
     }
   });
+
+  panelAccionesMensajeActivo = panel;
+  hostPanelAccionesMensaje = element;
 }
 
 function mostrarMenuContextual(
@@ -6862,99 +6851,40 @@ function mostrarMenuContextual(
   puedeEditar,
   puedeBorrarParaTodos,
   puedeBorrarParaMi,
+  anchorElement = null,
 ) {
-  event.preventDefault();
+  if (event && typeof event.preventDefault === "function") event.preventDefault();
 
-  abrirModalAccionesMensaje(
-    messageId,
-    messageContent,
-    puedeEditar,
-    puedeBorrarParaTodos,
-    puedeBorrarParaMi,
-  );
+  const host =
+    anchorElement ||
+    (event && event.target && event.target.closest
+      ? event.target.closest(".message-item")
+      : null);
 
-  return false;
-
-  const menu = document.getElementById("messageContextMenu");
-  mensajeSeleccionadoId = messageId;
-  mensajeSeleccionadoContenido = messageContent;
-  window.mensajeSeleccionadoId = messageId;
-
-  // Fallback defensivo: si el menú no está en el DOM, abrir confirmación directa.
-  if (!menu) {
+  if (!host) {
     confirmarBorrarMensaje(messageId, puedeBorrarParaTodos ? "todos" : "mi");
     return false;
   }
 
-  // Actualizar opciones del menú basado en permisos
-  const editarBtn = menu.querySelector('[data-action="editar"]');
-  const borrarTodosBtn = menu.querySelector('[data-action="borrar-todos"]');
-  const borrarMiBtn = menu.querySelector('[data-action="borrar-mi"]');
-
-  // Fallback defensivo: si el inline handler llega con args incompletos,
-  // mantener disponible al menos "borrar para mi".
-  const allowEditar = typeof puedeEditar === "boolean" ? puedeEditar : false;
-  const allowBorrarTodos =
-    typeof puedeBorrarParaTodos === "boolean" ? puedeBorrarParaTodos : false;
-  const allowBorrarMi =
-    typeof puedeBorrarParaMi === "boolean" ? puedeBorrarParaMi : true;
-
-  // Nunca dejar el menú vacío: como mínimo, permitir borrar para mí.
-  const mostrarEditar = allowEditar;
-  const mostrarBorrarTodos = allowBorrarTodos;
-  const mostrarBorrarMi = allowBorrarMi || (!allowEditar && !allowBorrarTodos);
-
-  if (editarBtn) editarBtn.style.display = mostrarEditar ? "flex" : "none";
-  if (borrarTodosBtn)
-    borrarTodosBtn.style.display = mostrarBorrarTodos ? "flex" : "none";
-  if (borrarMiBtn) borrarMiBtn.style.display = mostrarBorrarMi ? "flex" : "none";
-
-  const rawX = Number.isFinite(event.pageX) ? event.pageX : event.clientX;
-  const rawY = Number.isFinite(event.pageY) ? event.pageY : event.clientY;
-  const pageX = Number.isFinite(rawX) ? rawX : window.scrollX + window.innerWidth / 2;
-  const pageY = Number.isFinite(rawY) ? rawY : window.scrollY + window.innerHeight / 2;
-
-  // Ajustar posición del menú para que no se salga de la pantalla
-  const menuWidth = 200; // ancho aproximado del menú
-  const menuHeight = 160; // alto aproximado del menú
-  const viewportLeft = window.scrollX;
-  const viewportTop = window.scrollY;
-  const viewportRight = viewportLeft + window.innerWidth;
-  const viewportBottom = viewportTop + window.innerHeight;
-  let leftPosition = pageX;
-  let topPosition = pageY;
-
-  // Si el menú se saldría por la derecha, posicionarlo a la izquierda del cursor
-  if (leftPosition + menuWidth > viewportRight) {
-    leftPosition = pageX - menuWidth;
-  }
-  if (leftPosition < viewportLeft + 8) leftPosition = viewportLeft + 8;
-
-  // Si se saldría por abajo, subirlo
-  if (topPosition + menuHeight > viewportBottom) {
-    topPosition = Math.max(viewportTop + 8, viewportBottom - menuHeight - 8);
-  }
-
-  menu.style.left = leftPosition + "px";
-  menu.style.top = topPosition + "px";
-  menu.style.display = "block";
-  menu.style.zIndex = "10060";
-  ultimoAperturaMenuMensajes = Date.now();
-  menu.classList.remove("hidden");
+  abrirPanelAccionesMensaje(host, {
+    messageId,
+    messageContent,
+    puedeEditar,
+    puedeBorrarTodos: puedeBorrarParaTodos,
+    puedeBorrarMi: puedeBorrarParaMi,
+  });
 
   return false;
 }
 
 // Cerrar menú contextual al hacer clic fuera
 document.addEventListener("click", function (event) {
-  const menu = document.getElementById("messageContextMenu");
-  if (!menu) return;
+  if (!panelAccionesMensajeActivo) return;
 
-  // Evita cerrar inmediatamente tras abrir con click en el botón de opciones.
-  if (Date.now() - ultimoAperturaMenuMensajes < 220) return;
-
-  if (menu && !menu.contains(event.target)) {
-    menu.classList.add("hidden");
+  const clicDentroPanel = panelAccionesMensajeActivo.contains(event.target);
+  const clicEnDisparador = !!event.target.closest(".btn-opciones-mensaje");
+  if (!clicDentroPanel && !clicEnDisparador) {
+    cerrarPanelAccionesMensaje();
   }
 });
 
@@ -6996,6 +6926,7 @@ function agregarLongPressListeners() {
         puedeEditar,
         puedeBorrarTodos,
         puedeBorrarMi,
+        this,
       );
     });
 
@@ -7003,6 +6934,7 @@ function agregarLongPressListeners() {
     msg.addEventListener(
       "touchstart",
       function (e) {
+        const messageElement = this;
         const messageId = this.getAttribute("data-message-id");
         const messageContent = this.getAttribute("data-message-content");
         const puedeEditar = asBool(this.getAttribute("data-puede-editar"), false);
@@ -7028,6 +6960,7 @@ function agregarLongPressListeners() {
             puedeEditar,
             puedeBorrarTodos,
             puedeBorrarMi,
+            messageElement,
           );
         }, 500);
       },
