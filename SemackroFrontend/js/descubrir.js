@@ -4767,7 +4767,7 @@ function mostrarMensajesDashboard(mensajes) {
                                         <span class="whitespace-nowrap">${formatearHoraDashboard(msg.fecha_envio)}</span>
                                         ${badgeEdicion}
                                         <span class="iconify" data-icon="${msg.leido ? "mdi:check-all" : "mdi:check"}" style="${msg.leido ? "color: #7dd3fc;" : ""}" data-width="19"></span>
-                                      <button type="button" onclick="abrirMenuMensajeDesdeBoton(event, this.closest('.message-item'))" class="ml-1 text-indigo-200 hover:text-white transition-colors" title="Opciones de mensaje">
+                                      <button type="button" onclick="abrirAccionesMensajeDesdeBoton(event, this.closest('.message-item'))" class="ml-1 text-indigo-200 hover:text-white transition-colors" title="Opciones de mensaje">
                                         <span class="iconify" data-icon="mdi:dots-vertical" data-width="14"></span>
                                       </button>
                                     </div>
@@ -4796,7 +4796,7 @@ function mostrarMensajesDashboard(mensajes) {
                                     <div class="flex items-center justify-start gap-1.5 text-[10px] text-slate-400 mt-1">
                                         <span class="whitespace-nowrap">${formatearHoraDashboard(msg.fecha_envio)}</span>
                                         ${badgeEdicion}
-                                      <button type="button" onclick="abrirMenuMensajeDesdeBoton(event, this.closest('.message-item'))" class="ml-1 text-slate-400 hover:text-slate-700 transition-colors" title="Opciones de mensaje">
+                                      <button type="button" onclick="abrirAccionesMensajeDesdeBoton(event, this.closest('.message-item'))" class="ml-1 text-slate-400 hover:text-slate-700 transition-colors" title="Opciones de mensaje">
                                         <span class="iconify" data-icon="mdi:dots-vertical" data-width="14"></span>
                                       </button>
                                     </div>
@@ -6739,28 +6739,120 @@ function abrirMenuMensajeDesdeInline(event, element) {
   return false;
 }
 
-function abrirMenuMensajeDesdeBoton(event, element) {
+function abrirAccionesMensajeDesdeBoton(event, element) {
   if (event && typeof event.preventDefault === "function") event.preventDefault();
   if (event && typeof event.stopPropagation === "function") event.stopPropagation();
 
   const datos = obtenerDatosMenuDesdeElemento(element);
   if (!datos || !datos.messageId) return;
 
-  const rect = element.getBoundingClientRect();
-  const syntheticEvent = {
-    preventDefault: () => {},
-    pageX: window.scrollX + rect.right - 8,
-    pageY: window.scrollY + rect.bottom - 8,
-  };
-
-  mostrarMenuContextual(
-    syntheticEvent,
+  abrirModalAccionesMensaje(
     datos.messageId,
     datos.messageContent,
     datos.puedeEditar,
     datos.puedeBorrarTodos,
     datos.puedeBorrarMi,
   );
+}
+
+function abrirModalAccionesMensaje(
+  messageId,
+  messageContent,
+  puedeEditar,
+  puedeBorrarParaTodos,
+  puedeBorrarParaMi,
+) {
+  mensajeSeleccionadoId = messageId;
+  mensajeSeleccionadoContenido = messageContent || "";
+  window.mensajeSeleccionadoId = messageId;
+
+  const allowEditar = typeof puedeEditar === "boolean" ? puedeEditar : false;
+  const allowBorrarTodos =
+    typeof puedeBorrarParaTodos === "boolean" ? puedeBorrarParaTodos : false;
+  const allowBorrarMiBase =
+    typeof puedeBorrarParaMi === "boolean" ? puedeBorrarParaMi : true;
+  const allowBorrarMi = allowBorrarMiBase || (!allowEditar && !allowBorrarTodos);
+
+  const modalId = "acciones-mensaje-modal";
+  const existing = document.getElementById(modalId);
+  if (existing) existing.remove();
+
+  const btnEditar = allowEditar
+    ? `
+      <button data-accion="editar" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-left hover:bg-slate-50 text-slate-700 font-medium flex items-center gap-2">
+        <span class="iconify" data-icon="mdi:pencil" data-width="18"></span>
+        Editar mensaje
+      </button>
+    `
+    : "";
+
+  const btnBorrarTodos = allowBorrarTodos
+    ? `
+      <button data-accion="borrar-todos" class="w-full px-4 py-3 rounded-xl border border-red-200 text-left hover:bg-red-50 text-red-700 font-medium flex items-center gap-2">
+        <span class="iconify" data-icon="mdi:delete-outline" data-width="18"></span>
+        Eliminar para todos
+      </button>
+    `
+    : "";
+
+  const btnBorrarMi = allowBorrarMi
+    ? `
+      <button data-accion="borrar-mi" class="w-full px-4 py-3 rounded-xl border border-amber-200 text-left hover:bg-amber-50 text-amber-700 font-medium flex items-center gap-2">
+        <span class="iconify" data-icon="mdi:delete-sweep-outline" data-width="18"></span>
+        Borrar solo para mí
+      </button>
+    `
+    : "";
+
+  const html = `
+    <div id="${modalId}" class="fixed inset-0 z-[10080] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-3">
+      <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-bold text-slate-800">Opciones del mensaje</h3>
+          <button data-accion="cerrar" class="p-1 rounded-md hover:bg-slate-100 text-slate-500">
+            <span class="iconify" data-icon="mdi:close" data-width="18"></span>
+          </button>
+        </div>
+        <div class="space-y-2">
+          ${btnEditar}
+          ${btnBorrarTodos}
+          ${btnBorrarMi}
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML("beforeend", html);
+  if (window.Iconify) Iconify.scan();
+
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+
+  const close = () => modal.remove();
+
+  modal.addEventListener("click", async (ev) => {
+    const targetBtn = ev.target.closest("button[data-accion]");
+    if (!targetBtn) {
+      if (ev.target === modal) close();
+      return;
+    }
+
+    const accion = targetBtn.getAttribute("data-accion");
+    close();
+
+    if (accion === "editar") {
+      iniciarEdicionMensaje(mensajeSeleccionadoId, mensajeSeleccionadoContenido);
+      return;
+    }
+    if (accion === "borrar-todos") {
+      await confirmarBorrarMensaje(mensajeSeleccionadoId, "todos");
+      return;
+    }
+    if (accion === "borrar-mi") {
+      await confirmarBorrarMensaje(mensajeSeleccionadoId, "mi");
+      return;
+    }
+  });
 }
 
 function mostrarMenuContextual(
@@ -6772,6 +6864,16 @@ function mostrarMenuContextual(
   puedeBorrarParaMi,
 ) {
   event.preventDefault();
+
+  abrirModalAccionesMensaje(
+    messageId,
+    messageContent,
+    puedeEditar,
+    puedeBorrarParaTodos,
+    puedeBorrarParaMi,
+  );
+
+  return false;
 
   const menu = document.getElementById("messageContextMenu");
   mensajeSeleccionadoId = messageId;
