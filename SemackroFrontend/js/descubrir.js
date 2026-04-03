@@ -4232,6 +4232,78 @@ let conversacionesDashboard = window.conversacionesDashboard;
 let selectedFilesDashboard = []; // array de File
 let conversacionActivaDashboard = null;
 let mensajeriaInterval = null;
+let isSendingDashboardMessage = false;
+
+const MENSAJERIA_LIMITES = {
+  MAX_CARACTERES_MENSAJE: 1500,
+  MAX_ADJUNTOS: 8,
+  MAX_MB_POR_ARCHIVO: 15,
+  MAX_MB_TOTAL: 40,
+};
+
+const MIME_PERMITIDOS_MENSAJERIA = [
+  "image/",
+  "video/",
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+];
+
+function esMimePermitidoMensajeria(file) {
+  const mime = (file?.type || "").toLowerCase();
+  return MIME_PERMITIDOS_MENSAJERIA.some((allowed) =>
+    allowed.endsWith("/") ? mime.startsWith(allowed) : mime === allowed,
+  );
+}
+
+function normalizarContenidoMensaje(texto) {
+  return String(texto || "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\u00A0/g, " ")
+    .trim();
+}
+
+function validarAdjuntosMensajeria(files) {
+  if (!Array.isArray(files)) return { ok: true };
+
+  if (files.length > MENSAJERIA_LIMITES.MAX_ADJUNTOS) {
+    return {
+      ok: false,
+      mensaje: `Solo puedes adjuntar hasta ${MENSAJERIA_LIMITES.MAX_ADJUNTOS} archivos.`,
+    };
+  }
+
+  const maxBytesPorArchivo = MENSAJERIA_LIMITES.MAX_MB_POR_ARCHIVO * 1024 * 1024;
+  const maxBytesTotal = MENSAJERIA_LIMITES.MAX_MB_TOTAL * 1024 * 1024;
+  let totalBytes = 0;
+
+  for (const f of files) {
+    if (!esMimePermitidoMensajeria(f)) {
+      return {
+        ok: false,
+        mensaje: `Tipo de archivo no permitido: ${f.name}`,
+      };
+    }
+    if ((f.size || 0) > maxBytesPorArchivo) {
+      return {
+        ok: false,
+        mensaje: `El archivo ${f.name} supera ${MENSAJERIA_LIMITES.MAX_MB_POR_ARCHIVO} MB.`,
+      };
+    }
+    totalBytes += f.size || 0;
+  }
+
+  if (totalBytes > maxBytesTotal) {
+    return {
+      ok: false,
+      mensaje: `El total de adjuntos supera ${MENSAJERIA_LIMITES.MAX_MB_TOTAL} MB.`,
+    };
+  }
+
+  return { ok: true };
+}
 
 // Variables globales para polling de mensajes (accesibles desde navigateTo)
 window.conversacionActivaDashboard = null;
@@ -4244,6 +4316,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Event listener para enviar mensajes
   const formDashboard = document.getElementById("chat-form-dashboard");
   if (formDashboard) {
+    formDashboard.removeEventListener("submit", enviarMensajeDashboard);
     formDashboard.addEventListener("submit", enviarMensajeDashboard);
   }
 
@@ -4853,20 +4926,52 @@ let mensajeEnEdicion = null;
 async function enviarMensajeDashboard(e) {
   if (e && e.preventDefault) e.preventDefault();
 
-  const input = document.getElementById("message-input-dashboard");
-  const contenido = input && input.value ? input.value.trim() : "";
+  if (isSendingDashboardMessage) return;
 
-  if (
-    (!contenido && selectedFilesDashboard.length === 0) ||
-    !conversacionActivaDashboard
-  )
+  if (!conversacionActivaDashboard) {
+    Toast.error("Sin conversación", "Selecciona una conversación primero.");
     return;
+  }
+
+  const input = document.getElementById("message-input-dashboard");
+  const contenido = input && input.value ? normalizarContenidoMensaje(input.value) : "";
+
+  const validacionAdjuntos = validarAdjuntosMensajeria(selectedFilesDashboard);
+  if (!validacionAdjuntos.ok) {
+    Toast.error("Adjuntos inválidos", validacionAdjuntos.mensaje);
+    return;
+  }
+
+  if (contenido.length > MENSAJERIA_LIMITES.MAX_CARACTERES_MENSAJE) {
+    Toast.error(
+      "Mensaje demasiado largo",
+      `Máximo ${MENSAJERIA_LIMITES.MAX_CARACTERES_MENSAJE} caracteres.`,
+    );
+    return;
+  }
+
+  if (!contenido && selectedFilesDashboard.length === 0) {
+    Toast.error("Mensaje vacío", "Escribe un mensaje o adjunta un archivo.");
+    return;
+  }
+
+  const sendBtn = document.getElementById("send-message-btn-dashboard");
+  isSendingDashboardMessage = true;
+  if (sendBtn) sendBtn.disabled = true;
 
   try {
     const personaId = await obtenerPersonaIdActual();
 
     // Si estamos editando
     if (mensajeEnEdicion) {
+      if (selectedFilesDashboard.length > 0) {
+        Toast.error(
+          "Edición inválida",
+          "No puedes adjuntar archivos al editar un mensaje.",
+        );
+        return;
+      }
+
       const msgElement = document.querySelector(
         `[data-message-id="${mensajeEnEdicion.idMensaje}"]`,
       );
@@ -5031,6 +5136,9 @@ async function enviarMensajeDashboard(e) {
   } catch (error) {
     console.error("Error:", error);
     Toast.error("Error", error.message || "Error al procesar el mensaje");
+  } finally {
+    isSendingDashboardMessage = false;
+    if (sendBtn) sendBtn.disabled = false;
   }
 }
 
@@ -5442,13 +5550,23 @@ function refreshAttachmentsPreview() {
   if (fileInput) {
     fileInput.addEventListener("change", (ev) => {
       const files = Array.from(ev.target.files || []);
-      // Limitar número/size si se desea (puedes ajustar aquí)
+
+      const proposed = [...selectedFilesDashboard, ...files];
+      const validacion = validarAdjuntosMensajeria(proposed);
+      if (!validacion.ok) {
+        Toast.error("Adjuntos inválidos", validacion.mensaje);
+        ev.target.value = "";
+        return;
+      }
+
       files.forEach((f) => selectedFilesDashboard.push(f));
       refreshAttachmentsPreview();
+      ev.target.value = "";
     });
   }
 
   if (form) {
+    form.removeEventListener("submit", enviarMensajeDashboard);
     form.addEventListener("submit", enviarMensajeDashboard);
   }
 })();
