@@ -6697,6 +6697,7 @@ function scrollToBottomDashboard() {
 let mensajeSeleccionadoId = null;
 let mensajeSeleccionadoContenido = "";
 window.mensajeSeleccionadoId = null;
+let ultimoAperturaMenuMensajes = 0;
 
 function obtenerDatosMenuDesdeElemento(element) {
   const asBool = (v, fallback = false) => {
@@ -6796,24 +6797,47 @@ function mostrarMenuContextual(
   const allowBorrarMi =
     typeof puedeBorrarParaMi === "boolean" ? puedeBorrarParaMi : true;
 
-  if (editarBtn) editarBtn.style.display = allowEditar ? "flex" : "none";
+  // Nunca dejar el menú vacío: como mínimo, permitir borrar para mí.
+  const mostrarEditar = allowEditar;
+  const mostrarBorrarTodos = allowBorrarTodos;
+  const mostrarBorrarMi = allowBorrarMi || (!allowEditar && !allowBorrarTodos);
+
+  if (editarBtn) editarBtn.style.display = mostrarEditar ? "flex" : "none";
   if (borrarTodosBtn)
-    borrarTodosBtn.style.display = allowBorrarTodos ? "flex" : "none";
-  if (borrarMiBtn)
-    borrarMiBtn.style.display = allowBorrarMi ? "flex" : "none";
+    borrarTodosBtn.style.display = mostrarBorrarTodos ? "flex" : "none";
+  if (borrarMiBtn) borrarMiBtn.style.display = mostrarBorrarMi ? "flex" : "none";
+
+  const rawX = Number.isFinite(event.pageX) ? event.pageX : event.clientX;
+  const rawY = Number.isFinite(event.pageY) ? event.pageY : event.clientY;
+  const pageX = Number.isFinite(rawX) ? rawX : window.scrollX + window.innerWidth / 2;
+  const pageY = Number.isFinite(rawY) ? rawY : window.scrollY + window.innerHeight / 2;
 
   // Ajustar posición del menú para que no se salga de la pantalla
   const menuWidth = 200; // ancho aproximado del menú
-  const windowWidth = window.innerWidth;
-  let leftPosition = event.pageX;
+  const menuHeight = 160; // alto aproximado del menú
+  const viewportLeft = window.scrollX;
+  const viewportTop = window.scrollY;
+  const viewportRight = viewportLeft + window.innerWidth;
+  const viewportBottom = viewportTop + window.innerHeight;
+  let leftPosition = pageX;
+  let topPosition = pageY;
 
   // Si el menú se saldría por la derecha, posicionarlo a la izquierda del cursor
-  if (leftPosition + menuWidth > windowWidth) {
-    leftPosition = event.pageX - menuWidth;
+  if (leftPosition + menuWidth > viewportRight) {
+    leftPosition = pageX - menuWidth;
+  }
+  if (leftPosition < viewportLeft + 8) leftPosition = viewportLeft + 8;
+
+  // Si se saldría por abajo, subirlo
+  if (topPosition + menuHeight > viewportBottom) {
+    topPosition = Math.max(viewportTop + 8, viewportBottom - menuHeight - 8);
   }
 
   menu.style.left = leftPosition + "px";
-  menu.style.top = event.pageY + "px";
+  menu.style.top = topPosition + "px";
+  menu.style.display = "block";
+  menu.style.zIndex = "10060";
+  ultimoAperturaMenuMensajes = Date.now();
   menu.classList.remove("hidden");
 
   return false;
@@ -6822,6 +6846,11 @@ function mostrarMenuContextual(
 // Cerrar menú contextual al hacer clic fuera
 document.addEventListener("click", function (event) {
   const menu = document.getElementById("messageContextMenu");
+  if (!menu) return;
+
+  // Evita cerrar inmediatamente tras abrir con click en el botón de opciones.
+  if (Date.now() - ultimoAperturaMenuMensajes < 220) return;
+
   if (menu && !menu.contains(event.target)) {
     menu.classList.add("hidden");
   }
