@@ -6036,11 +6036,33 @@ async function finalizarIntercambioDashboard() {
       }
 
       // Mostrar modal de calificación
-      mostrarModalCalificacionDashboard(
-        data.intercambio.id_intercambio,
-        idContacto,
-        nombreContacto,
-      );
+      try {
+        mostrarModalCalificacionDashboard(
+          data.intercambio.id_intercambio,
+          idContacto,
+          nombreContacto,
+        );
+      } catch (modalError) {
+        console.error("Error al abrir modal de calificación:", modalError);
+        Swal.fire({
+          icon: "warning",
+          title: "Intercambio finalizado",
+          html: `
+                            <div style="text-align: center;">
+                                <p style="color: #4b5563; font-size: 15px; margin-bottom: 12px;">
+                                    El intercambio se finalizó correctamente.
+                                </p>
+                                <p style="color: #6b7280; font-size: 13px;">
+                                    Hubo un problema al abrir la ventana de calificación. Puedes calificar después desde tu historial.
+                                </p>
+                            </div>
+                        `,
+          confirmButtonColor: "#3b82f6",
+          customClass: {
+            popup: "rounded-lg shadow-2xl",
+          },
+        });
+      }
     } else {
       Swal.fire({
         icon: "error",
@@ -6085,6 +6107,11 @@ function mostrarModalCalificacionDashboard(
   idPersonaCalificada,
   nombrePersona,
 ) {
+  const nombrePersonaSeguro =
+    typeof nombrePersona === "string" && nombrePersona.trim()
+      ? nombrePersona
+      : "la otra persona";
+
   console.log("   mostrarModalCalificacionDashboard recibió:");
   console.log(
     "   idIntercambio:",
@@ -6098,7 +6125,7 @@ function mostrarModalCalificacionDashboard(
     "tipo:",
     typeof idPersonaCalificada,
   );
-  console.log("   nombrePersona:", nombrePersona);
+  console.log("   nombrePersona:", nombrePersonaSeguro);
 
   const modal = document.createElement("div");
   modal.id = "modalCalificacionDashboard";
@@ -6119,7 +6146,7 @@ function mostrarModalCalificacionDashboard(
                                     Califica tu experiencia
                                 </h2>
                                 <p style="margin: 0; font-size: 14px; color: #64748b; line-height: 1.5;">
-                                    ¿Cómo fue tu intercambio con <strong style="color: #334155;">${nombrePersona}</strong>?
+                                  ¿Cómo fue tu intercambio con <strong style="color: #334155;">${nombrePersonaSeguro}</strong>?
                                 </p>
                             </div>
                         </div>
@@ -6209,7 +6236,7 @@ function mostrarModalCalificacionDashboard(
                             </label>
                             <textarea id="comentarioCalificacionDashboard" rows="3" maxlength="500"
                                       style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #1e293b; resize: none; font-family: inherit; transition: border-color 0.15s;"
-                                      placeholder="Comparte tu experiencia con ${nombrepersona}..."
+                                      placeholder="Comparte tu experiencia con ${nombrePersonaSeguro}..."
                                       onfocus="this.style.borderColor='#3b82f6'; this.style.outline='none';"
                                       onblur="this.style.borderColor='#cbd5e1';"></textarea>
                             <p style="margin: 6px 0 0; font-size: 12px; color: #94a3b8;">Máximo 500 caracteres</p>
