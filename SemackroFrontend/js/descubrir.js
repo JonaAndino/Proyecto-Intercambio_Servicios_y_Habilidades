@@ -3426,7 +3426,7 @@ async function mostrarFormularioSolicitudDetallada(
                                     <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
                                         ${t("requestModal.duration")}
                                     </label>
-                                    <input type="number" id="duracionEstimada" min="15" step="15" placeholder="${T("requestModal.durationPlaceholder")}" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151;">
+                                    <input type="number" id="duracionEstimada" min="15" step="15" placeholder="${t("requestModal.durationPlaceholder")}" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151;">
                                 </div>
                                 <div>
                                     <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
@@ -3445,7 +3445,7 @@ async function mostrarFormularioSolicitudDetallada(
                                 <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
                                     ${t("requestModal.additionalMessage")}
                                 </label>
-                                <textarea id="mensajeAdicional" rows="3" placeholder="${T("requestModal.messagePlaceholder")}" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; resize: vertical; font-family: inherit;"></textarea>
+                                <textarea id="mensajeAdicional" rows="3" placeholder="${t("requestModal.messagePlaceholder")}" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; resize: vertical; font-family: inherit;"></textarea>
                             </div>
                         </div>
                     `,
