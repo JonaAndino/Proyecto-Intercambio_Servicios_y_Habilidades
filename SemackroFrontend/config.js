@@ -1,6 +1,10 @@
-// Configuración global de URLs — PRODUCCIÓN
+// Configuración global de URLs
 (function() {
-    const API_BASE_URL = 'https://serversemackro.up.railway.app'; // Reemplazar con tu URL de Railway/Render
+    const hostname = window.location.hostname;
+    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+    const API_BASE_URL = isLocal
+        ? 'http://localhost:3001'
+        : 'https://serversemackro.up.railway.app';
 
     window.APP_CONFIG = {
         BACKEND_URL: API_BASE_URL,
