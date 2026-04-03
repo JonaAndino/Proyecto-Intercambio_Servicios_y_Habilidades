@@ -4483,13 +4483,13 @@ function actualizarHeaderChatDashboard(conv) {
     ? `<button id="vaciarMensajesBtn" class="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-all" title="Vaciar chat">
          <span class="iconify" data-icon="mdi:delete-sweep" data-width="22"></span>
        </button>`
-    : `<button id="verPerfilBtnDashboard" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-all" title="${T("messages.viewProfile")}">
+    : `<button id="verPerfilBtnDashboard" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-all" title="${t("messages.viewProfile")}">
            <span class="iconify" data-icon="mdi:account-circle" data-width="22"></span>
        </button>
-       <button id="VideoLlamada" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-all" title="${T("messages.videoCall")}">
+       <button id="VideoLlamada" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-all" title="${t("messages.videoCall")}">
            <span class="iconify" data-icon="mdi:video" data-width="22"></span>
        </button>
-       <button id="finalizarIntercambioBtn" class="p-2 text-red-600 hover:bg-red-50 rounded-full transition-all" title="${T("messages.finishExchange")}">
+       <button id="finalizarIntercambioBtn" class="p-2 text-red-600 hover:bg-red-50 rounded-full transition-all" title="${t("messages.finishExchange")}">
            <span class="iconify" data-icon="mdi:check-circle" data-width="22"></span>
        </button>
        <button id="vaciarMensajesBtn" class="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-all" title="Vaciar chat">
