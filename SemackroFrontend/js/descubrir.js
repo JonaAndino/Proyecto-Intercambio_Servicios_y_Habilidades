@@ -162,16 +162,10 @@ async function navigateTo(viewName) {
     closeSidebarFn();
   }
 
-  // En mensajería el scroll debe quedar dentro del contenedor de mensajes.
+  // Evitar locks globales persistentes de scroll fuera de overlays/sidebar móvil.
   const sidebarIsOpen = document.getElementById("sidebar")?.classList.contains("open");
-  if (viewName === "mensajes") {
-    document.body.classList.add("mensajeria-activa");
-    document.body.style.overflow = "hidden";
-  } else if (!sidebarIsOpen) {
-    document.body.classList.remove("mensajeria-activa");
+  if (!sidebarIsOpen) {
     document.body.style.overflow = "";
-  } else {
-    document.body.classList.remove("mensajeria-activa");
   }
 
   // Scroll al Descubrir
@@ -199,9 +193,7 @@ function closeSidebarFn() {
   mainContent.classList.remove("shifted");
   overlay.classList.remove("show");
   hamburgerBtn.classList.remove("open");
-  document.body.style.overflow = document.body.classList.contains("mensajeria-activa")
-    ? "hidden"
-    : "";
+  document.body.style.overflow = "";
 }
 
 // ========================================
