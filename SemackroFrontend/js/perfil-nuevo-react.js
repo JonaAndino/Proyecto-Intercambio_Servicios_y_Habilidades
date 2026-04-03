@@ -535,7 +535,7 @@ function QuickStats({ aniosExperiencia, intercambiosCount, promedioCalificacion,
             icon: <Icons.Clock size={32} disponible={esDisponible} />, 
             label: t('profile.status'), 
             value: esDisponible ? t('status.available') : t('status.atWork'), 
-            color: esDisponible ? 'success' : 'primary' 
+            color: esDisponible ? 'success' : 'Primary' 
         }
     ];
 
@@ -607,7 +607,7 @@ function Specialties({ habilidades, tipo = 'Ofrece' }) {
                                 : '#eff6ff',
                             color: selectedIndex === index 
                                 ? 'white' 
-                                : '#2563eb'
+                                : '#2563Eb'
                         }}
                     >
                         {skill.nombre_Habilidad}
@@ -741,7 +741,7 @@ function ProfessionalInfo({ persona, certificaciones }) {
                                         rel="noopener noreferrer"
                                         className="perfil-certification-btn"
                                         style={{ 
-                                            pointerEvents: cert.url_certificado ? 'auto' : 'none',
+                                            pointerEvents: cert.url_certificado ? 'auto' : 'None',
                                             opacity: cert.url_certificado ? 1 : 0.7
                                         }}
                                     >
@@ -828,7 +828,7 @@ function PostulacionesHistory({ postulaciones }) {
         <div className="perfil-section">
             <div className="perfil-section-title">
                 <Icons.ClipboardCheck />
-                <h3>Mis Postulaciones a Órdenes de Trabajo</h3>
+                <h3>Mis postulaciones a órdenes de trabajo</h3>
                 {postulaciones.length > 5 && (
                     <span className="perfil-section-count">({postulaciones.length} total)</span>
                 )}
@@ -863,7 +863,7 @@ function PostulacionesHistory({ postulaciones }) {
                             {item.portafolio_url && (
                                 <a href={item.portafolio_url} target="_blank" rel="noopener noreferrer"
                                     style={{ fontSize: '12px', color: '#dc2626', display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#fef2f2', padding: '3px 8px', borderRadius: '6px', textDecoration: 'none', fontWeight: 500 }}>
-                                    📄 Ver portafolio PDF
+                                    📄 Ver portafolio pdf
                                 </a>
                             )}
                         </div>

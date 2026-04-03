@@ -4,9 +4,9 @@ var t = (key) => {
   if (window.t && typeof window.t === 'function' && window.t !== t) return window.t(key);
   const fallbacks = {
     'users.showing': 'Mostrando',
-    'users.of': 'de',
-    'users.user': 'usuario',
-    'users.users': 'usuarios'
+    'users.of': 'De',
+    'users.user': 'Usuario',
+    'users.users': 'Usuarios'
   };
   return fallbacks[key] || key;
 };
@@ -930,7 +930,7 @@ async function cargarUsuariosReales() {
   } catch (error) {
     console.error("Error al cargar usuarios:", error);
     usersGrid.innerHTML =
-      '<p class="col-span-full text-center text-red-500">Error al cargar usuarios. Por favor, recarga la página.</p>';
+      '<p class="col-span-full text-center text-red-500">Error al cargar usuarios. por favor, recarga la página.</p>';
   }
 }
 
@@ -1336,7 +1336,7 @@ function mostrarFavoritos(favoritos) {
                                         ${
                                           imagenUrl
                                             ? `<img src="${imagenUrl}"
-                                                   alt="${nombreCompleto}"
+                                                   alt="${Nombrecompleto}"
                                                    class="user-avatar object-cover"
                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                                <div class="user-avatar hidden">
@@ -1350,8 +1350,8 @@ function mostrarFavoritos(favoritos) {
                                 </div>
 
                                 <!-- Información del usuario -->
-                                <h3 class="text-xl font-bold text-gray-800 mb-1 truncate" title="${nombreCompleto}">${nombreCompleto}</h3>
-                                <p class="text-blue-600 font-semibold mb-2 truncate" title="${profesion}">${profesion}</p>
+                                <h3 class="text-xl font-bold text-gray-800 mb-1 truncate" title="${Nombrecompleto}">${nombreCompleto}</h3>
+                                <p class="text-blue-600 font-semibold mb-2 truncate" title="${Profesion}">${profesion}</p>
 
                                 <!-- Ubicación -->
                                 <div class="flex items-center text-gray-600 text-sm mb-3">
@@ -1363,7 +1363,7 @@ function mostrarFavoritos(favoritos) {
                                 </div>
 
                                 <!-- Bio -->
-                                <p class="text-gray-600 text-sm user-bio mb-3" title="${bio}">${bio}</p>
+                                <p class="text-gray-600 text-sm user-bio mb-3" title="${Bio}">${bio}</p>
 
                                 <!-- Habilidades -->
                                 <div class="skills-container-card">
@@ -1507,7 +1507,7 @@ function renderUserCardsReal() {
                     <button type="button"
                             onclick="toggleFavorite(event, ${user.id}, '${user.name.replace(/'/g, "\\'")}')"
                             class="favorite-btn ${esFavorito(user.id) ? "active" : ""}"
-                            title="${esFavorito(user.id) ? "Quitar de favoritos" : "Agregar a favoritos"}"
+                            title="${Esfavorito(user.id) ? "Quitar de favoritos" : "Agregar a favoritos"}"
                             data-user-id="${user.id}">
                         <span class="iconify favorite-icon" data-icon="${esFavorito(user.id) ? "ph:heart-fill" : "ph:heart"}"></span>
                     </button>
@@ -1526,7 +1526,7 @@ function renderUserCardsReal() {
                                 <div class="relative inline-block">
                                     ${
                                       user.avatar
-                                        ? `<img src="${user.avatar}" alt="${user.name}" class="user-avatar object-cover">`
+                                        ? `<img src="${user.avatar}" alt="${User.name}" class="user-avatar object-cover">`
                                         : `<div class="user-avatar"><span class="text-white text-3xl font-bold">${user.avatarInitials}</span></div>`
                                     }
                                     ${user.online ? '<div class="online-badge"></div>' : ""}
@@ -1534,8 +1534,8 @@ function renderUserCardsReal() {
                             </div>
 
                             <!-- Información del usuario -->
-                            <h3 class="text-xl font-bold text-gray-800 mb-1 truncate" title="${user.name}">${user.name}</h3>
-                            <p class="text-blue-600 font-semibold mb-2 truncate" title="${user.profession}">${user.profession}</p>
+                            <h3 class="text-xl font-bold text-gray-800 mb-1 truncate" title="${User.name}">${user.name}</h3>
+                            <p class="text-blue-600 font-semibold mb-2 truncate" title="${User.profession}">${user.profession}</p>
 
                             <!-- Ubicación -->
                             <div class="flex items-center text-gray-600 text-sm mb-3">
@@ -1547,7 +1547,7 @@ function renderUserCardsReal() {
                             </div>
 
                             <!-- Bio -->
-                            <p class="text-gray-600 text-sm user-bio mb-3" title="${user.bio}">${user.bio}</p>
+                            <p class="text-gray-600 text-sm user-bio mb-3" title="${User.bio}">${user.bio}</p>
 
                             <!-- Habilidades -->
                             <div class="skills-container-card">
@@ -2019,7 +2019,7 @@ async function cargarPerfilEnSeccion(perfilId) {
                     <div class="profile-modal-avatar" style="cursor: ${persona.imagenUrl_Persona ? "zoom-in" : "default"};" ${persona.imagenUrl_Persona ? `onclick="openImageFullscreen('${persona.imagenUrl_Persona}')"` : ""}>
                         ${
                           persona.imagenUrl_Persona
-                            ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}">`
+                            ? `<img src="${persona.imagenUrl_Persona}" alt="${Nombrecompleto}">`
                             : `<span>${iniciales}</span>`
                         }
                     </div>
@@ -2353,7 +2353,7 @@ async function cargarPerfilEnModal(perfilId) {
                 <div class="profile-modal-avatar" style="cursor: ${persona.imagenUrl_Persona ? "zoom-in" : "default"};" ${persona.imagenUrl_Persona ? `onclick="openImageFullscreen('${persona.imagenUrl_Persona}')"` : ""}>
                     ${
                       persona.imagenUrl_Persona
-                        ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}">`
+                        ? `<img src="${persona.imagenUrl_Persona}" alt="${Nombrecompleto}">`
                         : `<span>${iniciales}</span>`
                     }
                 </div>
@@ -2732,7 +2732,7 @@ async function cargarEstadisticasYCalificaciones(perfilId) {
                                 <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; overflow: hidden; position: relative;">
                                     ${
                                       getImagenCalificador(cal)
-                                        ? `<img src="${getImagenCalificador(cal)}" alt="${nombreCalificador}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">`
+                                        ? `<img src="${getImagenCalificador(cal)}" alt="${Nombrecalificador}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">`
                                         : `<span style="font-size: 20px;">${iniciales}</span>`
                                     }
                                 </div>
@@ -2995,7 +2995,7 @@ document
 // ========================================
 function showSkillDetailInModal(skill, categoria, type) {
   const detailId =
-    type === "offered" ? "selectedOfferedDetail" : "selectedRequiredDetail";
+    type === "offered" ? "selectedOfferedDetail" : "Selectedrequireddetail";
   const detailDiv = document.getElementById(detailId);
 
   if (!detailDiv) return;
@@ -3218,7 +3218,7 @@ async function reportUser(reportedId, reportedName) {
       html:
         `
                         <div style="text-align:left; margin-bottom:8px; color:#374151;">
-                            <p style="margin:0 0 6px 0; font-size:14px;">Por favor, selecciona el motivo del reporte y agrega una descripción si crees que es necesaria. Nuestro equipo revisará el caso.</p>
+                            <p style="margin:0 0 6px 0; font-size:14px;">Por favor, selecciona el motivo del reporte y agrega una descripción si crees que es necesaria. nuestro equipo revisará el caso.</p>
                         </div>
                         <div style="margin-top:6px; text-align:left;">
                             <label for="swal-motivo" style="display:block; font-weight:600; margin-bottom:6px;">Motivo</label>
@@ -3229,7 +3229,7 @@ async function reportUser(reportedId, reportedName) {
         `</select>
                         </div>
                         <div style="margin-top:12px; text-align:left;">
-                            <label for="swal-descripcion" style="display:block; font-weight:600; margin-bottom:6px;">Descripción adicional <span style=\"font-weight:400; font-size:12px; color:#6b7280;\">(opcional)</span></label>
+                            <label for="swal-descripcion" style="display:block; font-weight:600; margin-bottom:6px;">Descripción adicional <span style=\"font-weight:400; font-size:12px; color:#6b7280;\">(Opcional)</span></label>
                             <textarea id="swal-descripcion" rows="5" maxlength="500" placeholder="Añade más contexto: qué pasó, enlaces, capturas o mensajes relevantes (máx. 500 caracteres)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #d1d5db; resize:vertical; font-size:14px;"></textarea>
                             <div id="swal-charcount" style="text-align:right; font-size:12px; color:#6b7280; margin-top:6px;">0/500</div>
                         </div>
@@ -3426,7 +3426,7 @@ async function mostrarFormularioSolicitudDetallada(
                                     <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
                                         ${t("requestModal.duration")}
                                     </label>
-                                    <input type="number" id="duracionEstimada" min="15" step="15" placeholder="${t("requestModal.durationPlaceholder")}" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151;">
+                                    <input type="number" id="duracionEstimada" min="15" step="15" placeholder="${T("requestModal.durationPlaceholder")}" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151;">
                                 </div>
                                 <div>
                                     <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
@@ -3445,7 +3445,7 @@ async function mostrarFormularioSolicitudDetallada(
                                 <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
                                     ${t("requestModal.additionalMessage")}
                                 </label>
-                                <textarea id="mensajeAdicional" rows="3" placeholder="${t("requestModal.messagePlaceholder")}" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; resize: vertical; font-family: inherit;"></textarea>
+                                <textarea id="mensajeAdicional" rows="3" placeholder="${T("requestModal.messagePlaceholder")}" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; resize: vertical; font-family: inherit;"></textarea>
                             </div>
                         </div>
                     `,
@@ -3840,7 +3840,7 @@ function mostrarSolicitudesEnDropdown(solicitudes) {
                         <div class="flex items-start gap-3">
                             ${
                               solicitud.foto_solicitante
-                                ? `<img src="${solicitud.foto_solicitante}" alt="${nombreCompleto}" class="w-12 h-12 rounded-full object-cover flex-shrink-0" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                ? `<img src="${solicitud.foto_solicitante}" alt="${Nombrecompleto}" class="w-12 h-12 rounded-full object-cover flex-shrink-0" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 items-center justify-center text-white font-bold text-lg flex-shrink-0" style="display:none;">
                                     ${inicial}
                                    </div>`
@@ -4077,7 +4077,7 @@ function mostrarSolicitudesEnviadas(solicitudes) {
                                   imagenUrl
                                     ? `<img src="${imagenUrl}"
                                          class="w-16 h-16 rounded-full object-cover border-2 border-blue-500 shadow-md"
-                                         alt="${nombreCompleto}"
+                                         alt="${Nombrecompleto}"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                      <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full items-center justify-center text-white font-bold text-xl shadow-md hidden">
                                         ${initials}
@@ -4132,7 +4132,7 @@ function mostrarEstadoVacioEnviadas() {
                         <h3 class="text-lg font-semibold text-gray-700 mb-2">No tienes solicitudes enviadas</h3>
                         <p class="text-gray-500 mb-4">Busca usuarios y envíales solicitudes de intercambio</p>
                         <button onclick="window.location.href='Descubrir.html'" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                        Explorar Usuarios
+                        Explorar usuarios
                         </button>
                     </div>
                 </div>
@@ -4341,7 +4341,7 @@ function mostrarConversacionesDashboard(conversaciones) {
                                 : tieneImagen
                                 ? `<img src="${conv.imagenUrl_contacto}"
                                      class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
-                                     alt="${nombreContacto}"
+                                     alt="${Nombrecontacto}"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                  <div class="w-12 h-12 ${colorClass} rounded-full items-center justify-center text-white font-semibold shadow-sm hidden">
                                     ${initials}
@@ -4466,7 +4466,7 @@ function actualizarHeaderChatDashboard(conv) {
     : tieneImagen
     ? `<img src="${conv.imagenUrl_contacto}"
               class="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-white shadow-sm"
-              alt="${nombreContacto}"
+              alt="${Nombrecontacto}"
               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
          <div class="w-10 h-10 md:w-12 md:h-12 ${colorClass} rounded-full items-center justify-center text-white font-bold text-sm md:text-base hidden shadow-sm">
             ${initials}
@@ -4483,13 +4483,13 @@ function actualizarHeaderChatDashboard(conv) {
     ? `<button id="vaciarMensajesBtn" class="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-all" title="Vaciar chat">
          <span class="iconify" data-icon="mdi:delete-sweep" data-width="22"></span>
        </button>`
-    : `<button id="verPerfilBtnDashboard" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-all" title="${t("messages.viewProfile")}">
+    : `<button id="verPerfilBtnDashboard" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-all" title="${T("messages.viewProfile")}">
            <span class="iconify" data-icon="mdi:account-circle" data-width="22"></span>
        </button>
-       <button id="VideoLlamada" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-all" title="${t("messages.videoCall")}">
+       <button id="VideoLlamada" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-all" title="${T("messages.videoCall")}">
            <span class="iconify" data-icon="mdi:video" data-width="22"></span>
        </button>
-       <button id="finalizarIntercambioBtn" class="p-2 text-red-600 hover:bg-red-50 rounded-full transition-all" title="${t("messages.finishExchange")}">
+       <button id="finalizarIntercambioBtn" class="p-2 text-red-600 hover:bg-red-50 rounded-full transition-all" title="${T("messages.finishExchange")}">
            <span class="iconify" data-icon="mdi:check-circle" data-width="22"></span>
        </button>
        <button id="vaciarMensajesBtn" class="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-all" title="Vaciar chat">
@@ -4612,7 +4612,7 @@ function mostrarMensajesDashboard(mensajes) {
   if (!mensajes || mensajes.length === 0) {
     container.innerHTML = `
                     <div class="flex items-center justify-center h-full text-gray-400">
-                        <p class="text-sm">No hay mensajes aún. ¡Envía el primero!</p>
+                        <p class="text-sm">No hay mensajes aún. ¡envía el primero!</p>
                     </div>
                 `;
     return;
@@ -4672,7 +4672,7 @@ function mostrarMensajesDashboard(mensajes) {
       const contenidoMostrado = msg.contenido_editado || msg.contenido;
       const badgeEdicion =
         veceEditado > 0
-          ? `<span class="text-[10px] opacity-70 ml-1 italic">(editado)</span>`
+          ? `<span class="text-[10px] opacity-70 ml-1 italic">(Editado)</span>`
           : "";
       const animationClass =
         esUltimo && !fueReRenderizado ? "message-enter" : "";
@@ -4788,7 +4788,7 @@ function renderAdjuntosHTML(adjuntos) {
   // Imágenes que no son thumbnails de vídeo
   for (const img of images) {
     if (usedThumbs.has(img.url)) continue;
-    parts.push(`<div class="mt-2"><img src="${img.url}" alt="adjunto" class="max-w-xs rounded cursor-pointer" onclick="openImageFullscreen('${img.url}')"></div>`);
+    parts.push(`<div class="mt-2"><img src="${img.url}" alt="Adjunto" class="max-w-xs rounded cursor-pointer" onclick="openImageFullscreen('${img.url}')"></div>`);
   }
 
   // Documentos: tarjeta de descarga con icono SVG según tipo
@@ -5268,7 +5268,7 @@ async function uploadSelectedFiles(filesArray) {
         mime: resp.mime || file.type,
         nombre_original: resp.nombre_original || file.name,
         tamano_bytes: resp.tamano_bytes || file.size,
-        tipo: file.type && file.type.startsWith("video/") ? "video" : "image",
+        tipo: file.type && file.type.startsWith("video/") ? "video" : "Image",
       };
       uploaded.push(mainMeta);
       if (thumbMeta) uploaded.push(thumbMeta);
@@ -5630,7 +5630,7 @@ async function vaciarMensajesParaMi() {
                             ¿Estás seguro de que deseas eliminar todos los mensajes de la conversación con <strong>${nombreContacto}</strong>?
                         </p>
                         <p style="font-size: 14px; color: #6b7280; margin-bottom: 0;">
-                            Esta acción solo eliminará los mensajes para ti. El otro usuario seguirá viendo los mensajes.
+                            Esta acción solo eliminará los mensajes para ti. el otro usuario seguirá viendo los mensajes.
                         </p>
                     </div>
                 `,
@@ -6075,11 +6075,11 @@ function mostrarModalCalificacionDashboard(
                         <!-- Campo de comentario -->
                         <div class="mb-6">
                             <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">
-                                Comentario <span style="color: #94a3b8; font-weight: 400;">(opcional)</span>
+                                Comentario <span style="color: #94a3b8; font-weight: 400;">(Opcional)</span>
                             </label>
                             <textarea id="comentarioCalificacionDashboard" rows="3" maxlength="500"
                                       style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #1e293b; resize: none; font-family: inherit; transition: border-color 0.15s;"
-                                      placeholder="Comparte tu experiencia con ${nombrePersona}..."
+                                      placeholder="Comparte tu experiencia con ${nombrepersona}..."
                                       onfocus="this.style.borderColor='#3b82f6'; this.style.outline='none';"
                                       onblur="this.style.borderColor='#cbd5e1';"></textarea>
                             <p style="margin: 6px 0 0; font-size: 12px; color: #94a3b8;">Máximo 500 caracteres</p>
@@ -6092,7 +6092,7 @@ function mostrarModalCalificacionDashboard(
                             Omitir
                         </button>
                         <button id="btnEnviarCalificacionDashboard" style="padding: 9px 18px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 500; font-size: 14px; cursor: pointer; transition: all 0.15s; box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);" disabled>
-                            Enviar Calificación
+                            Enviar calificación
                         </button>
                     </div>
 
@@ -6509,7 +6509,7 @@ function mostrarModalCalificacionDashboard(
                                     No se pudo conectar con el servidor
                                 </p>
                                 <p style="color: #6b7280; font-size: 13px;">
-                                    Tu calificación no fue guardada. Por favor, intenta nuevamente.
+                                    Tu calificación no fue guardada. por favor, intenta nuevamente.
                                 </p>
                             </div>
                         `,
@@ -6588,11 +6588,11 @@ function mostrarMenuContextual(
   const borrarTodosBtn = menu.querySelector('[data-action="borrar-todos"]');
   const borrarMiBtn = menu.querySelector('[data-action="borrar-mi"]');
 
-  if (editarBtn) editarBtn.style.display = puedeEditar ? "flex" : "none";
+  if (editarBtn) editarBtn.style.display = puedeEditar ? "flex" : "None";
   if (borrarTodosBtn)
-    borrarTodosBtn.style.display = puedeBorrarParaTodos ? "flex" : "none";
+    borrarTodosBtn.style.display = puedeBorrarParaTodos ? "flex" : "None";
   if (borrarMiBtn)
-    borrarMiBtn.style.display = puedeBorrarParaMi ? "flex" : "none";
+    borrarMiBtn.style.display = puedeBorrarParaMi ? "flex" : "None";
 
   // Ajustar posición del menú para que no se salga de la pantalla
   const menuWidth = 200; // ancho aproximado del menú
@@ -6811,7 +6811,7 @@ window.addEventListener("beforeunload", () => {
   // Add message to chat
   function addMessage(content, isUser = false) {
     const messageDiv = document.createElement("div");
-    messageDiv.className = `ai-message ${isUser ? "user" : "bot"}`;
+    messageDiv.className = `ai-message ${isUser ? "user" : "Bot"}`;
 
     const icon = isUser ? "mdi:account" : "mdi:robot-happy";
 
@@ -7106,7 +7106,7 @@ window.addEventListener("beforeunload", () => {
           for (const line of lines) {
             try {
               const lineData = JSON.parse(line);
-              // Handle n8n streaming format: {"type":"item","content":"..."}
+              // Handle n8n streaming format: {"type":"Item","content":"..."}
               if (lineData.content) {
                 accumulatedText += lineData.content;
                 validJsonFound = true;
@@ -8043,7 +8043,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
         <div class="text-center">
           <span class="iconify text-gray-300 mx-auto mb-4" data-icon="mdi:clipboard-text-off-outline" style="font-size:64px;"></span>
           <p class="text-gray-500 font-medium">No hay órdenes de trabajo disponibles${!esAdmin && _ubicacionUsuarioActual ? ` en tu zona (${_ubicacionUsuarioActual})` : ''}</p>
-          ${esAdmin ? '<p class="text-gray-400 text-sm mt-1">Haz clic en &ldquo;Nueva Orden&rdquo; para crear una</p>' : ''}
+          ${esAdmin ? '<p class="text-gray-400 text-sm mt-1">Haz clic en &ldquo;nueva orden&rdquo; para crear una</p>' : ''}
         </div>
       </div>`;
     return;
@@ -8064,7 +8064,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
     // Badge de restricción por ubicación (solo visible para admin)
     const idOrden = o.id_orden || o.id;
     const restriccionBadge = esAdmin && o.restringir_por_ubicacion
-      ? `<div class="mx-5 mb-2 flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg px-2.5 py-1 text-[10px] font-semibold" title="Solo usuarios de: ${escapeHtml(o.ubicacion_obra || o.ubicacion || 'ubicación no definida')}">
+      ? `<div class="mx-5 mb-2 flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg px-2.5 py-1 text-[10px] font-semibold" title="Solo usuarios de: ${escapehtml(o.ubicacion_obra || o.ubicacion || 'ubicación no definida')}">
            <span class="iconify shrink-0" data-icon="mdi:map-marker-lock" style="font-size:12px;"></span>
            Solo zona coincidente
          </div>`
@@ -8254,7 +8254,7 @@ async function guardarOrdenTrabajo(event) {
     });
 
     const url    = id ? `${API_BASE}/ordenes-trabajo/${id}` : `${API_BASE}/ordenes-trabajo`;
-    const method = id ? 'PUT' : 'POST';
+    const method = id ? 'PUT' : 'Post';
 
     const res = await fetch(url, { method, headers, body });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -8312,8 +8312,8 @@ async function cancelarOrden(id) {
             <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center mb-4">
               <span class="iconify text-2xl" data-icon="mdi:close-circle-outline"></span>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Cancelar Orden</h3>
-            <p class="text-sm text-gray-500 mb-6">¿Seguro que deseas cancelar esta orden de trabajo? Esta acción no se puede deshacer.</p>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Cancelar orden</h3>
+            <p class="text-sm text-gray-500 mb-6">¿Seguro que deseas cancelar esta orden de trabajo? esta acción no se puede deshacer.</p>
             <div class="flex gap-3 w-full">
               <button id="ot-cancel-no" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors">No, mantener</button>
               <button id="ot-cancel-yes" class="flex-1 px-4 py-2.5 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 shadow-lg shadow-orange-200 transition-all">Sí, cancelar</button>
@@ -8373,8 +8373,8 @@ async function verDetalleOrden(id) {
       ${orden.descripcion ? `<div><span class="font-semibold text-gray-800">Descripción:</span><p class="text-gray-600 mt-0.5">${escapeHtml(orden.descripcion)}</p></div>` : ''}
       ${(orden.ubicacion || orden.ubicacion_obra) ? `<div><span class="font-semibold text-gray-800">Ubicación:</span><p class="text-gray-600 mt-0.5">${escapeHtml(orden.ubicacion || orden.ubicacion_obra)}</p></div>` : ''}
       <div class="grid grid-cols-2 gap-3">
-        <div><span class="font-semibold text-gray-800">Fecha Inicio:</span><p class="text-gray-600 mt-0.5">${fechaInicio}</p></div>
-        <div><span class="font-semibold text-gray-800">Fecha Fin:</span><p class="text-gray-600 mt-0.5">${fechaFin}</p></div>
+        <div><span class="font-semibold text-gray-800">Fecha inicio:</span><p class="text-gray-600 mt-0.5">${fechaInicio}</p></div>
+        <div><span class="font-semibold text-gray-800">Fecha fin:</span><p class="text-gray-600 mt-0.5">${fechaFin}</p></div>
       </div>
       ${(orden.especialidad || orden.nombre_categoria) ? `<div><span class="font-semibold text-gray-800">Especialidad:</span><p class="text-gray-600 mt-0.5">${escapeHtml(orden.especialidad || orden.nombre_categoria)}</p></div>` : ''}
       <div class="grid grid-cols-2 gap-3">
@@ -8382,7 +8382,7 @@ async function verDetalleOrden(id) {
         <div><span class="font-semibold text-gray-800">Estado:</span><p class="text-gray-600 mt-0.5">${estadoLabels[orden.estado] || orden.estado || '—'}</p></div>
       </div>
       <div class="grid grid-cols-2 gap-3">
-        <div><span class="font-semibold text-gray-800">Máx. Postulantes:</span><p class="text-gray-600 mt-0.5">${orden.max_postulantes || 1}</p></div>
+        <div><span class="font-semibold text-gray-800">Máx. postulantes:</span><p class="text-gray-600 mt-0.5">${orden.max_postulantes || 1}</p></div>
         <div><span class="font-semibold text-gray-800">Postulantes:</span><p class="text-gray-600 mt-0.5">${orden.total_postulaciones || 0} / ${orden.max_postulantes || 1}</p></div>
       </div>
 
@@ -8391,7 +8391,7 @@ async function verDetalleOrden(id) {
         <button onclick="descargarPDFOrden(${id})"
           class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-red-50 hover:bg-red-100 text-red-600 font-medium text-sm rounded-xl transition-colors border border-red-200">
           <span class="iconify" data-icon="mdi:file-pdf-box" style="font-size:18px;"></span>
-          Descargar PDF de la orden
+          Descargar pdf de la orden
         </button>
       </div>
 
@@ -8475,13 +8475,7 @@ async function verDetalleOrden(id) {
 
         // ── Botón Ver Perfil (SCRUM-25) ─────────────────────────────────────────
         const idUsuarioPostulante = p.usuario_id || p.id_usuario || p.id_Usuario;
-        const btnPerfil = idUsuarioPostulante
-          ? `<button onclick="window.abrirModalPerfilPostulante(${idUsuarioPostulante})"
-               class="mt-2 inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[10px] font-semibold rounded-lg transition-colors border border-indigo-200">
-               <span class="iconify" data-icon="mdi:account-circle-outline" style="font-size:13px;"></span>
-               Ver perfil completo
-             </button>`
-          : '';
+        const btnPerfil = '';
 
         return `
           <div class="py-3 border-b border-gray-100 last:border-0">
@@ -8724,21 +8718,21 @@ async function postularseOrden(id) {
                 <p class="text-xs text-gray-400 mt-0.5 line-clamp-1">${titulo}</p>
               </div>
             </div>
-            <label class="text-sm font-medium text-gray-700 mb-1.5">Mensaje <span class="text-gray-400 font-normal">(opcional)</span></label>
+            <label class="text-sm font-medium text-gray-700 mb-1.5">Mensaje <span class="text-gray-400 font-normal">(Opcional)</span></label>
             <textarea id="ot-postular-msg" rows="3"
               class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 resize-none bg-gray-50"
               placeholder="Describe tu experiencia o disponibilidad..."></textarea>
             <label class="text-sm font-medium text-gray-700 mt-3 mb-1.5 flex items-center gap-1">
               <span class="iconify text-red-500" data-icon="mdi:file-pdf-box" style="font-size:15px"></span>
-              Portafolio en PDF <span class="text-gray-400 font-normal">(opcional)</span>
+              Portafolio en PDF <span class="text-gray-400 font-normal">(Opcional)</span>
             </label>
             <label id="ot-pdf-label"
               class="flex items-center gap-2 w-full border-2 border-dashed border-gray-200 rounded-xl px-3 py-2.5 cursor-pointer hover:border-green-400 hover:bg-green-50 transition-colors bg-gray-50">
               <span class="iconify text-red-400" data-icon="mdi:file-pdf-box" style="font-size:20px"></span>
-              <span id="ot-pdf-name" class="text-xs text-gray-500 truncate flex-1">Haz clic para seleccionar un PDF...</span>
+              <span id="ot-pdf-name" class="text-xs text-gray-500 truncate flex-1">Haz clic para seleccionar un pdf...</span>
               <input type="file" id="ot-postular-portfolio" accept=".pdf,application/pdf" class="hidden" />
             </label>
-            <p class="text-xs text-gray-400 mt-1">Máximo 10 MB. El administrador podrá verlo en la lista de postulantes.</p>
+            <p class="text-xs text-gray-400 mt-1">Máximo 10 mb. el administrador podrá verlo en la lista de postulantes.</p>
             <div class="flex gap-3 mt-4">
               <button id="ot-postular-cancel" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors">Cancelar</button>
               <button id="ot-postular-confirm" class="flex-1 px-4 py-2.5 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 shadow-lg shadow-green-200 transition-all">Postularme</button>
