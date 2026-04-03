@@ -2086,6 +2086,16 @@
         /* ========================================
            MESSAGING: SOLO SCROLL INTERNO
            ======================================== */
+        body.mensajeria-activa {
+            overflow: hidden !important;
+        }
+
+        body.mensajeria-activa #mainContent {
+            height: 100dvh;
+            min-height: 0 !important;
+            overflow: hidden;
+        }
+
         #mensajesView.active {
             height: calc(100vh - 80px);
             min-height: calc(100vh - 80px);

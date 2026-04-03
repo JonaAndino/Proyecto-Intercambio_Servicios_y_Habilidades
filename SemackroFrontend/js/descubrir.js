@@ -165,9 +165,13 @@ async function navigateTo(viewName) {
   // En mensajería el scroll debe quedar dentro del contenedor de mensajes.
   const sidebarIsOpen = document.getElementById("sidebar")?.classList.contains("open");
   if (viewName === "mensajes") {
+    document.body.classList.add("mensajeria-activa");
     document.body.style.overflow = "hidden";
   } else if (!sidebarIsOpen) {
+    document.body.classList.remove("mensajeria-activa");
     document.body.style.overflow = "";
+  } else {
+    document.body.classList.remove("mensajeria-activa");
   }
 
   // Scroll al Descubrir
@@ -195,7 +199,9 @@ function closeSidebarFn() {
   mainContent.classList.remove("shifted");
   overlay.classList.remove("show");
   hamburgerBtn.classList.remove("open");
-  document.body.style.overflow = "";
+  document.body.style.overflow = document.body.classList.contains("mensajeria-activa")
+    ? "hidden"
+    : "";
 }
 
 // ========================================
