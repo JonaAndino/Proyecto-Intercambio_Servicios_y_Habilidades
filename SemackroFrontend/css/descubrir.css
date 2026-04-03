@@ -103,8 +103,11 @@
         #usersGrid {
             align-items: start;
             grid-auto-rows: min-content;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 320px));
-            justify-content: center;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 320px));
+            justify-content: start;
+            gap: 1.25rem;
+            max-width: 100% !important;
+            margin-inline: 0 !important;
         }
 
         .user-card {
@@ -114,14 +117,14 @@
             transition: all 0.3s ease;
             overflow: hidden;
             border: 1px solid #e5e7eb;
-            min-height: 520px;
+            min-height: 500px;
             display: flex;
             flex-direction: column;
             position: relative;
             align-self: start;
             width: 100%;
             max-width: 320px;
-            margin-inline: auto;
+            margin-inline: 0;
         }
 
         .user-card:hover {
