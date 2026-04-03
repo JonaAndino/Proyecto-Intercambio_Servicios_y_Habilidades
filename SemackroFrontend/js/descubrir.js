@@ -162,8 +162,18 @@ async function navigateTo(viewName) {
     closeSidebarFn();
   }
 
+  // En mensajería el scroll debe quedar dentro del contenedor de mensajes.
+  const sidebarIsOpen = document.getElementById("sidebar")?.classList.contains("open");
+  if (viewName === "mensajes") {
+    document.body.style.overflow = "hidden";
+  } else if (!sidebarIsOpen) {
+    document.body.style.overflow = "";
+  }
+
   // Scroll al Descubrir
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (viewName !== "mensajes") {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 }
 
 // Función para abrir el sidebar

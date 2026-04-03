@@ -2078,3 +2078,54 @@
             70% { box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
             100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
         }
+
+        /* ========================================
+           MESSAGING: SOLO SCROLL INTERNO
+           ======================================== */
+        #mensajesView.active {
+            height: calc(100vh - 80px);
+            min-height: calc(100vh - 80px);
+            overflow: hidden;
+            margin-bottom: 0 !important;
+        }
+
+        #mensajesView.active > div,
+        #mensajesView.active > div > div,
+        #mensajesView.active > div > div > div,
+        #mensajesView.active #chat-layout-dashboard,
+        #mensajesView.active #chatColumn,
+        #mensajesView.active #chat-activo-dashboard {
+            height: 100% !important;
+            min-height: 0 !important;
+            overflow: hidden;
+        }
+
+        #mensajesView.active #mensajes-container-dashboard {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto !important;
+            overscroll-behavior: contain;
+        }
+
+        #mensajesView.active #chat-input-dashboard {
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 767px) {
+            #mensajesView.active {
+                height: calc(100vh - 72px);
+                min-height: calc(100vh - 72px);
+            }
+
+            #mensajesView.active #chat-input-dashboard {
+                position: sticky;
+                bottom: 0;
+                left: auto;
+                right: auto;
+                z-index: 30;
+            }
+
+            #mensajesView.active #mensajes-container-dashboard {
+                padding-bottom: 12px;
+            }
+        }
