@@ -1538,7 +1538,7 @@
                 if (selEsp) {
                     selEsp.innerHTML = `<option value="">${t('reports.specialty')}</option>`;
                     [...especialidadesUnicas].sort().forEach(s => {
-                        selEsp.innerHTML += `<option value="${Escapehtml(s)}">${escapeHtml(s)}</option>`;
+                        selEsp.innerHTML += `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`;
                     });
                 }
 
@@ -1546,7 +1546,7 @@
                 if (selUbi) {
                     selUbi.innerHTML = `<option value="">${t('reports.location')}</option>`;
                     [...ubicacionesUnicas].sort().forEach(u => {
-                        selUbi.innerHTML += `<option value="${Escapehtml(u)}">${escapeHtml(u)}</option>`;
+                        selUbi.innerHTML += `<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`;
                     });
                 }
 
@@ -1783,7 +1783,7 @@
                         <button onclick="adminVerPostulaciones(${idOrden})" title="Ver postulantes"
                             class="mt-1 text-[10px] text-purple-500 hover:text-purple-700 hover:underline transition">Ver</button>
                     </td>
-                    <td class="py-3 px-3 border-r border-gray-100 text-center" title="${O.restringir_por_ubicacion ? 'Solo zona: ' + ubic : 'Visible para todos'}">
+                    <td class="py-3 px-3 border-r border-gray-100 text-center" title="${o.restringir_por_ubicacion ? 'Solo zona: ' + ubic : 'Visible para todos'}">
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" class="sr-only peer" ${o.restringir_por_ubicacion ? 'checked' : ''}
                                 onchange="adminToggleRestriccionUbicacion(${idOrden}, this.checked)">

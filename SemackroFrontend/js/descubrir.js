@@ -7392,6 +7392,9 @@ window.addEventListener("beforeunload", () => {
       console.warn("No se pudo obtener nombre de usuario:", e);
     }
 
+    // Abrir modal de inmediato para dar feedback visual aunque la señalizacion tarde.
+    abrirJitsiModal(roomId, nombreUsuario, conv.nombre_contacto || "Contacto");
+
     // Enviar notificación de llamada al otro usuario via SISTEMA DE SEÑALIZACIÓN (no chat)
     try {
       const personaIdRaw = await obtenerPersonaIdActual();
@@ -7421,7 +7424,7 @@ window.addEventListener("beforeunload", () => {
 
       // POST /api/call-signals/send
       // id_mensaje = null (no vinculamos a un mensaje de chat visible)
-      await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/call-signals/send`, {
+      fetch(`${window.APP_CONFIG.BACKEND_URL}/api/call-signals/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -7435,6 +7438,8 @@ window.addEventListener("beforeunload", () => {
             room_id: roomId,
           }),
         }),
+      }).catch((err) => {
+        console.warn("No se pudo enviar señal de videollamada (continuando):", err);
       });
       console.log(
         "✅ Señal de videollamada enviada correctamenta a ID:",
@@ -7442,11 +7447,9 @@ window.addEventListener("beforeunload", () => {
       );
     } catch (e) {
       console.error("Error enviando notificación de videollamada:", e);
-      alert("Error al conectar la llamada. Revisa la consola.");
+      // No bloquear la apertura del modal por errores de señalizacion.
+      Toast?.warning?.("Se abrio la llamada", "No se pudo notificar al contacto automaticamente");
     }
-
-    // Abrir modal y cargar Jitsi
-    abrirJitsiModal(roomId, nombreUsuario, conv.nombre_contacto || "Contacto");
   };
 
   // --- POLLING para llamadas entrantes usando call-signals ---
@@ -7570,8 +7573,9 @@ window.addEventListener("beforeunload", () => {
           displayName: nombreUsuario,
         },
         configOverwrite: {
-          startWithAudioMuted: false,
-          startWithVideoMuted: false,
+          // Evita fallos de permisos/dispositivo al entrar a la sala.
+          startWithAudioMuted: true,
+          startWithVideoMuted: true,
           // Habilitar prejoin es CLAVE para evitar el error membersOnly en muchas ocasiones
           prejoinPageEnabled: true,
           // Deshabilitar lobby explícitamente
