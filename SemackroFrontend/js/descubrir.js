@@ -4758,7 +4758,8 @@ function mostrarMensajesDashboard(mensajes) {
                                      data-message-id="${msg.id_mensaje}"
                                      data-message-content="${contenidoMostrado.replace(/"/g, "&quot;")}"
                                      data-puede-editar="${puedeEditar}"
-                                     oncontextmenu="mostrarMenuContextual(event, ${msg.id_mensaje}, '${contenidoMostrado.replace(/'/g, "\\'")}', ${puedeEditar}, ${puedeBorrarParaTodos}, ${puedeBorrarParaMi}); return false;">
+                                    data-puede-borrar-todos="${puedeBorrarParaTodos}"
+                                    data-puede-borrar-mi="${puedeBorrarParaMi}">
                                     <p class="leading-relaxed text-sm">${contenidoMostrado}</p>
                                     ${renderAdjuntosHTML(msg.adjuntos || [])}
                                     <div class="flex items-center justify-end gap-1.5 text-[10px] text-indigo-100 mt-1 opacity-90">
@@ -4783,7 +4784,8 @@ function mostrarMensajesDashboard(mensajes) {
                                      data-message-id="${msg.id_mensaje}"
                                      data-message-content="${(contenidoMostrado || "").replace(/\"/g, "&quot;")}"
                                      data-puede-editar="${puedeEditar}"
-                                     oncontextmenu="mostrarMenuContextual(event, ${msg.id_mensaje}, '${(contenidoMostrado || "").replace(/'/g, "\\'")}', ${puedeEditar}, ${puedeBorrarParaTodos}, ${puedeBorrarParaMi}); return false;">
+                                    data-puede-borrar-todos="${puedeBorrarParaTodos}"
+                                    data-puede-borrar-mi="${puedeBorrarParaMi}">
                                     <p class="text-slate-800 leading-relaxed text-sm">${contenidoMostrado}</p>
                                     ${renderAdjuntosHTML(msg.adjuntos || [])}
                                     <div class="flex items-center justify-start gap-1.5 text-[10px] text-slate-400 mt-1">
@@ -6750,17 +6752,60 @@ function agregarLongPressListeners() {
   const messages = document.querySelectorAll(".message-item");
   let longPressTimer;
 
+  const asBool = (v, fallback = false) => {
+    if (v === "true") return true;
+    if (v === "false") return false;
+    return fallback;
+  };
+
   messages.forEach((msg) => {
+    // Evitar re-vincular listeners en cada re-render del chat
+    if (msg.dataset.contextBound === "1") return;
+    msg.dataset.contextBound = "1";
+
+    // Click derecho (desktop)
+    msg.addEventListener("contextmenu", function (e) {
+      e.preventDefault();
+      const messageId = this.getAttribute("data-message-id");
+      const messageContent = this.getAttribute("data-message-content") || "";
+      const puedeEditar = asBool(this.getAttribute("data-puede-editar"), false);
+      const puedeBorrarTodos = asBool(
+        this.getAttribute("data-puede-borrar-todos"),
+        false,
+      );
+      const puedeBorrarMi = asBool(
+        this.getAttribute("data-puede-borrar-mi"),
+        true,
+      );
+
+      mostrarMenuContextual(
+        e,
+        messageId,
+        messageContent,
+        puedeEditar,
+        puedeBorrarTodos,
+        puedeBorrarMi,
+      );
+    });
+
     // Touch events para móvil
     msg.addEventListener(
       "touchstart",
       function (e) {
         const messageId = this.getAttribute("data-message-id");
         const messageContent = this.getAttribute("data-message-content");
+        const puedeEditar = asBool(this.getAttribute("data-puede-editar"), false);
+        const puedeBorrarTodos = asBool(
+          this.getAttribute("data-puede-borrar-todos"),
+          false,
+        );
+        const puedeBorrarMi = asBool(
+          this.getAttribute("data-puede-borrar-mi"),
+          true,
+        );
 
         longPressTimer = setTimeout(() => {
           const touch = e.touches[0];
-          // Si no conocemos permisos, mostramos todas las opciones posibles
           mostrarMenuContextual(
             {
               preventDefault: () => {},
@@ -6769,9 +6814,9 @@ function agregarLongPressListeners() {
             },
             messageId,
             messageContent,
-            true,
-            true,
-            true,
+            puedeEditar,
+            puedeBorrarTodos,
+            puedeBorrarMi,
           );
         }, 500);
       },
