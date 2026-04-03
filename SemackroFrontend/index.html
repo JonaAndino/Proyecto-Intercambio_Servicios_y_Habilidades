@@ -277,8 +277,7 @@
             }
 
             .hero-panel h3 {
-                opacity: 1;
-                transform: translateY(0);
+                display: none;
             }
 
             .hero-panel:nth-of-type(n+4) {
@@ -290,16 +289,35 @@
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                width: 90%;
+                width: 92%;
+                max-width: 540px;
+                padding-inline: 0.25rem;
             }
 
             .hero-content h1 {
-                font-size: 2.5rem;
+                font-size: clamp(1.55rem, 8.2vw, 2.05rem);
+                line-height: 1.14;
+                margin-bottom: 0.75rem !important;
             }
 
             .hero-content .lead {
-                font-size: 1.2rem;
-                margin-top: 1rem;
+                font-size: 0.98rem;
+                line-height: 1.35;
+                margin-top: 0.25rem;
+                margin-bottom: 1rem !important;
+            }
+
+            .hero-content .lead .hero-sub-extra {
+                display: none;
+            }
+
+            .hero-content .cta-button-accent {
+                font-size: 0.98rem;
+                padding: 0.7rem 1.2rem;
+            }
+
+            .hero-content .hero-nopayments {
+                display: none;
             }
         }
 
@@ -666,11 +684,10 @@
         <div class="hero-content">
             <h1 class="display-4 fw-bold mb-4" data-i18n="hero.title">Intercambia Habilidades<br>Desbloquea
                 Oportunidades</h1>
-            <p class="lead fs-4 mb-4" data-i18n="hero.subtitle">SEMACKRO te conecta con una comunidad global dispuesta a
-                enseñar y aprender.<br>¿Qué sabes hacer? ¿Qué quieres aprender?</p>
+            <p class="lead fs-4 mb-4" data-i18n="hero.subtitle"><span class="hero-sub-main">SEMACKRO te conecta con una comunidad global dispuesta a enseñar y aprender.</span><span class="hero-sub-extra"><br>¿Qué sabes hacer? ¿Qué quieres aprender?</span></p>
             <a href="login.html" class="btn btn-primary btn-lg cta-button-accent" id="main-cta"
                 data-i18n="hero.cta">Empieza gratis hoy</a>
-            <p class="mt-3 opacity-75"><small data-i18n="hero.nopayments">Sin Pagos. ¡Solo ganas conocimientos!</small>
+            <p class="mt-3 opacity-75 hero-nopayments"><small data-i18n="hero.nopayments">Sin Pagos. ¡Solo ganas conocimientos!</small>
             </p>
         </div>
 
@@ -1041,7 +1058,7 @@
 
                 // Hero
                 'hero.title': 'Intercambia Habilidades<br>Desbloquea Oportunidades',
-                'hero.subtitle': 'SEMACKRO te conecta con una comunidad global dispuesta a enseñar y aprender.<br>¿Qué sabes hacer? ¿Qué quieres aprender?',
+                'hero.subtitle': '<span class="hero-sub-main">SEMACKRO te conecta con una comunidad global dispuesta a enseñar y aprender.</span><span class="hero-sub-extra"><br>¿Qué sabes hacer? ¿Qué quieres aprender?</span>',
                 'hero.cta': 'Empieza gratis hoy',
                 'hero.nopayments': 'Sin pagos. ¡solo ganas conocimientos!',
 
@@ -1087,7 +1104,7 @@
 
                 // Hero
                 'hero.title': 'Exchange Skills<br>Unlock Opportunities',
-                'hero.subtitle': 'SEMACKRO connects you with a global community ready to teach and learn.<br>What can you do? What do you want to learn?',
+                'hero.subtitle': '<span class="hero-sub-main">SEMACKRO connects you with a global community ready to teach and learn.</span><span class="hero-sub-extra"><br>What can you do? What do you want to learn?</span>',
                 'hero.cta': 'Start free today',
                 'hero.nopayments': 'No payments. just knowledge!',
 
