@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkillConnect - Videollamada</title>
+    <title>SEMACKRO - Videollamada</title>
     <style>
         * {
             margin: 0;
@@ -332,45 +332,68 @@
     </style>
     <script>
         // Detectar si fue cargado en modo embed (iframe modal)
-        (function(){
-            try{
+        (function () {
+            try {
                 const params = new URLSearchParams(location.search);
-                if(params.get('embed') === '1'){
+                if (params.get('embed') === '1') {
                     document.documentElement.classList.add('embedded-iframe');
                 }
-            }catch(e){}
+            } catch (e) { }
         })();
     </script>
 
     <style>
         /* Estilos que se aplican solo cuando la página se carga dentro del modal (embed=1) */
-        html.embedded-iframe, html.embedded-iframe body {
-            height:100%;
-            min-height:100%;
+        html.embedded-iframe,
+        html.embedded-iframe body {
+            height: 100%;
+            min-height: 100%;
             background: transparent;
             display: block;
             padding: 0;
         }
-        html.embedded-iframe .container{
+
+        html.embedded-iframe .container {
             max-width: 100%;
             width: 100%;
             padding: 12px 18px;
         }
+
         /* Hacer que la interfaz de llamada aproveche el alto disponible dentro del iframe */
-        html.embedded-iframe .video-call-interface{
-            display:flex !important;
-            flex-direction:column !important;
-            width:100% !important;
+        html.embedded-iframe .video-call-interface {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
             height: calc(100vh - 24px) !important;
             max-height: none !important;
             aspect-ratio: auto !important;
             border-radius: 12px !important;
             margin: 6px auto !important;
         }
-        html.embedded-iframe .video-content{ padding: 18px !important; }
-        html.embedded-iframe .remote-video-container{ min-height: calc(100% - 140px) !important; }
-        html.embedded-iframe .local-video-mini{ width:140px !important; height:120px !important; top:18px !important; right:18px !important; }
-        html.embedded-iframe .call-controls{ position:absolute !important; left:18px !important; right:18px !important; bottom:18px !important; width:auto !important; justify-content:center !important; }
+
+        html.embedded-iframe .video-content {
+            padding: 18px !important;
+        }
+
+        html.embedded-iframe .remote-video-container {
+            min-height: calc(100% - 140px) !important;
+        }
+
+        html.embedded-iframe .local-video-mini {
+            width: 140px !important;
+            height: 120px !important;
+            top: 18px !important;
+            right: 18px !important;
+        }
+
+        html.embedded-iframe .call-controls {
+            position: absolute !important;
+            left: 18px !important;
+            right: 18px !important;
+            bottom: 18px !important;
+            width: auto !important;
+            justify-content: center !important;
+        }
     </style>
 </head>
 
@@ -441,24 +464,24 @@
     <script>
         // Backend URL y Socket.io cliente para señalización en tiempo real
         const BACKEND_URL = window.BACKEND_URL || 'http://localhost:3001';
-        
+
         // Control de throttling para ICE candidates
         let _candidateBuffer = [];
         let _candidateSendTimer = null;
         const CANDIDATE_SEND_DELAY = 2000; // Agrupar candidates durante 2 segundos
         const MAX_CANDIDATES_TO_SEND = 5; // Máximo 5 candidates por envío
-        
+
         // Función para enviar candidates con throttling
         function sendCandidateThrottled(candidate) {
             _candidateBuffer.push(candidate);
             console.log(`[ICE] Candidate buffered (${_candidateBuffer.length} in buffer)`);
-            
+
             // Si el buffer alcanza el máximo, enviar inmediatamente
             if (_candidateBuffer.length >= MAX_CANDIDATES_TO_SEND) {
                 flushCandidateBuffer();
                 return;
             }
-            
+
             // Si no hay timer activo, programar envío
             if (!_candidateSendTimer) {
                 _candidateSendTimer = setTimeout(() => {
@@ -466,24 +489,24 @@
                 }, CANDIDATE_SEND_DELAY);
             }
         }
-        
+
         // Enviar todos los candidates del buffer
         async function flushCandidateBuffer() {
             if (_candidateSendTimer) {
                 clearTimeout(_candidateSendTimer);
                 _candidateSendTimer = null;
             }
-            
+
             if (_candidateBuffer.length === 0) return;
-            
+
             // Tomar solo los primeros MAX_CANDIDATES_TO_SEND
             const candidatesToSend = _candidateBuffer.splice(0, MAX_CANDIDATES_TO_SEND);
             console.log(`[ICE] Flushing ${candidatesToSend.length} candidates`);
-            
+
             // Enviar el primer candidate (los demás se descartan por simplicidad)
             // En producción podrías enviarlos todos o el mejor
             const bestCandidate = candidatesToSend[0];
-            
+
             try {
                 await sendSignalViaPolling('candidate', {
                     candidate: JSON.stringify(bestCandidate)
@@ -492,7 +515,7 @@
             } catch (e) {
                 console.error('[ERROR] Failed to send candidate:', e);
             }
-            
+
             // Si quedan más en el buffer, programar otro envío
             if (_candidateBuffer.length > 0) {
                 _candidateSendTimer = setTimeout(() => {
@@ -547,7 +570,7 @@
             try {
                 const params = new URLSearchParams(location.search);
                 return params.get('receiver_id') || null;
-            } catch(e) {
+            } catch (e) {
                 return null;
             }
         }
@@ -557,7 +580,7 @@
             try {
                 const params = new URLSearchParams(location.search);
                 return params.get('sender_id') || currentUserId;
-            } catch(e) {
+            } catch (e) {
                 return currentUserId;
             }
         }
@@ -566,7 +589,7 @@
         async function sendSignalViaPolling(signalType, payloadData, maxRetries = 5, delayMs = 300) {
             const senderId = getSenderIdFromUrl();
             const receiverId = getReceiverIdFromUrl();
-            
+
             const payload = {
                 id_mensaje: window.callMessageId || null,
                 room_id: currentRoomId,
@@ -615,21 +638,21 @@
             if (!currentUserId) currentUserId = window.currentUserIdGlobal || generateUserId();
 
             // Si la iframe recibió roomId o id_mensaje como query params, respetarlos (created by parent)
-            try{
+            try {
                 const params = new URLSearchParams(location.search);
                 const urlRoom = params.get('roomId');
                 const urlIdMensaje = params.get('id_mensaje') || params.get('idMensaje');
-                if(urlRoom) currentRoomId = urlRoom; else currentRoomId = generateRoomId();
-                if(urlIdMensaje) window.callMessageId = urlIdMensaje;
-            }catch(e){
+                if (urlRoom) currentRoomId = urlRoom; else currentRoomId = generateRoomId();
+                if (urlIdMensaje) window.callMessageId = urlIdMensaje;
+            } catch (e) {
                 currentRoomId = generateRoomId();
             }
 
             // registrar userId en socket para que el server pueda targetear este usuario
-            try{ if(socket && currentUserId) socket.emit('register', { userId: currentUserId }); }catch(e){}
+            try { if (socket && currentUserId) socket.emit('register', { userId: currentUserId }); } catch (e) { }
 
             // unir sala en socket.io
-            try { if (socket && currentRoomId) socket.emit('join', currentRoomId); } catch(e){}
+            try { if (socket && currentRoomId) socket.emit('join', currentRoomId); } catch (e) { }
 
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({
@@ -639,7 +662,7 @@
 
                 document.getElementById('localVideo').srcObject = localStream;
                 const _pc = document.getElementById('phoneContainer');
-                if(_pc) _pc.style.display = 'none';
+                if (_pc) _pc.style.display = 'none';
                 document.getElementById('videoCallInterface').classList.add('active');
 
                 callStartTime = Date.now();
@@ -657,7 +680,7 @@
                     remoteVid.srcObject = event.streams[0];
                     document.getElementById('callInfo').classList.remove('active');
                     document.getElementById('callStatus').textContent = 'Llamada en curso';
-                    
+
                     // Monitorear el track para detectar cuando se vuelve inactivo (cámara apagada)
                     event.track.onended = () => {
                         console.log('[REMOTE] Track ended, showing black screen');
@@ -666,7 +689,7 @@
                             remoteVid.style.backgroundColor = '#000000';
                         }
                     };
-                    
+
                     event.track.onmute = () => {
                         console.log('[REMOTE] Track muted, showing black screen');
                         if (event.track.kind === 'video') {
@@ -674,7 +697,7 @@
                             remoteVid.style.backgroundColor = '#000000';
                         }
                     };
-                    
+
                     event.track.onunmute = () => {
                         console.log('[REMOTE] Track unmuted, restoring video');
                         if (event.track.kind === 'video') {
@@ -696,8 +719,8 @@
 
 
                 // Enviar candidates usando call-signals con throttling
-                peerConnection.onicecandidate = function(event){
-                    if(event.candidate){
+                peerConnection.onicecandidate = function (event) {
+                    if (event.candidate) {
                         console.log('[ICE] New ICE candidate generated');
                         sendCandidateThrottled(event.candidate);
                     } else {
@@ -708,14 +731,14 @@
                 };
 
                 // Enviar offer usando call-signals
-                try{
+                try {
                     const receiverId = getReceiverIdFromUrl();
                     await sendSignalViaPolling('offer', {
                         offer: JSON.stringify(offer)
                     });
-                    
+
                     console.log('Offer sent via polling, roomId:', currentRoomId);
-                }catch(e){
+                } catch (e) {
                     console.error('Error sending offer:', e);
                 }
 
@@ -731,7 +754,7 @@
                 console.error('Error:', error);
                 alert('Error: ' + error.message);
                 const _pc_err = document.getElementById('phoneContainer');
-                if(_pc_err) _pc_err.style.display = 'flex';
+                if (_pc_err) _pc_err.style.display = 'flex';
             }
         }
 
@@ -801,25 +824,25 @@
                 try {
                     const videoTracks = localStream.getVideoTracks();
                     videoTracks.forEach(t => { t.stop(); localStream.removeTrack(t); });
-                    
+
                     // Reemplazar con track negro en la conexión peer
                     if (peerConnection) {
                         // CORREGIDO: Buscar el sender que tiene un track de video O que originalmente era para video
-                        const sender = peerConnection.getSenders().find(s => 
-                            (s.track && s.track.kind === 'video') || 
+                        const sender = peerConnection.getSenders().find(s =>
+                            (s.track && s.track.kind === 'video') ||
                             (s.track === null && s.track !== undefined)
                         );
-                        
+
                         // Si no lo encontramos así, buscar por el transceiver
                         let videoSender = sender;
                         if (!videoSender) {
                             const transceivers = peerConnection.getTransceivers();
-                            const videoTransceiver = transceivers.find(t => 
+                            const videoTransceiver = transceivers.find(t =>
                                 t.sender && (t.sender.track?.kind === 'video' || t.direction.includes('send'))
                             );
                             if (videoTransceiver) videoSender = videoTransceiver.sender;
                         }
-                        
+
                         if (videoSender && typeof videoSender.replaceTrack === 'function') {
                             // Crear un canvas negro para enviar al receptor
                             const canvas = document.createElement('canvas');
@@ -830,12 +853,12 @@
                             ctx.fillRect(0, 0, canvas.width, canvas.height);
                             const blackStream = canvas.captureStream();
                             const blackTrack = blackStream.getVideoTracks()[0];
-                            
+
                             await videoSender.replaceTrack(blackTrack);
                             console.log('[CAMERA] Replaced with black screen for remote viewer');
                         }
                     }
-                    
+
                     // Mostrar pantalla negra en video local
                     const localVid = document.getElementById('localVideo');
                     if (localVid) {
@@ -851,32 +874,32 @@
                     if (newTrack) {
                         if (!localStream) localStream = new MediaStream();
                         localStream.addTrack(newTrack);
-                        
+
                         // Restaurar video local
                         const localVid = document.getElementById('localVideo');
                         if (localVid) {
                             localVid.style.backgroundColor = 'transparent';
                             localVid.srcObject = localStream;
                         }
-                        
+
                         if (peerConnection) {
                             // CORREGIDO: Buscar específicamente el sender de video
-                            let videoSender = peerConnection.getSenders().find(s => 
+                            let videoSender = peerConnection.getSenders().find(s =>
                                 s.track && s.track.kind === 'video'
                             );
-                            
+
                             // Si no hay sender con track de video, buscar en transceivers
                             if (!videoSender) {
                                 const transceivers = peerConnection.getTransceivers();
-                                const videoTransceiver = transceivers.find(t => 
-                                    t.sender && t.receiver && 
+                                const videoTransceiver = transceivers.find(t =>
+                                    t.sender && t.receiver &&
                                     (t.receiver.track?.kind === 'video' || t.direction.includes('video') || t.mid)
                                 );
                                 if (videoTransceiver) {
                                     videoSender = videoTransceiver.sender;
                                 }
                             }
-                            
+
                             if (videoSender && typeof videoSender.replaceTrack === 'function') {
                                 await videoSender.replaceTrack(newTrack);
                                 console.log('[CAMERA] Camera re-enabled and track replaced');
@@ -904,12 +927,12 @@
         function endCall() {
             console.log('[CLEANUP] Starting endCall...');
             const roomIdToEnd = currentRoomId;
-            
+
             // Enviar señal de finalización (silenciosamente, sin romper el flujo)
             if (roomIdToEnd) {
                 sendSignalViaPolling('call_ended', { reason: 'user_hangup' }, 1, 100)
                     .then(() => console.log('[CLEANUP] call_ended sent'))
-                    .catch(() => {}); // Ignorar errores de red
+                    .catch(() => { }); // Ignorar errores de red
             }
 
             if (localStream) {
@@ -930,7 +953,7 @@
                 clearInterval(_candidatesPollHandle);
                 _candidatesPollHandle = null;
             }
-            
+
             // Limpiar buffer de candidates
             if (_candidateSendTimer) {
                 clearTimeout(_candidateSendTimer);
@@ -941,16 +964,16 @@
 
             document.getElementById('videoCallInterface').classList.remove('active');
             const _pc_end = document.getElementById('phoneContainer');
-            if(_pc_end) _pc_end.style.display = 'flex';
+            if (_pc_end) _pc_end.style.display = 'flex';
             document.getElementById('localVideo').srcObject = null;
             document.getElementById('remoteVideo').srcObject = null;
 
             // Avisar al padre (host) para que cierre el modal
-            try{
+            try {
                 if (window.parent && window.parent !== window) {
                     window.parent.postMessage({ cmd: 'endCall', roomId: currentRoomId }, '*');
                 }
-            }catch(e){ /* ignore */ }
+            } catch (e) { /* ignore */ }
 
             saveCallLog('ended', roomIdToEnd);
             currentRoomId = null; // Resetear para evitar conflictos en próxima llamada
@@ -984,66 +1007,66 @@
         // Poll para candidatos entrantes usando call-signals
         const _addedCandidateIds = new Set();
         let _candidatesPollHandle = null;
-        async function pollForCandidates(roomId){
+        async function pollForCandidates(roomId) {
             // limpiar poll previo
-            if(_candidatesPollHandle) clearInterval(_candidatesPollHandle);
-            
+            if (_candidatesPollHandle) clearInterval(_candidatesPollHandle);
+
             const myUserId = getSenderIdFromUrl();
-            
-            _candidatesPollHandle = setInterval(async ()=>{
-                try{
+
+            _candidatesPollHandle = setInterval(async () => {
+                try {
                     // Obtener señales de la sala (candidates y otras señales)
                     const resp = await fetch(BACKEND_URL + `/api/call-signals/room/${roomId}/${myUserId}`);
                     const json = await resp.json();
                     const signals = (json && json.data) ? json.data : [];
-                    
-                    if(signals.length > 0) {
+
+                    if (signals.length > 0) {
                         console.log(`[POLL] Received ${signals.length} signals for room ${roomId}`);
                     }
-                    
-                    for(const signal of signals){
-                        if(!signal.id) continue;
-                        if(_addedCandidateIds.has(signal.id)) continue;
-                        
+
+                    for (const signal of signals) {
+                        if (!signal.id) continue;
+                        if (_addedCandidateIds.has(signal.id)) continue;
+
                         // Procesar solo candidates del otro usuario
-                        if(signal.signal_type === 'candidate' && signal.sender_id != myUserId){
-                            try{
+                        if (signal.signal_type === 'candidate' && signal.sender_id != myUserId) {
+                            try {
                                 const payload = typeof signal.payload === 'string' ? JSON.parse(signal.payload) : signal.payload;
                                 const candObj = typeof payload.candidate === 'string' ? JSON.parse(payload.candidate) : payload.candidate;
-                                
-                                if(peerConnection && candObj){
+
+                                if (peerConnection && candObj) {
                                     await peerConnection.addIceCandidate(new RTCIceCandidate(candObj));
                                     console.log('ICE candidate added from signal', signal.id);
                                 }
                                 _addedCandidateIds.add(signal.id);
-                            }catch(e){ console.warn('addIceCandidate failed', e); }
+                            } catch (e) { console.warn('addIceCandidate failed', e); }
                         }
-                        
+
                         // Procesar answer si llega
-                        if(signal.signal_type === 'answer' && signal.sender_id != myUserId){
-                            try{
+                        if (signal.signal_type === 'answer' && signal.sender_id != myUserId) {
+                            try {
                                 const payload = typeof signal.payload === 'string' ? JSON.parse(signal.payload) : signal.payload;
                                 const answerObj = typeof payload.answer === 'string' ? JSON.parse(payload.answer) : payload.answer;
-                                
-                                if(peerConnection && answerObj && peerConnection.signalingState !== 'stable'){
+
+                                if (peerConnection && answerObj && peerConnection.signalingState !== 'stable') {
                                     await peerConnection.setRemoteDescription(new RTCSessionDescription(answerObj));
                                     console.log('Answer received and set');
                                 }
                                 _addedCandidateIds.add(signal.id);
-                            }catch(e){ console.warn('setRemoteDescription answer failed', e); }
+                            } catch (e) { console.warn('setRemoteDescription answer failed', e); }
                         }
-                        
+
                         // Detectar cuando el otro usuario finaliza la llamada
-                        if(signal.signal_type === 'call_ended' && signal.sender_id != myUserId){
+                        if (signal.signal_type === 'call_ended' && signal.sender_id != myUserId) {
                             console.log('[CALL] Remote user ended the call');
                             _addedCandidateIds.add(signal.id);
                             // Cerrar la llamada en este lado también
                             endCall();
                             return; // Salir del loop
                         }
-                        
+
                         // Detectar cuando el otro usuario rechaza la llamada
-                        if(signal.signal_type === 'call_rejected' && signal.sender_id != myUserId){
+                        if (signal.signal_type === 'call_rejected' && signal.sender_id != myUserId) {
                             console.log('[CALL] Remote user rejected the call');
                             _addedCandidateIds.add(signal.id);
                             // Cerrar la llamada en este lado también
@@ -1051,7 +1074,7 @@
                             return; // Salir del loop
                         }
                     }
-                }catch(e){ /* ignore poll errors */ }
+                } catch (e) { /* ignore poll errors */ }
             }, 1000);
         }
 
@@ -1068,51 +1091,51 @@
                     _pendingRemoteOffer = (typeof data.offer === 'string') ? JSON.parse(data.offer) : data.offer;
                     _pendingRemoteMeta = { roomId: data.roomId, callerId: data.callerId || null, callerName: data.callerName || null };
                     // avisar al padre (host) para que muestre UI de llamada entrante
-                    try{
+                    try {
                         if (window.parent && window.parent !== window) {
                             window.parent.postMessage({ cmd: 'incomingOffer', roomId: _pendingRemoteMeta.roomId, callerId: _pendingRemoteMeta.callerId, callerName: _pendingRemoteMeta.callerName }, '*');
                         }
-                    }catch(e){/*ignore*/}
+                    } catch (e) {/*ignore*/ }
                 } catch (err) { console.error('Error processing incoming offer', err); }
             });
 
             // Escuchar mensajes del padre (aceptar/rechazar llamada)
             window.addEventListener('message', async (e) => {
-                try{
+                try {
                     const data = (typeof e.data === 'string') ? JSON.parse(e.data) : e.data;
-                    if(!data) return;
+                    if (!data) return;
                     // Si el padre envía la offer directamente (por postMessage), la guardamos como pending
                     if (data.cmd === 'incomingOffer' && data.offer) {
                         try {
                             _pendingRemoteOffer = (typeof data.offer === 'string') ? JSON.parse(data.offer) : data.offer;
                             _pendingRemoteMeta = { roomId: data.roomId || null, callerId: data.callerId || null, callerName: data.callerName || null };
                             // si el padre pasó id_mensaje, guardarlo para futuras persistencias
-                            if(data.id_mensaje) window.callMessageId = data.id_mensaje;
+                            if (data.id_mensaje) window.callMessageId = data.id_mensaje;
                             // no contestamos automáticamente; esperamos acceptCall
                         } catch (err) { console.warn('incomingOffer parse failed', err); }
                         return;
                     }
-                    if(data.cmd === 'acceptCall'){
+                    if (data.cmd === 'acceptCall') {
                         // crear RTCPeerConnection y responder
-                        if(!_pendingRemoteOffer || !_pendingRemoteMeta) return;
-                        try{
+                        if (!_pendingRemoteOffer || !_pendingRemoteMeta) return;
+                        try {
                             currentRoomId = _pendingRemoteMeta.roomId;
                             // si el padre envió id_mensaje en el accept, preferirlo
-                            if(data.id_mensaje) window.callMessageId = data.id_mensaje || window.callMessageId;
-                            if(!currentUserId) currentUserId = generateUserId();
+                            if (data.id_mensaje) window.callMessageId = data.id_mensaje || window.callMessageId;
+                            if (!currentUserId) currentUserId = generateUserId();
                             // obtener media local
                             if (!localStream) {
                                 try { localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true }); document.getElementById('localVideo').srcObject = localStream; } catch (err) { console.error('Error getUserMedia on accept', err); }
                             }
                             peerConnection = new RTCPeerConnection(iceServers);
                             if (localStream) localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
-                            peerConnection.ontrack = (event) => { 
+                            peerConnection.ontrack = (event) => {
                                 console.log('[VIDEO] REMOTE STREAM RECEIVED!', event.streams[0]);
                                 const remoteVid = document.getElementById('remoteVideo');
-                                remoteVid.srcObject = event.streams[0]; 
-                                document.getElementById('callInfo').classList.remove('active'); 
+                                remoteVid.srcObject = event.streams[0];
+                                document.getElementById('callInfo').classList.remove('active');
                                 document.getElementById('callStatus').textContent = 'Llamada en curso';
-                                
+
                                 // Monitorear el track para detectar cuando se vuelve inactivo
                                 event.track.onended = () => {
                                     console.log('[REMOTE] Track ended, showing black screen');
@@ -1121,7 +1144,7 @@
                                         remoteVid.style.backgroundColor = '#000000';
                                     }
                                 };
-                                
+
                                 event.track.onmute = () => {
                                     console.log('[REMOTE] Track muted, showing black screen');
                                     if (event.track.kind === 'video') {
@@ -1129,7 +1152,7 @@
                                         remoteVid.style.backgroundColor = '#000000';
                                     }
                                 };
-                                
+
                                 event.track.onunmute = () => {
                                     console.log('[REMOTE] Track unmuted, restoring video');
                                     if (event.track.kind === 'video') {
@@ -1138,10 +1161,10 @@
                                     }
                                 };
                             };
-                            
+
                             // Enviar candidates usando polling con throttling
-                            peerConnection.onicecandidate = (event) => { 
-                                if(event.candidate){ 
+                            peerConnection.onicecandidate = (event) => {
+                                if (event.candidate) {
                                     console.log('[ICE] New ICE candidate generated (acceptCall)');
                                     sendCandidateThrottled(event.candidate);
                                 } else {
@@ -1159,24 +1182,24 @@
                             for (let attempt = 1; attempt <= 3; attempt++) {
                                 try {
                                     console.log(`[ANSWER] 🔄 Sending answer (attempt ${attempt}/3)...`);
-                                    
+
                                     // Enviar con 10 reintentos (vs default 5)
                                     await sendSignalViaPolling('answer', { answer: JSON.stringify(answer) }, 10, 200);
-                                    
+
                                     // Verificar que llegó a la base de datos
                                     console.log('[ANSWER] 🔍 Verifying insertion in database...');
                                     await new Promise(r => setTimeout(r, 1000)); // Esperar 1s para propagación
-                                    
+
                                     const urlParams = new URLSearchParams(window.location.search);
                                     const myUserId = parseInt(urlParams.get('sender_id'));
                                     const verificacion = await fetch(`${BACKEND_URL}/api/call-signals/room/${currentRoomId}/${myUserId}`);
-                                    
+
                                     if (verificacion.ok) {
                                         const result = await verificacion.json();
-                                        const answerEnDB = result.data && result.data.some(s => 
+                                        const answerEnDB = result.data && result.data.some(s =>
                                             s.signal_type === 'answer' && s.sender_id === myUserId
                                         );
-                                        
+
                                         if (answerEnDB) {
                                             console.log('[ANSWER] ✅✅ CONFIRMED IN DATABASE - Answer successfully stored!');
                                             answerConfirmed = true;
@@ -1187,7 +1210,7 @@
                                     } else {
                                         console.warn(`[ANSWER] ⚠️ Verification request failed: ${verificacion.status}`);
                                     }
-                                    
+
                                     if (attempt < 3) {
                                         await new Promise(r => setTimeout(r, 1000 * attempt)); // Backoff incremental
                                     }
@@ -1200,60 +1223,60 @@
                                     await new Promise(r => setTimeout(r, 1500 * attempt));
                                 }
                             }
-                            
+
                             if (!answerConfirmed) {
                                 console.error('[ANSWER] 🚨 CRITICAL: Answer not confirmed in database after all attempts');
                             } else {
                                 console.log('[ANSWER] ✅ Answer process completed successfully');
                             }
-                            
+
                             // Iniciar polling para candidates entrantes
                             pollForCandidates(currentRoomId);
 
                             document.getElementById('videoCallInterface').classList.add('active');
                             document.getElementById('callStatus').textContent = 'Conectando...';
-                        }catch(err){ console.error('Error accepting call', err); }
+                        } catch (err) { console.error('Error accepting call', err); }
                         // limpiar pending
                         _pendingRemoteOffer = null; _pendingRemoteMeta = null;
-                    } else if (data.cmd === 'rejectCall'){
+                    } else if (data.cmd === 'rejectCall') {
                         // rechazar: opcionalmente notificar al caller
-                        try{ if(socket && data.roomId) socket.emit('endCall', { roomId: data.roomId, reason: 'rejected', targetUserId: data.callerId }); }catch(e){}
+                        try { if (socket && data.roomId) socket.emit('endCall', { roomId: data.roomId, reason: 'rejected', targetUserId: data.callerId }); } catch (e) { }
                         _pendingRemoteOffer = null; _pendingRemoteMeta = null;
                     }
-                }catch(err){ /* ignore malformed messages */ }
+                } catch (err) { /* ignore malformed messages */ }
             });
 
             // Si la iframe se abrió con ?id_mensaje=..., intentar obtener la offer desde DB
-            (function(){
-                try{
+            (function () {
+                try {
                     const params = new URLSearchParams(location.search);
                     const idMensajeParam = params.get('id_mensaje') || params.get('idMensaje');
-                    if(!idMensajeParam) return;
+                    if (!idMensajeParam) return;
 
                     // Poll para encontrar la offer asociada al id_mensaje en backend
                     let attempts = 0;
                     const maxAttempts = 60;
-                    const interval = setInterval(async ()=>{
+                    const interval = setInterval(async () => {
                         attempts++;
-                        try{
+                        try {
                             const resp = await fetch(BACKEND_URL + '/api/videollamadas/by-message/' + encodeURIComponent(idMensajeParam));
-                            if(resp.ok){
-                                const json = await resp.json().catch(()=>null) || {};
+                            if (resp.ok) {
+                                const json = await resp.json().catch(() => null) || {};
                                 const row = json.data || json;
-                                if(row && (row.offer || row.offer_local || row.oferta || row.offer_text)){
+                                if (row && (row.offer || row.offer_local || row.oferta || row.offer_text)) {
                                     // normalizar
                                     const offerRaw = row.offer || row.offer_local || row.oferta || row.offer_text;
                                     let offerObj = null;
-                                    try{ offerObj = (typeof offerRaw === 'string') ? JSON.parse(offerRaw) : offerRaw; }catch(e){ offerObj = offerRaw; }
+                                    try { offerObj = (typeof offerRaw === 'string') ? JSON.parse(offerRaw) : offerRaw; } catch (e) { offerObj = offerRaw; }
                                     // notificar al padre para que muestre la UI de llamada
-                                    try{ window.parent.postMessage(JSON.stringify({ cmd: 'incomingOffer', roomId: row.roomId || row.room_id || null, callerId: row.callerId || row.caller_id || null, callerName: row.callerName || row.caller_name || null, offer: offerObj, id_mensaje: idMensajeParam }), '*'); }catch(e){}
+                                    try { window.parent.postMessage(JSON.stringify({ cmd: 'incomingOffer', roomId: row.roomId || row.room_id || null, callerId: row.callerId || row.caller_id || null, callerName: row.callerName || row.caller_name || null, offer: offerObj, id_mensaje: idMensajeParam }), '*'); } catch (e) { }
                                     clearInterval(interval);
                                 }
                             }
-                        }catch(e){ /* ignorar y reintentar */ }
-                        if(attempts >= maxAttempts) clearInterval(interval);
+                        } catch (e) { /* ignorar y reintentar */ }
+                        if (attempts >= maxAttempts) clearInterval(interval);
                     }, 1000);
-                }catch(e){ }
+                } catch (e) { }
             })();
 
             socket.on('answer', async (data) => {
@@ -1275,7 +1298,7 @@
             });
 
             socket.on('endCall', (data) => {
-                try { endCall(); } catch(e){}
+                try { endCall(); } catch (e) { }
             });
         }
 

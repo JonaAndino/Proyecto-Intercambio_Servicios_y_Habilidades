@@ -1,0 +1,2189 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes y Estadísticas - SEMACKRO</title>
+    <script src="config.js"></script>
+    <!-- Incluye Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconify (SVG icons) -->
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <!-- SweetAlert2 para modales -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Chart.js para gráficos dinámicos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/translations.js"></script>
+    <!-- Plugin Chart.js: datalabels para mostrar valores encima de las barras -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        .container-fluid {
+            padding: 2rem;
+        }
+
+        /* Estilos para la gráfica de barras simulada */
+        .bar-chart-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            /* centrar barras horizontalmente */
+            gap: 48px;
+            /* espacio entre barras para evitar solapamiento */
+            height: 150px;
+            /* Altura fija para la gráfica */
+            border-left: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            padding: 0 24px 28px 24px;
+            /* espacio interior para las etiquetas */
+            position: relative;
+            min-width: 220px;
+        }
+
+        .bar {
+            width: 40px;
+            /* Ancho aumentado para mejor visibilidad */
+            /* eliminar margin: usamos gap en el container */
+            background-color: #3b82f6;
+            /* Azul de Tailwind */
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            border-radius: 4px;
+        }
+
+        .bar-label {
+            /* Centrar la etiqueta debajo de la barra para evitar solapamientos */
+            position: absolute;
+            bottom: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        .bar-value {
+            /* Mostrar el valor encima de la barra, centrado */
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #111827;
+            white-space: nowrap;
+        }
+
+        /* Estilos para la gráfica de pastel simulada */
+        .pie-chart {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-image: conic-gradient(#3b82f6 0% 60%,
+                    /* Usuarios */
+                    #ef4444 60% 100%
+                    /* Intercambios */
+                );
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Estilos específicos para la sección de usuarios reportados */
+        .report-counts-section th,
+        .report-counts-section td,
+        .report-counts-section .text-gray-600,
+        .report-counts-section p,
+        .report-counts-section span {
+            color: #b91c1c;
+            /* rojo */
+        }
+
+        .report-counts-section h2 svg {
+            stroke: #b91c1c;
+            color: #b91c1c;
+        }
+
+        .pie-center {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Estilo para bordes externos de tablas */
+        .table-wrapper {
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            /* Negro suave con transparencia */
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: white;
+        }
+
+        /* Workbook – libro Excel */
+        #workbook {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            overflow: hidden;
+        }
+        #xlBook {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+        .sheet-panel {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+        /* Pestaña Excel */
+        .xl-tab {
+            position: relative;
+            bottom: -1px;
+            padding: 7px 20px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 8px 8px 0 0;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: background .15s, color .15s;
+            white-space: nowrap;
+            user-select: none;
+        }
+        .xl-tab.active {
+            background: #fff;
+            color: #1e3a5f;
+            border-color: #cbd5e1 #cbd5e1 #fff;
+            z-index: 2;
+        }
+        .xl-tab:not(.active) {
+            background: #e2e8f0;
+            color: #64748b;
+            border-color: transparent;
+        }
+        .xl-tab:not(.active):hover {
+            background: #f1f5f9;
+            color: #334155;
+        }
+        #xlTabBar {
+            background: #e2e8f0;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 8px 12px 0;
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  LIBRO EXCEL  –  SemackroAdmin                                ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<div id="workbook">
+
+    <!-- ════ BARRA DE PESTAÑAS EXCEL (parte superior) ════ -->
+    <div id="xlTabBar">
+        <button id="tabReportes" onclick="switchSheet('reportes')" data-sheet="reportes"
+            class="xl-tab active">
+            <span class="iconify mr-1" data-icon="mdi:chart-bar" style="vertical-align:-2px;"></span>
+            Reportes
+        </button>
+        <button id="tabOrdenes" onclick="switchSheet('ordenes')" data-sheet="ordenes"
+            class="xl-tab hidden">
+            <span class="iconify mr-1" data-icon="mdi:clipboard-list-outline" style="vertical-align:-2px;"></span>
+            Órdenes de Trabajo
+        </button>
+        <div class="flex-1"></div>
+        <span class="text-[10px] text-slate-500 pb-2 pr-1">  SEMACKRO</span>
+    </div>
+
+    <!-- ▓ Libro ▓ -->
+    <div id="xlBook">
+
+    <!-- ════ HOJA 1 – Reportes ════ -->
+    <div id="sheetReportes" class="sheet-panel bg-white p-8 lg:p-12">
+        <div class="mb-10 pb-6 border-b border-black/20">
+            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight" data-i18n="reports.title">Panel de
+                Administración</h1>
+            <p class="text-gray-500 mt-2 text-lg" data-i18n="reports.subtitle">Reportes, métricas y gestión de técnicos
+                en un solo lugar.</p>
+        </div>
+
+
+
+        <!-- Sección de Gráficos (Simulación) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- Columna 1: Usuarios reportados -->
+            <div class="flex flex-col">
+                <div class="mb-4">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <span class="iconify text-red-500" data-icon="mdi:alert-octagon"></span>
+                        <span data-i18n="reports.reportedUsers">Usuarios reportados</span>
+                    </h2>
+                    <p class="text-xs text-gray-400" data-i18n="reports.reportedUsersDesc">Usuarios con mayor índice de
+                        incidencias.</p>
+                </div>
+                <div id="reportCountsContainer" class="overflow-x-auto table-wrapper">
+                    <table id="reportCountsTable" class="w-full table-auto border-collapse">
+                        <thead>
+                            <tr
+                                class="text-left text-[10px] font-bold text-black uppercase tracking-widest bg-gray-50/50 border-b border-black/20">
+                                <th class="py-3 px-4" data-i18n="table.user">Usuario</th>
+                                <th class="py-3 px-4" data-i18n="table.email">Email</th>
+                                <th class="py-3 px-4 text-center" data-i18n="table.id">ID</th>
+                                <th class="py-3 px-4 text-center" data-i18n="table.reports">Reps</th>
+                                <th class="py-3 px-4 text-center" data-i18n="table.action">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportCountsTbody">
+                            <tr>
+                                <td colspan="5" class="py-10 text-center text-gray-300 italic"
+                                    data-i18n="table.loading">Cargando datos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Columna 2: Gráfico - Métricas -->
+            <div class="flex flex-col">
+                <div class="mb-4 text-right lg:text-left">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2 lg:justify-start justify-end">
+                        <span class="iconify text-blue-500" data-icon="mdi:chart-bar"></span>
+                        <span data-i18n="reports.globalPerformance">Desempeño Global</span>
+                    </h2>
+                    <p class="text-xs text-gray-400" data-i18n="reports.performanceDesc">Promedios generales de
+                        satisfacción.</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-2xl border border-black/20">
+                    <canvas id="barChart" style="width:100%;height:280px"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sección: Solicitudes de Verificación -->
+        <div id="verificationSection" class="mt-16 pt-10 border-t border-black/20">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                    <span class="iconify text-yellow-500" data-icon="mdi:account-check-outline"></span>
+                    <span data-i18n="reports.verificationRequests">Solicitudes de Verificación</span>
+                </h2>
+                <p class="text-sm text-gray-400" data-i18n="reports.verificationDesc">Cola de validadores para identidad
+                    y certificaciones.</p>
+            </div>
+
+            <div id="verificationTableContainer" class="overflow-x-auto table-wrapper">
+                <table id="verificationTable" class="w-full table-auto border-collapse">
+                    <thead>
+                        <tr
+                            class="text-left text-[10px] font-bold text-black uppercase tracking-widest bg-gray-50/50 border-b border-black/20">
+                            <th class="py-4 px-4 text-center w-16" data-i18n="table.id">ID</th>
+                            <th class="py-4 px-4" data-i18n="table.technician">Técnico</th>
+                            <th class="py-4 px-4" data-i18n="table.status">Estado</th>
+                            <th class="py-4 px-4" data-i18n="table.dateTime">Fecha / Hora</th>
+                            <th class="py-4 px-4 text-center" data-i18n="table.actions">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="verificationTbody">
+                        <tr>
+                            <td colspan="5" class="py-12 text-center text-gray-300" data-i18n="table.loading">Cargando
+                                solicitudes pendientes...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sección: Directorio de Técnicos -->
+        <div id="directorioSection" class="mt-16 pt-10 border-t border-black/20">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-800" data-i18n="reports.directory">Directorio General</h3>
+                    <p class="text-sm text-gray-400" data-i18n="reports.directoryDesc">Listado íntegro de profesionales
+                        registrados.</p>
+                </div>
+                <div class="flex gap-2 flex-wrap items-center">
+                    <div class="relative">
+                        <span class="iconify absolute left-3 top-2.5 text-gray-400" data-icon="mdi:magnify"></span>
+                        <input type="text" id="busquedaNombre" oninput="filtrarTecnicos()" placeholder="Buscar..."
+                            data-i18n-placeholder="reports.search"
+                            class="pl-9 pr-3 py-2 text-xs border border-black/20 rounded-xl bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all w-48">
+                    </div>
+                    <select id="filtroEspecialidad" onchange="filtrarTecnicos()"
+                        class="border border-black/20 rounded-xl px-3 py-2 text-xs bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="" data-i18n="reports.specialty">Especialidad</option>
+                    </select>
+                    <select id="filtroUbicacion" onchange="filtrarTecnicos()"
+                        class="border border-black/20 rounded-xl px-3 py-2 text-xs bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="" data-i18n="reports.location">Ubicación</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto table-wrapper">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr
+                            class="text-[10px] font-bold text-black uppercase tracking-widest bg-gray-50/50 border-b border-black/20">
+                            <th class="py-4 px-4 w-16" data-i18n="table.photo">Foto</th>
+                            <th class="py-4 px-4" data-i18n="table.fullName">Nombre Completo</th>
+                            <th class="py-4 px-4" data-i18n="table.expertise">Expertise</th>
+                            <th class="py-4 px-4" data-i18n="table.location">Ubicación</th>
+                            <th class="py-4 px-4 text-center" data-i18n="table.availability">Disponibilidad</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaTecnicosH3">
+                        <tr>
+                            <td colspan="5" class="py-12 text-center text-gray-300 italic" data-i18n="table.syncing">
+                                Sincronizando directorio...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div> <!-- Fin sheetReportes -->
+
+    <!-- ════ HOJA 2 – Órdenes de Trabajo (solo Admin) ════ -->
+    <div id="sheetOrdenes" class="sheet-panel hidden flex flex-col">
+
+        <!-- Barra superior con fondo blanco -->
+        <div class="bg-white px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-400/20 rounded-xl flex items-center justify-center">
+                    <span class="iconify text-blue-600 text-xl" data-icon="mdi:table-large"></span>
+                </div>
+                <div>
+                    <h2 class="text-gray-800 font-bold text-lg leading-tight">Órdenes de Trabajo</h2>
+                    <p class="text-gray-600 text-xs">Gestión completa · <span id="otCountLabel">0 registros</span></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+                <div class="relative">
+                    <span class="iconify absolute left-2.5 top-2 text-gray-400 text-sm" data-icon="mdi:magnify"></span>
+                    <input type="text" id="adminOtSearch" oninput="adminBuscarOrdenes()" placeholder="Buscar..."
+                        class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-gray-300 bg-gray-50 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 w-44 transition">
+                </div>
+                <button onclick="adminAbrirModalCrear()"
+                    class="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-400 text-white font-semibold px-4 py-1.5 rounded-lg text-xs shadow-lg shadow-blue-900/40 transition active:scale-95">
+                    <span class="iconify text-base" data-icon="mdi:plus"></span> Nueva Orden
+                </button>
+                <button onclick="adminCargarOrdenes()" title="Recargar datos"
+                    class="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition">
+                    <span class="iconify text-base" data-icon="mdi:refresh"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Barra de filtros -->
+        <div class="bg-[#f8fafc] border-b border-gray-200 px-6 py-2 flex items-center gap-1 overflow-x-auto flex-shrink-0">
+            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-2">Filtrar:</span>
+            <button onclick="adminFiltrarOrdenes('todas')" data-filtro="todas"
+                class="admin-filtro-btn inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-semibold bg-blue-600 text-white transition whitespace-nowrap">
+                <span class="iconify" data-icon="mdi:format-list-bulleted"></span> Todas
+            </button>
+            <button onclick="adminFiltrarOrdenes('pendiente')" data-filtro="pendiente"
+                class="admin-filtro-btn inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-medium text-gray-500 hover:bg-yellow-50 hover:text-yellow-700 transition whitespace-nowrap">
+                <span class="iconify text-yellow-500" data-icon="mdi:clock-outline"></span> Pendiente
+            </button>
+            <button onclick="adminFiltrarOrdenes('en_progreso')" data-filtro="en_progreso"
+                class="admin-filtro-btn inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-medium text-gray-500 hover:bg-blue-50 hover:text-blue-700 transition whitespace-nowrap">
+                <span class="iconify text-blue-500" data-icon="mdi:progress-clock"></span> En Progreso
+            </button>
+            <button onclick="adminFiltrarOrdenes('completada')" data-filtro="completada"
+                class="admin-filtro-btn inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-medium text-gray-500 hover:bg-green-50 hover:text-green-700 transition whitespace-nowrap">
+                <span class="iconify text-green-500" data-icon="mdi:check-circle-outline"></span> Completada
+            </button>
+            <button onclick="adminFiltrarOrdenes('cancelada')" data-filtro="cancelada"
+                class="admin-filtro-btn inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-medium text-gray-500 hover:bg-red-50 hover:text-red-700 transition whitespace-nowrap">
+                <span class="iconify text-red-500" data-icon="mdi:close-circle-outline"></span> Cancelada
+            </button>
+        </div>
+
+        <!-- Tabla Excel con scroll propio -->
+        <div class="overflow-auto flex-1">
+            <table class="w-full text-left border-collapse text-sm" id="adminOtTable">
+                <thead class="sticky top-0 z-10">
+                    <tr class="bg-[#f1f5f9] border-b-2 border-gray-300 select-none">
+                        <th class="py-3 px-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-12 text-center">#</th>
+                        <th class="py-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 min-w-[200px]">Título</th>
+                        <th class="py-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200">Especialidad</th>
+                        <th class="py-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200">Ubicación</th>
+                        <th class="py-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 whitespace-nowrap">Fecha Inicio</th>
+                        <th class="py-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 whitespace-nowrap">Fecha Fin</th>
+                        <th class="py-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 text-right">Presupuesto</th>
+                        <th class="py-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 text-center">Estado</th>
+                        <th class="py-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 text-center whitespace-nowrap">Postul.</th>
+                        <th class="py-3 px-3 text-[10px] font-bold text-amber-600 uppercase tracking-wider border-r border-gray-200 text-center whitespace-nowrap" title="Restringir visibilidad por ubicación de obra">
+                            <span class="iconify" data-icon="mdi:map-marker-lock" style="font-size:12px;"></span> Restric.
+                        </th>
+                        <th class="py-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="adminOrdenesTbody">
+                    <tr>
+                        <td colspan="11" class="py-16 text-center text-gray-300 italic text-sm">
+                            <span class="iconify text-4xl text-gray-200 block mx-auto mb-2" data-icon="mdi:table-off"></span>
+                            Cargando órdenes...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pie de tabla -->
+        <div class="bg-[#f8fafc] border-t border-gray-200 px-6 py-2.5 flex items-center justify-between flex-shrink-0">
+            <span id="otFooterLabel" class="text-[11px] text-gray-400">—</span>
+            <span class="text-[11px] text-gray-300">  SEMACKRO · Panel Admin</span>
+        </div>
+
+    </div> <!-- Fin sheetOrdenes -->
+
+    </div> <!-- Fin xlBook -->
+
+</div> <!-- Fin workbook -->
+
+        <!-- Modal Crear / Editar Orden (Admin – overlay fijo fuera del flujo) -->
+        <div id="adminModalOrden" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"
+             onclick="adminCerrarModal(event)">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+                 onclick="event.stopPropagation()">
+                <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
+                    <h3 id="adminModalOrdenTitulo" class="text-xl font-bold text-gray-800">Nueva Orden de Trabajo</h3>
+                    <button onclick="adminCerrarModal()" class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <form id="adminFormOrden" onsubmit="adminGuardarOrden(event)" class="px-6 py-5 space-y-4">
+                    <input type="hidden" id="adminOrdenId">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Título <span class="text-red-500">*</span></label>
+                        <input type="text" id="adminOrdenTitulo" required placeholder="Ej: Instalación eléctrica residencial"
+                               class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                        <textarea id="adminOrdenDesc" rows="3" placeholder="Describe el trabajo a realizar..."
+                                  class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-gray-50"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación de Obra</label>
+                        <input type="text" id="adminOrdenUbicacion" placeholder="Ej: Col. La Paz, Tegucigalpa"
+                               class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio <span class="text-red-500">*</span></label>
+                            <input type="date" id="adminOrdenFechaInicio" required
+                                   class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Fin <span class="text-red-500">*</span></label>
+                            <input type="date" id="adminOrdenFechaFin" required
+                                   class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Especialidad <span class="text-red-500">*</span></label>
+                        <select id="adminOrdenEspecialidad" required
+                                class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                            <option value="">Seleccionar especialidad</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Presupuesto Estimado (L)</label>
+                            <input type="number" id="adminOrdenPresupuesto" min="0" step="0.01" placeholder="Ej: 15000"
+                                   class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                            <select id="adminOrdenEstado"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                                <option value="pendiente">Pendiente</option>
+                                <option value="en_progreso">En Progreso</option>
+                                <option value="completada">Completada</option>
+                                <option value="cancelada">Cancelada</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Máximo de Postulantes <span class="text-red-500">*</span></label>
+                        <input type="number" id="adminOrdenMaxPostulantes" min="1" value="1" required
+                               class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                               placeholder="Ej: 3">
+                        <p class="text-xs text-gray-400 mt-1">Número máximo de técnicos que pueden postularse a esta orden.</p>
+                    </div>
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" onclick="adminCerrarModal()"
+                                class="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition text-sm">
+                            Cancelar
+                        </button>
+                        <button type="submit" id="adminBtnGuardar"
+                                class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition text-sm shadow">
+                            Crear Orden
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal Ver Postulantes (Admin) -->
+        <div id="adminModalPostulaciones" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"
+             onclick="if(event.target===this) this.classList.add('hidden')">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 shrink-0">
+                    <h3 id="adminPostulacionesTitulo" class="text-lg font-bold text-gray-800">Postulantes</h3>
+                    <button onclick="document.getElementById('adminModalPostulaciones').classList.add('hidden')"
+                            class="p-2 rounded-lg hover:bg-gray-100 transition text-gray-500">
+                        <span class="iconify" data-icon="mdi:close" style="font-size:20px;"></span>
+                    </button>
+                </div>
+                <div id="adminPostulacionesContent" class="overflow-y-auto px-6 py-4 space-y-3 flex-1">
+                    <p class="text-gray-400 text-center py-8 italic">Cargando...</p>
+                </div>
+                <div class="px-6 py-3 border-t border-gray-100 flex justify-end shrink-0">
+                    <button onclick="document.getElementById('adminModalPostulaciones').classList.add('hidden')"
+                        class="px-5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm transition">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    <script>
+        // Aquí iría el JavaScript para cargar los datos y generar los gráficos reales.
+        // Para las gráficas reales, integrarías librerías como Chart.js, D3.js o ApexCharts.
+        // Por ejemplo, con Chart.js:
+        /*
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['Usuarios Totales', 'Intercambios Exitosos'],
+                datasets: [{
+                    label: 'Cantidad',
+                    data: [12, 20],
+                    backgroundColor: ['#3b82f6', '#ef4444'],
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        */
+    </script>
+
+    <script>
+        // Helper para traducciones
+        var t = (key) => {
+            if (window.t_real && typeof window.t_real === 'function') return window.t_real(key);
+            if (window.t && typeof window.t === 'function' && window.t !== t) return window.t(key);
+            return key;
+        };
+
+        // Helper para evitar XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ----- Código para manejar solicitudes de verificación -----
+        async function cargarSolicitudesVerificacion() {
+            const tbody = document.getElementById('verificationTbody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-sm text-gray-500">Cargando solicitudes...</td></tr>';
+
+            try {
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+
+                // Llamar al backend (ajusta host/puerto si tu API corre en otra dirección)
+                const API_BASE = `${window.APP_CONFIG.BACKEND_URL}`;
+                const res = await fetch(API_BASE + '/api/verificacion-usuarios', { headers });
+                if (!res.ok) {
+                    const txt = await res.text();
+                    throw new Error(`HTTP ${res.status} - ${txt.substring(0, 200)}`);
+                }
+                const contentType = res.headers.get('content-type') || '';
+                let rows;
+                if (contentType.includes('application/json')) {
+                    rows = await res.json();
+                } else {
+                    const txt = await res.text();
+                    throw new Error('Respuesta no JSON del servidor: ' + txt.slice(0, 200));
+                }
+
+                if (!rows || rows.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-sm text-gray-500">No hay solicitudes</td></tr>';
+                    return;
+                }
+
+                // Intentar obtener la lista de personas para mapear id_Perfil -> nombre (cache sencillo)
+                let personasMap = {};
+                try {
+                    const respP = await fetch(API_BASE + '/api/personas');
+                    if (respP.ok) {
+                        const jsonP = await respP.json();
+                        if (jsonP && jsonP.success && Array.isArray(jsonP.data)) {
+                            jsonP.data.forEach(p => {
+                                const pid = p.id_Perfil_Persona || p.id_Perfil || p.id;
+                                if (pid !== undefined && pid !== null) personasMap[String(pid)] = p;
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.warn('No se pudo cargar mapa de personas, se usará info de la solicitud:', e);
+                }
+
+                const isAdmin = localStorage.getItem('usuarioRolId') === '1';
+                const adminId = localStorage.getItem('usuarioId') || null;
+
+                tbody.innerHTML = rows.map(r => {
+                    const perfilId = r.id_Perfil || r.id_Perfil_Persona || r.id_perfil || r.perfil_id || '';
+                    let nombre = '-';
+
+                    // Si tenemos persona en el mapa, usar su nombre
+                    if (perfilId && personasMap[String(perfilId)]) {
+                        const p = personasMap[String(perfilId)];
+                        nombre = `${p.nombre_Persona || p.nombre || ''} ${p.apellido_Persona || p.apellido || ''}`.trim() || '-';
+                    } else {
+                        // Fallback a campos directos de la solicitud
+                        nombre = r.nombre_Persona ? `${r.nombre_Persona} ${r.apellido_Persona || ''}`.trim() : (r.nombre || '-');
+                    }
+
+                    // fecha de la solicitud: puede venir como 'fecha_solicitud' o 'fechaSolicitud'
+                    const fechaSolicitud = r.fecha_solicitud || r.fechaSolicitud || r.fecha_solicitud || null;
+                    let fechaStr = '-';
+                    let horaStr = '-';
+                    if (fechaSolicitud) {
+                        try {
+                            const d = new Date(fechaSolicitud);
+                            if (!isNaN(d.getTime())) {
+                                // Formatear fecha y hora en local
+                                fechaStr = d.toLocaleDateString();
+                                horaStr = d.toLocaleTimeString();
+                            }
+                        } catch (e) {
+                            fechaStr = String(fechaSolicitud);
+                        }
+                    }
+
+                    // Normalizar estados: puede venir como string ('pendiente','aprobada','rechazada') o como código numérico (1,2,3)
+                    function normalizeEstado(e) {
+                        if (e === null || e === undefined) return 'pendiente';
+                        const s = String(e).toLowerCase().trim();
+                        if (s === '1' || s === 'pendiente') return 'pendiente';
+                        if (s === '2' || s === 'aprobada' || s === 'aprobado') return 'aprobada';
+                        if (s === '3' || s === 'rechazada' || s === 'rechazado') return 'rechazada';
+                        return s;
+                    }
+                    const normalizedEstado = normalizeEstado(r.estado || 'pendiente');
+                    const estadoKey = normalizedEstado === 'aprobada' ? 'status.approved' : (normalizedEstado === 'rechazada' ? 'status.rejected' : 'status.pending');
+                    const estadoTraducido = t(estadoKey);
+
+                    const badgeColor = normalizedEstado === 'pendiente' ? 'bg-yellow-100 text-yellow-700' : (normalizedEstado === 'aprobada' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700');
+
+                    return `
+                    <tr class="border-b border-black/5 hover:bg-gray-50 transition-colors">
+                        <td class="py-4 px-4 text-center text-gray-400 font-mono text-[10px]">${r.id || ''}</td>
+                        <td class="py-4 px-4">
+                            <div class="text-sm font-bold text-gray-700">${escapeHtml(nombre)}</div>
+                            <div class="text-[10px] text-gray-500 font-medium">Perfil: #${perfilId || ''}</div>
+                        </td>
+                        <td class="py-4 px-4 text-center">
+                            <span class="px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${badgeColor}">${escapeHtml(estadoTraducido)}</span>
+                        </td>
+                        <td class="py-4 px-4">
+                            <div class="text-xs text-gray-500 font-medium">${escapeHtml(fechaStr)}</div>
+                            <div class="text-[10px] text-gray-400 italic">${escapeHtml(horaStr)}</div>
+                        </td>
+                        <td class="py-4 px-4">
+                            <div class="flex justify-center gap-2">
+                                ${isAdmin ? `
+                                    <button onclick="actualizarSolicitud(${r.id}, 'aprobada')" class="p-2 bg-green-50 text-green-600 border border-green-200 rounded-lg hover:bg-green-600 hover:text-white transition-all shadow-sm"><span class="iconify" data-icon="mdi:check-bold"></span></button>
+                                    <button onclick="actualizarSolicitud(${r.id}, 'rechazada')" class="p-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm"><span class="iconify" data-icon="mdi:close-thick"></span></button>
+                                ` : '-'}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                }).join('');
+
+            } catch (err) {
+                console.error('Error cargarSolicitudesVerificacion:', err);
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-sm text-red-600">Error al cargar solicitudes</td></tr>';
+            }
+        }
+
+        async function actualizarSolicitud(id, nuevoEstado) {
+            try {
+                const confirmColor = nuevoEstado === 'aprobada' ? '#10b981' : (nuevoEstado === 'rechazada' ? '#ef4444' : '#3b82f6');
+                const { isConfirmed } = await Swal.fire({
+                    title: 'Confirmar acción',
+                    html: `¿Seguro que deseas marcar la solicitud <strong>#${id}</strong> como <strong>${escapeHtml(nuevoEstado)}</strong>?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, continuar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: confirmColor,
+                    reverseButtons: true,
+                    focusCancel: true
+                });
+
+                if (!isConfirmed) return;
+
+                // Mostrar loader mientras se procesa la petición
+                Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const adminId = localStorage.getItem('usuarioId') || null;
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = 'Bearer ' + token;
+
+                const API_BASE = `${window.APP_CONFIG.BACKEND_URL}`;
+                const res = await fetch(API_BASE + '/api/verificacion-usuarios/' + id, {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify({ estado: nuevoEstado, revisado_por: adminId, comentario_admin: '' })
+                });
+
+                Swal.close();
+
+                if (!res.ok) {
+                    const text = await res.text().catch(() => '');
+                    throw new Error(text || 'Error en la petición');
+                }
+
+                await Swal.fire({ icon: 'success', title: 'Solicitud actualizada', text: `La solicitud ${id} fue marcada como ${nuevoEstado}.`, confirmButtonColor: '#2563eb' });
+
+                // Refrescar la tabla
+                await cargarSolicitudesVerificacion();
+
+            } catch (err) {
+                console.error('Error actualizarSolicitud:', err);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Error al actualizar la solicitud. Revisa la consola para más detalles.', confirmButtonColor: '#ef4444' });
+            }
+        }
+
+        async function eliminarSolicitud(id) {
+            try {
+                const { isConfirmed } = await Swal.fire({
+                    title: '¿Eliminar solicitud?',
+                    html: `¿Estás seguro de que deseas <strong>eliminar permanentemente</strong> la solicitud <strong>#${id}</strong>?<br><br><span style="color:#ef4444;">Esta acción no se puede deshacer.</span>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    reverseButtons: true,
+                    focusCancel: true
+                });
+
+                if (!isConfirmed) return;
+
+                // Mostrar loader mientras se procesa la petición
+                Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const headers = {};
+                if (token) headers['Authorization'] = 'Bearer ' + token;
+
+                const API_BASE = `${window.APP_CONFIG.BACKEND_URL}`;
+                const res = await fetch(API_BASE + '/api/verificacion-usuarios/' + id, {
+                    method: 'DELETE',
+                    headers
+                });
+
+                Swal.close();
+
+                if (!res.ok) {
+                    const text = await res.text().catch(() => '');
+                    throw new Error(text || 'Error en la petición');
+                }
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Solicitud eliminada',
+                    text: `La solicitud #${id} fue eliminada permanentemente.`,
+                    confirmButtonColor: '#2563eb'
+                });
+
+                // Refrescar la tabla
+                await cargarSolicitudesVerificacion();
+
+            } catch (err) {
+                console.error('Error eliminarSolicitud:', err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al eliminar',
+                    text: 'No se pudo eliminar la solicitud. Revisa la consola para más detalles.',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+
+        // Pequeña función escapeHtml para seguridad en renderizado (ya existe en Descubrir)
+        function escapeHtml(unsafe) {
+            if (unsafe === null || unsafe === undefined) return '';
+            return String(unsafe)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Variables globales para controlar el polling
+        let pollingIntervalVerificacion = null;
+        let pollingIntervalEstadisticas = null;
+
+        // Función para iniciar polling automático de solicitudes de verificación
+        function iniciarPollingVerificacion() {
+            // Limpiar intervalo anterior si existe
+            if (pollingIntervalVerificacion) {
+                clearInterval(pollingIntervalVerificacion);
+            }
+
+            // Actualizar cada 30 segundos
+            pollingIntervalVerificacion = setInterval(async () => {
+                try {
+                    await cargarSolicitudesVerificacion();
+                    console.log('[POLLING] Tabla de verificación actualizada:', new Date().toLocaleTimeString());
+                } catch (error) {
+                    console.error('[POLLING] Error actualizando verificación:', error);
+                }
+            }, 30000);
+
+            console.log('[POLLING] Iniciado para solicitudes de verificación (cada 30s)');
+        }
+
+        // Función para iniciar polling automático de estadísticas
+        function iniciarPollingEstadisticas() {
+            // Limpiar intervalo anterior si existe
+            if (pollingIntervalEstadisticas) {
+                clearInterval(pollingIntervalEstadisticas);
+            }
+
+            // Actualizar cada 60 segundos (menos frecuente que verificación)
+            pollingIntervalEstadisticas = setInterval(async () => {
+                try {
+                    await cargarEstadisticasReportes();
+                    console.log('[POLLING] Estadísticas actualizadas:', new Date().toLocaleTimeString());
+                } catch (error) {
+                    console.error('[POLLING] Error actualizando estadísticas:', error);
+                }
+            }, 60000);
+
+            console.log('[POLLING] Iniciado para estadísticas (cada 60s)');
+        }
+
+        // Función para detener todos los pollings
+        function detenerPolling() {
+            if (pollingIntervalVerificacion) {
+                clearInterval(pollingIntervalVerificacion);
+                pollingIntervalVerificacion = null;
+                console.log('[POLLING] Detenido para verificación');
+            }
+            if (pollingIntervalEstadisticas) {
+                clearInterval(pollingIntervalEstadisticas);
+                pollingIntervalEstadisticas = null;
+                console.log('[POLLING] Detenido para estadísticas');
+            }
+        }
+
+        // Cargar solicitudes al abrir la página (si es admin mostrarlas)
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const isAdmin = localStorage.getItem('usuarioRolId') === '1';
+                if (!isAdmin) {
+                    const sec = document.getElementById('verificationSection');
+                    if (sec) sec.style.display = 'none';
+                    return;
+                }
+                // Carga inicial
+                cargarSolicitudesVerificacion();
+                cargarEstadisticasReportes();
+                cargarTecnicosDirectorio();
+
+                // Iniciar polling automático
+                iniciarPollingVerificacion();
+                iniciarPollingEstadisticas();
+
+                console.log('[REPORTES] Sistema de actualización automática iniciado');
+            } catch (e) {
+                console.warn('Inicialización verificación error', e);
+            }
+        });
+
+        // Detener polling cuando se cierra o cambia de página
+        window.addEventListener('beforeunload', detenerPolling);
+
+        // Detectar cuando el iframe pierde foco (opcional)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log('[POLLING] Página oculta, continuando en segundo plano');
+            } else {
+                console.log('[POLLING] Página visible, actualizando datos...');
+                const isAdmin = localStorage.getItem('usuarioRolId') === '1';
+                if (isAdmin) {
+                    cargarSolicitudesVerificacion();
+                    cargarEstadisticasReportes();
+                }
+            }
+        });
+    </script>
+
+    <script>
+        // CARGA DE ESTADÍSTICAS Y RENDER DE GRÁFICOS
+        async function cargarEstadisticasReportes() {
+            const API_BASE = `${window.APP_CONFIG.BACKEND_URL}`;
+
+            // Elementos a actualizar
+            const elUsuarios = document.getElementById('usuariosTotal');
+            const elUsuariosNuevos = document.getElementById('usuariosNuevos');
+            const elIntercambios = document.getElementById('intercambiosTotal');
+            const elIntercambiosPend = document.getElementById('intercambiosPendientes');
+            const elHabilidadTop = document.getElementById('habilidadTop');
+            const elHabilidadTopCount = document.getElementById('habilidadTopCount');
+            const elReportesPend = document.getElementById('reportesPendientes');
+
+            // Valores por defecto
+            let usuarios = 0, intercambios = 0, intercambiosPendientes = 0;
+            try {
+                // 1) Estadísticas globales (si existe endpoint)
+                try {
+                    const res = await fetch(API_BASE + '/api/intercambios/estadisticas-globales');
+                    if (res.ok) {
+                        const j = await res.json();
+                        if (j && j.success && j.data) {
+                            usuarios = j.data.usuarios_activos || j.data.usuarios || usuarios;
+                            intercambios = j.data.intercambios_exitosos || j.data.intercambios || intercambios;
+                            intercambiosPendientes = j.data.pendientes_cierre || j.data.intercambios_pendientes || 0;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('No se pudo obtener /estadisticas-globales:', e);
+                }
+
+                // 2) Conteo de personas como fallback si usuarios = 0
+                if (!usuarios) {
+                    try {
+                        const rp = await fetch(API_BASE + '/api/personas');
+                        if (rp.ok) {
+                            const jp = await rp.json();
+                            if (jp && jp.success && Array.isArray(jp.data)) {
+                                usuarios = jp.data.length;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('No se pudo obtener /personas:', e);
+                    }
+                }
+
+                // 3) Top habilidad (intento simple: preguntar endpoint /api/habilidades si existe)
+                let topSkill = '—';
+                let topCount = 0;
+                try {
+                    const rh = await fetch(API_BASE + '/api/habilidades');
+                    if (rh.ok) {
+                        const jh = await rh.json();
+                        if (jh && jh.success && Array.isArray(jh.data) && jh.data.length) {
+                            // agrupar por nombre
+                            const counts = {};
+                            jh.data.forEach(h => {
+                                const name = h.nombre_Habilidad || h.nombre || h.nombre_Habilidad || 'Desconocida';
+                                counts[name] = (counts[name] || 0) + 1;
+                            });
+                            const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+                            if (entries.length) {
+                                topSkill = entries[0][0];
+                                topCount = entries[0][1];
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('No se pudo obtener /habilidades:', e);
+                }
+
+                // 4) Reportes pendientes
+                let reportes = 0;
+                try {
+                    const rr = await fetch(API_BASE + '/api/verificacion-usuarios');
+                    if (rr.ok) {
+                        const jr = await rr.json();
+                        if (Array.isArray(jr)) reportes = jr.length;
+                        else if (jr && jr.success && Array.isArray(jr.data)) reportes = jr.data.length;
+                    }
+                } catch (e) {
+                    console.warn('No se pudo obtener verificacion-usuarios:', e);
+                }
+
+                // Actualizar DOM
+                if (elUsuarios) elUsuarios.textContent = String(usuarios || 0);
+                if (elUsuariosNuevos) elUsuariosNuevos.textContent = `Nuevos usuarios: ${0}`;
+                if (elIntercambios) elIntercambios.textContent = String(intercambios || 0);
+                if (elIntercambiosPend) elIntercambiosPend.textContent = `${intercambiosPendientes || 0} pendientes de cierre`;
+                if (elHabilidadTop) elHabilidadTop.textContent = topSkill || '—';
+                if (elHabilidadTopCount) elHabilidadTopCount.textContent = `${topCount || 0} usuarios la ofrecen`;
+                if (elReportesPend) elReportesPend.textContent = String(reportes || 0);
+
+                // Renderizar gráficos con Chart.js
+                try {
+                    // Construir tabla de "Usuarios más reportados" usando verificacion-usuarios
+                    try {
+                        const rcTbody = document.getElementById('reportCountsTbody');
+                        if (rcTbody) rcTbody.innerHTML = '<tr><td colspan="2" class="p-4 text-sm text-gray-500">Cargando...</td></tr>';
+
+                        // Obtener lista de reportes desde el nuevo endpoint /api/reportes/all
+                        let reporteList = [];
+                        try {
+                            const rv = await fetch(API_BASE + '/api/reportes/all');
+                            if (rv.ok) {
+                                const jrv = await rv.json();
+                                if (Array.isArray(jrv)) reporteList = jrv;
+                            }
+                        } catch (e) {
+                            console.warn('No se pudo cargar /api/reportes/all para la tabla de reportes:', e);
+                        }
+
+                        // Construir conteos por usuario reportado usando los campos devueltos por el backend
+                        // Agrupar reportes por usuario reportado y recopilar metadatos
+                        const counts = {};
+                        reporteList.forEach(r => {
+                            const uid = r.reported_user_id || r.reported_user || r.id_usuario_reportado || 'sin_usuario';
+                            const key = String(uid || 'sin_usuario');
+
+                            if (!counts[key]) counts[key] = {
+                                name: null,
+                                email: r.reported_correo || null,
+                                perfilId: r.id_perfil_persona || r.id_Perfil_Persona || null,
+                                count: 0,
+                                lastDate: null,
+                                lastMotivo: null
+                            };
+
+                            // Nombre preferido desde persona
+                            const nombreFull = (r.reported_nombre || r.reported_apellido) ? `${r.reported_nombre || ''} ${r.reported_apellido || ''}`.trim() : (r.reported_correo || r.reported_user || null);
+                            if (nombreFull) counts[key].name = nombreFull;
+
+                            counts[key].count++;
+
+                            // Fecha más reciente
+                            const fecha = r.fecha_reporte || r.fecha || r.created_at || r.fecha_reporte_raw || null;
+                            if (fecha) {
+                                const d = new Date(fecha);
+                                if (!isNaN(d.getTime())) {
+                                    if (!counts[key].lastDate || new Date(counts[key].lastDate) < d) {
+                                        counts[key].lastDate = d.toISOString();
+                                        counts[key].lastMotivo = r.motivo_descripcion || r.motivo || r.descripcion || null;
+                                    }
+                                }
+                            }
+                        });
+
+                        const entries = Object.entries(counts).sort((a, b) => b[1].count - a[1].count);
+                        if (rcTbody) {
+                            if (!entries.length) {
+                                rcTbody.innerHTML = '<tr><td colspan="7" class="p-4 text-sm text-gray-500">Sin reportes</td></tr>';
+                            } else {
+                                rcTbody.innerHTML = entries.map(([uid, obj]) => {
+                                    const fechaStr = obj.lastDate ? new Date(obj.lastDate).toLocaleString() : '-';
+                                    const motivoShort = obj.lastMotivo ? String(obj.lastMotivo).slice(0, 80) : '-';
+                                    return `\n                                <tr class="border-b hover:bg-gray-50">\n                                    <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(obj.name || uid)}</td>\n                                    <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(obj.email || '-')}</td>\n                                    <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(obj.perfilId || '-')}</td>\n                                    <td class="py-2 px-3 text-sm text-gray-700">${obj.count}</td>\n                                    <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(fechaStr)}</td>\n                                    <td class="py-2 px-3 text-sm text-gray-700">${escapeHtml(motivoShort)}</td>\n                                    <td class="py-2 px-3 text-sm text-gray-700"><button onclick=\"openReportDetails(${uid})\" class=\"text-sm text-gray-600 hover:text-gray-900\">Ver reportes</button></td>\n                                </tr>`;
+                                }).join('');
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Error construyendo tabla de reportes:', e);
+                        const rcTbody = document.getElementById('reportCountsTbody');
+                        if (rcTbody) rcTbody.innerHTML = '<tr><td colspan="2" class="p-4 text-sm text-red-600">Error al cargar tabla</td></tr>';
+                    }
+
+                    const pieCtx = document.getElementById('pieChart').getContext('2d');
+                    if (window._reportesPieChart) window._reportesPieChart.destroy();
+                    window._reportesPieChart = new Chart(pieCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Usuarios', 'Intercambios'],
+                            datasets: [{ data: [usuarios || 0, intercambios || 0], backgroundColor: ['#3b82f6', '#ef4444'] }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { position: 'bottom' } }
+                        }
+                    });
+
+                    // Legend manual (mejor formato)
+                    const legend = document.getElementById('pieLegend');
+                    if (legend) {
+                        legend.innerHTML = `
+                        <div class="flex items-center"><span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Usuarios (${usuarios || 0})</div>
+                        <div class="flex items-center"><span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span> Intercambios (${intercambios || 0})</div>
+                    `;
+                    }
+                } catch (e) {
+                    console.warn('Error renderizando gráficos:', e);
+                }
+
+            } catch (err) {
+                console.error('Error cargarEstadisticasReportes:', err);
+            }
+        }
+    </script>
+
+    <script>
+        // Abrir modal con lista de reportes para un usuario reportado
+        async function openReportDetails(reportedUserId) {
+            try {
+                const API_BASE = `${window.APP_CONFIG.BACKEND_URL}`;
+                const res = await fetch(`${API_BASE}/api/reportes/user/${reportedUserId}`);
+                let rows = [];
+                if (res.ok) {
+                    const j = await res.json();
+                    if (Array.isArray(j)) rows = j;
+                    else if (j && j.success && Array.isArray(j.data)) rows = j.data;
+                }
+
+                if (!rows || rows.length === 0) {
+                    Swal.fire({ icon: 'info', title: 'Sin reportes', text: 'No se encontraron reportes para este usuario.' });
+                    return;
+                }
+
+                const html = `
+                    <div style="max-height:400px; overflow:auto; text-align:left;">
+                        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                            <thead><tr><th style="text-align:left; padding:6px;">Fecha</th><th style="text-align:left; padding:6px;">Reportero</th><th style="text-align:left; padding:6px;">Motivo</th><th style="text-align:left; padding:6px;">Descripción</th></tr></thead>
+                            <tbody>
+                            ${rows.map(r => `
+                                <tr style="border-top:1px solid #eee;"><td style="padding:6px; vertical-align:top;">${escapeHtml(new Date(r.fecha_reporte || r.fecha || r.created_at || '').toLocaleString())}</td>
+                                    <td style="padding:6px; vertical-align:top;">${escapeHtml(r.reporter_correo || r.reporter || r.reporter_id || '-')}</td>
+                                    <td style="padding:6px; vertical-align:top;">${escapeHtml(r.motivo_descripcion || r.motivo || '-')}</td>
+                                    <td style="padding:6px; vertical-align:top;">${escapeHtml(r.descripcion || '')}</td></tr>
+                            `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                Swal.fire({ title: 'Reportes del usuario', html, width: 800, confirmButtonText: 'Cerrar' });
+            } catch (err) {
+                console.error('openReportDetails error', err);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los detalles.' });
+            }
+        }
+    </script>
+
+    <!-- Script para H3: Métricas de Desempeño y Directorio de Técnicos -->
+    <script>
+        // Redefinición de cargarEstadisticasReportes para usar el nuevo endpoint de H3
+        // Redefinición de cargarEstadisticasReportes para usar el nuevo endpoint de H3
+        // Redefinición de cargarEstadisticasReportes para usar el nuevo endpoint de H3
+        window.cargarEstadisticasReportes = async function () {
+            console.log('[H3] Cargando estadísticas desde /api/metricas-desempeno...');
+            const API_BASE = `${window.APP_CONFIG.BACKEND_URL}`;
+
+            // Cargar tabla de reportes (Lógica restaurada)
+            cargarTablaReportes();
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/metricas`);
+                const json = await resp.json();
+
+                if (json.success) {
+                    const m = json.data;
+
+
+
+                    // Renderizar Gráfico de Barras - Métricas de Desempeño Promedio
+                    try {
+                        const barCtx = document.getElementById('barChart');
+                        if (!barCtx) return;
+
+                        if (!window.Chart) {
+                            console.error('[H3] Chart.js no está cargado');
+                            barCtx.parentElement.innerHTML = '<p class="text-gray-500 text-center py-10">Error: Librería de gráficos no disponible</p>';
+                            return;
+                        }
+
+                        console.log('[H3] Datos recibidos para gráfica:', m);
+
+                        if (json.success && m && m.metricas_promedio) {
+                            const metricas = m.metricas_promedio;
+                            const totalCalificados = metricas.total_tecnicos_calificados || 0;
+
+                            console.log(`[H3] técnicos calificados: ${totalCalificados}`);
+
+                            if (totalCalificados === 0) {
+                                barCtx.style.display = 'none';
+                                let fallbackMsg = document.getElementById('chartFallbackMsg');
+                                if (!fallbackMsg) {
+                                    fallbackMsg = document.createElement('p');
+                                    fallbackMsg.id = 'chartFallbackMsg';
+                                    fallbackMsg.className = 'text-gray-500 text-center py-10';
+                                    fallbackMsg.textContent = 'Aún no hay técnicos calificados para mostrar promedios.';
+                                    barCtx.parentElement.appendChild(fallbackMsg);
+                                }
+                                return;
+                            } else {
+                                barCtx.style.display = 'block';
+                                const fallbackMsg = document.getElementById('chartFallbackMsg');
+                                if (fallbackMsg) fallbackMsg.remove();
+                            }
+
+                            const ctx = barCtx.getContext('2d');
+                            if (window._reportesBarChart) window._reportesBarChart.destroy();
+
+                            const plugins = [];
+                            if (window.ChartDataLabels) {
+                                plugins.push(window.ChartDataLabels);
+                            }
+
+                            window._reportesBarChart = new Chart(ctx, {
+                                type: 'bar',
+                                plugins: plugins,
+                                data: {
+                                    labels: [t('reports.punctuality') || 'Puntualidad', t('reports.quality') || 'Calidad', t('reports.cleaning') || 'Limpieza', t('reports.communication') || 'Comunicación'],
+                                    datasets: [{
+                                        label: 'Promedio (%)',
+                                        data: [
+                                            metricas.puntualidad || 0,
+                                            metricas.calidad_trabajo || 0,
+                                            metricas.limpieza || 0,
+                                            metricas.comunicacion || 0
+                                        ],
+                                        backgroundColor: [
+                                            '#10b981', '#f59e0b', '#06b6d4', '#8b5cf6'
+                                        ],
+                                        borderColor: [
+                                            '#059669', '#d97706', '#0891b2', '#7c3aed'
+                                        ],
+                                        borderWidth: 2,
+                                        borderRadius: 6
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            max: 100,
+                                            ticks: {
+                                                callback: function (value) { return value + '%'; },
+                                                stepSize: 20
+                                            },
+                                            title: {
+                                                display: true,
+                                                text: t('reports.percentage') || 'Porcentaje (%)',
+                                                color: '#94a3b8',
+                                                font: { size: 10 }
+                                            }
+                                        }
+                                    },
+                                    plugins: {
+                                        legend: { display: false },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function (context) { return context.parsed.y + '%'; }
+                                            }
+                                        },
+                                        datalabels: {
+                                            anchor: 'end',
+                                            align: 'top',
+                                            display: function (context) {
+                                                return context.dataset.data[context.dataIndex] > 0;
+                                            },
+                                            formatter: function (value) { return value + '%'; },
+                                            font: { weight: 'bold', size: 12 },
+                                            color: '#475569'
+                                        }
+                                    }
+                                }
+                            });
+                        } else {
+                            console.warn('[H3] Estructura de datos no válida o sin métricas:', m);
+                            barCtx.parentElement.innerHTML = `<p class="text-red-500 text-center py-10">Error: Estructura de datos incompleta (${!m ? 'sin data' : 'sin métricas'})</p>`;
+                        }
+                    } catch (chartErr) {
+                        console.error('Error renderizando gráfico de barras:', chartErr);
+                    }
+                } else {
+                    console.error('[H3] Fallo en la respuesta del servidor:', json);
+                }
+            } catch (error) {
+                console.error("Error al cargar métricas H3:", error);
+                const barContainer = document.querySelector('#barChart')?.parentElement;
+                if (barContainer) {
+                    barContainer.innerHTML = '<p class="text-red-500 text-center py-10">Error de conexión con el servidor</p>';
+                }
+            }
+        };
+
+        // Función restaurada para cargar la tabla de usuarios reportados
+        async function cargarTablaReportes() {
+            const rcTbody = document.getElementById('reportCountsTbody');
+            if (!rcTbody) return;
+
+            // Solo poner "Cargando..." si está vacío o tiene mensaje de error, para no parpadear en polling
+            if (!rcTbody.hasChildNodes() || rcTbody.textContent.includes('Error') || rcTbody.textContent.includes('Cargando') || rcTbody.textContent.includes('Loading')) {
+                rcTbody.innerHTML = `<tr><td colspan="7" class="p-4 text-sm text-gray-500">${t('table.loading')}</td></tr>`;
+            }
+
+            const API_BASE = `${window.APP_CONFIG.BACKEND_URL}`;
+            try {
+                const rv = await fetch(API_BASE + '/api/reportes/all');
+                let reporteList = [];
+                if (rv.ok) {
+                    const jrv = await rv.json();
+                    if (Array.isArray(jrv)) reporteList = jrv;
+                }
+
+                // Agrupar reportes por usuario reportado
+                const counts = {};
+                reporteList.forEach(r => {
+                    const uid = r.reported_user_id || r.reported_user || r.id_usuario_reportado || 'sin_usuario';
+                    const key = String(uid || 'sin_usuario');
+
+                    if (!counts[key]) counts[key] = {
+                        name: null,
+                        email: r.reported_correo || null,
+                        perfilId: r.id_perfil_persona || r.id_Perfil_Persona || null,
+                        count: 0,
+                        lastDate: null,
+                        lastMotivo: null
+                    };
+
+                    // Nombre preferido
+                    const nombreFull = (r.reported_nombre || r.reported_apellido) ? `${r.reported_nombre || ''} ${r.reported_apellido || ''}`.trim() : (r.reported_correo || r.reported_user || null);
+                    if (nombreFull) counts[key].name = nombreFull;
+
+                    counts[key].count++;
+
+                    // Fecha más reciente
+                    const fecha = r.fecha_reporte || r.fecha || r.created_at || r.fecha_reporte_raw || null;
+                    if (fecha) {
+                        const d = new Date(fecha);
+                        if (!isNaN(d.getTime())) {
+                            if (!counts[key].lastDate || new Date(counts[key].lastDate) < d) {
+                                counts[key].lastDate = d.toISOString();
+                                counts[key].lastMotivo = r.motivo_descripcion || r.motivo || r.descripcion || null;
+                            }
+                        }
+                    }
+                });
+
+                const entries = Object.entries(counts).sort((a, b) => b[1].count - a[1].count);
+
+                if (entries.length === 0) {
+                    rcTbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-gray-300 italic">${t('table.noRecords')}</td></tr>`;
+                } else {
+                    rcTbody.innerHTML = entries.map(([uid, obj]) => {
+                        return `
+                            <tr class="border-b border-black/10 hover:bg-gray-50 transition-colors">
+                                <td class="py-4 px-4 text-sm font-bold text-gray-700">${escapeHtml(obj.name || uid)}</td>
+                                <td class="py-4 px-4 text-xs text-gray-500">${escapeHtml(obj.email || '-')}</td>
+                                <td class="py-4 px-4 text-[10px] text-gray-400 font-mono">#${escapeHtml(obj.perfilId || '-')}</td>
+                                <td class="py-4 px-4 text-center">
+                                    <span class="text-sm font-black text-red-600">${obj.count}</span>
+                                </td>
+                                <td class="py-4 px-4 text-center">
+                                    <button onclick="openReportDetails('${uid}')" class="text-gray-400 hover:text-black transition-all">
+                                        <span class="iconify" data-icon="mdi:eye" style="font-size: 20px;"></span>
+                                    </button>
+                                </td>
+                            </tr>`;
+                    }).join('');
+                }
+
+            } catch (e) {
+                console.warn('Error cargando tabla reportes:', e);
+                rcTbody.innerHTML = '<tr><td colspan="7" class="p-4 text-sm text-red-600">Error al cargar tabla de reportes</td></tr>';
+            }
+        }
+
+        // Variables globales para técnicos
+        let todosLosTecnicos = [];
+
+
+        async function cargarTecnicosDirectorio() {
+            const tbody = document.getElementById('tablaTecnicosH3');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-sm text-gray-500">${t('table.loading')}</td></tr>`;
+
+            console.log('[H3] Iniciando carga de técnicos usando lógica de Descubrir...');
+            // Definir API_BASE asegurando que apunte a /api
+            const API_BASE = `${window.APP_CONFIG.BACKEND_URL}/api`;
+
+            try {
+                // 1. Obtener lista base de personas
+                const resPersonas = await fetch(`${API_BASE}/personas`);
+                if (!resPersonas.ok) throw new Error('Error al obtener personas');
+                const dataPersonas = await resPersonas.json();
+
+                if (!dataPersonas.success) throw new Error('Respuesta no exitosa de personas');
+
+                let personas = dataPersonas.data;
+                const usuarioActualId = localStorage.getItem("usuarioId");
+
+                // Filtrar usuario actual
+                personas = personas.filter(p => !usuarioActualId || p.id_Usuario !== parseInt(usuarioActualId));
+
+                // 2. Enriquecer datos en paralelo (Lógica replicada de descubrir.js)
+                const promesas = personas.map(async (p) => {
+                    try {
+                        // a) Habilidades
+                        const resHab = await fetch(`${API_BASE}/habilidades/persona/${p.id_Perfil_Persona}`).catch(() => null);
+                        let skillsStr = '-';
+                        let skills = []; // Definir en el scope correcto
+
+                        if (resHab && resHab.ok) {
+                            const dHab = await resHab.json();
+                            if (dHab.success && dHab.data) {
+                                // Filtrar "Ofrece" y tomar nombres
+                                skills = dHab.data
+                                    .filter(h => h.tipoEstado_Habilidad === 'Ofrece')
+                                    .map(h => h.nombre_Habilidad);
+                                if (skills.length > 0) skillsStr = skills.slice(0, 3).join(', ') + (skills.length > 3 ? '...' : '');
+                            }
+                        }
+
+                        // b) Dirección
+                        const resDir = await fetch(`${API_BASE}/direcciones/persona/${p.id_Perfil_Persona}`).catch(() => null);
+                        let ubicacion = t('card.noLocation');
+                        if (resDir && resDir.ok) {
+                            const dDir = await resDir.json();
+                            if (dDir.success && dDir.data) {
+                                const dir = Array.isArray(dDir.data) ? dDir.data[0] : dDir.data;
+                                if (dir) {
+                                    ubicacion = [dir.ciudad_Direccion || dir.ciudad, dir.pais_Direccion || dir.pais].filter(Boolean).join(', ');
+                                }
+                            }
+                        }
+
+                        // c) Estado (disponibilidad)
+                        let estadoKey = 'status.atWork';
+                        const disp = p.disponibilidad;
+                        if (disp === 1 || disp === true || String(disp).toLowerCase() === 'disponible' || String(disp) === '1' || String(disp).toLowerCase() === 'available') {
+                            estadoKey = 'status.available';
+                        } else if (String(disp).toLowerCase() === 'ocupado' || String(disp).toLowerCase() === 'busy') {
+                            estadoKey = 'status.busy';
+                        }
+
+                        const estado = t(estadoKey);
+
+                        return {
+                            id_Perfil_Persona: p.id_Perfil_Persona,
+                            nombre_Persona: p.nombre_Persona,
+                            apellido_Persona: p.apellido_Persona,
+                            imagenUrl_Persona: p.imagenUrl_Persona,
+                            especialidades: skillsStr,
+                            skillList: skills, // Lista completa sin truncar para el filtro
+                            ubicacion: ubicacion || t('card.noLocation'),
+                            estado: estado,
+                            estadoKey: estadoKey
+                        };
+
+                    } catch (errInner) {
+                        console.warn('Error procesando técnico individual:', p.id_Perfil_Persona, errInner);
+                        return null; // Ignorar errores individuales
+                    }
+                });
+
+                const resultados = await Promise.all(promesas);
+                todosLosTecnicos = resultados.filter(t => t !== null);
+
+                // 3. Población dinámica de Filtros (Ubicación y Especialidad)
+                // Esto asegura que el filtro coincida exactamente con lo que hay en la tabla
+                const especialidadesUnicas = new Set();
+                const ubicacionesUnicas = new Set();
+
+                todosLosTecnicos.forEach(t => {
+                    if (t.skillList) t.skillList.forEach(s => especialidadesUnicas.add(s));
+                    if (t.ubicacion && t.ubicacion !== 'Sin ubicación') ubicacionesUnicas.add(t.ubicacion);
+                });
+
+                const selEsp = document.getElementById('filtroEspecialidad');
+                if (selEsp) {
+                    selEsp.innerHTML = `<option value="">${t('reports.specialty')}</option>`;
+                    [...especialidadesUnicas].sort().forEach(s => {
+                        selEsp.innerHTML += `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`;
+                    });
+                }
+
+                const selUbi = document.getElementById('filtroUbicacion');
+                if (selUbi) {
+                    selUbi.innerHTML = `<option value="">${t('reports.location')}</option>`;
+                    [...ubicacionesUnicas].sort().forEach(u => {
+                        selUbi.innerHTML += `<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`;
+                    });
+                }
+
+                // 4. Actualizar UI de la tabla
+                actualizarTablaTecnicos(todosLosTecnicos);
+
+            } catch (e) {
+                console.error('Error cargando técnicos (lógica frontend):', e);
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-sm text-gray-500">Error cargando listado de técnicos. Por favor intente más tarde.</td></tr>';
+            }
+        }
+
+        function actualizarTablaTecnicos(lista) {
+            const tbody = document.getElementById('tablaTecnicosH3');
+            if (!tbody) return;
+            if (!lista.length) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-sm text-gray-500">${t('table.noRecords')}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = lista.map(tData => {
+                const estado = tData.estado || 'No disp.';
+                let estadoColor = 'text-gray-400 bg-gray-50';
+                if (String(tData.estadoKey).includes('available')) estadoColor = 'text-green-600 bg-green-50/50';
+                if (String(tData.estadoKey).includes('Work') || String(tData.estadoKey).includes('busy')) estadoColor = 'text-orange-600 bg-orange-50/50';
+
+                const avatar = tData.imagenUrl_Persona ? tData.imagenUrl_Persona : `https://ui-avatars.com/api/?name=${encodeURIComponent(tData.nombre_Persona || 'U')}&background=random`;
+
+                return `
+                    <tr class="border-b border-black/5 hover:bg-gray-50 transition-colors">
+                        <td class="py-5 px-4">
+                            <img src="${avatar}" class="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-100" alt="Avatar">
+                        </td>
+                        <td class="py-5 px-4">
+                            <div class="text-sm font-bold text-gray-700">${escapeHtml(tData.nombre_Persona)} ${escapeHtml(tData.apellido_Persona || '')}</div>
+                            <div class="text-[10px] text-gray-400">ID: #${tData.id_Perfil_Persona}</div>
+                        </td>
+                        <td class="py-5 px-4 text-xs text-gray-500 max-w-[200px] truncate leading-relaxed">
+                            ${escapeHtml(tData.especialidades || '-')}
+                        </td>
+                        <td class="py-5 px-4 text-xs text-gray-400 flex items-center gap-1">
+                            <span class="iconify" data-icon="mdi:map-marker"></span>
+                            ${escapeHtml(tData.ubicacion)}
+                        </td>
+                        <td class="py-5 px-4 text-center">
+                            <span class="px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${estadoColor}">
+                                ${escapeHtml(t(tData.estadoKey || 'status.atWork'))}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filtrarTecnicos() {
+            const nombre = document.getElementById('busquedaNombre').value.toLowerCase();
+            const esp = document.getElementById('filtroEspecialidad').value.toLowerCase();
+            const ubi = document.getElementById('filtroUbicacion').value.toLowerCase();
+
+            const filtrados = todosLosTecnicos.filter(t => {
+                const fullNombre = `${t.nombre_Persona} ${t.apellido_Persona || ''}`.toLowerCase();
+                const espValue = esp.toLowerCase();
+                const ubiValue = ubi.toLowerCase();
+
+                const matchNombre = !nombre || fullNombre.includes(nombre);
+                const matchEsp = !esp || (t.skillList && t.skillList.some(s => s.toLowerCase().includes(espValue)));
+                const matchUbi = !ubi || (t.ubicacion && t.ubicacion.toLowerCase().includes(ubiValue));
+
+                return matchNombre && matchEsp && matchUbi;
+            });
+
+            actualizarTablaTecnicos(filtrados);
+        }
+
+        // Inicializar componentes H3
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar traducciones
+            applyTranslations();
+
+            // Escuchar cambios de idioma del padre
+            window.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'languageChange') {
+                    changeLanguage(event.data.language);
+                    // Re-renderizar todo lo que necesite traducción dinámica
+                    cargarEstadisticasReportes();
+                    cargarTecnicosDirectorio();
+                    cargarSolicitudesVerificacion();
+                }
+            });
+
+            const isAdmin = localStorage.getItem('usuarioRolId') === '1';
+            cargarEstadisticasReportes();
+            cargarSolicitudesVerificacion();
+            if (isAdmin) {
+                console.log('[H3] Inicializando directorio administrador...');
+                cargarTecnicosDirectorio();
+                // Mostrar pestaña de Órdenes de Trabajo solo para admin
+                const tabOrdenes = document.getElementById('tabOrdenes');
+                if (tabOrdenes) tabOrdenes.classList.remove('hidden');
+                adminCargarOrdenes();
+                adminCargarEspecialidades();
+            }
+        });
+
+        // ── Navegación entre hojas tipo Excel ──────────────────────────
+        function switchSheet(nombre) {
+            const sheets  = { reportes: 'sheetReportes', ordenes: 'sheetOrdenes' };
+            const tabs    = { reportes: 'tabReportes',   ordenes: 'tabOrdenes'   };
+            Object.keys(sheets).forEach(key => {
+                const panel = document.getElementById(sheets[key]);
+                const tab   = document.getElementById(tabs[key]);
+                const activo = key === nombre;
+                if (panel) panel.classList.toggle('hidden', !activo);
+                if (tab)   tab.classList.toggle('active', activo);
+            });
+        }
+    </script>
+
+    <!-- ================================================
+         SCRIPT: ADMIN – GESTIÓN ÓRDENES DE TRABAJO
+         ================================================ -->
+    <script>
+        const OT_API = `${window.APP_CONFIG ? window.APP_CONFIG.BACKEND_URL : ''}/api/ordenes-trabajo`;
+        const CAT_API = `${window.APP_CONFIG ? window.APP_CONFIG.BACKEND_URL : ''}/api/categorias`;
+
+        let _adminTodasOrdenes = [];
+        let _adminFiltro = 'todas';
+
+        function _otHeaders() {
+            const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+            return token ? { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+        }
+
+        // ---------- Cargar y renderizar ----------
+        async function adminCargarOrdenes() {
+            const tbody = document.getElementById('adminOrdenesTbody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="11" class="py-16 text-center text-gray-300 italic text-sm"><span class="iconify text-4xl text-gray-200 block mx-auto mb-2" data-icon="mdi:loading"></span>Cargando órdenes...</td></tr>';
+            try {
+                const res = await fetch(OT_API, { headers: _otHeaders() });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const json = await res.json();
+                _adminTodasOrdenes = Array.isArray(json.data) ? json.data : [];
+                // Aplicar filtro de estado activo
+                adminAplicarFiltroEstado();
+            } catch (err) {
+                console.error('[AdminOT]', err);
+                tbody.innerHTML = '<tr><td colspan="11" class="py-10 text-center text-red-400 italic">Error al cargar las órdenes. Verifica la conexión al servidor.</td></tr>';
+            }
+        }
+
+        // Aplica el filtro de estado (y búsqueda) sobre _adminTodasOrdenes
+        function adminAplicarFiltroEstado() {
+            const filtradas = _adminFiltro === 'todas'
+                ? _adminTodasOrdenes
+                : _adminTodasOrdenes.filter(o => o.estado === _adminFiltro);
+            const q = (document.getElementById('adminOtSearch')?.value || '').toLowerCase();
+            const resultado = q ? filtradas.filter(o =>
+                (o.titulo || '').toLowerCase().includes(q) ||
+                (o.especialidad || '').toLowerCase().includes(q) ||
+                (o.ubicacion_obra || '').toLowerCase().includes(q)
+            ) : filtradas;
+            adminRenderizarTabla(resultado);
+        }
+
+        const _estadoOT = {
+            pendiente:   { cls: 'bg-yellow-100 text-yellow-700', label: 'Pendiente' },
+            en_progreso: { cls: 'bg-blue-100 text-blue-700',    label: 'En Progreso' },
+            completada:  { cls: 'bg-green-100 text-green-700',  label: 'Completada' },
+            cancelada:   { cls: 'bg-red-100 text-red-700',      label: 'Cancelada' },
+        };
+
+        function adminRenderizarTabla(ordenes) {
+            const tbody = document.getElementById('adminOrdenesTbody');
+            if (!tbody) return;
+
+            // Actualizar contadores
+            const total = _adminTodasOrdenes.length;
+            const mostrados = ordenes.length;
+            const countEl   = document.getElementById('otCountLabel');
+            const footerEl  = document.getElementById('otFooterLabel');
+            if (countEl) countEl.textContent = `${total} registro${total !== 1 ? 's' : ''}`;
+            if (footerEl) footerEl.textContent = mostrados < total
+                ? `Mostrando ${mostrados} de ${total} registros`
+                : `${total} registro${total !== 1 ? 's' : ''} en total`;
+
+            if (!ordenes.length) {
+                tbody.innerHTML = `<tr><td colspan="11" class="py-16 text-center">
+                    <span class="iconify text-5xl text-gray-200 block mx-auto mb-3" data-icon="mdi:clipboard-off-outline"></span>
+                    <p class="text-gray-300 italic text-sm">No hay órdenes. Crea la primera con el botón &ldquo;+ Nueva Orden&rdquo;.</p>
+                </td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = ordenes.map((o, idx) => {
+                const est = _estadoOT[o.estado] || _estadoOT['pendiente'];
+                const fi  = o.fecha_inicio ? new Date(o.fecha_inicio).toLocaleDateString('es-HN') : '—';
+                const ff  = o.fecha_fin    ? new Date(o.fecha_fin).toLocaleDateString('es-HN')    : '—';
+                const presup = o.presupuesto_estimado
+                    ? 'L ' + Number(o.presupuesto_estimado).toLocaleString('es-HN', { minimumFractionDigits: 2 })
+                    : '—';
+                const titulo  = escapeHtml(o.titulo || '');
+                const espec   = escapeHtml(o.especialidad || '—');
+                const ubic    = escapeHtml(o.ubicacion_obra || '—');
+                const idOrden = o.id_orden || o.id;
+                const rowBg   = idx % 2 === 0 ? 'bg-white' : 'bg-[#f8fafc]';
+                const postPct = o.max_postulantes ? Math.round((o.total_postulaciones || 0) / o.max_postulantes * 100) : 0;
+                const postBar = o.max_postulantes > 0
+                    ? `<div class="h-1 rounded-full bg-gray-200 mt-1"><div class="h-1 rounded-full ${postPct >= 100 ? 'bg-red-400' : 'bg-purple-400'}" style="width:${Math.min(postPct,100)}%"></div></div>`
+                    : '';
+                return `
+                <tr class="${rowBg} border-b border-gray-100 hover:bg-blue-50/40 transition-colors group" data-id="${idOrden}">
+                    <td class="py-3 px-3 text-center text-[11px] text-gray-400 font-mono border-r border-gray-100 select-none">${idOrden}</td>
+                    <td class="py-3 px-4 border-r border-gray-100">
+                        <div class="text-sm font-semibold text-gray-800 leading-tight">${titulo}</div>
+                        ${o.descripcion ? `<div class="text-[11px] text-gray-400 mt-0.5 truncate max-w-[220px]">${escapeHtml(o.descripcion)}</div>` : ''}
+                    </td>
+                    <td class="py-3 px-4 text-xs text-gray-600 border-r border-gray-100 whitespace-nowrap">${espec}</td>
+                    <td class="py-3 px-4 text-xs text-gray-500 border-r border-gray-100">
+                        <div class="flex items-center gap-1">
+                            <span class="iconify text-gray-300 text-xs" data-icon="mdi:map-marker-outline"></span>
+                            ${ubic}
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 text-xs text-gray-600 border-r border-gray-100 whitespace-nowrap">${fi}</td>
+                    <td class="py-3 px-4 text-xs text-gray-600 border-r border-gray-100 whitespace-nowrap">${ff}</td>
+                    <td class="py-3 px-4 text-xs font-semibold text-gray-700 border-r border-gray-100 text-right whitespace-nowrap">${presup}</td>
+                    <td class="py-3 px-4 border-r border-gray-100 text-center">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${est.cls}">${est.label}</span>
+                    </td>
+                    <td class="py-3 px-4 border-r border-gray-100 text-center">
+                        <div class="text-xs font-semibold text-gray-700">${o.total_postulaciones || 0}<span class="text-gray-400 font-normal">/${o.max_postulantes || 1}</span></div>
+                        ${postBar}
+                        <button onclick="adminVerPostulaciones(${idOrden})" title="Ver postulantes"
+                            class="mt-1 text-[10px] text-purple-500 hover:text-purple-700 hover:underline transition">
+                            Ver
+                        </button>
+                    </td>
+                    <td class="py-3 px-3 border-r border-gray-100 text-center" title="${o.restringir_por_ubicacion ? 'Solo zona: ' + ubic : 'Visible para todos'}">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" class="sr-only peer" ${o.restringir_por_ubicacion ? 'checked' : ''}
+                                onchange="adminToggleRestriccionUbicacion(${idOrden}, this.checked)">
+                            <div class="w-9 h-5 bg-gray-200 peer-checked:bg-amber-500 rounded-full peer relative after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+                        </label>
+                    </td>
+                    <td class="py-3 px-4 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="adminAbrirModalEditar(${idOrden})" title="Editar"
+                                class="p-1.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-600 transition" >
+                                <span class="iconify" data-icon="mdi:pencil-outline" style="font-size:14px;"></span>
+                            </button>
+                            <select onchange="adminCambiarEstado(${idOrden}, this.value); this.value=''"
+                                class="text-[10px] border border-gray-200 rounded px-1.5 py-1 bg-white text-gray-600 focus:outline-none cursor-pointer"
+                                title="Cambiar estado">
+                                <option value="">&#x21C5; Estado</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="en_progreso">En Progreso</option>
+                                <option value="completada">Completada</option>
+                                <option value="cancelada">Cancelada</option>
+                            </select>
+                            <button onclick="adminEliminarOrden(${idOrden})" title="Eliminar"
+                                class="p-1.5 rounded bg-red-50 hover:bg-red-100 text-red-500 transition">
+                                <span class="iconify" data-icon="mdi:trash-can-outline" style="font-size:14px;"></span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+            if (window.Iconify) Iconify.scan();
+        }
+
+        // Búsqueda en tiempo real
+        function adminBuscarOrdenes() {
+            adminAplicarFiltroEstado();
+        }
+
+        function adminFiltrarOrdenes(filtro) {
+            _adminFiltro = filtro;
+            document.querySelectorAll('.admin-filtro-btn').forEach(btn => {
+                const activo = btn.dataset.filtro === filtro;
+                btn.classList.toggle('bg-blue-600', activo);
+                btn.classList.toggle('text-white', activo);
+                btn.classList.toggle('text-gray-500', !activo);
+            });
+            adminAplicarFiltroEstado();
+        }
+
+        // ---------- Toggle restricción por ubicación (por orden) ----------
+        async function adminToggleRestriccionUbicacion(idOrden, restringir) {
+            try {
+                const res = await fetch(`${OT_API}/${idOrden}`, {
+                    method: 'PATCH',
+                    headers: _otHeaders(),
+                    body: JSON.stringify({ restringir_por_ubicacion: restringir })
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                // Actualizar caché local sin recargar toda la tabla
+                const orden = _adminTodasOrdenes.find(o => (o.id_orden || o.id) == idOrden);
+                if (orden) orden.restringir_por_ubicacion = restringir ? 1 : 0;
+                if (window.Toast) {
+                    Toast.success('Actualizado', restringir ? 'Orden restringida a su ubicación.' : 'Orden visible para todos.');
+                }
+            } catch (err) {
+                console.error('[AdminOT] Toggle restricción:', err);
+                if (window.Toast) Toast.error('Error', 'No se pudo actualizar la restricción.');
+                adminCargarOrdenes(); // recargar para revertir UI
+            }
+        }
+
+        // ---------- Especialidades ----------
+        async function adminCargarEspecialidades() {
+            const sel = document.getElementById('adminOrdenEspecialidad');
+            if (!sel) return;
+
+            // Limpiar opciones anteriores (excepto la primera placeholder)
+            while (sel.options.length > 1) sel.remove(1);
+
+            try {
+                const res = await fetch(CAT_API);
+                if (!res.ok) return;
+                const json = await res.json();
+                const cats = Array.isArray(json) ? json : (json.data || []);
+                cats.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.nombre_categoria_Habilidad || c.nombre_categoria || c.nombre || c.id_categorias_Habilidades_Servicios || c.id;
+                    opt.textContent = c.nombre_categoria_Habilidad || c.nombre_categoria || c.nombre || 'Sin nombre';
+                    sel.appendChild(opt);
+                });
+            } catch (e) { console.warn('[AdminOT] Categorías:', e.message); }
+        }
+
+        // ---------- Modal ----------
+        function adminAbrirModalCrear() {
+            document.getElementById('adminFormOrden').reset();
+            document.getElementById('adminOrdenId').value = '';
+            document.getElementById('adminModalOrdenTitulo').textContent = 'Nueva Orden de Trabajo';
+            document.getElementById('adminBtnGuardar').textContent = 'Crear Orden';
+            adminCargarEspecialidades();
+            document.getElementById('adminModalOrden').classList.remove('hidden');
+        }
+
+        function adminAbrirModalEditar(id) {
+            const o = _adminTodasOrdenes.find(x => (x.id_orden || x.id) == id);
+            if (!o) return;
+            document.getElementById('adminOrdenId').value = o.id_orden || o.id;
+            document.getElementById('adminOrdenTitulo').value = o.titulo || '';
+            document.getElementById('adminOrdenDesc').value = o.descripcion || '';
+            document.getElementById('adminOrdenUbicacion').value = o.ubicacion_obra || '';
+            document.getElementById('adminOrdenFechaInicio').value = (o.fecha_inicio || '').substring(0, 10);
+            document.getElementById('adminOrdenFechaFin').value = (o.fecha_fin || '').substring(0, 10);
+            document.getElementById('adminOrdenPresupuesto').value = o.presupuesto_estimado || '';
+            document.getElementById('adminOrdenEstado').value = o.estado || 'pendiente';
+            document.getElementById('adminOrdenMaxPostulantes').value = o.max_postulantes || 1;
+            adminCargarEspecialidades().then(() => {
+                document.getElementById('adminOrdenEspecialidad').value = o.especialidad || '';
+            });
+            document.getElementById('adminModalOrdenTitulo').textContent = 'Editar Orden de Trabajo';
+            document.getElementById('adminBtnGuardar').textContent = 'Guardar Cambios';
+            document.getElementById('adminModalOrden').classList.remove('hidden');
+        }
+
+        function adminCerrarModal(event) {
+            if (event && event.target !== document.getElementById('adminModalOrden')) return;
+            document.getElementById('adminModalOrden').classList.add('hidden');
+        }
+
+        // ---------- CRUD ----------
+        async function adminGuardarOrden(event) {
+            event.preventDefault();
+            const id          = document.getElementById('adminOrdenId').value;
+            const titulo      = document.getElementById('adminOrdenTitulo').value.trim();
+            const descripcion = document.getElementById('adminOrdenDesc').value.trim();
+            const ubicacion   = document.getElementById('adminOrdenUbicacion').value.trim();
+            const fechaInicio = document.getElementById('adminOrdenFechaInicio').value;
+            const fechaFin    = document.getElementById('adminOrdenFechaFin').value;
+            const especialidad = document.getElementById('adminOrdenEspecialidad').value;
+            const presupuesto  = document.getElementById('adminOrdenPresupuesto').value;
+            const estado       = document.getElementById('adminOrdenEstado').value;
+            const maxPostulantes = parseInt(document.getElementById('adminOrdenMaxPostulantes').value) || 1;
+
+            if (fechaFin < fechaInicio) {
+                Swal.fire({ icon: 'warning', title: 'Fechas inválidas', text: 'La fecha de fin no puede ser anterior a la fecha de inicio.', confirmButtonColor: '#3b82f6' });
+                return;
+            }
+
+            const btn = document.getElementById('adminBtnGuardar');
+            btn.disabled = true; btn.textContent = 'Guardando...';
+
+            const usuarioId = localStorage.getItem('usuarioId');
+            const body = JSON.stringify({ usuario_id: usuarioId, titulo, descripcion, ubicacion_obra: ubicacion, fecha_inicio: fechaInicio, fecha_fin: fechaFin, especialidad, presupuesto_estimado: presupuesto || null, estado, max_postulantes: maxPostulantes });
+            const url    = id ? `${OT_API}/${id}` : OT_API;
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, { method, headers: _otHeaders(), body });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                document.getElementById('adminModalOrden').classList.add('hidden');
+                await adminCargarOrdenes();
+                Swal.fire({ icon: 'success', title: id ? 'Orden actualizada' : 'Orden creada', text: id ? 'Los cambios fueron guardados correctamente.' : 'La nueva orden fue creada exitosamente.', confirmButtonColor: '#3b82f6', timer: 2500, timerProgressBar: true });
+            } catch (err) {
+                console.error('[AdminOT guardar]', err);
+                Swal.fire({ icon: 'error', title: 'Error al guardar', text: 'No se pudo guardar la orden. Verifica la conexión al servidor.', confirmButtonColor: '#3b82f6' });
+            } finally {
+                btn.disabled = false;
+                btn.textContent = id ? 'Guardar Cambios' : 'Crear Orden';
+            }
+        }
+
+        async function adminCambiarEstado(id, nuevoEstado) {
+            if (!nuevoEstado) return;
+            try {
+                const res = await fetch(`${OT_API}/${id}`, {
+                    method: 'PATCH',
+                    headers: _otHeaders(),
+                    body: JSON.stringify({ estado: nuevoEstado })
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                await adminCargarOrdenes();
+                Swal.fire({ icon: 'success', title: 'Estado actualizado', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false, timerProgressBar: true, showClass: { popup: '' }, hideClass: { popup: '' } });
+            } catch (err) {
+                console.error('[AdminOT estado]', err);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar el estado.', confirmButtonColor: '#3b82f6' });
+            }
+        }
+
+        async function adminEliminarOrden(id) {
+            const { isConfirmed } = await Swal.fire({
+                title: '¿Eliminar orden?',
+                text: 'Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+            if (!isConfirmed) return;
+            try {
+                const res = await fetch(`${OT_API}/${id}`, { method: 'DELETE', headers: _otHeaders() });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                await adminCargarOrdenes();
+                Swal.fire({ icon: 'success', title: 'Orden eliminada', text: 'La orden fue eliminada correctamente.', confirmButtonColor: '#3b82f6', timer: 2000, timerProgressBar: true });
+            } catch (err) {
+                console.error('[AdminOT eliminar]', err);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo eliminar la orden.', confirmButtonColor: '#3b82f6' });
+            }
+        }
+
+        // ---------- Ver postulaciones ----------
+        async function adminVerPostulaciones(idOrden) {
+            const modal = document.getElementById('adminModalPostulaciones');
+            const content = document.getElementById('adminPostulacionesContent');
+            const titulo = document.getElementById('adminPostulacionesTitulo');
+            if (!modal || !content) return;
+
+            const orden = _adminTodasOrdenes.find(o => (o.id_orden || o.id) == idOrden);
+            if (titulo) titulo.textContent = `Postulantes: ${orden ? orden.titulo : '#' + idOrden}`;
+            content.innerHTML = '<p class="text-gray-400 text-center py-8">Cargando...</p>';
+            modal.classList.remove('hidden');
+
+            try {
+                const res = await fetch(`${OT_API}/${idOrden}/postulaciones`, { headers: _otHeaders() });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const json = await res.json();
+                const posts = json.data || [];
+
+                if (!posts.length) {
+                    content.innerHTML = '<p class="text-gray-400 text-center py-8 italic">Ningún técnico se ha postulado aún.</p>';
+                    return;
+                }
+
+                const BACKEND = window.APP_CONFIG ? window.APP_CONFIG.BACKEND_URL : '';
+                const _API = window.API_BASE || '';
+
+                // --- helpers de calificaciones (renderizado inline) ---
+                function _renderStarsHtml(rating) {
+                    const r = parseFloat(rating) || 0;
+                    let html = '';
+                    for (let i = 1; i <= 5; i++) {
+                        if (i <= Math.floor(r)) {
+                            html += `<svg viewBox="0 0 20 20" fill="#f59e0b" class="inline-block" style="width:11px;height:11px;"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.784.57-1.838-.197-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.05 2.927z"/></svg>`;
+                        } else if (i === Math.ceil(r) && r % 1 >= 0.25) {
+                            html += `<svg viewBox="0 0 20 20" class="inline-block" style="width:11px;height:11px;"><defs><linearGradient id="hg${i}"><stop offset="50%" stop-color="#f59e0b"/><stop offset="50%" stop-color="#d1d5db"/></linearGradient></defs><path fill="url(#hg${i})" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.784.57-1.838-.197-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.05 2.927z"/></svg>`;
+                        } else {
+                            html += `<svg viewBox="0 0 20 20" fill="#d1d5db" class="inline-block" style="width:11px;height:11px;"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.784.57-1.838-.197-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.063 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.05 2.927z"/></svg>`;
+                        }
+                    }
+                    return html;
+                }
+
+                function _metricaBar(label, valor, color) {
+                    const pct = Math.round(Math.min(100, Math.max(0, parseFloat(valor) || 0)));
+                    return `
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[9px] text-gray-500 w-16 shrink-0 truncate">${label}</span>
+                        <div class="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                            <div style="width:${pct}%;background:${color}" class="h-1.5 rounded-full transition-all"></div>
+                        </div>
+                        <span class="text-[9px] font-semibold text-gray-600 w-7 text-right shrink-0">${pct}%</span>
+                    </div>`;
+                }
+
+                // Obtener estadísticas y métricas en paralelo para cada postulante que tenga perfil
+                const statsArr = await Promise.all(posts.map(async (p) => {
+                    if (!p.id_perfil_tecnico) return { estadisticas: null, metricas: null };
+                    try {
+                        const [resEst, resMet] = await Promise.all([
+                            fetch(`${_API}/intercambios/estadisticas/${p.id_perfil_tecnico}`),
+                            fetch(`${_API}/metricas/persona/${p.id_perfil_tecnico}`)
+                        ]);
+                        const [jsonEst, jsonMet] = await Promise.all([resEst.json(), resMet.json()]);
+                        return {
+                            estadisticas: (resEst.ok && jsonEst.success) ? jsonEst.data : null,
+                            metricas: (resMet.ok && jsonMet.success) ? jsonMet.data : null
+                        };
+                    } catch (e) {
+                        return { estadisticas: null, metricas: null };
+                    }
+                }));
+
+                content.innerHTML = posts.map((p, idx) => {
+                    const estadoCls = p.estado === 'aceptada'
+                        ? 'text-green-600 bg-green-50 border border-green-200'
+                        : p.estado === 'rechazada'
+                        ? 'text-red-500 bg-red-50 border border-red-200'
+                        : 'text-yellow-600 bg-yellow-50 border border-yellow-200';
+
+                    const nombre = p.nombre_tecnico?.trim() || p.correo_tecnico || `Usuario #${p.usuario_id}`;
+                    const fecha  = p.fecha_postulacion ? new Date(p.fecha_postulacion).toLocaleDateString('es-HN') : '—';
+
+                    // Avatar
+                    const imgSrc = p.imagen_tecnico
+                        ? (p.imagen_tecnico.startsWith('http') ? p.imagen_tecnico : `${BACKEND}${p.imagen_tecnico}`)
+                        : null;
+                    const avatarHtml = imgSrc
+                        ? `<img src="${imgSrc}" class="w-11 h-11 rounded-full object-cover border-2 border-white shadow" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                           <div class="w-11 h-11 rounded-full bg-blue-100 text-blue-600 font-bold text-sm items-center justify-center hidden">${escapeHtml(nombre.charAt(0).toUpperCase())}</div>`
+                        : `<div class="w-11 h-11 rounded-full bg-blue-100 text-blue-600 font-bold text-sm flex items-center justify-center">${escapeHtml(nombre.charAt(0).toUpperCase())}</div>`;
+
+                    // Navegar al perfil igual que en las tarjetas de Descubrir
+                    const perfilId = p.id_perfil_tecnico;
+                    const btnVerPerfil = perfilId
+                        ? `<button onclick="document.getElementById('adminModalPostulaciones').classList.add('hidden'); window.parent.viewProfile(${perfilId});"
+                               class="inline-flex items-center gap-1 mt-2 px-3 py-1 border-2 border-blue-500 text-blue-600 rounded-lg text-[10px] font-semibold hover:bg-blue-50 transition">
+                               <span class="iconify" data-icon="mdi:account-arrow-right-outline" style="font-size:12px;"></span>
+                               Ver perfil
+                           </button>`
+                        : `<span class="inline-flex items-center gap-1 mt-2 text-[10px] text-gray-300 italic">
+                               <span class="iconify" data-icon="mdi:account-off-outline" style="font-size:12px;"></span>
+                               Sin perfil público
+                           </span>`;
+
+                    // --- Sección de calificaciones y métricas ---
+                    const { estadisticas, metricas } = statsArr[idx];
+                    const promedio = parseFloat(estadisticas?.promedio_calificacion || 0);
+                    const totalCal = estadisticas?.total_calificaciones || 0;
+
+                    const tieneCalificaciones = promedio > 0 || totalCal > 0;
+                    const tieneMetricas = metricas && (
+                        (metricas.puntualidad > 0) || (metricas.calidad_trabajo > 0) ||
+                        (metricas.limpieza > 0) || (metricas.comunicacion > 0)
+                    );
+
+                    const calHtml = tieneCalificaciones ? `
+                    <div class="flex items-center gap-1 mt-1.5 flex-wrap">
+                        ${_renderStarsHtml(promedio)}
+                        <span class="text-[10px] font-semibold text-gray-700 ml-0.5">${promedio.toFixed(1)}</span>
+                        <span class="text-[10px] text-gray-400">(${totalCal} ${totalCal === 1 ? 'reseña' : 'reseñas'})</span>
+                    </div>` : '';
+
+                    const metHtml = tieneMetricas ? `
+                    <div class="mt-2 space-y-0.5">
+                        ${_metricaBar('Puntualidad', metricas.puntualidad, '#10b981')}
+                        ${_metricaBar('Calidad', metricas.calidad_trabajo, '#f59e0b')}
+                        ${_metricaBar('Limpieza', metricas.limpieza, '#06b6d4')}
+                        ${_metricaBar('Comunicación', metricas.comunicacion, '#8b5cf6')}
+                    </div>` : '';
+
+                    return `
+                    <div class="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition">
+                        <div class="relative flex-shrink-0">
+                            ${avatarHtml}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <p class="text-sm font-semibold text-gray-800">${escapeHtml(nombre)}</p>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${estadoCls}">${p.estado}</span>
+                            </div>
+                            ${p.correo_tecnico ? `<p class="text-[11px] text-gray-400">${escapeHtml(p.correo_tecnico)}</p>` : ''}
+                            ${calHtml}
+                            ${metHtml}
+                            ${p.mensaje ? `<p class="text-xs text-gray-500 mt-1.5 italic">&ldquo;${escapeHtml(p.mensaje)}&rdquo;</p>` : ''}
+                            <p class="text-[10px] text-gray-400 mt-1">${fecha}</p>
+                            ${btnVerPerfil}
+                        </div>
+                        <div class="flex flex-col items-end gap-1.5 flex-shrink-0 w-[72px]">
+                            ${p.estado === 'pendiente' ? `
+                            <button onclick="adminCambiarPostulacion(${p.id_postulacion}, ${idOrden}, 'aceptada')"
+                                class="w-full px-2.5 py-1.5 text-[10px] rounded-lg bg-green-100 hover:bg-green-200 text-green-700 font-semibold transition text-center">Aceptar</button>
+                            <button onclick="adminCambiarPostulacion(${p.id_postulacion}, ${idOrden}, 'rechazada')"
+                                class="w-full px-2.5 py-1.5 text-[10px] rounded-lg bg-red-100 hover:bg-red-200 text-red-600 font-semibold transition text-center">Rechazar</button>` : ''}
+                        </div>
+                    </div>`;
+                }).join('');
+
+                if (window.Iconify) Iconify.scan();
+            } catch (err) {
+                content.innerHTML = '<p class="text-red-400 text-center py-8">Error al cargar postulaciones.</p>';
+                console.error('[AdminOT postulaciones]', err);
+            }
+        }
+
+        async function adminCambiarPostulacion(postId, idOrden, nuevoEstado) {
+            try {
+                const res = await fetch(`${OT_API}/${idOrden}/postulaciones/${postId}`, {
+                    method: 'PATCH',
+                    headers: _otHeaders(),
+                    body: JSON.stringify({ estado: nuevoEstado })
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                await adminVerPostulaciones(idOrden);
+                await adminCargarOrdenes();
+                Swal.fire({ icon: 'success', title: nuevoEstado === 'aceptada' ? 'Postulante aceptado' : 'Postulante rechazado', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false, timerProgressBar: true, showClass: { popup: '' }, hideClass: { popup: '' } });
+            } catch (err) {
+                console.error('[AdminOT cambiar postulacion]', err);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar la postulación.', confirmButtonColor: '#3b82f6' });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+/* Contenedor fijo para los toasts - Centrado arriba */
+#toast-container {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    pointer-events: none;
+    font-family: 'Inter', sans-serif;
+    align-items: center; /* Asegura que los hijos se centren si tienen ancho variable */
+}
+
+/* Diseño de la Tarjeta Toast */
+.sc-toast {
+    pointer-events: auto;
+    min-width: 320px;
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.95); /* Más sólido arriba para evitar conflictos visuales */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 10px 15px -3px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(0, 0, 0, 0.03);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    
+    /* Animación de entrada: cae desde arriba */
+    transform: translateY(-30px) scale(0.95);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Clase para activar la animación de entrada */
+.sc-toast.show {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+/* Contenido */
+.sc-toast-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sc-toast-title {
+    font-weight: 600;
+    color: #111827;
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+}
+
+.sc-toast-message {
+    color: #6b7280;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+/* Iconos */
+.sc-toast-icon {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Colores de variantes (Sutiles y elegantes) */
+.sc-toast-success .sc-toast-icon { color: #10b981; }
+.sc-toast-error .sc-toast-icon { color: #ef4444; }
+.sc-toast-info .sc-toast-icon { color: #3b82f6; }
+.sc-toast-warning .sc-toast-icon { color: #f59e0b; }
+
+/* Borde izquierdo elegante (opcional, estilo Stripe) */
+.sc-toast-success { border-left: 4px solid #10b981; }
+.sc-toast-error { border-left: 4px solid #ef4444; }
+.sc-toast-info { border-left: 4px solid #3b82f6; }
+.sc-toast-warning { border-left: 4px solid #f59e0b; }
+
+/* Botón cerrar */
+.sc-toast-close {
+    color: #9ca3af;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sc-toast-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #4b5563;
+}
+
+/* Responsive móvil */
+@media (max-width: 640px) {
+    #toast-container {
+        top: 20px;
+        right: 20px;
+        left: 20px;
+        bottom: auto; /* reset bottom */
+        transform: none; /* reset translate, use flex for centering if needed or full width */
+        align-items: center;
+    }
+    .sc-toast {
+        width: 100%;
+        min-width: unset;
+        max-width: unset;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+    }
+}
