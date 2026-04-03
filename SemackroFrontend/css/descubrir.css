@@ -1096,26 +1096,30 @@
         /* Vista de mensajería con fondo transparente */
         #mensajesView {
             background: transparent !important;
-            min-height: calc(100vh - 40px);
+            height: calc(100dvh - 80px);
+            min-height: calc(100dvh - 80px);
             width: 100%;
-            margin-bottom: -48px;
+            margin-bottom: 0;
             padding-bottom: 0;
+            overflow: hidden;
         }
         
         #mensajesView > div,
         #mensajesView > div > div,
         #mensajesView > div > div > div {
-            min-height: calc(100vh - 40px);
+            min-height: 0;
             height: 100%;
         }
         
         #chat-layout-dashboard {
-            min-height: calc(100vh - 40px) !important;
+            height: 100% !important;
+            min-height: 0 !important;
         }
         
         #conversacionesColumn,
         #chatColumn {
-            min-height: calc(100vh - 40px);
+            min-height: 0;
+            height: 100%;
         }
 
         @keyframes fadeIn {
@@ -2092,6 +2096,7 @@
         #mensajesView.active > div,
         #mensajesView.active > div > div,
         #mensajesView.active > div > div > div,
+        #mensajesView.active .bg-white.overflow-hidden,
         #mensajesView.active #chat-layout-dashboard,
         #mensajesView.active #chatColumn,
         #mensajesView.active #chat-activo-dashboard {
@@ -2109,6 +2114,8 @@
 
         #mensajesView.active #chat-input-dashboard {
             flex-shrink: 0;
+            background: #ffffff;
+            box-shadow: 0 -1px 0 rgba(226, 232, 240, 0.9);
         }
 
         @media (max-width: 767px) {
