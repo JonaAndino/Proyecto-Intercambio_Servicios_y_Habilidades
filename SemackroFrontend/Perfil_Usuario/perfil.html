@@ -2257,6 +2257,18 @@
         // ======================
         const API_BASE = window.API_BASE;
         const PROFILE_TOUR_STORAGE_KEY = 'semackro_profile_tour_v1';
+        const TOUR_REQUIRED_PERSONAL_FIELDS = [
+            'pais',
+            'departamento',
+            'ciudad',
+            'codigoPostal',
+            'estadoCivil_Usuario',
+            'genero_Usuario',
+            'tipoIdentificacion_Usuario',
+            'identificacion_usuario',
+            'fechaNacimiento',
+            'anios_experiencia'
+        ];
         let profileTourHasStarted = false;
         let profileTourInstance = null;
         let tourAutoAdvanceCleanup = null;
@@ -2323,6 +2335,22 @@
             window.history.replaceState({}, '', nextUrl);
         }
 
+        function isFilledTourValue(value) {
+            if (value === null || value === undefined) return false;
+            if (typeof value === 'number') return Number.isFinite(value);
+            return String(value).trim() !== '';
+        }
+
+        function isDatosPersonalesCompletos() {
+            return TOUR_REQUIRED_PERSONAL_FIELDS.every(field => isFilledTourValue(usuario[field]));
+        }
+
+        function evaluateTourCompletionCheck(checkName) {
+            if (!checkName) return true;
+            if (checkName === 'datosPersonales') return isDatosPersonalesCompletos();
+            return true;
+        }
+
         function buildProfileTourSteps() {
             const steps = [
                 {
@@ -2344,8 +2372,9 @@
                     autoAdvance: {
                         listenSelector: '#datosPersonales',
                         delegateSelector: 'input, textarea, select',
+                        completeCheck: 'datosPersonales',
                         events: ['change', 'blur'],
-                        delayMs: 260
+                        delayMs: 320
                     }
                 },
                 {
@@ -2482,8 +2511,12 @@
                         if (!matched || !root.contains(matched)) return;
                     }
 
-                    triggered = true;
                     window.setTimeout(() => {
+                        if (!evaluateTourCompletionCheck(cfg.completeCheck)) {
+                            return;
+                        }
+
+                        triggered = true;
                         if (!profileTourInstance || typeof profileTourInstance.getState !== 'function') return;
                         const state = profileTourInstance.getState();
                         const activeIndex = typeof state.activeIndex === 'number' ? state.activeIndex : -1;
