@@ -251,6 +251,220 @@ try {
   window.location.href = "login.html";
 }
 
+const POST_LOGIN_ONBOARDING_SESSION_KEY = "semackro_post_login_onboarding";
+let onboardingPostLoginEnCurso = false;
+
+function leerOnboardingPostLoginPendiente() {
+  try {
+    const raw = sessionStorage.getItem(POST_LOGIN_ONBOARDING_SESSION_KEY);
+    if (!raw) return false;
+
+    const data = JSON.parse(raw);
+    if (!data || data.pending !== true) return false;
+
+    const usuarioSesion = String(localStorage.getItem("usuarioId") || "");
+    const usuarioBandera = String(data.usuarioId || "");
+    if (usuarioBandera && usuarioSesion && usuarioBandera !== usuarioSesion) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.warn("No se pudo leer onboarding post-login:", error);
+    return false;
+  }
+}
+
+function limpiarOnboardingPostLoginPendiente() {
+  try {
+    sessionStorage.removeItem(POST_LOGIN_ONBOARDING_SESSION_KEY);
+  } catch (error) {
+    console.warn("No se pudo limpiar onboarding post-login:", error);
+  }
+}
+
+function obtenerDriverFactoryDescubrir() {
+  if (window.driver && typeof window.driver === "function") return window.driver;
+  if (window.driver && typeof window.driver.driver === "function") {
+    return window.driver.driver;
+  }
+  if (
+    window.driver &&
+    window.driver.js &&
+    typeof window.driver.js.driver === "function"
+  ) {
+    return window.driver.js.driver;
+  }
+  return null;
+}
+
+function iniciarTourOnboardingPerfil() {
+  const hamburger = document.getElementById("hamburgerBtn");
+  const perfilItem = document.querySelector('[data-view="perfil"]');
+
+  if (!hamburger || !perfilItem) {
+    navigateTo("perfil");
+    return;
+  }
+
+  const createDriver = obtenerDriverFactoryDescubrir();
+  if (!createDriver) {
+    console.warn("Driver.js no está disponible. Redirigiendo al perfil.");
+    openSidebar();
+    setTimeout(() => {
+      closeSidebarFn();
+      navigateTo("perfil");
+    }, 260);
+    return;
+  }
+
+  const tour = createDriver({
+    steps: [
+      {
+        element: "#hamburgerBtn",
+        popover: {
+          title: "Paso 1: abre el menu",
+          description:
+            "Este boton abre el menu lateral. Pulsa Siguiente y te lo abrimos automaticamente.",
+          side: "bottom",
+          align: "start",
+        },
+      },
+      {
+        element: '[data-view="perfil"]',
+        popover: {
+          title: "Paso 2: entra a tu perfil",
+          description:
+            "Desde aqui completas tu informacion. Pulsa Ir a perfil para abrir esta seccion.",
+          side: "right",
+          align: "start",
+        },
+      },
+    ],
+    showProgress: true,
+    allowClose: true,
+    overlayClickBehavior: "close",
+    overlayOpacity: 0.55,
+    stagePadding: 10,
+    popoverOffset: 14,
+    nextBtnText: "Siguiente",
+    prevBtnText: "Atras",
+    doneBtnText: "Ir a perfil",
+    showButtons: ["previous", "next", "close"],
+    onNextClick: (_, __, options) => {
+      const index = options?.state?.activeIndex || 0;
+      const total = (options?.config?.steps || []).length;
+
+      if (index === 0) {
+        openSidebar();
+        setTimeout(() => {
+          options.driver.moveNext();
+        }, 260);
+        return;
+      }
+
+      if (index >= total - 1) {
+        closeSidebarFn();
+        navigateTo("perfil");
+        options.driver.destroy();
+        return;
+      }
+
+      options.driver.moveNext();
+    },
+    onPrevClick: (_, __, options) => {
+      const index = options?.state?.activeIndex || 0;
+      if (index <= 0) return;
+      if (index === 1) {
+        closeSidebarFn();
+      }
+      setTimeout(() => {
+        options.driver.movePrevious();
+      }, 120);
+    },
+    onCloseClick: (_, __, options) => {
+      closeSidebarFn();
+      options.driver.destroy();
+    },
+    onDestroyed: () => {
+      closeSidebarFn();
+    },
+  });
+
+  if (tour && typeof tour.drive === "function") {
+    setTimeout(() => {
+      tour.drive();
+    }, 180);
+    return;
+  }
+
+  navigateTo("perfil");
+}
+
+async function mostrarOnboardingPostLogin() {
+  if (onboardingPostLoginEnCurso) return;
+  if (!leerOnboardingPostLoginPendiente()) return;
+
+  onboardingPostLoginEnCurso = true;
+
+  try {
+    if (typeof Swal !== "undefined" && Swal && typeof Swal.fire === "function") {
+      const result = await Swal.fire({
+        title: "Completa tu perfil",
+        html: "Antes de usar Descubrir, quieres completar tu informacion de perfil ahora?",
+        icon: "info",
+        showDenyButton: true,
+        confirmButtonText: "Llenar informacion",
+        denyButtonText: "Omitir por ahora",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showCloseButton: false,
+        reverseButtons: true,
+      });
+
+      if (result.isConfirmed) {
+        limpiarOnboardingPostLoginPendiente();
+        setTimeout(() => {
+          iniciarTourOnboardingPerfil();
+        }, 120);
+        return;
+      }
+
+      if (result.isDenied) {
+        limpiarOnboardingPostLoginPendiente();
+        return;
+      }
+
+      return;
+    }
+
+    const quiereCompletar = window.confirm(
+      "Antes de usar Descubrir, quieres completar tu perfil ahora?",
+    );
+    limpiarOnboardingPostLoginPendiente();
+    if (quiereCompletar) {
+      iniciarTourOnboardingPerfil();
+    }
+  } catch (error) {
+    console.warn("No se pudo mostrar onboarding post-login:", error);
+  } finally {
+    onboardingPostLoginEnCurso = false;
+  }
+}
+
+function intentarOnboardingPostLogin() {
+  if (!leerOnboardingPostLoginPendiente()) return;
+  window.requestAnimationFrame(() => {
+    setTimeout(() => {
+      mostrarOnboardingPostLogin();
+    }, 140);
+  });
+}
+
+setTimeout(() => {
+  intentarOnboardingPostLogin();
+}, 280);
+
 // Sistema de navegación SPA (Single Page Application)
 let currentView = "descubrir";
 

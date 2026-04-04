@@ -367,6 +367,19 @@
             }
         }
 
+        function marcarOnboardingPostLoginPendiente() {
+            try {
+                const usuarioId = localStorage.getItem('usuarioId') || '';
+                sessionStorage.setItem('semackro_post_login_onboarding', JSON.stringify({
+                    pending: true,
+                    usuarioId,
+                    ts: Date.now()
+                }));
+            } catch (e) {
+                console.warn('No se pudo marcar onboarding post-login:', e);
+            }
+        }
+
         // Autenticar con Firebase
         async function authenticateWithFirebase(user) {
             try {
@@ -430,6 +443,8 @@
                     const successMessage = translations[currentLanguage]['login.successRedirect'] || "Sesión iniciada. Redirigiendo...";
                     showMessage(successMessage, "bg-green-100 text-green-700");
 
+                    marcarOnboardingPostLoginPendiente();
+
                     setTimeout(() => {
                         window.location.href = "Descubrir.html";
                     }, 1500);
@@ -482,6 +497,8 @@
 
                 const successMessage = translations[currentLanguage]['login.successRedirect'] || "Sesión iniciada. Redirigiendo...";
                 showMessage(successMessage, "bg-green-100 text-green-700");
+
+                marcarOnboardingPostLoginPendiente();
 
                 setTimeout(() => {
                     window.location.href = "Descubrir.html";
@@ -542,6 +559,8 @@
 
                             const successMessage = translations[currentLanguage]['login.successRedirect'] || "Sesión iniciada. Redirigiendo...";
                             showMessage(successMessage, "bg-green-100 text-green-700");
+
+                            marcarOnboardingPostLoginPendiente();
 
                             setTimeout(() => {
                                 window.location.href = "Descubrir.html";
