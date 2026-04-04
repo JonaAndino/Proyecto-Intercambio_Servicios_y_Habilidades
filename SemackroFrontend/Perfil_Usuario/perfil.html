@@ -10,6 +10,7 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="../css/toast.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.6/dist/driver.css" />
     <style>
         * {
             margin: 0;
@@ -22,6 +23,73 @@
             background: rgb(255, 255, 255);
             color: #000000;
             padding: 20px 20px 0;
+        }
+
+        .tour-mascot {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 10050;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .tour-mascot-avatar {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+            box-shadow: 0 8px 22px rgba(37, 99, 235, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 800;
+            font-size: 20px;
+            animation: mascotFloat 1.8s ease-in-out infinite;
+        }
+
+        .tour-mascot-bubble {
+            max-width: 250px;
+            background: #ffffff;
+            border: 1px solid #dbeafe;
+            color: #1f2937;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 13px;
+            line-height: 1.35;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+        }
+
+        @keyframes mascotFloat {
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        .profile-tour-popover .driver-popover-title {
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .profile-tour-popover .driver-popover-description {
+            color: #374151;
+        }
+
+        @media (max-width: 768px) {
+            .tour-mascot {
+                display: none;
+            }
         }
 
         .app-container {
@@ -2042,6 +2110,7 @@
     <script src="js/BlurFade.js"></script>
     <script src="js/GaleriaUniforme.js"></script>
     <script src="js/PixelBarChart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.6/dist/driver.js.iife.js"></script>
 
     <script>
         // ======================
@@ -2075,6 +2144,172 @@
         // API BASE URL
         // ======================
         const API_BASE = window.API_BASE;
+        const PROFILE_TOUR_STORAGE_KEY = 'semackro_profile_tour_v1';
+        let profileTourHasStarted = false;
+        let profileMascotElement = null;
+
+        function getDriverFactory() {
+            if (window.driver && typeof window.driver === 'function') return window.driver;
+            if (window.driver && typeof window.driver.driver === 'function') return window.driver.driver;
+            if (window.driver && window.driver.js && typeof window.driver.js.driver === 'function') return window.driver.js.driver;
+            return null;
+        }
+
+        function renderTourMascot() {
+            if (profileMascotElement) return;
+            const mascot = document.createElement('div');
+            mascot.id = 'profileTourMascot';
+            mascot.className = 'tour-mascot';
+            mascot.innerHTML = `
+                <div class="tour-mascot-bubble" id="profileTourMascotBubble">Te guio en 1 minuto para completar tu perfil.</div>
+                <div class="tour-mascot-avatar" aria-hidden="true">S</div>
+            `;
+            document.body.appendChild(mascot);
+            profileMascotElement = mascot;
+        }
+
+        function setTourMascotText(text) {
+            if (!profileMascotElement) return;
+            const bubble = profileMascotElement.querySelector('#profileTourMascotBubble');
+            if (bubble) bubble.textContent = text;
+        }
+
+        function removeTourMascot() {
+            if (!profileMascotElement) return;
+            profileMascotElement.remove();
+            profileMascotElement = null;
+        }
+
+        function clearTourQueryParam() {
+            const url = new URL(window.location.href);
+            if (!url.searchParams.has('tour')) return;
+            url.searchParams.delete('tour');
+            const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+            window.history.replaceState({}, '', nextUrl);
+        }
+
+        function buildProfileTourSteps() {
+            const steps = [
+                {
+                    element: '#profilePicContainer',
+                    title: 'Sube tu foto',
+                    description: 'Haz clic para agregar una foto clara y profesional.',
+                    side: 'bottom',
+                    align: 'start',
+                    mascot: 'Comienza por tu foto. Da confianza al instante.'
+                },
+                {
+                    element: '#nombreCompleto',
+                    title: 'Completa tu nombre',
+                    description: 'Presiona sobre tu nombre para editarlo.',
+                    side: 'bottom',
+                    align: 'start',
+                    mascot: 'Asegura que tu nombre se vea como quieres que te contacten.'
+                },
+                {
+                    element: '#descripcion',
+                    title: 'Describe tu perfil',
+                    description: 'Explica en pocas lineas que haces y en que destacas.',
+                    side: 'bottom',
+                    align: 'start',
+                    mascot: 'Una buena descripcion te trae mejores oportunidades.'
+                },
+                {
+                    element: '#offeredSkillsContainer',
+                    title: 'Agrega habilidades',
+                    description: 'Incluye tus habilidades principales para aparecer en busquedas.',
+                    side: 'top',
+                    align: 'start',
+                    mascot: 'Tus habilidades son la clave para que te encuentren.'
+                },
+                {
+                    element: '#availabilityToggle',
+                    title: 'Activa disponibilidad',
+                    description: 'Si estas listo para trabajar o intercambiar, dejalo activo.',
+                    side: 'left',
+                    align: 'center',
+                    mascot: 'Listo. Con esto tu perfil queda preparado para conectar.'
+                }
+            ];
+
+            return steps
+                .filter(step => document.querySelector(step.element))
+                .map(step => ({
+                    element: step.element,
+                    mascot: step.mascot,
+                    popover: {
+                        title: step.title,
+                        description: step.description,
+                        side: step.side,
+                        align: step.align
+                    }
+                }));
+        }
+
+        function startProfileTourIfNeeded(options = {}) {
+            const { readOnlyMode = false, force = false } = options;
+            if (profileTourHasStarted) return;
+            if (readOnlyMode && !force) return;
+
+            const searchParams = new URLSearchParams(window.location.search);
+            const forceByQuery = searchParams.get('tour') === 'onboarding';
+            const shouldStart = force || forceByQuery || !localStorage.getItem(PROFILE_TOUR_STORAGE_KEY);
+            if (!shouldStart) return;
+
+            const createDriver = getDriverFactory();
+            if (!createDriver) {
+                console.warn('[TOUR] Driver.js no disponible, se omite tour.');
+                return;
+            }
+
+            const steps = buildProfileTourSteps();
+            if (steps.length < 2) return;
+
+            profileTourHasStarted = true;
+            renderTourMascot();
+            setTourMascotText('Te acompano paso a paso para completar tu perfil.');
+            let tourClosed = false;
+
+            const handleStepChange = (_, step) => {
+                if (step && step.mascot) setTourMascotText(step.mascot);
+            };
+
+            const handleTourClose = () => {
+                if (tourClosed) return;
+                tourClosed = true;
+                localStorage.setItem(PROFILE_TOUR_STORAGE_KEY, '1');
+                removeTourMascot();
+                clearTourQueryParam();
+                profileTourHasStarted = false;
+            };
+
+            const tour = createDriver({
+                showProgress: true,
+                allowClose: true,
+                overlayOpacity: 0.55,
+                stagePadding: 8,
+                popoverClass: 'profile-tour-popover',
+                nextBtnText: 'Siguiente',
+                prevBtnText: 'Atras',
+                doneBtnText: 'Listo',
+                onHighlightStarted: handleStepChange,
+                onHighlighted: handleStepChange,
+                onDestroyStarted: handleTourClose,
+                onDestroyed: handleTourClose
+            });
+
+            if (typeof tour.setSteps === 'function') {
+                tour.setSteps(steps);
+            }
+
+            if (typeof tour.drive === 'function') {
+                setTimeout(() => tour.drive(), 240);
+            }
+        }
+
+        window.iniciarTourPerfil = function () {
+            startProfileTourIfNeeded({ force: true, readOnlyMode: false });
+        };
 
         // ======================
         // INICIALIZACIÓN
@@ -2086,7 +2321,9 @@
 
             // Obtener usuario ID desde localStorage
             const usuarioIdFromStorage = localStorage.getItem('usuarioId');
-            usuarioId = usuarioIdFromStorage ? parseInt(usuarioIdFromStorage, 10) : null;
+            const usuarioIdPropio = usuarioIdFromStorage ? parseInt(usuarioIdFromStorage, 10) : null;
+            usuarioId = usuarioIdPropio;
+            const readOnlyMode = !!(paramUserId && parseInt(paramUserId, 10) !== usuarioIdPropio);
 
             if (paramUserId && parseInt(paramUserId, 10) !== usuarioId) {
                 // Modo solo lectura: ver perfil de otro usuario
@@ -2099,8 +2336,10 @@
                 return;
             }
 
-            // Cargar datos
-            cargarUsuario();
+            // Cargar datos y luego iniciar tour de primer ingreso
+            cargarUsuario().finally(() => {
+                startProfileTourIfNeeded({ readOnlyMode });
+            });
 
             // Event listeners
             setupEventListeners();
