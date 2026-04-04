@@ -532,6 +532,7 @@ let currentSort = "recent";
 let allUsers = []; // Copia completa de usuarios para ordenamiento
 let currentCategoryFilter = null; // Filtro de categoría activo
 let currentSearchFilter = ""; // Filtro de búsqueda activo
+const verificationStatusCache = new Map();
 
 // Variable global para almacenar ID_Persona del usuario actual
 let usuarioActualPersonaId = null;
@@ -614,6 +615,69 @@ function obtenerEstadoDisponibilidadCard(valorDisponibilidad) {
     textColor: "#6b7280",
     dotColor: "#9ca3af",
   };
+}
+
+function normalizarEstadoVerificacion(valorEstado) {
+  if (valorEstado === true || valorEstado === 1 || valorEstado === "1") {
+    return "aprobada";
+  }
+
+  if (valorEstado === false || valorEstado === 0 || valorEstado === "0") {
+    return "no_verificado";
+  }
+
+  const estado = (valorEstado || "").toString().trim().toLowerCase();
+  if (!estado) return "";
+
+  if (["aprobada", "aprobado", "verificado", "verified", "true"].includes(estado)) {
+    return "aprobada";
+  }
+
+  if (["pendiente", "pending"].includes(estado)) {
+    return "pendiente";
+  }
+
+  if (["rechazada", "rechazado", "denegada", "denegado", "no_verificado", "not_verified", "false"].includes(estado)) {
+    return "no_verificado";
+  }
+
+  return estado;
+}
+
+function esPerfilVerificado(estadoVerificacion) {
+  return normalizarEstadoVerificacion(estadoVerificacion) === "aprobada";
+}
+
+async function obtenerEstadoVerificacionPerfil(idPerfilPersona, estadoFallback = "") {
+  const estadoLocal = normalizarEstadoVerificacion(estadoFallback);
+  if (estadoLocal) {
+    return estadoLocal;
+  }
+
+  const cacheKey = Number(idPerfilPersona);
+  if (verificationStatusCache.has(cacheKey)) {
+    return verificationStatusCache.get(cacheKey);
+  }
+
+  try {
+    const res = await fetch(
+      `${API_BASE}/verificacion-usuarios/perfil/${idPerfilPersona}`,
+    );
+    const data = await res.json().catch(() => ({}));
+    const estado = normalizarEstadoVerificacion(
+      data?.estado_verificacion || data?.estado || data?.verificacion || "",
+    ) || "no_verificado";
+
+    verificationStatusCache.set(cacheKey, estado);
+    return estado;
+  } catch (error) {
+    console.warn(
+      `No se pudo obtener estado de verificacion para el perfil ${idPerfilPersona}:`,
+      error,
+    );
+    verificationStatusCache.set(cacheKey, "no_verificado");
+    return "no_verificado";
+  }
 }
 
 async function cargarDatosUsuario() {
@@ -924,6 +988,15 @@ async function aplicarFiltros() {
     // 3. Procesar usuarios en paralelo
     const usuariosPromises = personasFiltradas.map(async (persona) => {
       try {
+        const estadoVerificacion = await obtenerEstadoVerificacionPerfil(
+          persona.id_Perfil_Persona,
+          persona.estado_verificacion || persona.estadoVerificacion || persona.verificado,
+        );
+
+        if (!esPerfilVerificado(estadoVerificacion)) {
+          return null;
+        }
+
         const [resHabilidades, resDireccion] = await Promise.all([
           fetch(
             `${API_BASE}/habilidades/persona/${persona.id_Perfil_Persona}`,
@@ -1002,6 +1075,7 @@ async function aplicarFiltros() {
           online: Math.random() > 0.5,
           avatar: persona.imagenUrl_Persona || null,
           avatarInitials: (persona.nombre_Persona || "U")[0].toUpperCase(),
+          estadoVerificacion,
         };
       } catch (error) {
         console.error(
@@ -1144,6 +1218,15 @@ async function cargarUsuariosReales() {
     // 2. Procesar usuarios en paralelo (mucho más rápido)
     const usuariosPromises = personasFiltradas.map(async (persona) => {
       try {
+        const estadoVerificacion = await obtenerEstadoVerificacionPerfil(
+          persona.id_Perfil_Persona,
+          persona.estado_verificacion || persona.estadoVerificacion || persona.verificado,
+        );
+
+        if (!esPerfilVerificado(estadoVerificacion)) {
+          return null;
+        }
+
         // Hacer ambas peticiones en paralelo
         const [resHabilidades, resDireccion] = await Promise.all([
           fetch(
@@ -1226,6 +1309,7 @@ async function cargarUsuariosReales() {
           online: Math.random() > 0.5,
           avatar: persona.imagenUrl_Persona || null,
           avatarInitials: (persona.nombre_Persona || "U")[0].toUpperCase(),
+          estadoVerificacion,
         };
       } catch (error) {
         console.error(
@@ -1799,7 +1883,7 @@ function showNotification(message, type = "info") {
 // Función para renderizar las tarjetas con datos reales
 function renderUserCardsReal() {
   if (allUsers.length === 0) {
-    let mensaje = "No hay usuarios disponibles";
+    let mensaje = "No hay perfiles verificados disponibles";
     let icono = `<svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                 </svg>`;
