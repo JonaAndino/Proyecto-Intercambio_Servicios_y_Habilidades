@@ -2327,15 +2327,31 @@
         let profileTourStepsRuntime = [];
         let tourOfferedSkillStepIndex = -1;
 
-        function syncTourOfferedSkillFocusTarget(targetSelector) {
+        function syncTourOfferedSkillFocusTarget(targetSelector, options = {}) {
+            const { forceRefresh = false } = options;
             if (!profileTourInstance || !Array.isArray(profileTourStepsRuntime) || tourOfferedSkillStepIndex < 0) return;
             const offeredStep = profileTourStepsRuntime[tourOfferedSkillStepIndex];
-            if (!offeredStep || offeredStep.element === targetSelector) return;
+            if (!offeredStep) return;
 
-            offeredStep.element = targetSelector;
-            if (typeof profileTourInstance.setSteps === 'function') {
-                profileTourInstance.setSteps(profileTourStepsRuntime);
+            const didChange = offeredStep.element !== targetSelector;
+            if (didChange) {
+                offeredStep.element = targetSelector;
+                if (typeof profileTourInstance.setSteps === 'function') {
+                    profileTourInstance.setSteps(profileTourStepsRuntime);
+                }
             }
+
+            if (!didChange && !forceRefresh) return;
+
+            const activeIndex = typeof profileTourInstance.getActiveIndex === 'function'
+                ? profileTourInstance.getActiveIndex()
+                : -1;
+
+            if (activeIndex === tourOfferedSkillStepIndex && typeof profileTourInstance.moveTo === 'function') {
+                profileTourInstance.moveTo(activeIndex);
+                return;
+            }
+
             if (typeof profileTourInstance.refresh === 'function') {
                 profileTourInstance.refresh();
             }
@@ -4559,10 +4575,10 @@
             currentSkillType = type;
             editSkillIndex = null;
             editSkillId = null;
+            const isTourOfferedSkillStep = type === 'offered' && tourWaitingOfferedSkillModalClose;
 
-            if (type === 'offered' && tourWaitingOfferedSkillModalClose) {
+            if (isTourOfferedSkillStep) {
                 tourOfferedSkillModalOpened = true;
-                syncTourOfferedSkillFocusTarget(TOUR_OFFERED_SKILL_MODAL_SELECTOR);
             }
 
             document.getElementById('modalTitle').textContent =
@@ -4584,6 +4600,12 @@
 
             document.getElementById('skillModal').style.display = 'flex';
             document.getElementById('skillInput')?.focus();
+
+            if (isTourOfferedSkillStep) {
+                window.requestAnimationFrame(() => {
+                    syncTourOfferedSkillFocusTarget(TOUR_OFFERED_SKILL_MODAL_SELECTOR, { forceRefresh: true });
+                });
+            }
         }
 
         function hideSkillModal() {
@@ -4595,7 +4617,7 @@
 
             if (wasVisible && tourOfferedSkillModalOpened) {
                 tourOfferedSkillModalOpened = false;
-                syncTourOfferedSkillFocusTarget(TOUR_OFFERED_SKILL_CONTAINER_SELECTOR);
+                syncTourOfferedSkillFocusTarget(TOUR_OFFERED_SKILL_CONTAINER_SELECTOR, { forceRefresh: true });
                 notifyTourOfferedSkillModalClosed();
             }
         }
