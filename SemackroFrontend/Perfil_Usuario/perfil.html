@@ -2168,6 +2168,7 @@
         let profileTourHasStarted = false;
         let profileMascotElement = null;
         let profileTourInstance = null;
+        let tourAutoAdvanceCleanup = null;
 
         function getDriverFactory() {
             if (window.driver && typeof window.driver === 'function') return window.driver;
@@ -2217,7 +2218,8 @@
                     description: 'Haz clic para agregar una foto clara y profesional.',
                     side: 'bottom',
                     align: 'start',
-                    mascot: 'Comienza por tu foto. Da confianza al instante.'
+                    mascot: 'Comienza por tu foto. Da confianza al instante.',
+                    autoAdvance: { listenSelector: '#profileUpload', events: ['change'], delayMs: 220 }
                 },
                 {
                     element: '#datosPersonales',
@@ -2225,7 +2227,13 @@
                     description: 'Llena telefono, identidad, ciudad y demas datos para tener un perfil completo.',
                     side: 'right',
                     align: 'start',
-                    mascot: 'Entre mas completo tu perfil, mas facil sera que confien en ti.'
+                    mascot: 'Entre mas completo tu perfil, mas facil sera que confien en ti.',
+                    autoAdvance: {
+                        listenSelector: '#datosPersonales',
+                        delegateSelector: 'input, textarea, select',
+                        events: ['change', 'blur'],
+                        delayMs: 260
+                    }
                 },
                 {
                     element: '#nombreCompleto',
@@ -2233,7 +2241,13 @@
                     description: 'Presiona sobre tu nombre para editarlo.',
                     side: 'bottom',
                     align: 'start',
-                    mascot: 'Asegura que tu nombre se vea como quieres que te contacten.'
+                    mascot: 'Asegura que tu nombre se vea como quieres que te contacten.',
+                    autoAdvance: {
+                        listenSelector: '#nombreCompleto',
+                        delegateSelector: 'input, textarea',
+                        events: ['change', 'blur'],
+                        delayMs: 260
+                    }
                 },
                 {
                     element: '#descripcion',
@@ -2241,7 +2255,13 @@
                     description: 'Explica en pocas lineas que haces y en que destacas.',
                     side: 'bottom',
                     align: 'start',
-                    mascot: 'Una buena descripcion te trae mejores oportunidades.'
+                    mascot: 'Una buena descripcion te trae mejores oportunidades.',
+                    autoAdvance: {
+                        listenSelector: '#descripcion',
+                        delegateSelector: 'input, textarea',
+                        events: ['change', 'blur'],
+                        delayMs: 260
+                    }
                 },
                 {
                     element: '#offeredSkillsContainer',
@@ -2249,7 +2269,8 @@
                     description: 'Incluye tus habilidades principales para aparecer en busquedas.',
                     side: 'top',
                     align: 'start',
-                    mascot: 'Tus habilidades son la clave para que te encuentren.'
+                    mascot: 'Tus habilidades son la clave para que te encuentren.',
+                    autoAdvance: { listenSelector: '#offeredSkillsContainer', events: ['click'], delayMs: 220 }
                 },
                 {
                     element: '#locationBtn',
@@ -2257,7 +2278,8 @@
                     description: 'Pulsa este boton, acepta permisos y asi se guarda tu ubicacion en el mapa para mejorar coincidencias cercanas.',
                     side: 'left',
                     align: 'center',
-                    mascot: 'La ubicacion ayuda a mostrarte oportunidades reales cerca de ti.'
+                    mascot: 'La ubicacion ayuda a mostrarte oportunidades reales cerca de ti.',
+                    autoAdvance: { listenSelector: '#locationBtn', events: ['click'], delayMs: 220 }
                 },
                 {
                     element: '#reviewsSection',
@@ -2268,12 +2290,13 @@
                     mascot: 'Las resenas crecen con cada trabajo finalizado. Cuida cada experiencia.'
                 },
                 {
-                    element: '#availabilityToggle',
+                    element: '.status-toggle-group',
                     title: 'Activa disponibilidad',
                     description: 'Si estas listo para trabajar o intercambiar, dejalo activo. Puedes mover el switch ahora mismo.',
-                    side: 'left',
-                    align: 'center',
-                    mascot: 'Listo. Con esto tu perfil queda preparado para conectar.'
+                    side: 'bottom',
+                    align: 'start',
+                    mascot: 'Listo. Con esto tu perfil queda preparado para conectar.',
+                    autoAdvance: { listenSelector: '#availabilityToggle', events: ['change'], delayMs: 180 }
                 }
             ];
 
@@ -2282,6 +2305,7 @@
                 .map(step => ({
                     element: step.element,
                     mascot: step.mascot,
+                    autoAdvance: step.autoAdvance || null,
                     disableActiveInteraction: false,
                     popover: {
                         title: step.title,
@@ -2316,13 +2340,63 @@
             setTourMascotText('Te acompano paso a paso para completar tu perfil.');
             let tourClosed = false;
 
+            const clearAutoAdvanceBinding = () => {
+                if (typeof tourAutoAdvanceCleanup === 'function') {
+                    tourAutoAdvanceCleanup();
+                }
+                tourAutoAdvanceCleanup = null;
+            };
+
+            const bindAutoAdvance = (step) => {
+                clearAutoAdvanceBinding();
+                if (!step || !step.autoAdvance) return;
+
+                const cfg = step.autoAdvance;
+                const root = cfg.listenSelector
+                    ? document.querySelector(cfg.listenSelector)
+                    : (typeof step.element === 'string' ? document.querySelector(step.element) : step.element);
+
+                if (!root) return;
+
+                const events = Array.isArray(cfg.events) && cfg.events.length ? cfg.events : ['click'];
+                let triggered = false;
+
+                const handler = (event) => {
+                    if (triggered || !profileTourInstance) return;
+
+                    if (cfg.delegateSelector) {
+                        const matched = event.target && event.target.closest
+                            ? event.target.closest(cfg.delegateSelector)
+                            : null;
+                        if (!matched || !root.contains(matched)) return;
+                    }
+
+                    triggered = true;
+                    window.setTimeout(() => {
+                        if (!profileTourInstance || typeof profileTourInstance.getState !== 'function') return;
+                        const state = profileTourInstance.getState();
+                        const activeIndex = typeof state.activeIndex === 'number' ? state.activeIndex : -1;
+                        if (activeIndex >= 0 && activeIndex < (steps.length - 1)) {
+                            profileTourInstance.moveNext();
+                        }
+                    }, cfg.delayMs || 250);
+                };
+
+                events.forEach(evt => root.addEventListener(evt, handler, true));
+                tourAutoAdvanceCleanup = () => {
+                    events.forEach(evt => root.removeEventListener(evt, handler, true));
+                };
+            };
+
             const handleStepChange = (_, step) => {
                 if (step && step.mascot) setTourMascotText(step.mascot);
+                bindAutoAdvance(step);
             };
 
             const handleTourClose = () => {
                 if (tourClosed) return;
                 tourClosed = true;
+                clearAutoAdvanceBinding();
                 localStorage.setItem(PROFILE_TOUR_STORAGE_KEY, '1');
                 removeTourMascot();
                 clearTourQueryParam();
@@ -2337,13 +2411,15 @@
                 overlayClickBehavior: 'close',
                 disableActiveInteraction: false,
                 overlayOpacity: 0.55,
-                stagePadding: 8,
+                stagePadding: 14,
+                popoverOffset: 18,
                 popoverClass: 'profile-tour-popover',
                 nextBtnText: 'Siguiente',
                 prevBtnText: 'Atras',
                 doneBtnText: 'Listo',
                 showButtons: ['previous', 'next', 'close'],
                 onNextClick: (_, __, options) => {
+                    clearAutoAdvanceBinding();
                     const total = (options.config.steps || []).length;
                     const index = options.state.activeIndex || 0;
                     if (index >= total - 1) {
@@ -2353,9 +2429,11 @@
                     options.driver.moveNext();
                 },
                 onPrevClick: (_, __, options) => {
+                    clearAutoAdvanceBinding();
                     options.driver.movePrevious();
                 },
                 onCloseClick: (_, __, options) => {
+                    clearAutoAdvanceBinding();
                     options.driver.destroy();
                 },
                 onHighlightStarted: handleStepChange,
