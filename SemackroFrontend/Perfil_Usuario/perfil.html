@@ -2270,6 +2270,12 @@
             'fechaNacimiento',
             'anios_experiencia'
         ];
+        const TOUR_MASCOT_GIF_CANDIDATES = [
+            '../MascotaTour.gif',
+            './MascotaTour.gif',
+            '/MascotaTour.gif',
+            'MascotaTour.gif'
+        ];
         let profileTourHasStarted = false;
         let profileTourInstance = null;
         let tourAutoAdvanceCleanup = null;
@@ -2281,15 +2287,36 @@
             return null;
         }
 
+        function setTourMascotGifSource(imgElement) {
+            if (!imgElement) return;
+            let index = 0;
+
+            const tryNextSource = () => {
+                if (index >= TOUR_MASCOT_GIF_CANDIDATES.length) {
+                    imgElement.onerror = null;
+                    imgElement.src = 'https://ui-avatars.com/api/?name=S&background=dbeafe&color=1d4ed8&size=128&rounded=true&bold=true';
+                    return;
+                }
+
+                const src = TOUR_MASCOT_GIF_CANDIDATES[index++];
+                imgElement.src = src;
+            };
+
+            imgElement.onerror = tryNextSource;
+            tryNextSource();
+        }
+
         function createTourInlineMascot() {
             const mascot = document.createElement('div');
             mascot.className = 'tour-inline-mascot';
             mascot.setAttribute('aria-hidden', 'true');
             mascot.innerHTML = `
-                <img class="tour-inline-mascot-img" src="../MascotaTour.gif" alt="Mascota del tour" loading="eager" decoding="async">
+                <img class="tour-inline-mascot-img" src="" alt="Mascota del tour" loading="eager" decoding="async">
                 <span class="tour-inline-mascot-spark"></span>
                 <span class="tour-inline-mascot-spark s2"></span>
             `;
+            const mascotImg = mascot.querySelector('.tour-inline-mascot-img');
+            setTourMascotGifSource(mascotImg);
             return mascot;
         }
 
