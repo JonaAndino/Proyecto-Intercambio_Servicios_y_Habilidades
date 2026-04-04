@@ -480,7 +480,9 @@ async function mostrarOnboardingPostLogin() {
       const result = await Swal.fire({
         title: "Completa tu perfil",
         html: "Antes de usar Descubrir, quieres completar tu informacion de perfil ahora?",
-        icon: "info",
+        imageUrl: "/MascotaDesicion.gif",
+        imageWidth: 140,
+        imageAlt: "Mascota de ayuda",
         showDenyButton: true,
         confirmButtonText: "Llenar informacion",
         denyButtonText: "Omitir por ahora",
