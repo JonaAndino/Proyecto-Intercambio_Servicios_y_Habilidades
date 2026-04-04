@@ -2401,15 +2401,10 @@
             /* ========================================
                HARD FIX: MENSAJERIA MOVIL ESTABLE
                ======================================== */
-            html.mensajes-open,
-            html.mensajes-open body {
-                overflow: hidden !important;
-                overscroll-behavior: none;
-            }
-
             body.mensajes-open {
-                overflow: hidden;
-                height: var(--app-vh, 100dvh);
+                overflow-x: hidden;
+                overflow-y: auto;
+                height: auto;
             }
 
             body.mensajes-open::before {
@@ -2421,6 +2416,7 @@
                 height: calc(var(--app-vh, 100dvh) - var(--app-header-height, 56px)) !important;
                 min-height: calc(var(--app-vh, 100dvh) - var(--app-header-height, 56px)) !important;
                 overflow: hidden !important;
+                overscroll-behavior-y: contain;
             }
 
             body.mensajes-open #mensajesView > div,
