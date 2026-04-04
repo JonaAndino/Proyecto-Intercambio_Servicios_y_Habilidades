@@ -35,6 +35,7 @@ const certificacionesRoutes = require('./routes/Certificaciones');
 const metricasRoutes = require('./routes/MetricasDesempeno');
 const perfilCompletoRoutes = require('./routes/PerfilCompleto');
 const ordenesTrabajoRoutes = require('./routes/ordenesTrabajo');
+const onboardingDriversRoutes = require('./routes/onboardingDrivers');
 
 // 2. Crear instancia de Express
 const app = express();
@@ -125,6 +126,7 @@ app.use('/api/certificaciones', certificacionesRoutes); // Rutas de certificacio
 app.use('/api/metricas', metricasRoutes); // Rutas de métricas de desempeño
 app.use('/api/perfil-completo', perfilCompletoRoutes); // Rutas de perfil completo
 app.use('/api/ordenes-trabajo', ordenesTrabajoRoutes); // Rutas de órdenes de trabajo
+app.use('/api/onboarding-drivers', onboardingDriversRoutes); // Estado de drivers/onboarding por persona
 
 // 8. Prueba básica de que el servidor Express funciona
 app.get('/', (req, res) => {

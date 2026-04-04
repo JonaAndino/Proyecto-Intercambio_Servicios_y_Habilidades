@@ -2297,6 +2297,7 @@
         // ======================
         const API_BASE = window.API_BASE;
         const PROFILE_TOUR_STORAGE_KEY = 'semackro_profile_tour_v1';
+        const PROFILE_TOUR_DRIVER_KEY = 'perfil_onboarding_v1';
         const TOUR_REQUIRED_PERSONAL_FIELDS = [
             'pais',
             'departamento',
@@ -2425,6 +2426,40 @@
             const offeredContainer = document.getElementById('offeredSkillsContainer');
             if (!offeredContainer) return;
             offeredContainer.dispatchEvent(new CustomEvent(TOUR_EVENT_OFFERED_SKILL_MODAL_CLOSED, { bubbles: true }));
+        }
+
+        async function obtenerEstadoDriverServidor(driverKey) {
+            if (!driverKey || !perfilPersonaId || !API_BASE) return false;
+
+            try {
+                const response = await fetch(
+                    `${API_BASE}/onboarding-drivers/${encodeURIComponent(perfilPersonaId)}/${encodeURIComponent(driverKey)}`
+                );
+
+                if (!response.ok) return false;
+                const data = await response.json();
+                return !!(data && data.success && data.data && data.data.ejecutado === true);
+            } catch (error) {
+                console.warn('[TOUR] No se pudo leer estado de driver en servidor:', error);
+                return false;
+            }
+        }
+
+        async function marcarDriverEjecutadoServidor(driverKey) {
+            if (!driverKey || !perfilPersonaId || !API_BASE) return;
+
+            try {
+                await fetch(
+                    `${API_BASE}/onboarding-drivers/${encodeURIComponent(perfilPersonaId)}/${encodeURIComponent(driverKey)}`,
+                    {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ejecutado: true })
+                    }
+                );
+            } catch (error) {
+                console.warn('[TOUR] No se pudo guardar estado de driver en servidor:', error);
+            }
         }
 
         function isSkillModalVisible() {
@@ -2575,14 +2610,23 @@
                 }));
         }
 
-        function startProfileTourIfNeeded(options = {}) {
+        async function startProfileTourIfNeeded(options = {}) {
             const { readOnlyMode = false, force = false } = options;
             if (profileTourHasStarted) return;
             if (readOnlyMode && !force) return;
 
             const searchParams = new URLSearchParams(window.location.search);
             const forceByQuery = searchParams.get('tour') === 'onboarding';
-            const shouldStart = force || forceByQuery || !localStorage.getItem(PROFILE_TOUR_STORAGE_KEY);
+            const wasSeenLocal = localStorage.getItem(PROFILE_TOUR_STORAGE_KEY) === '1';
+            const wasSeenServer = (!force && !forceByQuery)
+                ? await obtenerEstadoDriverServidor(PROFILE_TOUR_DRIVER_KEY)
+                : false;
+
+            if (wasSeenServer && !wasSeenLocal) {
+                localStorage.setItem(PROFILE_TOUR_STORAGE_KEY, '1');
+            }
+
+            const shouldStart = force || forceByQuery || (!wasSeenLocal && !wasSeenServer);
             if (!shouldStart) return;
 
             const createDriver = getDriverFactory();
@@ -2665,6 +2709,7 @@
                 tourClosed = true;
                 clearAutoAdvanceBinding();
                 localStorage.setItem(PROFILE_TOUR_STORAGE_KEY, '1');
+                void marcarDriverEjecutadoServidor(PROFILE_TOUR_DRIVER_KEY);
                 removeTourMascot();
                 clearTourQueryParam();
                 profileTourInstance = null;

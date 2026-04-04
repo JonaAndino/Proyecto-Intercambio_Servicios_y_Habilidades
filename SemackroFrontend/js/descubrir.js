@@ -253,6 +253,7 @@ try {
 
 const POST_LOGIN_ONBOARDING_STORAGE_KEY = "semackro_post_login_onboarding";
 const POST_LOGIN_ONBOARDING_SEEN_PREFIX = "semackro_onboarding_seen_user_";
+const POST_LOGIN_ONBOARDING_DRIVER_KEY = "descubrir_post_login_onboarding_v1";
 let onboardingPostLoginEnCurso = false;
 let pendingProfileOnboardingTourStart = false;
 
@@ -327,6 +328,42 @@ function marcarOnboardingMostradoUsuarioActual() {
     localStorage.setItem(obtenerClaveOnboardingMostradoUsuario(), "1");
   } catch (error) {
     console.warn("No se pudo guardar estado de onboarding mostrado:", error);
+  }
+}
+
+async function obtenerEstadoOnboardingServidor() {
+  try {
+    const idPerfilPersona = await obtenerPersonaIdActual();
+    if (!idPerfilPersona || !window.API_BASE) return false;
+
+    const response = await fetch(
+      `${window.API_BASE}/onboarding-drivers/${encodeURIComponent(idPerfilPersona)}/${encodeURIComponent(POST_LOGIN_ONBOARDING_DRIVER_KEY)}`,
+    );
+
+    if (!response.ok) return false;
+    const data = await response.json();
+    return !!(data && data.success && data.data && data.data.ejecutado === true);
+  } catch (error) {
+    console.warn("No se pudo consultar onboarding en servidor:", error);
+    return false;
+  }
+}
+
+async function marcarOnboardingMostradoServidor() {
+  try {
+    const idPerfilPersona = await obtenerPersonaIdActual();
+    if (!idPerfilPersona || !window.API_BASE) return;
+
+    await fetch(
+      `${window.API_BASE}/onboarding-drivers/${encodeURIComponent(idPerfilPersona)}/${encodeURIComponent(POST_LOGIN_ONBOARDING_DRIVER_KEY)}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ejecutado: true }),
+      },
+    );
+  } catch (error) {
+    console.warn("No se pudo guardar onboarding en servidor:", error);
   }
 }
 
@@ -547,6 +584,14 @@ async function mostrarOnboardingPostLogin() {
   onboardingPostLoginEnCurso = true;
 
   try {
+    const onboardingVistoEnServidor = await obtenerEstadoOnboardingServidor();
+    if (onboardingVistoEnServidor) {
+      marcarOnboardingMostradoUsuarioActual();
+      limpiarOnboardingPostLoginPendiente();
+      limpiarQueryOnboarding();
+      return;
+    }
+
     if (typeof Swal !== "undefined" && Swal && typeof Swal.fire === "function") {
       const result = await Swal.fire({
         title: "Completa tu perfil",
@@ -572,6 +617,7 @@ async function mostrarOnboardingPostLogin() {
       });
 
       if (result.isConfirmed) {
+        await marcarOnboardingMostradoServidor();
         marcarOnboardingMostradoUsuarioActual();
         limpiarOnboardingPostLoginPendiente();
         limpiarQueryOnboarding();
@@ -582,6 +628,7 @@ async function mostrarOnboardingPostLogin() {
       }
 
       if (result.isDenied) {
+        await marcarOnboardingMostradoServidor();
         marcarOnboardingMostradoUsuarioActual();
         limpiarOnboardingPostLoginPendiente();
         limpiarQueryOnboarding();
@@ -594,6 +641,7 @@ async function mostrarOnboardingPostLogin() {
     const quiereCompletar = window.confirm(
       "Antes de usar Descubrir, quieres completar tu perfil ahora?",
     );
+    await marcarOnboardingMostradoServidor();
     marcarOnboardingMostradoUsuarioActual();
     limpiarOnboardingPostLoginPendiente();
     limpiarQueryOnboarding();
