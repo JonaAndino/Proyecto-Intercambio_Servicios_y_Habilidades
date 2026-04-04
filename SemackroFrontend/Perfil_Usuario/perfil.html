@@ -2427,6 +2427,14 @@
             offeredContainer.dispatchEvent(new CustomEvent(TOUR_EVENT_OFFERED_SKILL_MODAL_CLOSED, { bubbles: true }));
         }
 
+        function isSkillModalVisible() {
+            const skillModal = document.getElementById('skillModal');
+            if (!skillModal) return false;
+            const inlineDisplay = skillModal.style.display;
+            const computedDisplay = window.getComputedStyle ? window.getComputedStyle(skillModal).display : inlineDisplay;
+            return inlineDisplay !== 'none' && computedDisplay !== 'none';
+        }
+
         function buildProfileTourSteps() {
             const steps = [
                 {
@@ -2685,12 +2693,31 @@
                 },
                 onNextClick: (_, __, options) => {
                     clearAutoAdvanceBinding();
-                    const total = (options.config.steps || []).length;
+                    const configuredSteps = options.config.steps || [];
+                    const total = configuredSteps.length;
                     const index = options.state.activeIndex || 0;
                     if (index >= total - 1) {
                         options.driver.destroy();
                         return;
                     }
+
+                    const currentStep = configuredSteps[index] || null;
+                    const nextStep = configuredSteps[index + 1] || null;
+
+                    // Si el usuario pulsa "Siguiente" sin tocar +, abrimos el modal y luego avanzamos al paso del modal.
+                    if (
+                        currentStep && nextStep &&
+                        currentStep.stepKey === 'offeredSkillsPlus' &&
+                        nextStep.stepKey === 'offeredSkillsModal' &&
+                        !isSkillModalVisible()
+                    ) {
+                        showSkillModal('offered');
+                        window.requestAnimationFrame(() => {
+                            options.driver.moveNext();
+                        });
+                        return;
+                    }
+
                     options.driver.moveNext();
                 },
                 onPrevClick: (_, __, options) => {
