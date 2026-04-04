@@ -255,6 +255,28 @@ const POST_LOGIN_ONBOARDING_STORAGE_KEY = "semackro_post_login_onboarding";
 const POST_LOGIN_ONBOARDING_SEEN_PREFIX = "semackro_onboarding_seen_user_";
 let onboardingPostLoginEnCurso = false;
 
+function onboardingForzadoPorQuery() {
+  try {
+    const url = new URL(window.location.href);
+    const value = (url.searchParams.get("onboarding") || "").toLowerCase();
+    return value === "1" || value === "true" || value === "yes";
+  } catch (error) {
+    return false;
+  }
+}
+
+function limpiarQueryOnboarding() {
+  try {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has("onboarding")) return;
+    url.searchParams.delete("onboarding");
+    const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+    window.history.replaceState(window.history.state || {}, "", nextUrl);
+  } catch (error) {
+    console.warn("No se pudo limpiar query de onboarding:", error);
+  }
+}
+
 function obtenerUsuarioSesionOnboarding() {
   return String(localStorage.getItem("usuarioId") || "");
 }
@@ -305,6 +327,8 @@ function leerBanderaOnboardingEn(storageRef) {
 
 function leerOnboardingPostLoginPendiente() {
   try {
+    if (onboardingForzadoPorQuery()) return true;
+
     const banderaSession = leerBanderaOnboardingEn(sessionStorage);
     if (banderaSession) return true;
 
@@ -469,6 +493,7 @@ async function mostrarOnboardingPostLogin() {
       if (result.isConfirmed) {
         marcarOnboardingMostradoUsuarioActual();
         limpiarOnboardingPostLoginPendiente();
+        limpiarQueryOnboarding();
         setTimeout(() => {
           iniciarTourOnboardingPerfil();
         }, 120);
@@ -478,6 +503,7 @@ async function mostrarOnboardingPostLogin() {
       if (result.isDenied) {
         marcarOnboardingMostradoUsuarioActual();
         limpiarOnboardingPostLoginPendiente();
+        limpiarQueryOnboarding();
         return;
       }
 
@@ -489,6 +515,7 @@ async function mostrarOnboardingPostLogin() {
     );
     marcarOnboardingMostradoUsuarioActual();
     limpiarOnboardingPostLoginPendiente();
+    limpiarQueryOnboarding();
     if (quiereCompletar) {
       iniciarTourOnboardingPerfil();
     }
@@ -511,6 +538,25 @@ function intentarOnboardingPostLogin() {
 setTimeout(() => {
   intentarOnboardingPostLogin();
 }, 280);
+
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    intentarOnboardingPostLogin();
+  }, 120);
+});
+
+window.addEventListener("focus", () => {
+  setTimeout(() => {
+    intentarOnboardingPostLogin();
+  }, 80);
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  setTimeout(() => {
+    intentarOnboardingPostLogin();
+  }, 80);
+});
 
 // Sistema de navegación SPA (Single Page Application)
 let currentView = "descubrir";

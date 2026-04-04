@@ -377,9 +377,14 @@
                 });
                 sessionStorage.setItem('semackro_post_login_onboarding', onboardingData);
                 localStorage.setItem('semackro_post_login_onboarding', onboardingData);
+                localStorage.removeItem(`semackro_onboarding_seen_user_${usuarioId || 'anon'}`);
             } catch (e) {
                 console.warn('No se pudo marcar onboarding post-login:', e);
             }
+        }
+
+        function obtenerDestinoDescubrirOnboarding() {
+            return "Descubrir.html?onboarding=1";
         }
 
         // Autenticar con Firebase
@@ -448,7 +453,7 @@
                     marcarOnboardingPostLoginPendiente();
 
                     setTimeout(() => {
-                        window.location.href = "Descubrir.html";
+                        window.location.href = obtenerDestinoDescubrirOnboarding();
                     }, 1500);
                 } else {
                     throw new Error(loginData.error || "Error al autenticar");
@@ -503,7 +508,7 @@
                 marcarOnboardingPostLoginPendiente();
 
                 setTimeout(() => {
-                    window.location.href = "Descubrir.html";
+                    window.location.href = obtenerDestinoDescubrirOnboarding();
                 }, 1500);
 
                 return;
@@ -565,7 +570,7 @@
                             marcarOnboardingPostLoginPendiente();
 
                             setTimeout(() => {
-                                window.location.href = "Descubrir.html";
+                                window.location.href = obtenerDestinoDescubrirOnboarding();
                             }, 1000);
 
                         } else {
