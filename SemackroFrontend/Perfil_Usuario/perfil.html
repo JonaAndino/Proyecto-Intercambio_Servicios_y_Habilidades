@@ -2317,11 +2317,29 @@
             'MascotaTour.gif'
         ];
         const TOUR_EVENT_OFFERED_SKILL_MODAL_CLOSED = 'tour-offered-skill-modal-closed';
+        const TOUR_OFFERED_SKILL_CONTAINER_SELECTOR = '#offeredSkillsContainer';
+        const TOUR_OFFERED_SKILL_MODAL_SELECTOR = '#skillModal .modal-content';
         let profileTourHasStarted = false;
         let profileTourInstance = null;
         let tourAutoAdvanceCleanup = null;
         let tourWaitingOfferedSkillModalClose = false;
         let tourOfferedSkillModalOpened = false;
+        let profileTourStepsRuntime = [];
+        let tourOfferedSkillStepIndex = -1;
+
+        function syncTourOfferedSkillFocusTarget(targetSelector) {
+            if (!profileTourInstance || !Array.isArray(profileTourStepsRuntime) || tourOfferedSkillStepIndex < 0) return;
+            const offeredStep = profileTourStepsRuntime[tourOfferedSkillStepIndex];
+            if (!offeredStep || offeredStep.element === targetSelector) return;
+
+            offeredStep.element = targetSelector;
+            if (typeof profileTourInstance.setSteps === 'function') {
+                profileTourInstance.setSteps(profileTourStepsRuntime);
+            }
+            if (typeof profileTourInstance.refresh === 'function') {
+                profileTourInstance.refresh();
+            }
+        }
 
         function getDriverFactory() {
             if (window.driver && typeof window.driver === 'function') return window.driver;
@@ -2467,13 +2485,14 @@
                     }
                 },
                 {
-                    element: '#offeredSkillsContainer',
+                    stepKey: 'offeredSkills',
+                    element: TOUR_OFFERED_SKILL_CONTAINER_SELECTOR,
                     title: 'Agrega habilidades',
                     description: 'Incluye tus habilidades principales para aparecer en busquedas.',
                     side: 'top',
                     align: 'start',
                     mascot: 'Tus habilidades son la clave para que te encuentren.',
-                    autoAdvance: { listenSelector: '#offeredSkillsContainer', events: [TOUR_EVENT_OFFERED_SKILL_MODAL_CLOSED], delayMs: 120 }
+                    autoAdvance: { listenSelector: TOUR_OFFERED_SKILL_CONTAINER_SELECTOR, events: [TOUR_EVENT_OFFERED_SKILL_MODAL_CLOSED], delayMs: 120 }
                 },
                 {
                     element: '#locationBtn',
@@ -2506,6 +2525,7 @@
             return steps
                 .filter(step => document.querySelector(step.element))
                 .map(step => ({
+                    stepKey: step.stepKey || null,
                     element: step.element,
                     mascot: step.mascot,
                     autoAdvance: step.autoAdvance || null,
@@ -2538,6 +2558,12 @@
             const steps = buildProfileTourSteps();
             if (steps.length < 2) return;
 
+            profileTourStepsRuntime = steps.map(step => ({
+                ...step,
+                popover: step.popover ? { ...step.popover } : undefined
+            }));
+            tourOfferedSkillStepIndex = profileTourStepsRuntime.findIndex(step => step.stepKey === 'offeredSkills');
+
             profileTourHasStarted = true;
             let tourClosed = false;
 
@@ -2548,6 +2574,7 @@
                 tourAutoAdvanceCleanup = null;
                 tourWaitingOfferedSkillModalClose = false;
                 tourOfferedSkillModalOpened = false;
+                syncTourOfferedSkillFocusTarget(TOUR_OFFERED_SKILL_CONTAINER_SELECTOR);
             };
 
             const bindAutoAdvance = (step) => {
@@ -2555,7 +2582,7 @@
                 if (!step || !step.autoAdvance) return;
 
                 const cfg = step.autoAdvance;
-                tourWaitingOfferedSkillModalClose = step.element === '#offeredSkillsContainer';
+                tourWaitingOfferedSkillModalClose = step.stepKey === 'offeredSkills';
                 const root = cfg.listenSelector
                     ? document.querySelector(cfg.listenSelector)
                     : (typeof step.element === 'string' ? document.querySelector(step.element) : step.element);
@@ -2609,10 +2636,12 @@
                 clearTourQueryParam();
                 profileTourInstance = null;
                 profileTourHasStarted = false;
+                profileTourStepsRuntime = [];
+                tourOfferedSkillStepIndex = -1;
             };
 
             const tour = createDriver({
-                steps,
+                steps: profileTourStepsRuntime,
                 showProgress: true,
                 allowClose: true,
                 overlayClickBehavior: 'close',
@@ -4533,6 +4562,7 @@
 
             if (type === 'offered' && tourWaitingOfferedSkillModalClose) {
                 tourOfferedSkillModalOpened = true;
+                syncTourOfferedSkillFocusTarget(TOUR_OFFERED_SKILL_MODAL_SELECTOR);
             }
 
             document.getElementById('modalTitle').textContent =
@@ -4553,6 +4583,7 @@
             });
 
             document.getElementById('skillModal').style.display = 'flex';
+            document.getElementById('skillInput')?.focus();
         }
 
         function hideSkillModal() {
@@ -4564,6 +4595,7 @@
 
             if (wasVisible && tourOfferedSkillModalOpened) {
                 tourOfferedSkillModalOpened = false;
+                syncTourOfferedSkillFocusTarget(TOUR_OFFERED_SKILL_CONTAINER_SELECTOR);
                 notifyTourOfferedSkillModalClosed();
             }
         }
