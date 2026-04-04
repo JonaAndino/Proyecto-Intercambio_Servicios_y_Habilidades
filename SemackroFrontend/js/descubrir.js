@@ -56,6 +56,15 @@ function setupMobileChatViewportFixes() {
 
   const isMobile = () => window.innerWidth <= 767;
 
+  const keepRootScrollAtTop = () => {
+    if (!isMobile()) return;
+    const root = document.scrollingElement || document.documentElement;
+    if (root) root.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: "auto" });
+  };
+
   const scrollBottomIfChatOpen = () => {
     const chatLayout = document.getElementById("chat-layout-dashboard");
     if (!chatLayout || !chatLayout.classList.contains("mobile-show-chat")) return;
@@ -65,6 +74,7 @@ function setupMobileChatViewportFixes() {
   const onViewportChange = () => {
     if (!isMobile()) return;
     syncVisualViewportHeight();
+    keepRootScrollAtTop();
     setTimeout(() => {
       scrollBottomIfChatOpen();
     }, 90);
@@ -73,12 +83,17 @@ function setupMobileChatViewportFixes() {
   const onInputFocus = () => {
     if (!isMobile()) return;
     clearTimeout(blurTimer);
+    document.documentElement.classList.add("mensajes-open");
+    document.body.classList.add("mensajes-open");
     mensajesView.classList.add("mobile-chat-keyboard-open");
+    keepRootScrollAtTop();
     setTimeout(() => {
       syncVisualViewportHeight();
+      keepRootScrollAtTop();
       scrollBottomIfChatOpen();
     }, 90);
     setTimeout(() => {
+      keepRootScrollAtTop();
       scrollBottomIfChatOpen();
     }, 260);
   };
@@ -94,6 +109,7 @@ function setupMobileChatViewportFixes() {
 
   const onInputType = () => {
     if (!isMobile()) return;
+    keepRootScrollAtTop();
     setTimeout(() => {
       scrollBottomIfChatOpen();
     }, 40);
@@ -176,6 +192,7 @@ let currentView = "descubrir";
 
 async function navigateTo(viewName) {
   syncAppHeaderHeight();
+  document.documentElement.classList.toggle("mensajes-open", viewName === "mensajes");
   document.body.classList.toggle("mensajes-open", viewName === "mensajes");
 
   // Actualizar el estado activo del sidebar inmediatamente
