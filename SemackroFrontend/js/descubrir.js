@@ -2433,21 +2433,41 @@ async function inicializarDashboard() {
   // Mostrar skeleton mientras carga
   mostrarSkeletonLoaders(6);
 
-  // Cargar todo en paralelo para mejorar el rendimiento
-  await Promise.all([
-    cargarDatosUsuario(),
-    cargarCategorias(),
-    cargarUsuariosReales(),
-    cargarFavoritosDesdeBackend(),
-    cargarEstadisticasGlobales(),
-    cargarSolicitudesEnviadas(),
-  ]);
+  // Cargar todo en paralelo sin bloquear toda la vista si una tarea falla.
+  const tareasInit = [
+    ["cargarDatosUsuario", cargarDatosUsuario()],
+    ["cargarCategorias", cargarCategorias()],
+    ["cargarUsuariosReales", cargarUsuariosReales()],
+    ["cargarFavoritosDesdeBackend", cargarFavoritosDesdeBackend()],
+    ["cargarEstadisticasGlobales", cargarEstadisticasGlobales()],
+    ["cargarSolicitudesEnviadas", cargarSolicitudesEnviadas()],
+  ];
+
+  const resultadosInit = await Promise.allSettled(
+    tareasInit.map(([, promesa]) => promesa),
+  );
+
+  resultadosInit.forEach((resultado, indice) => {
+    if (resultado.status === "rejected") {
+      console.warn(
+        `[Init Descubrir] Fallo en ${tareasInit[indice][0]}:`,
+        resultado.reason,
+      );
+    }
+  });
 
   // Verificar actualizaciones de imagen
   verificarActualizacionesPendientes();
 
   // Actualizar badge de favoritos
   actualizarBadgeFavoritos();
+
+  // Si por algún fallo parcial no se renderizó el grid, forzamos render final.
+  try {
+    renderUserCardsReal();
+  } catch (error) {
+    console.warn("No se pudo renderizar grid final de usuarios:", error);
+  }
 
   // Aplicar traducciones después de cargar los datos
   applyTranslations();
