@@ -8591,8 +8591,12 @@ function filtrarOrdenes(filtro) {
   document.querySelectorAll('.filtro-orden-btn').forEach(btn => {
     const esFiltro = btn.dataset.filtro === filtro;
     btn.classList.toggle('bg-blue-600', esFiltro);
+    btn.classList.toggle('hover:bg-blue-700', esFiltro);
     btn.classList.toggle('text-white', esFiltro);
+    btn.classList.toggle('border-blue-600', esFiltro);
+
     btn.classList.toggle('bg-white', !esFiltro);
+    btn.classList.toggle('hover:bg-gray-50', !esFiltro);
     btn.classList.toggle('text-gray-600', !esFiltro);
     btn.classList.toggle('border', !esFiltro);
     btn.classList.toggle('border-gray-200', !esFiltro);
