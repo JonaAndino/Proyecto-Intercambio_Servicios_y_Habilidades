@@ -386,6 +386,24 @@ function iniciarTourOnboardingPerfil() {
     return;
   }
 
+  let activeStepIndex = 0;
+  let autoAdvanceLock = false;
+  let removeTourInteractionListeners = () => {};
+
+  const moveToNextFromInteraction = (driverInstance) => {
+    if (!driverInstance || autoAdvanceLock) return;
+    autoAdvanceLock = true;
+    setTimeout(() => {
+      try {
+        driverInstance.moveNext();
+      } catch (error) {
+        console.warn("No se pudo avanzar onboarding automaticamente:", error);
+      } finally {
+        autoAdvanceLock = false;
+      }
+    }, 180);
+  };
+
   const tour = createDriver({
     steps: [
       {
@@ -393,7 +411,7 @@ function iniciarTourOnboardingPerfil() {
         popover: {
           title: "Paso 1: abre el menu",
           description:
-            "Este boton abre el menu lateral. Pulsa Siguiente y te lo abrimos automaticamente.",
+            "Toca este boton para abrir el menu lateral. Si prefieres, tambien puedes usar Siguiente.",
           side: "bottom",
           align: "start",
         },
@@ -403,7 +421,7 @@ function iniciarTourOnboardingPerfil() {
         popover: {
           title: "Paso 2: entra a tu perfil",
           description:
-            "Desde aqui completas tu informacion. Pulsa Ir a perfil para abrir esta seccion.",
+            "Desde aqui completas tu informacion. Toca Mi perfil para abrir esta seccion.",
           side: "right",
           align: "start",
         },
@@ -415,10 +433,14 @@ function iniciarTourOnboardingPerfil() {
     overlayOpacity: 0.55,
     stagePadding: 10,
     popoverOffset: 14,
+    disableActiveInteraction: false,
     nextBtnText: "Siguiente",
     prevBtnText: "Atras",
     doneBtnText: "Ir a perfil",
     showButtons: ["previous", "next", "close"],
+    onHighlighted: (_, __, options) => {
+      activeStepIndex = options?.state?.activeIndex || 0;
+    },
     onNextClick: (_, __, options) => {
       const index = options?.state?.activeIndex || 0;
       const total = (options?.config?.steps || []).length;
@@ -455,9 +477,34 @@ function iniciarTourOnboardingPerfil() {
       options.driver.destroy();
     },
     onDestroyed: () => {
+      removeTourInteractionListeners();
       closeSidebarFn();
     },
   });
+
+  const onHamburgerClick = () => {
+    if (activeStepIndex !== 0) return;
+    openSidebar();
+    moveToNextFromInteraction(tour);
+  };
+
+  const onPerfilClick = () => {
+    if (activeStepIndex !== 1) return;
+    closeSidebarFn();
+    navigateTo("perfil");
+    try {
+      tour.destroy();
+    } catch (error) {
+      console.warn("No se pudo cerrar onboarding automaticamente:", error);
+    }
+  };
+
+  hamburger.addEventListener("click", onHamburgerClick, true);
+  perfilItem.addEventListener("click", onPerfilClick, true);
+  removeTourInteractionListeners = () => {
+    hamburger.removeEventListener("click", onHamburgerClick, true);
+    perfilItem.removeEventListener("click", onPerfilClick, true);
+  };
 
   if (tour && typeof tour.drive === "function") {
     setTimeout(() => {
