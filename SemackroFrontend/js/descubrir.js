@@ -31,10 +31,14 @@ function syncAppHeaderHeight() {
 
 function syncVisualViewportHeight() {
   const isMobile = window.innerWidth <= 767;
-  const viewportHeight =
-    isMobile && window.visualViewport
-      ? Math.round(window.visualViewport.height)
-      : window.innerHeight;
+  let viewportHeight = window.innerHeight;
+  if (isMobile && window.visualViewport) {
+    // En Android algunos navegadores desplazan el viewport (offsetTop)
+    // cuando aparece el teclado; sumar offsetTop evita que la altura quede
+    // subestimada y que el input "salte" hacia arriba.
+    const vv = window.visualViewport;
+    viewportHeight = Math.round(vv.height + vv.offsetTop);
+  }
   document.documentElement.style.setProperty("--app-vh", `${viewportHeight}px`);
 }
 
