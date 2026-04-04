@@ -251,24 +251,67 @@ try {
   window.location.href = "login.html";
 }
 
-const POST_LOGIN_ONBOARDING_SESSION_KEY = "semackro_post_login_onboarding";
+const POST_LOGIN_ONBOARDING_STORAGE_KEY = "semackro_post_login_onboarding";
+const POST_LOGIN_ONBOARDING_SEEN_PREFIX = "semackro_onboarding_seen_user_";
 let onboardingPostLoginEnCurso = false;
+
+function obtenerUsuarioSesionOnboarding() {
+  return String(localStorage.getItem("usuarioId") || "");
+}
+
+function obtenerClaveOnboardingMostradoUsuario() {
+  const usuarioId = obtenerUsuarioSesionOnboarding();
+  return `${POST_LOGIN_ONBOARDING_SEEN_PREFIX}${usuarioId || "anon"}`;
+}
+
+function fueMostradoOnboardingUsuarioActual() {
+  try {
+    return localStorage.getItem(obtenerClaveOnboardingMostradoUsuario()) === "1";
+  } catch (error) {
+    console.warn("No se pudo leer estado de onboarding mostrado:", error);
+    return false;
+  }
+}
+
+function marcarOnboardingMostradoUsuarioActual() {
+  try {
+    localStorage.setItem(obtenerClaveOnboardingMostradoUsuario(), "1");
+  } catch (error) {
+    console.warn("No se pudo guardar estado de onboarding mostrado:", error);
+  }
+}
+
+function leerBanderaOnboardingEn(storageRef) {
+  try {
+    if (!storageRef || typeof storageRef.getItem !== "function") return null;
+    const raw = storageRef.getItem(POST_LOGIN_ONBOARDING_STORAGE_KEY);
+    if (!raw) return null;
+
+    const data = JSON.parse(raw);
+    if (!data || data.pending !== true) return null;
+
+    const usuarioSesion = obtenerUsuarioSesionOnboarding();
+    const usuarioBandera = String(data.usuarioId || "");
+    if (usuarioBandera && usuarioSesion && usuarioBandera !== usuarioSesion) {
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.warn("No se pudo leer bandera de onboarding:", error);
+    return null;
+  }
+}
 
 function leerOnboardingPostLoginPendiente() {
   try {
-    const raw = sessionStorage.getItem(POST_LOGIN_ONBOARDING_SESSION_KEY);
-    if (!raw) return false;
+    const banderaSession = leerBanderaOnboardingEn(sessionStorage);
+    if (banderaSession) return true;
 
-    const data = JSON.parse(raw);
-    if (!data || data.pending !== true) return false;
+    const banderaLocal = leerBanderaOnboardingEn(localStorage);
+    if (banderaLocal) return true;
 
-    const usuarioSesion = String(localStorage.getItem("usuarioId") || "");
-    const usuarioBandera = String(data.usuarioId || "");
-    if (usuarioBandera && usuarioSesion && usuarioBandera !== usuarioSesion) {
-      return false;
-    }
-
-    return true;
+    return !fueMostradoOnboardingUsuarioActual();
   } catch (error) {
     console.warn("No se pudo leer onboarding post-login:", error);
     return false;
@@ -277,7 +320,8 @@ function leerOnboardingPostLoginPendiente() {
 
 function limpiarOnboardingPostLoginPendiente() {
   try {
-    sessionStorage.removeItem(POST_LOGIN_ONBOARDING_SESSION_KEY);
+    sessionStorage.removeItem(POST_LOGIN_ONBOARDING_STORAGE_KEY);
+    localStorage.removeItem(POST_LOGIN_ONBOARDING_STORAGE_KEY);
   } catch (error) {
     console.warn("No se pudo limpiar onboarding post-login:", error);
   }
@@ -423,6 +467,7 @@ async function mostrarOnboardingPostLogin() {
       });
 
       if (result.isConfirmed) {
+        marcarOnboardingMostradoUsuarioActual();
         limpiarOnboardingPostLoginPendiente();
         setTimeout(() => {
           iniciarTourOnboardingPerfil();
@@ -431,6 +476,7 @@ async function mostrarOnboardingPostLogin() {
       }
 
       if (result.isDenied) {
+        marcarOnboardingMostradoUsuarioActual();
         limpiarOnboardingPostLoginPendiente();
         return;
       }
@@ -441,6 +487,7 @@ async function mostrarOnboardingPostLogin() {
     const quiereCompletar = window.confirm(
       "Antes de usar Descubrir, quieres completar tu perfil ahora?",
     );
+    marcarOnboardingMostradoUsuarioActual();
     limpiarOnboardingPostLoginPendiente();
     if (quiereCompletar) {
       iniciarTourOnboardingPerfil();

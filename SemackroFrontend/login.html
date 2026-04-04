@@ -370,11 +370,13 @@
         function marcarOnboardingPostLoginPendiente() {
             try {
                 const usuarioId = localStorage.getItem('usuarioId') || '';
-                sessionStorage.setItem('semackro_post_login_onboarding', JSON.stringify({
+                const onboardingData = JSON.stringify({
                     pending: true,
                     usuarioId,
                     ts: Date.now()
-                }));
+                });
+                sessionStorage.setItem('semackro_post_login_onboarding', onboardingData);
+                localStorage.setItem('semackro_post_login_onboarding', onboardingData);
             } catch (e) {
                 console.warn('No se pudo marcar onboarding post-login:', e);
             }
