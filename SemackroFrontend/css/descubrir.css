@@ -2321,6 +2321,38 @@
                 box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2), 0 2px 7px rgba(15, 23, 42, 0.08) !important;
             }
 
+            /* Ordenar + Mostrar en la misma fila en móvil */
+            #discoverControls {
+                gap: 0.6rem 0.7rem !important;
+                align-items: flex-start !important;
+            }
+
+            #discoverControls > .flex.items-center.gap-2 {
+                flex: 0 0 calc(50% - 0.35rem);
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.35rem;
+            }
+
+            #discoverControls > .flex.items-center.gap-2 label {
+                font-size: 0.9rem;
+                line-height: 1.1;
+                margin: 0;
+            }
+
+            #discoverControls #sortSelect,
+            #discoverControls #perPageSelect {
+                width: 100%;
+                min-width: 0;
+            }
+
+            #discoverControls > .text-sm.text-gray-600 {
+                flex: 0 0 100%;
+                margin-top: 0.15rem;
+            }
+
             /* Cuando el teclado está abierto, usar viewport visual real en chat */
             #mensajesView.mobile-chat-keyboard-open {
                 height: calc(var(--app-vh, 100dvh) - var(--app-header-height, 56px)) !important;
