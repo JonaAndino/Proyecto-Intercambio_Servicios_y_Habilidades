@@ -55,6 +55,10 @@ function setupMobileChatViewportFixes() {
   let blurTimer = null;
 
   const isMobile = () => window.innerWidth <= 767;
+  const isMensajesActive = () =>
+    document.body.classList.contains("mensajes-open") ||
+    mensajesView.classList.contains("active") ||
+    currentView === "mensajes";
 
   const keyboardIsOpen = () => {
     if (!isMobile() || !window.visualViewport) return false;
@@ -62,7 +66,7 @@ function setupMobileChatViewportFixes() {
   };
 
   const keepRootScrollAtTop = () => {
-    if (!isMobile()) return;
+    if (!isMobile() || !isMensajesActive()) return;
     const root = document.scrollingElement || document.documentElement;
     if (root) root.scrollTop = 0;
     document.documentElement.scrollTop = 0;
@@ -78,6 +82,7 @@ function setupMobileChatViewportFixes() {
 
   const onViewportChange = () => {
     if (!isMobile()) return;
+    if (!isMensajesActive()) return;
 
     if (keyboardIsOpen()) {
       document.documentElement.classList.add("chat-typing");
@@ -100,6 +105,7 @@ function setupMobileChatViewportFixes() {
 
   const onInputFocus = () => {
     if (!isMobile()) return;
+    if (!isMensajesActive()) return;
     clearTimeout(blurTimer);
     document.documentElement.classList.add("mensajes-open");
     document.body.classList.add("mensajes-open");
@@ -120,6 +126,7 @@ function setupMobileChatViewportFixes() {
 
   const onInputBlur = () => {
     if (!isMobile()) return;
+    if (!isMensajesActive()) return;
     blurTimer = setTimeout(() => {
       document.documentElement.classList.remove("chat-typing");
       document.body.classList.remove("chat-typing");
@@ -131,6 +138,7 @@ function setupMobileChatViewportFixes() {
 
   const onInputType = () => {
     if (!isMobile()) return;
+    if (!isMensajesActive()) return;
     keepRootScrollAtTop();
     setTimeout(() => {
       scrollBottomIfChatOpen();
@@ -175,6 +183,7 @@ function setupMobileChatViewportFixes() {
   cleanupMobileChatViewportHandlers = () => {
     document.documentElement.classList.remove("chat-typing");
     document.body.classList.remove("chat-typing");
+    mensajesView.classList.remove("mobile-chat-keyboard-open");
     input.removeEventListener("focus", onInputFocus);
     input.removeEventListener("blur", onInputBlur);
     input.removeEventListener("input", onInputType);
@@ -338,6 +347,11 @@ async function navigateTo(viewName) {
       }
     }, 1000); // 1 segundo para mensajes instantáneos
   } else {
+    if (cleanupMobileChatViewportHandlers) {
+      cleanupMobileChatViewportHandlers();
+      cleanupMobileChatViewportHandlers = null;
+    }
+
     const mensajesView = document.getElementById("mensajesView");
     if (mensajesView) {
       mensajesView.classList.remove("mobile-chat-keyboard-open");
@@ -4659,8 +4673,6 @@ window.mensajeriaGlobalInterval = null;
 // Inicializar mensajería cuando se abra la vista de mensajes
 document.addEventListener("DOMContentLoaded", () => {
   // El polling se maneja ahora en navigateTo('mensajes')
-
-  setupMobileChatViewportFixes();
 
   // Event listener para enviar mensajes
   const formDashboard = document.getElementById("chat-form-dashboard");
