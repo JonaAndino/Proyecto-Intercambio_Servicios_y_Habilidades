@@ -2326,12 +2326,31 @@
                 padding-bottom: 0.5rem;
             }
 
-            /* En móvil evita saltos visuales del fondo al hacer scroll */
-            body,
+            /* Fondo móvil estable: mismo look, sin reacomodo al ocultarse/mostrarse la barra del navegador */
+            body {
+                position: relative;
+                background-image: none !important;
+                background-color: transparent !important;
+            }
+
+            body::before {
+                content: "";
+                position: fixed;
+                inset: 0;
+                width: 100vw;
+                height: 100svh;
+                background-image: url('../113435-OOM6G9-66.jpg');
+                background-size: cover;
+                background-position: center center;
+                background-repeat: no-repeat;
+                transform: translateZ(0);
+                will-change: transform;
+                pointer-events: none;
+                z-index: -1;
+            }
+
             #descubrirView,
             #descubrirView > .w-full {
-                background-attachment: scroll !important;
-                background-position: center center !important;
-                background-size: cover !important;
+                background: transparent !important;
             }
         }
