@@ -741,6 +741,9 @@ async function aplicarFiltros() {
           location: location,
           skills: habilidades,
           bio: persona.descripcionPerfil_Persona || "Sin descripción",
+          experienceYears: Number(
+            persona.anios_experiencia || persona.anios_experiencia_Persona || 0,
+          ),
           rating: rating,
           exchanges: exchanges,
           online: Math.random() > 0.5,
@@ -960,6 +963,9 @@ async function cargarUsuariosReales() {
           location: location,
           skills: habilidades,
           bio: persona.descripcionPerfil_Persona || "Sin descripción",
+          experienceYears: Number(
+            persona.anios_experiencia || persona.anios_experiencia_Persona || 0,
+          ),
           rating: rating,
           exchanges: exchanges,
           online: Math.random() > 0.5,
@@ -1355,9 +1361,13 @@ function mostrarFavoritos(favoritos) {
       const ubicacion = userCompleto
         ? userCompleto.location
         : fav.ubicacion || fav.ciudad || "Ubicación no especificada";
-      const bio = userCompleto
-        ? userCompleto.bio
-        : fav.descripcion || "Sin descripción";
+      const experienceYears = userCompleto
+        ? Number(userCompleto.experienceYears || 0)
+        : Number(fav.anios_experiencia || fav.aniosExperiencia || 0);
+      const experienceText =
+        experienceYears > 0
+          ? `${experienceYears} año${experienceYears === 1 ? "" : "s"} de experiencia`
+          : "Sin experiencia registrada";
       const habilidades = userCompleto
         ? userCompleto.skills
         : fav.habilidades || fav.skills || [];
@@ -1426,8 +1436,8 @@ function mostrarFavoritos(favoritos) {
                                     <span class="truncate">${ubicacion}</span>
                                 </div>
 
-                                <!-- Bio -->
-                                <p class="text-gray-600 text-sm user-bio mb-3" title="${bio}">${bio}</p>
+                                <!-- Experiencia -->
+                                <p class="text-gray-600 text-sm user-bio mb-3" title="${experienceText}">${experienceText}</p>
 
                                 <!-- Habilidades -->
                                 <div class="skills-container-card">
@@ -1564,6 +1574,11 @@ function renderUserCardsReal() {
     .map(
       (user) => {
         const bannerGradientClass = obtenerClaseBannerPorGenero(user.genero);
+        const experienceYears = Number(user.experienceYears || 0);
+        const experienceText =
+          experienceYears > 0
+            ? `${experienceYears} año${experienceYears === 1 ? "" : "s"} de experiencia`
+            : "Sin experiencia registrada";
 
         return `
                 <div class="user-card" onclick="viewProfile(${user.id})">
@@ -1613,8 +1628,8 @@ function renderUserCardsReal() {
                                 <span class="truncate">${user.location}</span>
                             </div>
 
-                            <!-- Bio -->
-                            <p class="text-gray-600 text-sm user-bio mb-3" title="${user.bio}">${user.bio}</p>
+                            <!-- Experiencia -->
+                            <p class="text-gray-600 text-sm user-bio mb-3" title="${experienceText}">${experienceText}</p>
 
                             <!-- Habilidades -->
                             <div class="skills-container-card">
