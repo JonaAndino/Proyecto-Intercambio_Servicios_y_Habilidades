@@ -1263,6 +1263,7 @@ function ImageModal({ imageData, onClose }) {
 // ========================================
 function NuevoPerfilUsuario({ perfilId, onVolver, onSolicitar, onReportar }) {
     const [loading, setLoading] = useState(true);
+    const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
     const [persona, setPersona] = useState(null);
     const [habilidadesOfrece, setHabilidadesOfrece] = useState([]);
     const [habilidadesNecesita, setHabilidadesNecesita] = useState([]);
@@ -1288,9 +1289,18 @@ function NuevoPerfilUsuario({ perfilId, onVolver, onSolicitar, onReportar }) {
 
     // Cargar datos del perfil
     useEffect(() => {
+        let isMounted = true;
+        let loadingTimerId = null;
+
         async function cargarDatos() {
             setLoading(true);
+            setShowLoadingIndicator(false);
             setError(null);
+
+            // Mostrar loader solo si la red tarda demasiado
+            loadingTimerId = setTimeout(() => {
+                if (isMounted) setShowLoadingIndicator(true);
+            }, 2000);
 
             try {
                 // 1. Obtener datos de la persona
@@ -1317,6 +1327,17 @@ function NuevoPerfilUsuario({ perfilId, onVolver, onSolicitar, onReportar }) {
                 if (personaData.imagen2Url_Persona) imagenes.push(personaData.imagen2Url_Persona);
                 if (personaData.imagen3Url_Persona) imagenes.push(personaData.imagen3Url_Persona);
                 setGaleriaImagenes(imagenes);
+
+                // Abrir el perfil en cuanto tengamos datos base.
+                // El resto de secciones se completan en segundo plano.
+                if (isMounted) {
+                    setLoading(false);
+                    setShowLoadingIndicator(false);
+                }
+                if (loadingTimerId) {
+                    clearTimeout(loadingTimerId);
+                    loadingTimerId = null;
+                }
 
                 // 2. Obtener habilidades
                 try {
@@ -1469,13 +1490,25 @@ function NuevoPerfilUsuario({ perfilId, onVolver, onSolicitar, onReportar }) {
                 console.error('Error cargando perfil:', err);
                 setError(err.message);
             } finally {
-                setLoading(false);
+                if (loadingTimerId) {
+                    clearTimeout(loadingTimerId);
+                    loadingTimerId = null;
+                }
+                if (isMounted) {
+                    setLoading(false);
+                    setShowLoadingIndicator(false);
+                }
             }
         }
 
         if (perfilId) {
             cargarDatos();
         }
+
+        return () => {
+            isMounted = false;
+            if (loadingTimerId) clearTimeout(loadingTimerId);
+        };
     }, [perfilId]);
 
     // Handlers
@@ -1543,6 +1576,14 @@ function NuevoPerfilUsuario({ perfilId, onVolver, onSolicitar, onReportar }) {
 
     // Loading state
     if (loading) {
+        if (!showLoadingIndicator) {
+            return (
+                <div className="nuevo-perfil-container">
+                    <div className="nuevo-perfil-wrapper" style={{ minHeight: '320px' }}></div>
+                </div>
+            );
+        }
+
         return (
             <div className="nuevo-perfil-container">
                 <div className="nuevo-perfil-wrapper">
