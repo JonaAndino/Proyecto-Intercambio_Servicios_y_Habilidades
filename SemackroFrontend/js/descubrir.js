@@ -33,11 +33,8 @@ function syncVisualViewportHeight() {
   const isMobile = window.innerWidth <= 767;
   let viewportHeight = window.innerHeight;
   if (isMobile && window.visualViewport) {
-    // En Android algunos navegadores desplazan el viewport (offsetTop)
-    // cuando aparece el teclado; sumar offsetTop evita que la altura quede
-    // subestimada y que el input "salte" hacia arriba.
     const vv = window.visualViewport;
-    viewportHeight = Math.round(vv.height + vv.offsetTop);
+    viewportHeight = Math.round(vv.height);
   }
   document.documentElement.style.setProperty("--app-vh", `${viewportHeight}px`);
 }
@@ -68,21 +65,30 @@ function setupMobileChatViewportFixes() {
   const onViewportChange = () => {
     if (!isMobile()) return;
     syncVisualViewportHeight();
+    scrollBottomIfChatOpen();
   };
 
   const onInputFocus = () => {
     if (!isMobile()) return;
     clearTimeout(blurTimer);
+    document.body.classList.add("chat-typing");
     mensajesView.classList.add("mobile-chat-keyboard-open");
+    window.scrollTo({ top: 0, behavior: "auto" });
     setTimeout(() => {
       syncVisualViewportHeight();
       scrollBottomIfChatOpen();
-    }, 70);
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }, 90);
+    setTimeout(() => {
+      scrollBottomIfChatOpen();
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }, 260);
   };
 
   const onInputBlur = () => {
     if (!isMobile()) return;
     blurTimer = setTimeout(() => {
+      document.body.classList.remove("chat-typing");
       mensajesView.classList.remove("mobile-chat-keyboard-open");
       syncVisualViewportHeight();
       scrollBottomIfChatOpen();
