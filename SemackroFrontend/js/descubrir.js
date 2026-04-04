@@ -479,17 +479,25 @@ async function mostrarOnboardingPostLogin() {
     if (typeof Swal !== "undefined" && Swal && typeof Swal.fire === "function") {
       const result = await Swal.fire({
         title: "Completa tu perfil",
-        html: "Antes de usar Descubrir, quieres completar tu informacion de perfil ahora?",
+        html: "Es importante para nosotros que llenes ahora tu perfil para poder verificar tus datos, habilidades y mas.",
         imageUrl: "/MascotaDesicion.gif",
-        imageWidth: 140,
+        imageWidth: 90,
         imageAlt: "Mascota de ayuda",
         showDenyButton: true,
         confirmButtonText: "Llenar informacion",
         denyButtonText: "Omitir por ahora",
+        confirmButtonColor: "#2563eb",
         allowOutsideClick: false,
         allowEscapeKey: false,
         showCloseButton: false,
         reverseButtons: true,
+        didOpen: () => {
+          const confirmButton = Swal.getConfirmButton();
+          if (confirmButton) {
+            confirmButton.style.backgroundColor = "#2563eb";
+            confirmButton.style.borderColor = "#2563eb";
+          }
+        },
       });
 
       if (result.isConfirmed) {
