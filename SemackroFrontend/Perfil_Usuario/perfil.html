@@ -1380,6 +1380,7 @@
                 style.innerHTML = `
                     .mode-minimal .logout-button, 
                     .mode-minimal .action-buttons,
+                    .mode-minimal .tour-start-button,
                     .mode-minimal .camera-icon,
                     .mode-minimal .add-skill-button-primary,
                     .mode-minimal .add-skill-button-secondary,
@@ -1436,6 +1437,15 @@
         <!-- Profile Header -->
         <div class="profile-header glass-card">
             <div class="action-buttons action-buttons-desktop">
+                <button class="logout-button tour-start-button" onclick="iniciarTourPerfil()" title="Ver guia de perfil"
+                    style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M18 10A8 8 0 11.002 9.998 8 8 0 0118 10zm-8-4a1 1 0 00-.867 1.498L10.382 10l-1.25 2.502A1 1 0 0010 14h.007a1 1 0 00.9-.553l1.8-3.6a1 1 0 000-.894l-1.8-3.6A1 1 0 0010 5z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <span>Repetir tour</span>
+                </button>
                 <button class="logout-button" onclick="showLogoutModal()" title="Cerrar sesión">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd"
@@ -1493,6 +1503,16 @@
                     </div>
 
                     <div class="action-buttons action-buttons-mobile">
+                        <button class="logout-button tour-start-button" onclick="iniciarTourPerfil()" title="Ver guia de perfil"
+                            style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M18 10A8 8 0 11.002 9.998 8 8 0 0118 10zm-8-4a1 1 0 00-.867 1.498L10.382 10l-1.25 2.502A1 1 0 0010 14h.007a1 1 0 00.9-.553l1.8-3.6a1 1 0 000-.894l-1.8-3.6A1 1 0 0010 5z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <span>Repetir tour</span>
+                        </button>
                         <button class="logout-button" onclick="showLogoutModal()" title="Cerrar sesión">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20"
                                 fill="currentColor">
@@ -1880,7 +1900,7 @@
             </div>
 
             <!-- Reviews -->
-            <div class="glass-card reviews-section">
+            <div class="glass-card reviews-section" id="reviewsSection">
                 <h2 class="section-title-white">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon-md" viewBox="0 0 20 20" fill="currentColor">
                         <path
@@ -2147,6 +2167,7 @@
         const PROFILE_TOUR_STORAGE_KEY = 'semackro_profile_tour_v1';
         let profileTourHasStarted = false;
         let profileMascotElement = null;
+        let profileTourInstance = null;
 
         function getDriverFactory() {
             if (window.driver && typeof window.driver === 'function') return window.driver;
@@ -2199,6 +2220,14 @@
                     mascot: 'Comienza por tu foto. Da confianza al instante.'
                 },
                 {
+                    element: '#datosPersonales',
+                    title: 'Completa tus datos personales',
+                    description: 'Llena telefono, identidad, ciudad y demas datos para tener un perfil completo.',
+                    side: 'right',
+                    align: 'start',
+                    mascot: 'Entre mas completo tu perfil, mas facil sera que confien en ti.'
+                },
+                {
                     element: '#nombreCompleto',
                     title: 'Completa tu nombre',
                     description: 'Presiona sobre tu nombre para editarlo.',
@@ -2223,9 +2252,25 @@
                     mascot: 'Tus habilidades son la clave para que te encuentren.'
                 },
                 {
+                    element: '#locationBtn',
+                    title: 'Usa obtener mi ubicacion',
+                    description: 'Pulsa este boton, acepta permisos y asi se guarda tu ubicacion en el mapa para mejorar coincidencias cercanas.',
+                    side: 'left',
+                    align: 'center',
+                    mascot: 'La ubicacion ayuda a mostrarte oportunidades reales cerca de ti.'
+                },
+                {
+                    element: '#reviewsSection',
+                    title: 'Como se actualizan tus resenas',
+                    description: 'Tus calificaciones y resenas se actualizan cuando cierras intercambios y el otro usuario te evalua.',
+                    side: 'top',
+                    align: 'start',
+                    mascot: 'Las resenas crecen con cada trabajo finalizado. Cuida cada experiencia.'
+                },
+                {
                     element: '#availabilityToggle',
                     title: 'Activa disponibilidad',
-                    description: 'Si estas listo para trabajar o intercambiar, dejalo activo.',
+                    description: 'Si estas listo para trabajar o intercambiar, dejalo activo. Puedes mover el switch ahora mismo.',
                     side: 'left',
                     align: 'center',
                     mascot: 'Listo. Con esto tu perfil queda preparado para conectar.'
@@ -2237,6 +2282,7 @@
                 .map(step => ({
                     element: step.element,
                     mascot: step.mascot,
+                    disableActiveInteraction: false,
                     popover: {
                         title: step.title,
                         description: step.description,
@@ -2280,27 +2326,44 @@
                 localStorage.setItem(PROFILE_TOUR_STORAGE_KEY, '1');
                 removeTourMascot();
                 clearTourQueryParam();
+                profileTourInstance = null;
                 profileTourHasStarted = false;
             };
 
             const tour = createDriver({
+                steps,
                 showProgress: true,
                 allowClose: true,
+                overlayClickBehavior: 'close',
+                disableActiveInteraction: false,
                 overlayOpacity: 0.55,
                 stagePadding: 8,
                 popoverClass: 'profile-tour-popover',
                 nextBtnText: 'Siguiente',
                 prevBtnText: 'Atras',
                 doneBtnText: 'Listo',
+                showButtons: ['previous', 'next', 'close'],
+                onNextClick: (_, __, options) => {
+                    const total = (options.config.steps || []).length;
+                    const index = options.state.activeIndex || 0;
+                    if (index >= total - 1) {
+                        options.driver.destroy();
+                        return;
+                    }
+                    options.driver.moveNext();
+                },
+                onPrevClick: (_, __, options) => {
+                    options.driver.movePrevious();
+                },
+                onCloseClick: (_, __, options) => {
+                    options.driver.destroy();
+                },
                 onHighlightStarted: handleStepChange,
                 onHighlighted: handleStepChange,
                 onDestroyStarted: handleTourClose,
                 onDestroyed: handleTourClose
             });
-
-            if (typeof tour.setSteps === 'function') {
-                tour.setSteps(steps);
-            }
+            profileTourInstance = tour;
 
             if (typeof tour.drive === 'function') {
                 setTimeout(() => tour.drive(), 240);
@@ -2308,6 +2371,10 @@
         }
 
         window.iniciarTourPerfil = function () {
+            localStorage.removeItem(PROFILE_TOUR_STORAGE_KEY);
+            if (profileTourInstance && typeof profileTourInstance.destroy === 'function') {
+                profileTourInstance.destroy();
+            }
             startProfileTourIfNeeded({ force: true, readOnlyMode: false });
         };
 
