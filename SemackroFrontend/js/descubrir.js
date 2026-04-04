@@ -18,6 +18,8 @@ const closeSidebar = document.getElementById("closeSidebar");
 const usersGrid = document.getElementById("usersGrid");
 const mainContent = document.getElementById("mainContent");
 let cleanupMobileChatViewportHandlers = null;
+let chatMessagesAbortController = null;
+let chatMessagesRequestNonce = 0;
 
 function syncAppHeaderHeight() {
   const header = document.querySelector("#mainContent > header");
@@ -380,6 +382,12 @@ async function navigateTo(viewName) {
       cleanupMobileChatViewportHandlers();
       cleanupMobileChatViewportHandlers = null;
     }
+
+    if (chatMessagesAbortController) {
+      chatMessagesAbortController.abort();
+      chatMessagesAbortController = null;
+    }
+    chatMessagesRequestNonce += 1;
 
     const mensajesView = document.getElementById("mensajesView");
     if (mensajesView) {
@@ -4938,18 +4946,45 @@ function actualizarBadgeSidebarMensajes(conversaciones) {
   }
 }
 
+function limpiarContenedorMensajesDashboard(mensaje = "Cargando mensajes...") {
+  const container = document.getElementById("mensajes-container-dashboard");
+  if (!container) return;
+
+  if (!mensaje) {
+    container.innerHTML = "";
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="flex items-center justify-center h-full text-gray-400">
+      <p class="text-sm">${mensaje}</p>
+    </div>
+  `;
+}
+
 // Seleccionar conversación
 async function seleccionarConversacionDashboard(idConversacion) {
+  const idConversacionNumerico = Number(idConversacion);
+  const idConversacionAnterior = Number(
+    conversacionActivaDashboard?.id_conversacion || 0,
+  );
+
   conversacionActivaDashboard = conversacionesDashboard.find(
-    (c) => c.id_conversacion === idConversacion,
+    (c) => Number(c.id_conversacion) === idConversacionNumerico,
   );
   window.conversacionActivaDashboard = conversacionActivaDashboard; // Sincronizar con global
 
   // Resetear tracking de mensajes al cambiar de conversación
   ultimoMensajeId = null;
   ultimaCantidadMensajes = 0;
+  fueReRenderizado = false;
+  window.lastReadStatusString = "";
 
   if (!conversacionActivaDashboard) return;
+
+  if (idConversacionAnterior !== idConversacionNumerico) {
+    limpiarContenedorMensajesDashboard("Cargando mensajes...");
+  }
 
   // Mostrar panel de chat
   document.getElementById("chat-vacio-dashboard").classList.add("hidden");
@@ -4971,7 +5006,7 @@ async function seleccionarConversacionDashboard(idConversacion) {
   actualizarHeaderChatDashboard(conversacionActivaDashboard);
 
   // Cargar mensajes
-  await cargarMensajesDashboard(idConversacion, true);
+  await cargarMensajesDashboard(idConversacionNumerico, true);
 
   // Actualizar lista para mostrar cual está activa
   mostrarConversacionesDashboard(conversacionesDashboard);
@@ -5086,15 +5121,42 @@ let fueReRenderizado = false;
 
 // Cargar mensajes
 async function cargarMensajesDashboard(idConversacion, scrollToEnd = true) {
+  const idConversacionNumerico = Number(idConversacion);
+  const requestNonce = ++chatMessagesRequestNonce;
+
+  if (chatMessagesAbortController) {
+    chatMessagesAbortController.abort();
+  }
+  chatMessagesAbortController = new AbortController();
+
+  const esSolicitudObsoleta = () => {
+    const idConversacionActiva = Number(
+      window.conversacionActivaDashboard?.id_conversacion ||
+        conversacionActivaDashboard?.id_conversacion ||
+        0,
+    );
+
+    return (
+      requestNonce !== chatMessagesRequestNonce ||
+      idConversacionActiva !== idConversacionNumerico
+    );
+  };
+
   try {
     const personaId = await obtenerPersonaIdActual();
+    if (esSolicitudObsoleta()) return;
+
     const response = await fetch(
-      `${window.APP_CONFIG.BACKEND_URL}/api/mensajeria/conversacion/${idConversacion}/mensajes?personaId=${personaId}`,
+      `${window.APP_CONFIG.BACKEND_URL}/api/mensajeria/conversacion/${idConversacionNumerico}/mensajes?personaId=${personaId}`,
+      {
+        signal: chatMessagesAbortController.signal,
+      },
     );
 
     if (!response.ok) throw new Error("Error al cargar mensajes");
 
     const resultado = await response.json();
+    if (esSolicitudObsoleta()) return;
 
     // La API devuelve { success: true, data: [...] }
     const mensajes = resultado.data || [];
@@ -5113,7 +5175,7 @@ async function cargarMensajesDashboard(idConversacion, scrollToEnd = true) {
       console.log(
         `[MENSAJES] Actualizando chat - Total: ${mensajes.length} mensajes`,
       );
-      mostrarMensajesDashboard(mensajes);
+      mostrarMensajesDashboard(mensajes, idConversacionNumerico);
       if (mensajes.length > 0) {
         ultimoMensajeId = mensajes[mensajes.length - 1].id_mensaje;
       }
@@ -5127,8 +5189,9 @@ async function cargarMensajesDashboard(idConversacion, scrollToEnd = true) {
 
     // Marcar mensajes como leídos (con manejo de errores silencioso)
     try {
+      if (esSolicitudObsoleta()) return;
       await fetch(
-        `${window.APP_CONFIG.BACKEND_URL}/api/mensajeria/conversacion/${idConversacion}/marcar-leidos`,
+        `${window.APP_CONFIG.BACKEND_URL}/api/mensajeria/conversacion/${idConversacionNumerico}/marcar-leidos`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -5141,14 +5204,33 @@ async function cargarMensajesDashboard(idConversacion, scrollToEnd = true) {
     }
 
     // Actualizar lista de conversaciones
+    if (esSolicitudObsoleta()) return;
     await cargarConversacionesDashboard();
   } catch (error) {
+    if (error?.name === "AbortError") {
+      return;
+    }
     console.error("Error:", error);
+  } finally {
+    if (requestNonce === chatMessagesRequestNonce) {
+      chatMessagesAbortController = null;
+    }
   }
 }
 
 // Mostrar mensajes
-function mostrarMensajesDashboard(mensajes) {
+function mostrarMensajesDashboard(mensajes, idConversacionRender = null) {
+  if (idConversacionRender !== null) {
+    const idConversacionActiva = Number(
+      window.conversacionActivaDashboard?.id_conversacion ||
+        conversacionActivaDashboard?.id_conversacion ||
+        0,
+    );
+    if (idConversacionActiva !== Number(idConversacionRender)) {
+      return;
+    }
+  }
+
   const container = document.getElementById("mensajes-container-dashboard");
 
   if (!mensajes || mensajes.length === 0) {
