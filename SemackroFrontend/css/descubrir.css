@@ -542,12 +542,6 @@
         }
 
         @media (max-width: 767px) {
-            #descubrirView .discover-top-section {
-                padding-top: 0 !important;
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-            }
-
             #descubrirView .discover-hero-banner {
                 padding: 1rem 0.7rem 0.85rem;
                 border-radius: 0.95rem;
