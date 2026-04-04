@@ -765,6 +765,14 @@ async function aplicarFiltros() {
 // CARGAR ESTADÍSTICAS GLOBALES
 // ========================================
 async function cargarEstadisticasGlobales() {
+  const idsStats = [
+    "usuarios-activos",
+    "categorias-disponibles",
+    "intercambios-exitosos",
+  ];
+  const hasStatsUI = idsStats.some((id) => document.getElementById(id));
+  if (!hasStatsUI) return;
+
   try {
     console.log(" Cargando estadísticas globales...");
     const response = await fetch(
@@ -801,7 +809,6 @@ async function cargarEstadisticasGlobales() {
 function animarContador(elementId, valorFinal) {
   const elemento = document.getElementById(elementId);
   if (!elemento) {
-    console.error(` No se encontró el elemento con ID: ${elementId}`);
     return;
   }
 
