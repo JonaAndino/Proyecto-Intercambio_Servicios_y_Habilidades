@@ -175,13 +175,52 @@
 
         @media (max-width: 768px) {
             .tour-inline-row {
-                gap: 8px;
+                gap: 12px;
             }
 
             .tour-inline-mascot {
-                width: 50px;
-                min-width: 50px;
-                height: 50px;
+                width: 64px;
+                min-width: 64px;
+                height: 64px;
+                border-radius: 16px;
+            }
+
+            .profile-tour-popover.driver-popover {
+                max-width: min(94vw, 430px) !important;
+                padding: 16px 16px 14px !important;
+                border-radius: 14px !important;
+            }
+
+            .profile-tour-popover .driver-popover-title {
+                font-size: clamp(1.6rem, 4.8vw, 2rem) !important;
+                line-height: 1.12 !important;
+                margin-bottom: 8px !important;
+            }
+
+            .profile-tour-popover .driver-popover-description {
+                font-size: clamp(1.15rem, 3.8vw, 1.35rem) !important;
+                line-height: 1.35 !important;
+            }
+
+            .profile-tour-popover .driver-popover-progress-text {
+                font-size: clamp(1rem, 3.4vw, 1.15rem) !important;
+            }
+
+            .profile-tour-popover .driver-popover-navigation-btns {
+                gap: 8px !important;
+            }
+
+            .profile-tour-popover .driver-popover-navigation-btns button {
+                min-height: 46px !important;
+                padding: 10px 16px !important;
+                font-size: clamp(1rem, 3.5vw, 1.15rem) !important;
+                border-radius: 10px !important;
+            }
+
+            .profile-tour-popover .driver-popover-close-btn {
+                font-size: 28px !important;
+                width: 40px !important;
+                height: 40px !important;
             }
         }
 
