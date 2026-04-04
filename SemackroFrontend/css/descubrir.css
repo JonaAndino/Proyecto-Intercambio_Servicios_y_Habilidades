@@ -2325,4 +2325,13 @@
             #mensajesView.mobile-chat-keyboard-open #mensajes-container-dashboard {
                 padding-bottom: 0.5rem;
             }
+
+            /* En móvil evita saltos visuales del fondo al hacer scroll */
+            body,
+            #descubrirView,
+            #descubrirView > .w-full {
+                background-attachment: scroll !important;
+                background-position: center top !important;
+                background-size: cover !important;
+            }
         }
