@@ -2320,6 +2320,7 @@
         const TOUR_OFFERED_SKILL_CONTAINER_SELECTOR = '#offeredSkillsContainer';
         const TOUR_OFFERED_SKILL_MODAL_SELECTOR = '#skillModal .modal-content';
         const TOUR_OFFERED_SKILL_ADD_BTN_SELECTOR = '#offeredSkillsContainer .add-skill-button-primary';
+        const TOUR_CONTACT_EMAIL_SELECTOR = '#solicitudVerificacionForm .verification-pill, #correoVerificacion';
         let profileTourHasStarted = false;
         let profileTourInstance = null;
         let tourAutoAdvanceCleanup = null;
@@ -2403,9 +2404,20 @@
             return TOUR_REQUIRED_PERSONAL_FIELDS.every(field => isFilledTourValue(usuario[field]));
         }
 
+        function isCorreoVerificacionCompleto() {
+            const correoInput = document.getElementById('correoVerificacion');
+            if (!correoInput) return false;
+
+            const correo = correoInput.value.trim();
+            if (!correo) return false;
+
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
+        }
+
         function evaluateTourCompletionCheck(checkName) {
             if (!checkName) return true;
             if (checkName === 'datosPersonales') return isDatosPersonalesCompletos();
+            if (checkName === 'correoVerificacion') return isCorreoVerificacionCompleto();
             return true;
         }
 
@@ -2465,6 +2477,22 @@
                     autoAdvance: {
                         listenSelector: '#descripcion',
                         delegateSelector: 'input, textarea',
+                        events: ['change', 'blur'],
+                        delayMs: 260
+                    }
+                },
+                {
+                    stepKey: 'contactVerificationEmail',
+                    element: TOUR_CONTACT_EMAIL_SELECTOR,
+                    title: 'Correo para contacto',
+                    description: 'Llena este correo para poder verificar tu perfil.',
+                    side: 'bottom',
+                    align: 'start',
+                    mascot: 'Este correo nos ayuda a iniciar tu proceso de verificacion.',
+                    autoAdvance: {
+                        listenSelector: '#solicitudVerificacionForm',
+                        delegateSelector: '#correoVerificacion',
+                        completeCheck: 'correoVerificacion',
                         events: ['change', 'blur'],
                         delayMs: 260
                     }
