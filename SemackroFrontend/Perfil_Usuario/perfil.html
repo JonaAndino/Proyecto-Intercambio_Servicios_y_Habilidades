@@ -6239,10 +6239,24 @@
             applyTranslations();
         });
 
-        // Escuchar cambios de idioma desde el parent (Descubrir.html)
+        // Escuchar eventos desde el parent (Descubrir.html)
         window.addEventListener('message', (event) => {
-            if (event.data.type === 'languageChange') {
-                changeLanguage(event.data.language);
+            if (event.origin !== window.location.origin) return;
+            const data = event.data || {};
+
+            if (data.type === 'languageChange') {
+                changeLanguage(data.language);
+                return;
+            }
+
+            if (data.type === 'startProfileOnboardingTour') {
+                setTimeout(() => {
+                    if (typeof window.iniciarTourPerfil === 'function') {
+                        window.iniciarTourPerfil();
+                        return;
+                    }
+                    startProfileTourIfNeeded({ force: true, readOnlyMode: false });
+                }, 180);
             }
         });
 

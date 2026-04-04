@@ -254,6 +254,33 @@ try {
 const POST_LOGIN_ONBOARDING_STORAGE_KEY = "semackro_post_login_onboarding";
 const POST_LOGIN_ONBOARDING_SEEN_PREFIX = "semackro_onboarding_seen_user_";
 let onboardingPostLoginEnCurso = false;
+let pendingProfileOnboardingTourStart = false;
+
+function enviarTriggerTourPerfilAlIframe() {
+  const iframe = document.getElementById("perfilIframe");
+  if (!iframe || !iframe.contentWindow) return false;
+  iframe.contentWindow.postMessage(
+    {
+      type: "startProfileOnboardingTour",
+      source: "descubrirOnboarding",
+    },
+    window.location.origin,
+  );
+  return true;
+}
+
+function abrirPerfilYDispararTour() {
+  pendingProfileOnboardingTourStart = true;
+  closeSidebarFn();
+  navigateTo("perfil");
+
+  // Intento inmediato por si el iframe ya está cargado.
+  setTimeout(() => {
+    if (enviarTriggerTourPerfilAlIframe()) {
+      pendingProfileOnboardingTourStart = false;
+    }
+  }, 220);
+}
 
 function onboardingForzadoPorQuery() {
   try {
@@ -371,7 +398,7 @@ function iniciarTourOnboardingPerfil() {
   const perfilItem = document.querySelector('[data-view="perfil"]');
 
   if (!hamburger || !perfilItem) {
-    navigateTo("perfil");
+    abrirPerfilYDispararTour();
     return;
   }
 
@@ -380,8 +407,7 @@ function iniciarTourOnboardingPerfil() {
     console.warn("Driver.js no está disponible. Redirigiendo al perfil.");
     openSidebar();
     setTimeout(() => {
-      closeSidebarFn();
-      navigateTo("perfil");
+      abrirPerfilYDispararTour();
     }, 260);
     return;
   }
@@ -454,8 +480,7 @@ function iniciarTourOnboardingPerfil() {
       }
 
       if (index >= total - 1) {
-        closeSidebarFn();
-        navigateTo("perfil");
+        abrirPerfilYDispararTour();
         options.driver.destroy();
         return;
       }
@@ -490,8 +515,7 @@ function iniciarTourOnboardingPerfil() {
 
   const onPerfilClick = () => {
     if (activeStepIndex !== 1) return;
-    closeSidebarFn();
-    navigateTo("perfil");
+    abrirPerfilYDispararTour();
     try {
       tour.destroy();
     } catch (error) {
@@ -513,7 +537,7 @@ function iniciarTourOnboardingPerfil() {
     return;
   }
 
-  navigateTo("perfil");
+  abrirPerfilYDispararTour();
 }
 
 async function mostrarOnboardingPostLogin() {
@@ -4554,6 +4578,17 @@ window.addEventListener("message", function (ev) {
           },
           window.location.origin,
         );
+
+        if (pendingProfileOnboardingTourStart) {
+          iframe.contentWindow.postMessage(
+            {
+              type: "startProfileOnboardingTour",
+              source: "descubrirOnboarding",
+            },
+            window.location.origin,
+          );
+          pendingProfileOnboardingTourStart = false;
+        }
       }
     }
   } catch (err) {
