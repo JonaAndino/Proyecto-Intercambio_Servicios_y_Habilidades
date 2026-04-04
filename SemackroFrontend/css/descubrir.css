@@ -2479,15 +2479,17 @@
                 z-index: 40 !important;
             }
 
-            body.mensajes-open #mensajesView.mobile-chat-keyboard-open #chat-input-dashboard {
+            body.mensajes-open #mensajesView #chat-layout-dashboard.mobile-show-chat #chat-input-dashboard {
                 position: fixed !important;
                 left: 0 !important;
                 right: 0 !important;
-                bottom: 0 !important;
-                z-index: 70 !important;
+                width: 100vw !important;
+                bottom: var(--chat-keyboard-offset, 0px) !important;
+                z-index: 2147483000 !important;
+                transform: translateZ(0);
             }
 
-            body.mensajes-open #mensajesView.mobile-chat-keyboard-open #mensajes-container-dashboard {
-                padding-bottom: 92px !important;
+            body.mensajes-open #mensajesView #chat-layout-dashboard.mobile-show-chat #mensajes-container-dashboard {
+                padding-bottom: calc(96px + var(--chat-keyboard-offset, 0px)) !important;
             }
         }

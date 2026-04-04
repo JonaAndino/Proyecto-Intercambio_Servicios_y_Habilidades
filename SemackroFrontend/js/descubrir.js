@@ -30,13 +30,36 @@ function syncAppHeaderHeight() {
 }
 
 function syncVisualViewportHeight() {
-  const isMobile = window.innerWidth <= 767;
-  let viewportHeight = window.innerHeight;
-  if (isMobile && window.visualViewport) {
+  const layoutViewportHeight = window.innerHeight;
+  document.documentElement.style.setProperty(
+    "--app-vh",
+    `${layoutViewportHeight}px`,
+  );
+
+  if (window.visualViewport) {
     const vv = window.visualViewport;
-    viewportHeight = Math.round(vv.height);
+    const visualViewportHeight = Math.round(vv.height);
+    const keyboardOffset = Math.max(
+      0,
+      Math.round(layoutViewportHeight - (vv.height + vv.offsetTop)),
+    );
+
+    document.documentElement.style.setProperty(
+      "--visual-vh",
+      `${visualViewportHeight}px`,
+    );
+    document.documentElement.style.setProperty(
+      "--chat-keyboard-offset",
+      `${keyboardOffset}px`,
+    );
+    return;
   }
-  document.documentElement.style.setProperty("--app-vh", `${viewportHeight}px`);
+
+  document.documentElement.style.setProperty(
+    "--visual-vh",
+    `${layoutViewportHeight}px`,
+  );
+  document.documentElement.style.setProperty("--chat-keyboard-offset", "0px");
 }
 
 function setupMobileChatViewportFixes() {
@@ -57,21 +80,20 @@ function setupMobileChatViewportFixes() {
   const isMobile = () => window.innerWidth <= 767;
   const isMensajesActive = () =>
     document.body.classList.contains("mensajes-open") ||
-    mensajesView.classList.contains("active") ||
-    currentView === "mensajes";
+    mensajesView.classList.contains("active");
 
-  const keyboardIsOpen = () => {
-    if (!isMobile() || !window.visualViewport) return false;
-    return window.innerHeight - window.visualViewport.height > 120;
+  const setKeyboardOffset = (value) => {
+    const safeValue = Math.max(0, Math.round(Number(value) || 0));
+    document.documentElement.style.setProperty(
+      "--chat-keyboard-offset",
+      `${safeValue}px`,
+    );
   };
 
-  const keepRootScrollAtTop = () => {
-    if (!isMobile() || !isMensajesActive()) return;
-    const root = document.scrollingElement || document.documentElement;
-    if (root) root.scrollTop = 0;
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-    window.scrollTo({ top: 0, behavior: "auto" });
+  const getKeyboardOffset = () => {
+    if (!isMobile() || !window.visualViewport) return 0;
+    const vv = window.visualViewport;
+    return Math.max(0, Math.round(window.innerHeight - (vv.height + vv.offsetTop)));
   };
 
   const scrollBottomIfChatOpen = () => {
@@ -80,27 +102,38 @@ function setupMobileChatViewportFixes() {
     scrollToBottomDashboard();
   };
 
-  const onViewportChange = () => {
-    if (!isMobile()) return;
-    if (!isMensajesActive()) return;
+  const syncChatViewportState = () => {
+    if (!isMobile() || !isMensajesActive()) {
+      setKeyboardOffset(0);
+      document.documentElement.classList.remove("chat-typing");
+      document.body.classList.remove("chat-typing");
+      mensajesView.classList.remove("mobile-chat-keyboard-open");
+      syncVisualViewportHeight();
+      return;
+    }
 
-    if (keyboardIsOpen()) {
+    const keyboardOffset = getKeyboardOffset();
+    const keyboardOpen = keyboardOffset > 80 || document.activeElement === input;
+    setKeyboardOffset(keyboardOffset);
+
+    if (keyboardOpen) {
       document.documentElement.classList.add("chat-typing");
       document.body.classList.add("chat-typing");
       mensajesView.classList.add("mobile-chat-keyboard-open");
-    } else {
+    } else if (document.activeElement !== input) {
       document.documentElement.classList.remove("chat-typing");
       document.body.classList.remove("chat-typing");
-      if (document.activeElement !== input) {
-        mensajesView.classList.remove("mobile-chat-keyboard-open");
-      }
+      mensajesView.classList.remove("mobile-chat-keyboard-open");
     }
 
     syncVisualViewportHeight();
-    keepRootScrollAtTop();
+  };
+
+  const onViewportChange = () => {
+    syncChatViewportState();
     setTimeout(() => {
       scrollBottomIfChatOpen();
-    }, 90);
+    }, 70);
   };
 
   const onInputFocus = () => {
@@ -109,37 +142,30 @@ function setupMobileChatViewportFixes() {
     clearTimeout(blurTimer);
     document.documentElement.classList.add("mensajes-open");
     document.body.classList.add("mensajes-open");
-    document.documentElement.classList.add("chat-typing");
-    document.body.classList.add("chat-typing");
-    mensajesView.classList.add("mobile-chat-keyboard-open");
-    keepRootScrollAtTop();
+    syncChatViewportState();
     setTimeout(() => {
-      syncVisualViewportHeight();
-      keepRootScrollAtTop();
-      scrollBottomIfChatOpen();
+      onViewportChange();
     }, 90);
     setTimeout(() => {
-      keepRootScrollAtTop();
       scrollBottomIfChatOpen();
-    }, 260);
+    }, 220);
   };
 
   const onInputBlur = () => {
     if (!isMobile()) return;
-    if (!isMensajesActive()) return;
     blurTimer = setTimeout(() => {
+      if (document.activeElement === input) return;
       document.documentElement.classList.remove("chat-typing");
       document.body.classList.remove("chat-typing");
       mensajesView.classList.remove("mobile-chat-keyboard-open");
+      setKeyboardOffset(0);
       syncVisualViewportHeight();
-      scrollBottomIfChatOpen();
     }, 140);
   };
 
   const onInputType = () => {
     if (!isMobile()) return;
     if (!isMensajesActive()) return;
-    keepRootScrollAtTop();
     setTimeout(() => {
       scrollBottomIfChatOpen();
     }, 40);
@@ -178,12 +204,15 @@ function setupMobileChatViewportFixes() {
     window.visualViewport.addEventListener("scroll", onViewportChange);
   }
 
+  syncChatViewportState();
   syncVisualViewportHeight();
 
   cleanupMobileChatViewportHandlers = () => {
     document.documentElement.classList.remove("chat-typing");
     document.body.classList.remove("chat-typing");
     mensajesView.classList.remove("mobile-chat-keyboard-open");
+    setKeyboardOffset(0);
+    syncVisualViewportHeight();
     input.removeEventListener("focus", onInputFocus);
     input.removeEventListener("blur", onInputBlur);
     input.removeEventListener("input", onInputType);
