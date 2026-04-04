@@ -2407,6 +2407,14 @@
                 height: auto;
             }
 
+            html.mensajes-open.chat-typing,
+            html.mensajes-open.chat-typing body,
+            body.mensajes-open.chat-typing {
+                overflow: hidden !important;
+                overscroll-behavior: none;
+                height: 100%;
+            }
+
             body.mensajes-open::before {
                 display: none;
             }

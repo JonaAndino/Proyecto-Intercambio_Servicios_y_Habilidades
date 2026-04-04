@@ -56,6 +56,11 @@ function setupMobileChatViewportFixes() {
 
   const isMobile = () => window.innerWidth <= 767;
 
+  const keyboardIsOpen = () => {
+    if (!isMobile() || !window.visualViewport) return false;
+    return window.innerHeight - window.visualViewport.height > 120;
+  };
+
   const keepRootScrollAtTop = () => {
     if (!isMobile()) return;
     const root = document.scrollingElement || document.documentElement;
@@ -73,6 +78,19 @@ function setupMobileChatViewportFixes() {
 
   const onViewportChange = () => {
     if (!isMobile()) return;
+
+    if (keyboardIsOpen()) {
+      document.documentElement.classList.add("chat-typing");
+      document.body.classList.add("chat-typing");
+      mensajesView.classList.add("mobile-chat-keyboard-open");
+    } else {
+      document.documentElement.classList.remove("chat-typing");
+      document.body.classList.remove("chat-typing");
+      if (document.activeElement !== input) {
+        mensajesView.classList.remove("mobile-chat-keyboard-open");
+      }
+    }
+
     syncVisualViewportHeight();
     keepRootScrollAtTop();
     setTimeout(() => {
@@ -85,6 +103,8 @@ function setupMobileChatViewportFixes() {
     clearTimeout(blurTimer);
     document.documentElement.classList.add("mensajes-open");
     document.body.classList.add("mensajes-open");
+    document.documentElement.classList.add("chat-typing");
+    document.body.classList.add("chat-typing");
     mensajesView.classList.add("mobile-chat-keyboard-open");
     keepRootScrollAtTop();
     setTimeout(() => {
@@ -101,6 +121,8 @@ function setupMobileChatViewportFixes() {
   const onInputBlur = () => {
     if (!isMobile()) return;
     blurTimer = setTimeout(() => {
+      document.documentElement.classList.remove("chat-typing");
+      document.body.classList.remove("chat-typing");
       mensajesView.classList.remove("mobile-chat-keyboard-open");
       syncVisualViewportHeight();
       scrollBottomIfChatOpen();
@@ -151,6 +173,8 @@ function setupMobileChatViewportFixes() {
   syncVisualViewportHeight();
 
   cleanupMobileChatViewportHandlers = () => {
+    document.documentElement.classList.remove("chat-typing");
+    document.body.classList.remove("chat-typing");
     input.removeEventListener("focus", onInputFocus);
     input.removeEventListener("blur", onInputBlur);
     input.removeEventListener("input", onInputType);
@@ -194,6 +218,10 @@ async function navigateTo(viewName) {
   syncAppHeaderHeight();
   document.documentElement.classList.toggle("mensajes-open", viewName === "mensajes");
   document.body.classList.toggle("mensajes-open", viewName === "mensajes");
+  if (viewName !== "mensajes") {
+    document.documentElement.classList.remove("chat-typing");
+    document.body.classList.remove("chat-typing");
+  }
 
   // Actualizar el estado activo del sidebar inmediatamente
   try {
