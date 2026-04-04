@@ -8342,6 +8342,7 @@ async function obtenerUbicacionUsuario() {
 async function cargarOrdenesTrabajo() {
   const grid = document.getElementById('ordenesTrabajoGrid');
   if (!grid) return;
+  const LOADER_ORDENES_DELAY_MS = 1200;
 
   const esAdmin = localStorage.getItem('usuarioRolId') === '1';
 
@@ -8372,14 +8373,18 @@ async function cargarOrdenesTrabajo() {
   }
   // ──────────────────────────────────────────────────────────────
 
-  // Mostrar spinner
-  grid.innerHTML = `
-    <div class="col-span-full flex items-center justify-center py-16">
-      <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p class="text-gray-500">Cargando órdenes de trabajo...</p>
-      </div>
-    </div>`;
+  // Loader diferido: solo mostrar indicador si realmente está tardando.
+  let cargaFinalizada = false;
+  const loadingTimer = setTimeout(() => {
+    if (cargaFinalizada) return;
+    grid.innerHTML = `
+      <div class="col-span-full flex items-center justify-center py-16">
+        <div class="text-center">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p class="text-gray-500">Cargando órdenes de trabajo...</p>
+        </div>
+      </div>`;
+  }, LOADER_ORDENES_DELAY_MS);
 
   // Admin también carga especialidades para el modal de creación
   if (esAdmin) await cargarEspecialidadesOrden();
@@ -8417,10 +8422,14 @@ async function cargarOrdenesTrabajo() {
     sessionStorage.setItem('cache_ot_data', JSON.stringify({ ordenes: _todasLasOrdenes, postulaciones: misPostulacionesMap }));
     sessionStorage.setItem('cache_ot_ts', String(Date.now()));
 
+    cargaFinalizada = true;
+    clearTimeout(loadingTimer);
     renderizarOrdenes(_todasLasOrdenes, esAdmin, misPostulacionesMap);
   } catch (err) {
     console.warn('[OT] No se pudo conectar al endpoint:', err.message);
     _todasLasOrdenes = [];
+    cargaFinalizada = true;
+    clearTimeout(loadingTimer);
     renderizarOrdenes([], esAdmin, {});
   }
 }
@@ -8838,7 +8847,7 @@ async function verDetalleOrden(id) {
           <span class="iconify text-blue-500" data-icon="mdi:account-group-outline" style="font-size:17px;"></span>
           Postulantes
         </p>
-        <div id="ot-postulantes-list" class="text-xs text-gray-400 italic">Cargando postulantes...</div>
+        <div id="ot-postulantes-list" class="text-xs text-gray-400 italic"></div>
       </div>` : ''}
     </div>`;
 
@@ -8846,6 +8855,16 @@ async function verDetalleOrden(id) {
 
   // Cargar postulantes para admin (SCRUM-25)
   if (esAdmin) {
+    const container = document.getElementById('ot-postulantes-list');
+    if (!container) return;
+
+    const LOADER_POSTULANTES_DELAY_MS = 1200;
+    let postulantesFinalizados = false;
+    const postulantesLoadingTimer = setTimeout(() => {
+      if (postulantesFinalizados) return;
+      container.innerHTML = '<p class="text-xs text-gray-400 italic">Cargando postulantes...</p>';
+    }, LOADER_POSTULANTES_DELAY_MS);
+
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('authToken');
       const rp = await fetch(`${API_BASE}/ordenes-trabajo/${id}/postulaciones`, {
@@ -8853,8 +8872,6 @@ async function verDetalleOrden(id) {
       });
       const dp = await rp.json();
       const lista = dp.data || [];
-      const container = document.getElementById('ot-postulantes-list');
-      if (!container) return;
       if (!lista.length) {
         container.innerHTML = '<p class="text-xs text-gray-400 italic">Aún no hay postulantes.</p>';
         return;
@@ -8954,8 +8971,10 @@ async function verDetalleOrden(id) {
       }).join('');
       if (window.Iconify) Iconify.scan();
     } catch (e) {
-      const c = document.getElementById('ot-postulantes-list');
-      if (c) c.innerHTML = '<p class="text-xs text-gray-400">No se pudieron cargar los postulantes.</p>';
+      container.innerHTML = '<p class="text-xs text-gray-400">No se pudieron cargar los postulantes.</p>';
+    } finally {
+      postulantesFinalizados = true;
+      clearTimeout(postulantesLoadingTimer);
     }
   }
 }
