@@ -342,6 +342,29 @@ let currentSearchFilter = ""; // Filtro de búsqueda activo
 // Variable global para almacenar ID_Persona del usuario actual
 let usuarioActualPersonaId = null;
 
+function normalizarGenero(valorGenero) {
+  const genero = (valorGenero || "").toString().trim().toLowerCase();
+  if (!genero) return "";
+
+  if (["femenino", "mujer", "female", "f"].includes(genero)) {
+    return "femenino";
+  }
+
+  if (["masculino", "hombre", "male", "m"].includes(genero)) {
+    return "masculino";
+  }
+
+  return "";
+}
+
+function obtenerClaseBannerPorGenero(valorGenero) {
+  const genero = normalizarGenero(valorGenero);
+  if (genero === "femenino") {
+    return "bg-gradient-to-r from-pink-400 via-pink-500 to-fuchsia-500";
+  }
+  return "bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600";
+}
+
 async function cargarDatosUsuario() {
   try {
     const usuarioId = localStorage.getItem("usuarioId");
@@ -713,6 +736,8 @@ async function aplicarFiltros() {
             "Usuario",
           profession:
             persona.descripcionPerfil_Persona || "Usuario SEMACKRO",
+          genero:
+            persona.genero_Persona || persona.genero || persona.genero_Usuario || "",
           location: location,
           skills: habilidades,
           bio: persona.descripcionPerfil_Persona || "Sin descripción",
@@ -930,6 +955,8 @@ async function cargarUsuariosReales() {
             "Usuario",
           profession:
             persona.descripcionPerfil_Persona || "Usuario SEMACKRO",
+          genero:
+            persona.genero_Persona || persona.genero || persona.genero_Usuario || "",
           location: location,
           skills: habilidades,
           bio: persona.descripcionPerfil_Persona || "Sin descripción",
@@ -1340,6 +1367,10 @@ function mostrarFavoritos(favoritos) {
       const intercambios = userCompleto
         ? userCompleto.exchanges
         : fav.intercambios || fav.total_intercambios || 0;
+      const genero = userCompleto
+        ? userCompleto.genero
+        : fav.genero || fav.genero_Persona || fav.genero_Usuario || "";
+      const bannerGradientClass = obtenerClaseBannerPorGenero(genero);
 
       const initials = nombreCompleto
         .split(" ")
@@ -1358,7 +1389,7 @@ function mostrarFavoritos(favoritos) {
                         </button>
 
                         <!-- Banner superior con gradiente -->
-                        <div class="user-card-banner bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
+                        <div class="user-card-banner ${bannerGradientClass}"></div>
 
                         <!-- Contenido de la tarjeta -->
                         <div class="user-card-content">
@@ -1531,7 +1562,10 @@ function renderUserCardsReal() {
 
   usersGrid.innerHTML = paginatedUsers
     .map(
-      (user) => `
+      (user) => {
+        const bannerGradientClass = obtenerClaseBannerPorGenero(user.genero);
+
+        return `
                 <div class="user-card" onclick="viewProfile(${user.id})">
                     <!-- Botón de favoritos (ocultar si es el propio usuario) -->
                     ${
@@ -1549,7 +1583,7 @@ function renderUserCardsReal() {
                     }
 
                     <!-- Banner superior con gradiente -->
-                    <div class="user-card-banner bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600"></div>
+                    <div class="user-card-banner ${bannerGradientClass}"></div>
 
                     <!-- Contenido de la tarjeta -->
                     <div class="user-card-content">
@@ -1631,7 +1665,8 @@ function renderUserCardsReal() {
 </div>
                     </div>
                 </div>
-            `,
+                `;
+              },
     )
     .join("");
 
