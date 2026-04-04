@@ -158,6 +158,7 @@ let currentView = "descubrir";
 
 async function navigateTo(viewName) {
   syncAppHeaderHeight();
+  document.body.classList.toggle("mensajes-open", viewName === "mensajes");
 
   // Actualizar el estado activo del sidebar inmediatamente
   try {
@@ -293,13 +294,15 @@ async function navigateTo(viewName) {
 
   // Evitar locks globales persistentes de scroll fuera de overlays/sidebar móvil.
   const sidebarIsOpen = document.getElementById("sidebar")?.classList.contains("open");
-  if (!sidebarIsOpen) {
+  if (!sidebarIsOpen && viewName !== "mensajes") {
     document.body.style.overflow = "";
   }
 
   // Scroll al Descubrir
   if (viewName !== "mensajes") {
     window.scrollTo({ top: 0, behavior: "smooth" });
+  } else if (window.innerWidth <= 767) {
+    window.scrollTo({ top: 0, behavior: "auto" });
   }
 
   // Recalcular tras render para evitar desfases visuales por fuentes/cambios de layout.
