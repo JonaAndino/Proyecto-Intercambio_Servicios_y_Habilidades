@@ -25,30 +25,27 @@
             padding: 20px 20px 0;
         }
 
-        .tour-mascot {
-            position: fixed;
-            right: 20px;
-            bottom: 20px;
-            z-index: 10050;
+        .tour-inline-row {
             display: flex;
-            align-items: flex-end;
+            align-items: flex-start;
             gap: 10px;
-            pointer-events: none;
         }
 
-        .tour-mascot-avatar {
-            width: 74px;
-            height: 74px;
-            border-radius: 18px;
+        .tour-inline-mascot {
+            width: 58px;
+            min-width: 58px;
+            height: 58px;
+            border-radius: 14px;
             background: linear-gradient(165deg, #dbeafe 0%, #bfdbfe 55%, #93c5fd 100%);
             border: 1px solid #93c5fd;
-            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
             position: relative;
             overflow: hidden;
             animation: mascotFloat 1.8s ease-in-out infinite;
+            margin-top: 2px;
         }
 
-        .tour-mascot-svg {
+        .tour-inline-mascot-svg {
             width: 100%;
             height: 100%;
             display: block;
@@ -70,23 +67,23 @@
             animation: mascotCheek 1.7s ease-in-out infinite;
         }
 
-        .tour-mascot-spark {
+        .tour-inline-mascot-spark {
             position: absolute;
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: #ffffff;
             opacity: 0.8;
-            top: 8px;
-            right: 10px;
+            top: 7px;
+            right: 8px;
             animation: mascotSpark 1.9s ease-in-out infinite;
         }
 
-        .tour-mascot-spark.s2 {
-            width: 6px;
-            height: 6px;
-            top: 18px;
-            right: 20px;
+        .tour-inline-mascot-spark.s2 {
+            width: 5px;
+            height: 5px;
+            top: 16px;
+            right: 16px;
             animation-delay: 0.45s;
         }
 
@@ -171,9 +168,19 @@
             color: #374151;
         }
 
+        .profile-tour-popover .driver-popover-description {
+            margin: 0;
+        }
+
         @media (max-width: 768px) {
-            .tour-mascot {
-                display: none;
+            .tour-inline-row {
+                gap: 8px;
+            }
+
+            .tour-inline-mascot {
+                width: 50px;
+                min-width: 50px;
+                height: 50px;
             }
         }
 
@@ -2251,7 +2258,6 @@
         const API_BASE = window.API_BASE;
         const PROFILE_TOUR_STORAGE_KEY = 'semackro_profile_tour_v1';
         let profileTourHasStarted = false;
-        let profileMascotElement = null;
         let profileTourInstance = null;
         let tourAutoAdvanceCleanup = null;
 
@@ -2262,49 +2268,51 @@
             return null;
         }
 
-        function renderTourMascot() {
-            if (profileMascotElement) return;
+        function createTourInlineMascot() {
             const mascot = document.createElement('div');
-            mascot.id = 'profileTourMascot';
-            mascot.className = 'tour-mascot';
+            mascot.className = 'tour-inline-mascot';
+            mascot.setAttribute('aria-hidden', 'true');
             mascot.innerHTML = `
-                <div class="tour-mascot-bubble" id="profileTourMascotBubble">Te guio en 1 minuto para completar tu perfil.</div>
-                <div class="tour-mascot-avatar" aria-hidden="true">
-                    <svg class="tour-mascot-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img">
-                        <defs>
-                            <linearGradient id="mascotFaceGrad" x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0%" stop-color="#60a5fa" />
-                                <stop offset="100%" stop-color="#2563eb" />
-                            </linearGradient>
-                        </defs>
-                        <ellipse cx="32" cy="56" rx="14" ry="4" fill="#2563eb" opacity="0.2" />
-                        <circle cx="32" cy="32" r="18" fill="url(#mascotFaceGrad)" stroke="#1d4ed8" stroke-width="2" />
-                        <circle class="tour-mascot-cheek" cx="24" cy="36" r="3" fill="#fda4af" opacity="0.55" />
-                        <circle class="tour-mascot-cheek" cx="40" cy="36" r="3" fill="#fda4af" opacity="0.55" />
-                        <ellipse class="tour-mascot-eye" cx="26" cy="30" rx="2.2" ry="3.4" fill="#0f172a" />
-                        <ellipse class="tour-mascot-eye" cx="38" cy="30" rx="2.2" ry="3.4" fill="#0f172a" />
-                        <path d="M26 40c1.8 2.8 10.2 2.8 12 0" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" />
-                        <path class="tour-mascot-hand" d="M45 39c5 1 8 4 8 8 0 1.9-2 3-3.7 2.2l-5.6-2.8" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1.5" stroke-linejoin="round" />
-                        <circle cx="19" cy="18" r="4" fill="#ffffff" opacity="0.85" />
-                    </svg>
-                    <span class="tour-mascot-spark"></span>
-                    <span class="tour-mascot-spark s2"></span>
-                </div>
+                <svg class="tour-inline-mascot-svg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img">
+                    <defs>
+                        <linearGradient id="mascotFaceGradInline" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#60a5fa" />
+                            <stop offset="100%" stop-color="#2563eb" />
+                        </linearGradient>
+                    </defs>
+                    <ellipse cx="32" cy="56" rx="14" ry="4" fill="#2563eb" opacity="0.2" />
+                    <circle cx="32" cy="32" r="18" fill="url(#mascotFaceGradInline)" stroke="#1d4ed8" stroke-width="2" />
+                    <circle class="tour-mascot-cheek" cx="24" cy="36" r="3" fill="#fda4af" opacity="0.55" />
+                    <circle class="tour-mascot-cheek" cx="40" cy="36" r="3" fill="#fda4af" opacity="0.55" />
+                    <ellipse class="tour-mascot-eye" cx="26" cy="30" rx="2.2" ry="3.4" fill="#0f172a" />
+                    <ellipse class="tour-mascot-eye" cx="38" cy="30" rx="2.2" ry="3.4" fill="#0f172a" />
+                    <path d="M26 40c1.8 2.8 10.2 2.8 12 0" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" />
+                    <path class="tour-mascot-hand" d="M45 39c5 1 8 4 8 8 0 1.9-2 3-3.7 2.2l-5.6-2.8" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1.5" stroke-linejoin="round" />
+                    <circle cx="19" cy="18" r="4" fill="#ffffff" opacity="0.85" />
+                </svg>
+                <span class="tour-inline-mascot-spark"></span>
+                <span class="tour-inline-mascot-spark s2"></span>
             `;
-            document.body.appendChild(mascot);
-            profileMascotElement = mascot;
+            return mascot;
         }
 
-        function setTourMascotText(text) {
-            if (!profileMascotElement) return;
-            const bubble = profileMascotElement.querySelector('#profileTourMascotBubble');
-            if (bubble) bubble.textContent = text;
+        function attachMascotToPopover(popoverDom) {
+            if (!popoverDom) return;
+            const descriptionEl = popoverDom.description || document.querySelector('.driver-popover-description');
+            if (!descriptionEl || !descriptionEl.parentNode) return;
+            if (descriptionEl.parentNode.classList && descriptionEl.parentNode.classList.contains('tour-inline-row')) return;
+
+            const row = document.createElement('div');
+            row.className = 'tour-inline-row';
+            const mascot = createTourInlineMascot();
+            descriptionEl.parentNode.insertBefore(row, descriptionEl);
+            row.appendChild(mascot);
+            row.appendChild(descriptionEl);
         }
 
         function removeTourMascot() {
-            if (!profileMascotElement) return;
-            profileMascotElement.remove();
-            profileMascotElement = null;
+            const legacyMascot = document.getElementById('profileTourMascot');
+            if (legacyMascot) legacyMascot.remove();
         }
 
         function clearTourQueryParam() {
@@ -2441,8 +2449,6 @@
             if (steps.length < 2) return;
 
             profileTourHasStarted = true;
-            renderTourMascot();
-            setTourMascotText('Te acompano paso a paso para completar tu perfil.');
             let tourClosed = false;
 
             const clearAutoAdvanceBinding = () => {
@@ -2494,7 +2500,6 @@
             };
 
             const handleStepChange = (_, step) => {
-                if (step && step.mascot) setTourMascotText(step.mascot);
                 bindAutoAdvance(step);
             };
 
@@ -2523,6 +2528,12 @@
                 prevBtnText: 'Atras',
                 doneBtnText: 'Listo',
                 showButtons: ['previous', 'next', 'close'],
+                onPopoverRender: (popover, options) => {
+                    attachMascotToPopover(popover);
+                    if (options && options.state && options.state.activeStep) {
+                        bindAutoAdvance(options.state.activeStep);
+                    }
+                },
                 onNextClick: (_, __, options) => {
                     clearAutoAdvanceBinding();
                     const total = (options.config.steps || []).length;
