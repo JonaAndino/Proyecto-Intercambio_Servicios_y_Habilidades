@@ -2279,15 +2279,17 @@
             /* Filtros menos invasivos: una sola fila con scroll horizontal */
             #descubrirView #categoryFilters {
                 display: flex;
-                flex-wrap: nowrap;
+                flex-wrap: nowrap !important;
                 justify-content: flex-start;
+                align-items: center;
                 gap: 0.5rem;
                 margin-bottom: 1rem;
-                padding: 0 0.1rem 0.25rem;
+                padding: 0 0.25rem 0.25rem;
                 overflow-x: auto;
                 overflow-y: hidden;
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
+                white-space: nowrap;
             }
 
             #descubrirView #categoryFilters::-webkit-scrollbar {
@@ -2302,11 +2304,21 @@
                 line-height: 1.1;
                 white-space: nowrap;
                 border-radius: 9999px;
-                box-shadow: 0 2px 7px rgba(15, 23, 42, 0.08);
+                background: #ffffff !important;
+                color: #374151 !important;
+                border-color: #e5e7eb !important;
+                box-shadow: 0 2px 7px rgba(15, 23, 42, 0.08) !important;
             }
 
             #descubrirView #categoryFilters .filter-button .iconify {
                 font-size: 17px;
+            }
+
+            #descubrirView #categoryFilters .filter-button.filter-active {
+                background: #ffffff !important;
+                color: #2563eb !important;
+                border-color: #3b82f6 !important;
+                box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2), 0 2px 7px rgba(15, 23, 42, 0.08) !important;
             }
 
             /* Cuando el teclado está abierto, usar viewport visual real en chat */
