@@ -17,6 +17,7 @@ const hamburgerBtn = document.getElementById("hamburgerBtn");
 const closeSidebar = document.getElementById("closeSidebar");
 const usersGrid = document.getElementById("usersGrid");
 const mainContent = document.getElementById("mainContent");
+let cleanupMobileChatViewportHandlers = null;
 
 function syncAppHeaderHeight() {
   const header = document.querySelector("#mainContent > header");
@@ -26,6 +27,112 @@ function syncAppHeaderHeight() {
     "--app-header-height",
     `${header.offsetHeight}px`,
   );
+}
+
+function syncVisualViewportHeight() {
+  const isMobile = window.innerWidth <= 767;
+  const viewportHeight =
+    isMobile && window.visualViewport
+      ? Math.round(window.visualViewport.height)
+      : window.innerHeight;
+  document.documentElement.style.setProperty("--app-vh", `${viewportHeight}px`);
+}
+
+function setupMobileChatViewportFixes() {
+  if (cleanupMobileChatViewportHandlers) {
+    cleanupMobileChatViewportHandlers();
+    cleanupMobileChatViewportHandlers = null;
+  }
+
+  const mensajesView = document.getElementById("mensajesView");
+  const input = document.getElementById("message-input-dashboard");
+  const messagesContainer = document.getElementById("mensajes-container-dashboard");
+  const chatHeader = document.getElementById("chat-header-dashboard");
+
+  if (!mensajesView || !input) return;
+
+  let blurTimer = null;
+
+  const isMobile = () => window.innerWidth <= 767;
+
+  const scrollBottomIfChatOpen = () => {
+    const chatLayout = document.getElementById("chat-layout-dashboard");
+    if (!chatLayout || !chatLayout.classList.contains("mobile-show-chat")) return;
+    scrollToBottomDashboard();
+  };
+
+  const onViewportChange = () => {
+    if (!isMobile()) return;
+    syncVisualViewportHeight();
+  };
+
+  const onInputFocus = () => {
+    if (!isMobile()) return;
+    clearTimeout(blurTimer);
+    mensajesView.classList.add("mobile-chat-keyboard-open");
+    setTimeout(() => {
+      syncVisualViewportHeight();
+      scrollBottomIfChatOpen();
+    }, 70);
+  };
+
+  const onInputBlur = () => {
+    if (!isMobile()) return;
+    blurTimer = setTimeout(() => {
+      mensajesView.classList.remove("mobile-chat-keyboard-open");
+      syncVisualViewportHeight();
+      scrollBottomIfChatOpen();
+    }, 140);
+  };
+
+  const onPointerOutsideInput = (event) => {
+    if (!isMobile()) return;
+    if (document.activeElement !== input) return;
+
+    const target = event.target;
+    if (
+      target &&
+      (target.closest("#chat-input-dashboard") ||
+        target.closest("#attachments-preview-dashboard"))
+    ) {
+      return;
+    }
+
+    input.blur();
+  };
+
+  input.addEventListener("focus", onInputFocus);
+  input.addEventListener("blur", onInputBlur);
+  if (messagesContainer) {
+    messagesContainer.addEventListener("pointerdown", onPointerOutsideInput);
+  }
+  if (chatHeader) {
+    chatHeader.addEventListener("pointerdown", onPointerOutsideInput);
+  }
+  window.addEventListener("orientationchange", onViewportChange);
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", onViewportChange);
+    window.visualViewport.addEventListener("scroll", onViewportChange);
+  }
+
+  syncVisualViewportHeight();
+
+  cleanupMobileChatViewportHandlers = () => {
+    input.removeEventListener("focus", onInputFocus);
+    input.removeEventListener("blur", onInputBlur);
+    if (messagesContainer) {
+      messagesContainer.removeEventListener("pointerdown", onPointerOutsideInput);
+    }
+    if (chatHeader) {
+      chatHeader.removeEventListener("pointerdown", onPointerOutsideInput);
+    }
+    window.removeEventListener("orientationchange", onViewportChange);
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener("resize", onViewportChange);
+      window.visualViewport.removeEventListener("scroll", onViewportChange);
+    }
+  };
 }
 
 window.addEventListener("resize", syncAppHeaderHeight);
@@ -141,6 +248,8 @@ async function navigateTo(viewName) {
     cargarOrdenesTrabajo();
   }
   if (viewName === "mensajes") {
+    setupMobileChatViewportFixes();
+
     // Cargar conversaciones
     cargarConversacionesDashboard();
 
@@ -165,6 +274,11 @@ async function navigateTo(viewName) {
       }
     }, 1000); // 1 segundo para mensajes instantáneos
   } else {
+    const mensajesView = document.getElementById("mensajesView");
+    if (mensajesView) {
+      mensajesView.classList.remove("mobile-chat-keyboard-open");
+    }
+
     // Detener polling si salimos de mensajes
     if (window.mensajeriaGlobalInterval) {
       clearInterval(window.mensajeriaGlobalInterval);
@@ -4480,6 +4594,8 @@ window.mensajeriaGlobalInterval = null;
 document.addEventListener("DOMContentLoaded", () => {
   // El polling se maneja ahora en navigateTo('mensajes')
 
+  setupMobileChatViewportFixes();
+
   // Event listener para enviar mensajes
   const formDashboard = document.getElementById("chat-form-dashboard");
   if (formDashboard) {
@@ -6861,6 +6977,7 @@ function formatearHoraDashboard(fecha) {
 
 function scrollToBottomDashboard() {
   const container = document.getElementById("mensajes-container-dashboard");
+  if (!container) return;
   setTimeout(() => {
     container.scrollTop = container.scrollHeight;
   }, 100);

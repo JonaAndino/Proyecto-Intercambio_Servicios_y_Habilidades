@@ -2271,3 +2271,58 @@
                 font-size: 0.95rem;
             }
         }
+
+        /* ========================================
+           MOBILE UX: DESCUBRIR + MENSAJERIA
+           ======================================== */
+        @media (max-width: 767px) {
+            /* Filtros menos invasivos: una sola fila con scroll horizontal */
+            #descubrirView #categoryFilters {
+                display: flex;
+                flex-wrap: nowrap;
+                justify-content: flex-start;
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+                padding: 0 0.1rem 0.25rem;
+                overflow-x: auto;
+                overflow-y: hidden;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+
+            #descubrirView #categoryFilters::-webkit-scrollbar {
+                display: none;
+            }
+
+            #descubrirView #categoryFilters .filter-button {
+                flex: 0 0 auto;
+                min-height: 38px;
+                padding: 0.48rem 0.85rem !important;
+                font-size: 0.88rem;
+                line-height: 1.1;
+                white-space: nowrap;
+                border-radius: 9999px;
+                box-shadow: 0 2px 7px rgba(15, 23, 42, 0.08);
+            }
+
+            #descubrirView #categoryFilters .filter-button .iconify {
+                font-size: 17px;
+            }
+
+            /* Cuando el teclado está abierto, usar viewport visual real en chat */
+            #mensajesView.mobile-chat-keyboard-open {
+                height: calc(var(--app-vh, 100dvh) - var(--app-header-height, 56px)) !important;
+                min-height: calc(var(--app-vh, 100dvh) - var(--app-header-height, 56px)) !important;
+            }
+
+            #mensajesView.mobile-chat-keyboard-open #chat-layout-dashboard,
+            #mensajesView.mobile-chat-keyboard-open #chatColumn,
+            #mensajesView.mobile-chat-keyboard-open #chat-activo-dashboard {
+                height: 100% !important;
+                min-height: 0 !important;
+            }
+
+            #mensajesView.mobile-chat-keyboard-open #mensajes-container-dashboard {
+                padding-bottom: 0.5rem;
+            }
+        }
