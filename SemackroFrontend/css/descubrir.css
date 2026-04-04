@@ -508,6 +508,79 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
+        #descubrirView .discover-hero-banner {
+            position: relative;
+            padding: 1.75rem 1.5rem 1.3rem;
+            border-radius: 1.25rem;
+            overflow: hidden;
+            background-image:
+                linear-gradient(120deg, rgba(7, 20, 56, 0.68) 0%, rgba(15, 35, 89, 0.58) 48%, rgba(15, 35, 89, 0.62) 100%),
+                url('../FondoBusqueda.jpeg');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.24);
+        }
+
+        #descubrirView .discover-hero-banner h2,
+        #descubrirView .discover-hero-banner p {
+            color: #ffffff !important;
+            text-shadow: 0 2px 6px rgba(2, 6, 23, 0.45);
+        }
+
+        #descubrirView .discover-hero-banner .search-container {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 10px 22px rgba(2, 6, 23, 0.22);
+        }
+
+        #descubrirView .discover-hero-banner #searchButton {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+        }
+
+        #descubrirView .discover-hero-banner #searchButton:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+
+        @media (max-width: 767px) {
+            #descubrirView .discover-hero-banner {
+                padding: 1rem 0.7rem 0.85rem;
+                border-radius: 0.95rem;
+                background-position: center center;
+            }
+
+            #descubrirView .discover-hero-banner .text-center {
+                margin-bottom: 0.8rem;
+            }
+
+            #descubrirView .discover-hero-banner h2 {
+                font-size: 1.55rem;
+                line-height: 1.14;
+                margin-bottom: 0.35rem;
+            }
+
+            #descubrirView .discover-hero-banner p {
+                font-size: 0.88rem;
+                line-height: 1.25;
+            }
+
+            #descubrirView .discover-hero-banner .search-container {
+                padding: 0.42rem 0.55rem;
+            }
+
+            #descubrirView .discover-hero-banner #searchInput {
+                font-size: 0.86rem;
+                margin-left: 0.55rem;
+            }
+
+            #descubrirView .discover-hero-banner #searchButton {
+                padding: 0.42rem 0.95rem;
+                font-size: 0.82rem;
+                min-width: 86px;
+            }
+        }
+
         /* Estilos del Modal de Cerrar Sesión */
         .custom-modal-overlay {
             position: fixed;
