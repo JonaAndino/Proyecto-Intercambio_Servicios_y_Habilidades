@@ -2331,7 +2331,7 @@
             #descubrirView,
             #descubrirView > .w-full {
                 background-attachment: scroll !important;
-                background-position: center top !important;
+                background-position: center center !important;
                 background-size: cover !important;
             }
         }
