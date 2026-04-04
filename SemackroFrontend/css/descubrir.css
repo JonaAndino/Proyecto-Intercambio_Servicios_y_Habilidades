@@ -508,12 +508,6 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        #descubrirView .discover-top-section {
-            padding-top: 0 !important;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-        }
-
         #descubrirView .discover-hero-banner {
             position: relative;
             padding: 1.75rem 1.5rem 1.3rem;
