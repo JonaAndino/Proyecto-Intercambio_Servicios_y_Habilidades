@@ -732,7 +732,7 @@
         <div id="mensajesView" class="view-section">
             <div class="w-full h-full">
                 <div class="max-w-full h-full">
-                    <div class="bg-white overflow-hidden" style="height: calc(100vh - 80px);">
+                    <div class="bg-white overflow-hidden mensajes-shell" style="height: 100%;">
 
                         <!-- Chat Layout -->
                         <div id="chat-layout-dashboard" class="flex flex-col md:flex-row h-full">
@@ -787,7 +787,7 @@
 
                                                 <!-- Botón para seleccionar archivos -->
                                                 <label for="file-input-dashboard"
-                                                    class="cursor-pointer inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-full hover:bg-gray-50"
+                                                    class="chat-attach-btn cursor-pointer inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-full hover:bg-gray-50"
                                                     data-i18n-title="messages.attachFile">
                                                     <span class="iconify" data-icon="mdi:paperclip"
                                                         data-width="20"></span>
@@ -797,7 +797,7 @@
                                                     accept="image/*,video/*,image/gif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,.pdf,.doc,.docx,.ppt,.pptx" multiple style="display:none">
 
                                                 <button type="submit" id="send-message-btn-dashboard"
-                                                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-full transition duration-150 ease-in-out shadow-lg"
+                                                    class="chat-send-btn bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-full transition duration-150 ease-in-out shadow-lg"
                                                     data-i18n="messages.send">Enviar</button>
                                             </div>
 

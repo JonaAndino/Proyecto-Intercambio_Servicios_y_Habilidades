@@ -20,6 +20,7 @@ const mainContent = document.getElementById("mainContent");
 
 function syncAppHeaderHeight() {
   const header = document.querySelector("#mainContent > header");
+  document.documentElement.style.setProperty("--app-vh", `${window.innerHeight}px`);
   if (!header) return;
   document.documentElement.style.setProperty(
     "--app-header-height",

@@ -2175,3 +2175,99 @@
                 padding-bottom: 12px;
             }
         }
+
+        /* ========================================
+           RESPONSIVE HARDENING: MENSAJERIA
+           ======================================== */
+        #mensajesView {
+            height: calc(var(--app-vh, 100dvh) - var(--app-header-height, 56px));
+            min-height: calc(var(--app-vh, 100dvh) - var(--app-header-height, 56px));
+        }
+
+        #mensajesView .mensajes-shell,
+        #mensajesView #chat-layout-dashboard,
+        #mensajesView #chatColumn,
+        #mensajesView #chat-activo-dashboard {
+            height: 100% !important;
+            min-height: 0 !important;
+        }
+
+        #mensajesView #chat-layout-dashboard {
+            max-height: 100%;
+        }
+
+        #mensajesView #mensajes-container-dashboard {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #mensajesView #chat-input-dashboard {
+            position: sticky;
+            bottom: 0;
+            left: auto;
+            right: auto;
+            z-index: 30;
+            padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+        }
+
+        #chat-form-dashboard > .flex.items-center {
+            min-width: 0;
+            gap: 0.5rem;
+        }
+
+        #message-input-dashboard {
+            min-width: 0;
+            width: 100%;
+        }
+
+        @media (max-width: 767px) {
+            #mensajesView.active {
+                height: calc(var(--app-vh, 100dvh) - var(--app-header-height, 56px));
+                min-height: calc(var(--app-vh, 100dvh) - var(--app-header-height, 56px));
+            }
+
+            #mensajesView #chat-layout-dashboard.mobile-show-chat #chatColumn {
+                width: 100%;
+                min-width: 0;
+            }
+
+            #mensajesView #chat-header-dashboard {
+                padding: 0.75rem 0.85rem;
+            }
+
+            #mensajesView #mensajes-container-dashboard {
+                padding: 0.75rem;
+                padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+            }
+
+            #mensajesView #chat-input-dashboard {
+                padding: 0.65rem 0.75rem max(0.65rem, env(safe-area-inset-bottom));
+            }
+
+            #mensajesView #chat-form-dashboard > .flex.items-center {
+                gap: 0.45rem;
+            }
+
+            #mensajesView #message-input-dashboard {
+                padding-left: 0.9rem;
+                padding-right: 0.9rem;
+                font-size: 16px;
+            }
+
+            #mensajesView .chat-attach-btn {
+                width: 40px;
+                height: 40px;
+                min-width: 40px;
+                min-height: 40px;
+                padding: 0;
+            }
+
+            #mensajesView .chat-send-btn {
+                min-width: 86px;
+                padding: 0.62rem 0.9rem;
+                white-space: nowrap;
+                font-size: 0.95rem;
+            }
+        }
