@@ -2406,14 +2406,6 @@
                 height: var(--app-vh, 100dvh);
             }
 
-            body.mensajes-open.chat-typing {
-                position: fixed;
-                inset: 0;
-                width: 100%;
-                overflow: hidden;
-                touch-action: none;
-            }
-
             body.mensajes-open::before {
                 display: none;
             }

@@ -65,34 +65,38 @@ function setupMobileChatViewportFixes() {
   const onViewportChange = () => {
     if (!isMobile()) return;
     syncVisualViewportHeight();
-    scrollBottomIfChatOpen();
+    setTimeout(() => {
+      scrollBottomIfChatOpen();
+    }, 90);
   };
 
   const onInputFocus = () => {
     if (!isMobile()) return;
     clearTimeout(blurTimer);
-    document.body.classList.add("chat-typing");
     mensajesView.classList.add("mobile-chat-keyboard-open");
-    window.scrollTo({ top: 0, behavior: "auto" });
     setTimeout(() => {
       syncVisualViewportHeight();
       scrollBottomIfChatOpen();
-      window.scrollTo({ top: 0, behavior: "auto" });
     }, 90);
     setTimeout(() => {
       scrollBottomIfChatOpen();
-      window.scrollTo({ top: 0, behavior: "auto" });
     }, 260);
   };
 
   const onInputBlur = () => {
     if (!isMobile()) return;
     blurTimer = setTimeout(() => {
-      document.body.classList.remove("chat-typing");
       mensajesView.classList.remove("mobile-chat-keyboard-open");
       syncVisualViewportHeight();
       scrollBottomIfChatOpen();
     }, 140);
+  };
+
+  const onInputType = () => {
+    if (!isMobile()) return;
+    setTimeout(() => {
+      scrollBottomIfChatOpen();
+    }, 40);
   };
 
   const onPointerOutsideInput = (event) => {
@@ -113,6 +117,8 @@ function setupMobileChatViewportFixes() {
 
   input.addEventListener("focus", onInputFocus);
   input.addEventListener("blur", onInputBlur);
+  input.addEventListener("input", onInputType);
+  input.addEventListener("click", onInputType);
   if (messagesContainer) {
     messagesContainer.addEventListener("pointerdown", onPointerOutsideInput);
   }
@@ -131,6 +137,8 @@ function setupMobileChatViewportFixes() {
   cleanupMobileChatViewportHandlers = () => {
     input.removeEventListener("focus", onInputFocus);
     input.removeEventListener("blur", onInputBlur);
+    input.removeEventListener("input", onInputType);
+    input.removeEventListener("click", onInputType);
     if (messagesContainer) {
       messagesContainer.removeEventListener("pointerdown", onPointerOutsideInput);
     }
