@@ -513,13 +513,26 @@
             padding: 1.75rem 1.5rem 1.3rem;
             border-radius: 1.25rem;
             overflow: hidden;
-            background-image:
-                linear-gradient(120deg, rgba(7, 20, 56, 0.68) 0%, rgba(15, 35, 89, 0.58) 48%, rgba(15, 35, 89, 0.62) 100%),
-                url('../FondoBusqueda.jpeg');
+            background-image: linear-gradient(120deg, rgba(7, 20, 56, 0.52) 0%, rgba(15, 35, 89, 0.46) 48%, rgba(15, 35, 89, 0.5) 100%);
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.24);
+        }
+
+        #descubrirView .discover-hero-banner::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url('../FondoBusqueda.jpeg');
             background-size: cover;
             background-position: center center;
             background-repeat: no-repeat;
-            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.24);
+            opacity: 0.5;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #descubrirView .discover-hero-banner > * {
+            position: relative;
+            z-index: 1;
         }
 
         #descubrirView .discover-hero-banner h2,
