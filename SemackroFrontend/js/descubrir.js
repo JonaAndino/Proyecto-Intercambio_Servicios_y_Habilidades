@@ -365,6 +365,63 @@ function obtenerClaseBannerPorGenero(valorGenero) {
   return "bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600";
 }
 
+function normalizarDisponibilidad(valorDisponibilidad) {
+  const disponibilidad = (valorDisponibilidad || "")
+    .toString()
+    .trim()
+    .toLowerCase();
+
+  if (!disponibilidad) return "";
+
+  if (["disponible", "available", "libre", "activo", "active"].includes(disponibilidad)) {
+    return "disponible";
+  }
+
+  if (
+    [
+      "en obra",
+      "en_obra",
+      "ocupado",
+      "busy",
+      "trabajando",
+      "no disponible",
+      "no_disponible",
+      "inactivo",
+      "inactive",
+    ].includes(disponibilidad)
+  ) {
+    return "en_obra";
+  }
+
+  return "";
+}
+
+function obtenerEstadoDisponibilidadCard(valorDisponibilidad) {
+  const disponibilidad = normalizarDisponibilidad(valorDisponibilidad);
+
+  if (disponibilidad === "disponible") {
+    return {
+      label: "Disponible",
+      textColor: "#059669",
+      dotColor: "#10b981",
+    };
+  }
+
+  if (disponibilidad === "en_obra") {
+    return {
+      label: "En obra",
+      textColor: "#b45309",
+      dotColor: "#f59e0b",
+    };
+  }
+
+  return {
+    label: "Estado no definido",
+    textColor: "#6b7280",
+    dotColor: "#9ca3af",
+  };
+}
+
 async function cargarDatosUsuario() {
   try {
     const usuarioId = localStorage.getItem("usuarioId");
@@ -738,6 +795,8 @@ async function aplicarFiltros() {
             persona.descripcionPerfil_Persona || "Usuario SEMACKRO",
           genero:
             persona.genero_Persona || persona.genero || persona.genero_Usuario || "",
+          availability:
+            persona.disponibilidad_Persona || persona.disponibilidad || "",
           location: location,
           skills: habilidades,
           bio: persona.descripcionPerfil_Persona || "Sin descripción",
@@ -960,6 +1019,8 @@ async function cargarUsuariosReales() {
             persona.descripcionPerfil_Persona || "Usuario SEMACKRO",
           genero:
             persona.genero_Persona || persona.genero || persona.genero_Usuario || "",
+          availability:
+            persona.disponibilidad_Persona || persona.disponibilidad || "",
           location: location,
           skills: habilidades,
           bio: persona.descripcionPerfil_Persona || "Sin descripción",
@@ -1368,6 +1429,14 @@ function mostrarFavoritos(favoritos) {
         experienceYears > 0
           ? `${experienceYears} año${experienceYears === 1 ? "" : "s"} de experiencia`
           : "Sin experiencia registrada";
+      const availabilityRaw = userCompleto
+        ? userCompleto.availability
+        : fav.disponibilidad ||
+          fav.disponibilidad_Persona ||
+          fav.disponibilidad_Usuario ||
+          fav.estado_disponibilidad ||
+          "";
+      const availabilityData = obtenerEstadoDisponibilidadCard(availabilityRaw);
       const habilidades = userCompleto
         ? userCompleto.skills
         : fav.habilidades || fav.skills || [];
@@ -1437,7 +1506,14 @@ function mostrarFavoritos(favoritos) {
                                 </div>
 
                                 <!-- Experiencia -->
-                                <p class="text-gray-600 text-sm user-bio mb-3" title="${experienceText}">${experienceText}</p>
+                                <p class="text-gray-600 text-sm user-bio mb-3" title="${experienceText} • ${availabilityData.label}">
+                                  ${experienceText}
+                                  <span class="mx-1.5 text-gray-300">•</span>
+                                  <span class="inline-flex items-center gap-1 font-semibold" style="color:${availabilityData.textColor};">
+                                    <span class="w-2 h-2 rounded-full" style="background:${availabilityData.dotColor};"></span>
+                                    ${availabilityData.label}
+                                  </span>
+                                </p>
 
                                 <!-- Habilidades -->
                                 <div class="skills-container-card">
@@ -1579,6 +1655,7 @@ function renderUserCardsReal() {
           experienceYears > 0
             ? `${experienceYears} año${experienceYears === 1 ? "" : "s"} de experiencia`
             : "Sin experiencia registrada";
+        const availabilityData = obtenerEstadoDisponibilidadCard(user.availability);
 
         return `
                 <div class="user-card" onclick="viewProfile(${user.id})">
@@ -1629,7 +1706,14 @@ function renderUserCardsReal() {
                             </div>
 
                             <!-- Experiencia -->
-                            <p class="text-gray-600 text-sm user-bio mb-3" title="${experienceText}">${experienceText}</p>
+                            <p class="text-gray-600 text-sm user-bio mb-3" title="${experienceText} • ${availabilityData.label}">
+                              ${experienceText}
+                              <span class="mx-1.5 text-gray-300">•</span>
+                              <span class="inline-flex items-center gap-1 font-semibold" style="color:${availabilityData.textColor};">
+                                <span class="w-2 h-2 rounded-full" style="background:${availabilityData.dotColor};"></span>
+                                ${availabilityData.label}
+                              </span>
+                            </p>
 
                             <!-- Habilidades -->
                             <div class="skills-container-card">
