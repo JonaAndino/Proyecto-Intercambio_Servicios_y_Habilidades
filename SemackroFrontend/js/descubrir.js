@@ -8342,7 +8342,6 @@ async function obtenerUbicacionUsuario() {
 async function cargarOrdenesTrabajo() {
   const grid = document.getElementById('ordenesTrabajoGrid');
   if (!grid) return;
-  const LOADER_ORDENES_DELAY_MS = 1200;
 
   const esAdmin = localStorage.getItem('usuarioRolId') === '1';
 
@@ -8372,19 +8371,6 @@ async function cargarOrdenesTrabajo() {
     } catch (e) { /* caché corrupta, continuar con fetch */ }
   }
   // ──────────────────────────────────────────────────────────────
-
-  // Loader diferido: solo mostrar indicador si realmente está tardando.
-  let cargaFinalizada = false;
-  const loadingTimer = setTimeout(() => {
-    if (cargaFinalizada) return;
-    grid.innerHTML = `
-      <div class="col-span-full flex items-center justify-center py-16">
-        <div class="text-center">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p class="text-gray-500">Cargando órdenes de trabajo...</p>
-        </div>
-      </div>`;
-  }, LOADER_ORDENES_DELAY_MS);
 
   // Admin también carga especialidades para el modal de creación
   if (esAdmin) await cargarEspecialidadesOrden();
@@ -8422,14 +8408,10 @@ async function cargarOrdenesTrabajo() {
     sessionStorage.setItem('cache_ot_data', JSON.stringify({ ordenes: _todasLasOrdenes, postulaciones: misPostulacionesMap }));
     sessionStorage.setItem('cache_ot_ts', String(Date.now()));
 
-    cargaFinalizada = true;
-    clearTimeout(loadingTimer);
     renderizarOrdenes(_todasLasOrdenes, esAdmin, misPostulacionesMap);
   } catch (err) {
     console.warn('[OT] No se pudo conectar al endpoint:', err.message);
     _todasLasOrdenes = [];
-    cargaFinalizada = true;
-    clearTimeout(loadingTimer);
     renderizarOrdenes([], esAdmin, {});
   }
 }
