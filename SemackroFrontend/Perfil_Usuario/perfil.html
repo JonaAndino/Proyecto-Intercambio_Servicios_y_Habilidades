@@ -2316,9 +2316,12 @@
             '/SemackroFrontend/MascotaTour.gif',
             'MascotaTour.gif'
         ];
+        const TOUR_EVENT_OFFERED_SKILL_MODAL_CLOSED = 'tour-offered-skill-modal-closed';
         let profileTourHasStarted = false;
         let profileTourInstance = null;
         let tourAutoAdvanceCleanup = null;
+        let tourWaitingOfferedSkillModalClose = false;
+        let tourOfferedSkillModalOpened = false;
 
         function getDriverFactory() {
             if (window.driver && typeof window.driver === 'function') return window.driver;
@@ -2403,6 +2406,12 @@
             return true;
         }
 
+        function notifyTourOfferedSkillModalClosed() {
+            const offeredContainer = document.getElementById('offeredSkillsContainer');
+            if (!offeredContainer) return;
+            offeredContainer.dispatchEvent(new CustomEvent(TOUR_EVENT_OFFERED_SKILL_MODAL_CLOSED, { bubbles: true }));
+        }
+
         function buildProfileTourSteps() {
             const steps = [
                 {
@@ -2464,7 +2473,7 @@
                     side: 'top',
                     align: 'start',
                     mascot: 'Tus habilidades son la clave para que te encuentren.',
-                    autoAdvance: { listenSelector: '#offeredSkillsContainer', events: ['click'], delayMs: 220 }
+                    autoAdvance: { listenSelector: '#offeredSkillsContainer', events: [TOUR_EVENT_OFFERED_SKILL_MODAL_CLOSED], delayMs: 120 }
                 },
                 {
                     element: '#locationBtn',
@@ -2537,6 +2546,8 @@
                     tourAutoAdvanceCleanup();
                 }
                 tourAutoAdvanceCleanup = null;
+                tourWaitingOfferedSkillModalClose = false;
+                tourOfferedSkillModalOpened = false;
             };
 
             const bindAutoAdvance = (step) => {
@@ -2544,6 +2555,7 @@
                 if (!step || !step.autoAdvance) return;
 
                 const cfg = step.autoAdvance;
+                tourWaitingOfferedSkillModalClose = step.element === '#offeredSkillsContainer';
                 const root = cfg.listenSelector
                     ? document.querySelector(cfg.listenSelector)
                     : (typeof step.element === 'string' ? document.querySelector(step.element) : step.element);
@@ -3467,7 +3479,7 @@
             // Insertar editor inline
             const editorHtml = `
         <div style="margin-top:8px;">
-          <textarea id="inlineReply_${reviewId}" style="width:100%; min-height:90px; padding:10px; font-family:inherit; border:2px solid #2563eb; border-radius:6px;" placeholder="${T('description')}..."></textarea>
+                    <textarea id="inlineReply_${reviewId}" style="width:100%; min-height:90px; padding:10px; font-family:inherit; border:2px solid #2563eb; border-radius:6px;" placeholder="${t('description')}..."></textarea>
           <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
             <button class="modal-button-cancel" onclick="cancelInlineReply(${reviewId})">${t('cancel')}</button>
             <button class="modal-button-submit" onclick="submitReviewReplyInline(${reviewId})">${t('reply')}</button>
@@ -4519,6 +4531,10 @@
             editSkillIndex = null;
             editSkillId = null;
 
+            if (type === 'offered' && tourWaitingOfferedSkillModalClose) {
+                tourOfferedSkillModalOpened = true;
+            }
+
             document.getElementById('modalTitle').textContent =
                 type === 'offered' ? 'Añadir Habilidad Ofrecida' : 'Añadir Habilidad Requerida';
 
@@ -4540,7 +4556,16 @@
         }
 
         function hideSkillModal() {
-            document.getElementById('skillModal').style.display = 'none';
+            const modal = document.getElementById('skillModal');
+            if (!modal) return;
+
+            const wasVisible = modal.style.display !== 'none';
+            modal.style.display = 'none';
+
+            if (wasVisible && tourOfferedSkillModalOpened) {
+                tourOfferedSkillModalOpened = false;
+                notifyTourOfferedSkillModalClosed();
+            }
         }
 
         // ======================
