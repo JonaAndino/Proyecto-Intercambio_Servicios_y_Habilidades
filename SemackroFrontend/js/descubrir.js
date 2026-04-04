@@ -1006,7 +1006,7 @@ function renderPagination() {
                 <button
                     onclick="changePage(${currentPage - 1})"
                     ${currentPage === 1 ? "disabled" : ""}
-                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+            class="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                     </svg>
@@ -1024,7 +1024,7 @@ function renderPagination() {
 
   if (startPage > 1) {
     buttons += `
-                    <button onclick="changePage(1)" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+            <button onclick="changePage(1)" class="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition">
                         1
                     </button>
                 `;
@@ -1037,7 +1037,7 @@ function renderPagination() {
     buttons += `
                     <button
                         onclick="changePage(${i})"
-                        class="px-4 py-2 border rounded-lg transition ${i === currentPage ? "bg-blue-600 text-white border-blue-600" : "border-gray-300 hover:bg-gray-50"}">
+              class="px-4 py-2 border rounded-lg transition ${i === currentPage ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"}">
                         ${i}
                     </button>
                 `;
@@ -1048,7 +1048,7 @@ function renderPagination() {
       buttons += `<span class="px-2 py-2">...</span>`;
     }
     buttons += `
-                    <button onclick="changePage(${totalPages})" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+            <button onclick="changePage(${totalPages})" class="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition">
                         ${totalPages}
                     </button>
                 `;
@@ -1059,7 +1059,7 @@ function renderPagination() {
                 <button
                     onclick="changePage(${currentPage + 1})"
                     ${currentPage === totalPages ? "disabled" : ""}
-                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+            class="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
