@@ -529,10 +529,10 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
                             <select id="adminOrdenEstado"
                                     class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
-                                <option value="Pendiente">Pendiente</option>
-                                <option value="En_progreso">En Progreso</option>
-                                <option value="Completada">Completada</option>
-                                <option value="Cancelada">Cancelada</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="en_progreso">En Progreso</option>
+                                <option value="completada">Completada</option>
+                                <option value="cancelada">Cancelada</option>
                             </select>
                         </div>
                     </div>
@@ -1800,10 +1800,10 @@
                                 class="text-[10px] border border-gray-200 rounded px-1.5 py-1 bg-white text-gray-600 focus:outline-none cursor-pointer"
                                 title="Cambiar estado">
                                 <option value="">&#x21C5; Estado</option>
-                                <option value="Pendiente">Pendiente</option>
-                                <option value="En_progreso">En Progreso</option>
-                                <option value="Completada">Completada</option>
-                                <option value="Cancelada">Cancelada</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="en_progreso">En Progreso</option>
+                                <option value="completada">Completada</option>
+                                <option value="cancelada">Cancelada</option>
                             </select>
                             <button onclick="adminEliminarOrden(${idOrden})" title="Eliminar"
                                 class="p-1.5 rounded bg-red-50 hover:bg-red-100 text-red-500 transition">
@@ -1922,7 +1922,8 @@
             const fechaFin    = document.getElementById('adminOrdenFechaFin').value;
             const especialidad = document.getElementById('adminOrdenEspecialidad').value;
             const presupuesto  = document.getElementById('adminOrdenPresupuesto').value;
-            const estado       = document.getElementById('adminOrdenEstado').value;
+            const estadoRaw    = document.getElementById('adminOrdenEstado').value;
+            const estado       = String(estadoRaw || '').trim().toLowerCase().replace(/\s+/g, '_').replace(/-+/g, '_');
             const maxPostulantes = parseInt(document.getElementById('adminOrdenMaxPostulantes').value) || 1;
 
             if (fechaFin < fechaInicio) {
@@ -1954,12 +1955,13 @@
         }
 
         async function adminCambiarEstado(id, nuevoEstado) {
-            if (!nuevoEstado) return;
+            const estado = String(nuevoEstado || '').trim().toLowerCase().replace(/\s+/g, '_').replace(/-+/g, '_');
+            if (!estado) return;
             try {
                 const res = await fetch(`${OT_API}/${id}`, {
                     method: 'PATCH',
                     headers: _otHeaders(),
-                    body: JSON.stringify({ estado: nuevoEstado })
+                    body: JSON.stringify({ estado })
                 });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 await adminCargarOrdenes();
