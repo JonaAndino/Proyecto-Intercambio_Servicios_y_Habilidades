@@ -1,8 +1,10 @@
 const nodemailer = require('nodemailer');
+const https = require('https');
 
 const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS || 15000);
 const EMAIL_PROVIDER = (process.env.EMAIL_PROVIDER || 'gmail').toLowerCase();
 const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'SEMACKRO';
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
 let transporterInstance = null;
 
@@ -38,6 +40,103 @@ function parseFallbackPorts(defaultPort) {
 
     return parsed.filter((p) => p !== defaultPort);
 }
+
+function parseFromAddress(rawFrom) {
+    const fromValue = String(rawFrom || '').trim();
+    const match = fromValue.match(/^(?:"?([^"<>]*)"?\s*)?<([^<>]+)>$/);
+
+    if (match) {
+        const name = (match[1] || EMAIL_FROM_NAME || 'SEMACKRO').trim();
+        return {
+            name: name || 'SEMACKRO',
+            email: match[2].trim()
+        };
+    }
+
+    return {
+        name: EMAIL_FROM_NAME || 'SEMACKRO',
+        email: process.env.EMAIL_USER || fromValue
+    };
+}
+
+const sendMailViaBrevoApi = (mailOptions, context = {}) =>
+    new Promise((resolve, reject) => {
+        const traceId = context.traceId || 'sin-trace';
+        const destination = context.destination || maskEmail(mailOptions.to);
+        const apiKey = process.env.BREVO_API_KEY;
+
+        if (!apiKey) {
+            const err = new Error('BREVO_API_KEY no configurada para fallback por API');
+            err.code = 'BREVO_API_KEY_MISSING';
+            return reject(err);
+        }
+
+        const from = parseFromAddress(mailOptions.from);
+        const payload = JSON.stringify({
+            sender: {
+                name: from.name,
+                email: from.email
+            },
+            to: [{ email: mailOptions.to }],
+            subject: mailOptions.subject,
+            htmlContent: mailOptions.html
+        });
+
+        const url = new URL(BREVO_API_URL);
+        const requestOptions = {
+            method: 'POST',
+            hostname: url.hostname,
+            path: url.pathname,
+            headers: {
+                accept: 'application/json',
+                'api-key': apiKey,
+                'content-type': 'application/json',
+                'content-length': Buffer.byteLength(payload)
+            }
+        };
+
+        console.log(`[email:brevo-api][${traceId}] Intentando envío HTTP a ${destination}`);
+
+        const req = https.request(requestOptions, (res) => {
+            let body = '';
+            res.on('data', (chunk) => {
+                body += chunk;
+            });
+            res.on('end', () => {
+                if (res.statusCode >= 200 && res.statusCode < 300) {
+                    let parsed;
+                    try {
+                        parsed = body ? JSON.parse(body) : {};
+                    } catch (_) {
+                        parsed = {};
+                    }
+
+                    const messageId = parsed.messageId || parsed.messageid || `brevo-http-${Date.now()}`;
+                    console.log(`[email:brevo-api][${traceId}] Envío HTTP exitoso a ${destination} messageId=${messageId}`);
+                    return resolve({ messageId });
+                }
+
+                const apiError = new Error(`Brevo API respondió ${res.statusCode}: ${body || 'sin detalle'}`);
+                apiError.code = `BREVO_API_${res.statusCode}`;
+                return reject(apiError);
+            });
+        });
+
+        req.on('error', (error) => {
+            const wrapped = new Error(error.message || 'Error de conexión con Brevo API');
+            wrapped.code = error.code || 'BREVO_API_CONNECTION_ERROR';
+            reject(wrapped);
+        });
+
+        req.setTimeout(EMAIL_TIMEOUT_MS, () => {
+            const timeoutError = new Error(`Tiempo de espera excedido en Brevo API (${EMAIL_TIMEOUT_MS}ms)`);
+            timeoutError.code = 'BREVO_API_TIMEOUT';
+            req.destroy(timeoutError);
+        });
+
+        req.write(payload);
+        req.end();
+    });
 
 function getTransportConfig() {
     if (EMAIL_PROVIDER === 'smtp') {
@@ -85,6 +184,18 @@ function getTransporter() {
 }
 
 function getEmailConfigError() {
+    if (EMAIL_PROVIDER === 'brevo-api') {
+        if (!process.env.BREVO_API_KEY) {
+            return 'BREVO_API_KEY no configurada para EMAIL_PROVIDER=brevo-api';
+        }
+
+        if (!process.env.EMAIL_USER) {
+            return 'EMAIL_USER no configurada para EMAIL_PROVIDER=brevo-api';
+        }
+
+        return null;
+    }
+
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
         return 'Variables EMAIL_USER/EMAIL_PASSWORD no configuradas';
     }
@@ -280,6 +391,22 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
         `
     };
 
+    if (EMAIL_PROVIDER === 'brevo-api') {
+        try {
+            const apiInfo = await sendMailViaBrevoApi(mailOptions, {
+                traceId,
+                destination: destinatarioMask
+            });
+            return { success: true, messageId: apiInfo.messageId, channel: 'brevo-api' };
+        } catch (apiError) {
+            console.error(`[email:brevo-api][${traceId}] Error al enviar correo de recuperación para ${destinatarioMask}:`, {
+                message: apiError && apiError.message,
+                code: apiError && apiError.code
+            });
+            return { success: false, error: apiError.message };
+        }
+    }
+
     try {
         const info = await sendMailWithTimeout(mailOptions, EMAIL_TIMEOUT_MS, {
             traceId,
@@ -329,6 +456,26 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
                     };
                 } catch (_) {
                     // El detalle del error ya se registra en sendMailWithTransportConfig.
+                }
+            }
+
+            if (process.env.BREVO_API_KEY) {
+                try {
+                    const apiInfo = await sendMailViaBrevoApi(mailOptions, {
+                        traceId: `${traceId}-brevo-api`,
+                        destination: destinatarioMask
+                    });
+
+                    return {
+                        success: true,
+                        messageId: apiInfo.messageId,
+                        channel: 'brevo-api'
+                    };
+                } catch (apiError) {
+                    console.error(`[email:brevo-api][${traceId}] Fallback HTTP también falló para ${destinatarioMask}:`, {
+                        message: apiError && apiError.message,
+                        code: apiError && apiError.code
+                    });
                 }
             }
         }
