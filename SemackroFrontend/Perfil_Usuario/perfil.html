@@ -5224,7 +5224,13 @@
             const skillCategory = document.getElementById('skillCategory').value;
 
             if (!skillInput) {
-                alert('El nombre de la habilidad no puede estar vacío');
+                if (window.Toast) {
+                    Toast.warning('Campo requerido', 'El nombre de la habilidad no puede estar vacío');
+                } else {
+                    alert('El nombre de la habilidad no puede estar vacío');
+                }
+                const skillInputEl = document.getElementById('skillInput');
+                if (skillInputEl) skillInputEl.focus();
                 return;
             }
 
