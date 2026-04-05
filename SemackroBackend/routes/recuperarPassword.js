@@ -48,23 +48,27 @@ router.post('/solicitar-recuperacion', async (req, res) => {
             { expiresIn: '15m' }
         );
 
-        // Enviar correo con el token
-        const resultado = await enviarCorreoRecuperacion(correo, token);
+        // Responder de inmediato para evitar timeouts en la interfaz.
+        res.status(200).json({
+            success: true,
+            mensaje: mensajeGenerico
+        });
 
-        if (resultado.success) {
-            console.log(`Correo de recuperación enviado a: ${correo}`);
-            return res.status(200).json({ 
-                success: true, 
-                mensaje: mensajeGenerico 
-            });
-        } else {
-            console.error(`No se pudo enviar correo de recuperación a ${correo}:`, resultado.error);
-            // Mantener respuesta genérica para no revelar información sensible del sistema.
-            return res.status(200).json({
-                success: true,
-                mensaje: mensajeGenerico
-            });
-        }
+        // Enviar correo en segundo plano; los fallos se registran en logs.
+        setImmediate(async () => {
+            try {
+                const resultado = await enviarCorreoRecuperacion(correo, token);
+                if (resultado.success) {
+                    console.log(`Correo de recuperación enviado a: ${correo}`);
+                } else {
+                    console.error(`No se pudo enviar correo de recuperación a ${correo}:`, resultado.error);
+                }
+            } catch (mailError) {
+                console.error(`Error inesperado al enviar correo de recuperación a ${correo}:`, mailError);
+            }
+        });
+
+        return;
 
     } catch (error) {
         console.error('Error en solicitar-recuperacion:', error);
