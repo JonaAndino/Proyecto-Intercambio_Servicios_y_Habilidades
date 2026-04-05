@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 
-const EMAIL_TIMEOUT_MS = 15000;
+const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS || 15000);
 const EMAIL_PROVIDER = (process.env.EMAIL_PROVIDER || 'gmail').toLowerCase();
 const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'SEMACKRO';
 
@@ -21,6 +21,22 @@ function normalizeFrontendUrl(rawUrl) {
     } catch (_) {
         return null;
     }
+}
+
+function isConnectionTimeoutError(error) {
+    const code = String((error && error.code) || '').toUpperCase();
+    const command = String((error && error.command) || '').toUpperCase();
+    return code === 'ETIMEDOUT' || code === 'ECONNECTION' || code === 'EMAIL_TIMEOUT' || command === 'CONN';
+}
+
+function parseFallbackPorts(defaultPort) {
+    const rawFallback = process.env.EMAIL_FALLBACK_PORTS || '2525,465';
+    const parsed = rawFallback
+        .split(',')
+        .map((p) => Number(String(p).trim()))
+        .filter((p) => Number.isInteger(p) && p > 0);
+
+    return parsed.filter((p) => p !== defaultPort);
 }
 
 function getTransportConfig() {
@@ -105,6 +121,41 @@ const sendMailWithTimeout = (mailOptions, timeoutMs = EMAIL_TIMEOUT_MS, context 
                 clearTimeout(timer);
                 const errorCode = error && (error.code || error.responseCode || error.command || 'UNKNOWN_ERROR');
                 console.error(`[email:${EMAIL_PROVIDER}][${traceId}] Error enviando a ${destination} en ${Date.now() - startedAt}ms code=${errorCode}`, {
+                    message: error && error.message,
+                    responseCode: error && error.responseCode,
+                    command: error && error.command
+                });
+                reject(error);
+            });
+    });
+
+const sendMailWithTransportConfig = (mailOptions, transportConfig, timeoutMs = EMAIL_TIMEOUT_MS, context = {}) =>
+    new Promise((resolve, reject) => {
+        const startedAt = Date.now();
+        const traceId = context.traceId || 'sin-trace';
+        const destination = context.destination || maskEmail(mailOptions.to);
+        const attemptedPort = transportConfig.port || 'n/a';
+
+        console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Reintento por puerto ${attemptedPort} a ${destination} con timeout=${timeoutMs}ms`);
+
+        const timer = setTimeout(() => {
+            const timeoutError = new Error(`Tiempo de espera excedido al enviar correo (${timeoutMs}ms)`);
+            timeoutError.code = 'EMAIL_TIMEOUT';
+            reject(timeoutError);
+        }, timeoutMs);
+
+        const tempTransporter = nodemailer.createTransport(transportConfig);
+        tempTransporter
+            .sendMail(mailOptions)
+            .then((info) => {
+                clearTimeout(timer);
+                console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Reintento exitoso por puerto ${attemptedPort} en ${Date.now() - startedAt}ms messageId=${info.messageId || 'n/a'}`);
+                resolve(info);
+            })
+            .catch((error) => {
+                clearTimeout(timer);
+                const errorCode = error && (error.code || error.responseCode || error.command || 'UNKNOWN_ERROR');
+                console.error(`[email:${EMAIL_PROVIDER}][${traceId}] Reintento falló por puerto ${attemptedPort} en ${Date.now() - startedAt}ms code=${errorCode}`, {
                     message: error && error.message,
                     responseCode: error && error.responseCode,
                     command: error && error.command
@@ -241,6 +292,47 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
             message: error && error.message,
             code: error && (error.code || error.responseCode || error.command || 'UNKNOWN_ERROR')
         });
+
+        if (EMAIL_PROVIDER === 'smtp' && isConnectionTimeoutError(error)) {
+            const defaultPort = Number(process.env.EMAIL_PORT || 587);
+            const fallbackPorts = parseFallbackPorts(defaultPort);
+
+            for (const fallbackPort of fallbackPorts) {
+                try {
+                    const fallbackConfig = {
+                        host: process.env.EMAIL_HOST,
+                        port: fallbackPort,
+                        secure: fallbackPort === 465,
+                        auth: {
+                            user: process.env.EMAIL_USER,
+                            pass: process.env.EMAIL_PASSWORD
+                        },
+                        connectionTimeout: EMAIL_TIMEOUT_MS,
+                        greetingTimeout: EMAIL_TIMEOUT_MS,
+                        socketTimeout: EMAIL_TIMEOUT_MS
+                    };
+
+                    const fallbackInfo = await sendMailWithTransportConfig(
+                        mailOptions,
+                        fallbackConfig,
+                        EMAIL_TIMEOUT_MS,
+                        {
+                            traceId: `${traceId}-p${fallbackPort}`,
+                            destination: destinatarioMask
+                        }
+                    );
+
+                    return {
+                        success: true,
+                        messageId: fallbackInfo.messageId,
+                        fallbackPort
+                    };
+                } catch (_) {
+                    // El detalle del error ya se registra en sendMailWithTransportConfig.
+                }
+            }
+        }
+
         return { success: false, error: error.message };
     }
 };
