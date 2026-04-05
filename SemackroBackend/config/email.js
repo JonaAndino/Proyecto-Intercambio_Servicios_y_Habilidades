@@ -1,38 +1,91 @@
 const nodemailer = require('nodemailer');
 
 const EMAIL_TIMEOUT_MS = 15000;
+const EMAIL_PROVIDER = (process.env.EMAIL_PROVIDER || 'gmail').toLowerCase();
+const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'SEMACKRO';
 
-// Configuración del transporte de correo (Gmail)
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER, // Tu correo de Gmail
-        pass: process.env.EMAIL_PASSWORD // Contraseña de aplicación de Gmail
-    },
-    // Evita que el envío de correo se quede esperando indefinidamente
-    connectionTimeout: EMAIL_TIMEOUT_MS,
-    greetingTimeout: EMAIL_TIMEOUT_MS,
-    socketTimeout: EMAIL_TIMEOUT_MS
-});
+let transporterInstance = null;
 
-const sendMailWithTimeout = (mailOptions, timeoutMs = EMAIL_TIMEOUT_MS) => Promise.race([
-    transporter.sendMail(mailOptions),
-    new Promise((_, reject) => {
-        setTimeout(() => reject(new Error(`Tiempo de espera excedido al enviar correo (${timeoutMs}ms)`)), timeoutMs);
-    })
-]);
+function getTransportConfig() {
+    if (EMAIL_PROVIDER === 'smtp') {
+        const smtpPort = Number(process.env.EMAIL_PORT || 587);
+        const secureByPort = smtpPort === 465;
+        const secureByEnv = String(process.env.EMAIL_SECURE || '').toLowerCase() === 'true';
+
+        return {
+            host: process.env.EMAIL_HOST,
+            port: smtpPort,
+            secure: secureByEnv || secureByPort,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD
+            },
+            connectionTimeout: EMAIL_TIMEOUT_MS,
+            greetingTimeout: EMAIL_TIMEOUT_MS,
+            socketTimeout: EMAIL_TIMEOUT_MS
+        };
+    }
+
+    return {
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD
+        },
+        connectionTimeout: EMAIL_TIMEOUT_MS,
+        greetingTimeout: EMAIL_TIMEOUT_MS,
+        socketTimeout: EMAIL_TIMEOUT_MS
+    };
+}
+
+function getTransporter() {
+    if (transporterInstance) return transporterInstance;
+    transporterInstance = nodemailer.createTransport(getTransportConfig());
+    return transporterInstance;
+}
+
+function getEmailConfigError() {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
+        return 'Variables EMAIL_USER/EMAIL_PASSWORD no configuradas';
+    }
+
+    if (EMAIL_PROVIDER === 'smtp' && !process.env.EMAIL_HOST) {
+        return 'EMAIL_HOST no configurado para EMAIL_PROVIDER=smtp';
+    }
+
+    return null;
+}
+
+const sendMailWithTimeout = (mailOptions, timeoutMs = EMAIL_TIMEOUT_MS) =>
+    new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+            reject(new Error(`Tiempo de espera excedido al enviar correo (${timeoutMs}ms)`));
+        }, timeoutMs);
+
+        getTransporter()
+            .sendMail(mailOptions)
+            .then((info) => {
+                clearTimeout(timer);
+                resolve(info);
+            })
+            .catch((error) => {
+                clearTimeout(timer);
+                reject(error);
+            });
+    });
 
 // Función para enviar correo de recuperación de contraseña
 const enviarCorreoRecuperacion = async (destinatario, token) => {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-        return { success: false, error: 'Variables EMAIL_USER/EMAIL_PASSWORD no configuradas' };
+    const configError = getEmailConfigError();
+    if (configError) {
+        return { success: false, error: configError };
     }
 
     const frontendUrl = process.env.FRONTEND_URL || 'https://semackro.vercel.app';
     const enlaceRecuperacion = `${frontendUrl}/restablecer-password.html?token=${token}`;
     
     const mailOptions = {
-        from: `"SEMACKRO" <${process.env.EMAIL_USER}>`,
+        from: `"${EMAIL_FROM_NAME}" <${process.env.EMAIL_USER}>`,
         to: destinatario,
         subject: 'Recuperación de Contraseña - SEMACKRO',
         html: `
@@ -130,7 +183,7 @@ const enviarCorreoRecuperacion = async (destinatario, token) => {
         console.log('Correo enviado:', info.messageId);
         return { success: true, messageId: info.messageId };
     } catch (error) {
-        console.error('Error al enviar correo:', error);
+        console.error(`[email:${EMAIL_PROVIDER}] Error al enviar correo:`, error);
         return { success: false, error: error.message };
     }
 };
@@ -138,8 +191,9 @@ const enviarCorreoRecuperacion = async (destinatario, token) => {
 // Función para enviar notificación contextual (H8)
 const enviarNotificacionContextual = async (destinatario, alertas, frontendUrl) => {
     if (!destinatario || !alertas || alertas.length === 0) return { success: false };
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-        return { success: false, error: 'Variables EMAIL_USER/EMAIL_PASSWORD no configuradas' };
+    const configError = getEmailConfigError();
+    if (configError) {
+        return { success: false, error: configError };
     }
 
     // Prioridad: 1) URL enviada como parámetro  2) variable de entorno  3) localhost
@@ -164,7 +218,7 @@ const enviarNotificacionContextual = async (destinatario, alertas, frontendUrl) 
     }).join('');
 
     const mailOptions = {
-        from: `"SEMACKRO" <${process.env.EMAIL_USER}>`,
+        from: `"${EMAIL_FROM_NAME}" <${process.env.EMAIL_USER}>`,
         to: destinatario,
         subject: `${alertas.length} alerta${alertas.length > 1 ? 's' : ''} nueva${alertas.length > 1 ? 's' : ''} en SEMACKRO`,
         html: `
@@ -193,7 +247,7 @@ const enviarNotificacionContextual = async (destinatario, alertas, frontendUrl) 
         console.log('Notificación contextual enviada:', info.messageId);
         return { success: true };
     } catch (error) {
-        console.error('Error al enviar notificación contextual:', error);
+        console.error(`[email:${EMAIL_PROVIDER}] Error al enviar notificación contextual:`, error);
         return { success: false, error: error.message };
     }
 };

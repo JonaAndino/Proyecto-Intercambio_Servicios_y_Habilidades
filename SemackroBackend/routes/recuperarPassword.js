@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
 const { enviarCorreoRecuperacion } = require('../config/email');
+const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_super_segura_2025_SEMACKRO';
 
 // POST /api/password/solicitar-recuperacion
 // Solicitar recuperación de contraseña
@@ -43,7 +44,7 @@ router.post('/solicitar-recuperacion', async (req, res) => {
                 correo: usuario.correo,
                 tipo: 'recuperacion_password'
             },
-            process.env.JWT_SECRET,
+            JWT_SECRET,
             { expiresIn: '15m' }
         );
 
@@ -87,7 +88,7 @@ router.post('/validar-token', async (req, res) => {
 
     try {
         // Verificar y decodificar el token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, JWT_SECRET);
 
         // Verificar que sea un token de tipo recuperación
         if (decoded.tipo !== 'recuperacion_password') {
@@ -156,7 +157,7 @@ router.post('/restablecer', async (req, res) => {
 
     try {
         // Verificar y decodificar el token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, JWT_SECRET);
 
         // Verificar que sea un token de tipo recuperación
         if (decoded.tipo !== 'recuperacion_password') {
