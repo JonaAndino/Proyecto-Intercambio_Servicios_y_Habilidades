@@ -58,10 +58,11 @@ router.post('/solicitar-recuperacion', async (req, res) => {
                 mensaje: mensajeGenerico 
             });
         } else {
-            console.error('Error al enviar correo:', resultado.error);
-            return res.status(500).json({ 
-                success: false, 
-                mensaje: 'Error al enviar el correo. Intenta nuevamente.' 
+            console.error(`No se pudo enviar correo de recuperación a ${correo}:`, resultado.error);
+            // Mantener respuesta genérica para no revelar información sensible del sistema.
+            return res.status(200).json({
+                success: true,
+                mensaje: mensajeGenerico
             });
         }
 

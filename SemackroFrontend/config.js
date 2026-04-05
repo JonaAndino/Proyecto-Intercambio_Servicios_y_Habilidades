@@ -32,6 +32,17 @@
         ? (devOverride || LOCAL_DEV_BASE)
         : RAILWAY_BASE;
 
+    const rawFrontendOverride =
+        searchParams.get('frontendUrl') ||
+        localStorage.getItem('SEMACKRO_FRONTEND_URL');
+    const frontendBase = normalizeBase(rawFrontendOverride) || window.location.origin;
+
+    const rawEmailFromName =
+        searchParams.get('emailFromName') ||
+        localStorage.getItem('SEMACKRO_EMAIL_FROM_NAME') ||
+        'SEMACKRO';
+    const emailFromName = String(rawEmailFromName).trim().slice(0, 80) || 'SEMACKRO';
+
     // Limpieza preventiva: si el navegador traia override viejo, quitarlo en produccion.
     if (!isPrivateHost && localStorage.getItem('SEMACKRO_API_BASE')) {
         localStorage.removeItem('SEMACKRO_API_BASE');
@@ -40,11 +51,15 @@
     window.APP_CONFIG = {
         BACKEND_URL: backendBase,
         API_BASE: `${backendBase}/api`,
+        FRONTEND_URL: frontendBase,
+        EMAIL_FROM_NAME: emailFromName,
         HF_API_URL: 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2'
     };
 
     window.BACKEND_URL = window.APP_CONFIG.BACKEND_URL;
     window.API_BASE = window.APP_CONFIG.API_BASE;
+    window.FRONTEND_URL = window.APP_CONFIG.FRONTEND_URL;
+    window.EMAIL_FROM_NAME = window.APP_CONFIG.EMAIL_FROM_NAME;
     window.HF_API_URL = window.APP_CONFIG.HF_API_URL;
 
     window.safeFetch = async (url, options = {}) => {
