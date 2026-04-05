@@ -2463,6 +2463,7 @@
             'MascotaTour.gif'
         ];
         const TOUR_EVENT_OFFERED_SKILL_MODAL_CLOSED = 'tour-offered-skill-modal-closed';
+        const TOUR_EVENT_EDITABLE_SAVED = 'tour-editable-saved';
         const TOUR_OFFERED_SKILL_CONTAINER_SELECTOR = '#offeredSkillsContainer';
         const TOUR_OFFERED_SKILL_MODAL_SELECTOR = '#skillModal .modal-content';
         const TOUR_OFFERED_SKILL_ADD_BTN_SELECTOR = '#offeredSkillsContainer .add-skill-button-primary';
@@ -2560,10 +2561,35 @@
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
         }
 
+        function isNombreCompletoValido() {
+            const inputActivo = document.querySelector('#nombreCompleto input, #nombreCompleto textarea');
+            const nombreActual = inputActivo
+                ? inputActivo.value
+                : ((usuario && usuario.nombre_Usuario) || (document.getElementById('nombreCompleto')?.textContent || ''));
+
+            const nombre = String(nombreActual || '').trim();
+            if (!nombre) return false;
+            return !/^haz clic/i.test(nombre);
+        }
+
+        function isDescripcionPerfilCompleta() {
+            const inputActivo = document.querySelector('#descripcion textarea, #descripcion input');
+            const descripcionActual = inputActivo
+                ? inputActivo.value
+                : ((usuario && usuario.descripcion_Usuario) || (document.getElementById('descripcion')?.textContent || ''));
+
+            const descripcion = String(descripcionActual || '').trim();
+            if (!descripcion) return false;
+
+            return !/^haz clic/i.test(descripcion) && !/a[nñ]adir una descripcion personal/i.test(descripcion);
+        }
+
         function evaluateTourCompletionCheck(checkName) {
             if (!checkName) return true;
             if (checkName === 'datosPersonales') return isDatosPersonalesCompletos();
             if (checkName === 'correoVerificacion') return isCorreoVerificacionCompleto();
+            if (checkName === 'nombreCompleto') return isNombreCompletoValido();
+            if (checkName === 'descripcionPerfil') return isDescripcionPerfilCompleta();
             return true;
         }
 
@@ -2642,6 +2668,7 @@
                     }
                 },
                 {
+                    stepKey: 'nombreCompleto',
                     element: '#nombreCompleto',
                     title: 'Completa tu nombre',
                     description: 'Presiona sobre tu nombre para editarlo.',
@@ -2650,12 +2677,13 @@
                     mascot: 'Asegura que tu nombre se vea como quieres que te contacten.',
                     autoAdvance: {
                         listenSelector: '#nombreCompleto',
-                        delegateSelector: 'input, textarea',
-                        events: ['change', 'blur'],
-                        delayMs: 260
+                        completeCheck: 'nombreCompleto',
+                        events: [TOUR_EVENT_EDITABLE_SAVED],
+                        delayMs: 140
                     }
                 },
                 {
+                    stepKey: 'descripcionPerfil',
                     element: '#descripcion',
                     title: 'Describe tu perfil',
                     description: 'Explica en pocas lineas que haces y en que destacas.',
@@ -2664,9 +2692,9 @@
                     mascot: 'Una buena descripcion te trae mejores oportunidades.',
                     autoAdvance: {
                         listenSelector: '#descripcion',
-                        delegateSelector: 'input, textarea',
-                        events: ['change', 'blur'],
-                        delayMs: 260
+                        completeCheck: 'descripcionPerfil',
+                        events: [TOUR_EVENT_EDITABLE_SAVED],
+                        delayMs: 140
                     }
                 },
                 {
@@ -2795,6 +2823,43 @@
                 tourOfferedSkillModalOpened = false;
             };
 
+            const focusEditableStepInput = (step) => {
+                if (!step || !step.stepKey) return;
+                if (step.stepKey !== 'nombreCompleto' && step.stepKey !== 'descripcionPerfil') return;
+
+                const container = typeof step.element === 'string'
+                    ? document.querySelector(step.element)
+                    : step.element;
+
+                if (!container) return;
+
+                window.setTimeout(() => {
+                    let input = container.querySelector('input, textarea');
+
+                    if (!input && !container.classList.contains('editing')) {
+                        container.click();
+                        input = container.querySelector('input, textarea');
+                    }
+
+                    if (!input) return;
+
+                    try {
+                        input.focus({ preventScroll: true });
+                    } catch (_) {
+                        input.focus();
+                    }
+
+                    if (input.tagName === 'TEXTAREA') {
+                        const len = input.value.length;
+                        if (typeof input.setSelectionRange === 'function') {
+                            input.setSelectionRange(len, len);
+                        }
+                    } else if (typeof input.select === 'function') {
+                        input.select();
+                    }
+                }, 80);
+            };
+
             const bindAutoAdvance = (step) => {
                 clearAutoAdvanceBinding();
                 if (!step || !step.autoAdvance) return;
@@ -2847,6 +2912,7 @@
 
             const handleStepChange = (_, step) => {
                 bindAutoAdvance(step);
+                focusEditableStepInput(step);
             };
 
             const handleTourClose = () => {
@@ -4369,10 +4435,30 @@
                 }
 
                 const input = element.querySelector(multiline ? 'textarea' : 'input');
-                input.focus();
-                if (inputType !== 'date') {
-                    input.select();
-                }
+                const focusEditableInput = () => {
+                    try {
+                        input.focus({ preventScroll: true });
+                    } catch (_) {
+                        input.focus();
+                    }
+
+                    if (inputType === 'date') return;
+
+                    if (multiline) {
+                        const len = input.value.length;
+                        if (typeof input.setSelectionRange === 'function') {
+                            input.setSelectionRange(len, len);
+                        }
+                        return;
+                    }
+
+                    if (typeof input.select === 'function') {
+                        input.select();
+                    }
+                };
+
+                window.requestAnimationFrame(focusEditableInput);
+                window.setTimeout(focusEditableInput, 30);
 
                 let guardado = false;
                 const save = async () => {
@@ -4480,6 +4566,13 @@
 
                     if (newValue !== currentValue) {
                         onSave(newValue);
+                        element.dispatchEvent(new CustomEvent(TOUR_EVENT_EDITABLE_SAVED, {
+                            bubbles: true,
+                            detail: {
+                                field,
+                                value: newValue
+                            }
+                        }));
                     }
                 };
 
@@ -6771,9 +6864,69 @@
             }
         }
 
+        function solicitarConfirmacionEliminarCertificacion() {
+            return new Promise((resolve) => {
+                const previousModal = document.getElementById('deleteCertificationConfirmModal');
+                if (previousModal) previousModal.remove();
+
+                const modalHTML = `
+        <div class="custom-modal-overlay" id="deleteCertificationConfirmModal">
+          <div class="custom-modal" style="max-width: 450px; width: min(92vw, 450px);" onclick="event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-icon" style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); color: #dc2626;">🗑️</div>
+              <div class="modal-title">Eliminar certificación</div>
+            </div>
+            <div class="modal-message">¿Estás seguro de eliminar esta certificación? Esta acción no se puede deshacer.</div>
+            <div class="modal-actions">
+              <button class="modal-btn modal-btn-cancel" data-cert-action="cancel">Cancelar</button>
+              <button class="modal-btn modal-btn-confirm" data-cert-action="confirm" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+                const modal = document.getElementById('deleteCertificationConfirmModal');
+                if (!modal) {
+                    resolve(false);
+                    return;
+                }
+
+                const cancelBtn = modal.querySelector('[data-cert-action="cancel"]');
+                const confirmBtn = modal.querySelector('[data-cert-action="confirm"]');
+
+                let settled = false;
+                const close = (confirmed) => {
+                    if (settled) return;
+                    settled = true;
+                    document.removeEventListener('keydown', onEsc, true);
+                    modal.remove();
+                    resolve(confirmed);
+                };
+
+                const onEsc = (event) => {
+                    if (event.key !== 'Escape') return;
+                    event.preventDefault();
+                    close(false);
+                };
+
+                document.addEventListener('keydown', onEsc, true);
+                modal.addEventListener('click', (event) => {
+                    if (event.target === modal) {
+                        close(false);
+                    }
+                });
+
+                if (cancelBtn) cancelBtn.addEventListener('click', () => close(false));
+                if (confirmBtn) confirmBtn.addEventListener('click', () => close(true));
+            });
+        }
+
         // Eliminar certificación
         async function eliminarCertificacion(idCertificacion) {
-            if (!confirm('¿Estás seguro de eliminar esta certificación?')) return;
+            const confirmed = await solicitarConfirmacionEliminarCertificacion();
+            if (!confirmed) return;
 
             try {
                 const res = await fetch(`${API_BASE}/certificaciones/${idCertificacion}`, {
@@ -6788,9 +6941,10 @@
 
                 // Recargar certificaciones
                 await cargarCertificaciones();
+                mostrarMensajeCertificacion('Certificación eliminada exitosamente.', 'success');
 
             } catch (error) {
-                alert('Error al eliminar: ' + error.message);
+                mostrarMensajeCertificacion('Error al eliminar: ' + error.message, 'error');
             }
         }
 
