@@ -6,6 +6,23 @@ const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'SEMACKRO';
 
 let transporterInstance = null;
 
+function maskEmail(email) {
+    if (!email || typeof email !== 'string' || !email.includes('@')) return '[email-invalido]';
+    const [local, domain] = email.split('@');
+    const visibleLocal = local.length <= 2 ? local[0] || '*' : local.slice(0, 2);
+    return `${visibleLocal}***@${domain}`;
+}
+
+function normalizeFrontendUrl(rawUrl) {
+    try {
+        if (!rawUrl) return null;
+        const normalized = new URL(String(rawUrl));
+        return normalized.origin;
+    } catch (_) {
+        return null;
+    }
+}
+
 function getTransportConfig() {
     if (EMAIL_PROVIDER === 'smtp') {
         const smtpPort = Number(process.env.EMAIL_PORT || 587);
@@ -40,7 +57,14 @@ function getTransportConfig() {
 
 function getTransporter() {
     if (transporterInstance) return transporterInstance;
-    transporterInstance = nodemailer.createTransport(getTransportConfig());
+    const transportConfig = getTransportConfig();
+    transporterInstance = nodemailer.createTransport(transportConfig);
+
+    const descriptor = EMAIL_PROVIDER === 'smtp'
+        ? `host=${transportConfig.host || 'no-definido'} port=${transportConfig.port} secure=${transportConfig.secure}`
+        : 'service=gmail';
+
+    console.log(`[email:${EMAIL_PROVIDER}] Transporte inicializado (${descriptor}) user=${maskEmail(process.env.EMAIL_USER)}`);
     return transporterInstance;
 }
 
@@ -56,36 +80,63 @@ function getEmailConfigError() {
     return null;
 }
 
-const sendMailWithTimeout = (mailOptions, timeoutMs = EMAIL_TIMEOUT_MS) =>
+const sendMailWithTimeout = (mailOptions, timeoutMs = EMAIL_TIMEOUT_MS, context = {}) =>
     new Promise((resolve, reject) => {
+        const startedAt = Date.now();
+        const traceId = context.traceId || 'sin-trace';
+        const destination = context.destination || maskEmail(mailOptions.to);
+
+        console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Iniciando envío a ${destination} con timeout=${timeoutMs}ms`);
+
         const timer = setTimeout(() => {
-            reject(new Error(`Tiempo de espera excedido al enviar correo (${timeoutMs}ms)`));
+            const timeoutError = new Error(`Tiempo de espera excedido al enviar correo (${timeoutMs}ms)`);
+            timeoutError.code = 'EMAIL_TIMEOUT';
+            reject(timeoutError);
         }, timeoutMs);
 
         getTransporter()
             .sendMail(mailOptions)
             .then((info) => {
                 clearTimeout(timer);
+                console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Envío exitoso a ${destination} en ${Date.now() - startedAt}ms messageId=${info.messageId || 'n/a'}`);
                 resolve(info);
             })
             .catch((error) => {
                 clearTimeout(timer);
+                const errorCode = error && (error.code || error.responseCode || error.command || 'UNKNOWN_ERROR');
+                console.error(`[email:${EMAIL_PROVIDER}][${traceId}] Error enviando a ${destination} en ${Date.now() - startedAt}ms code=${errorCode}`, {
+                    message: error && error.message,
+                    responseCode: error && error.responseCode,
+                    command: error && error.command
+                });
                 reject(error);
             });
     });
 
 // Función para enviar correo de recuperación de contraseña
-const enviarCorreoRecuperacion = async (destinatario, token) => {
+const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
+    const traceId = options.traceId || 'sin-trace';
+    const destinatarioMask = maskEmail(destinatario);
+
+    console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Preparando correo de recuperación para ${destinatarioMask}`);
+
     const configError = getEmailConfigError();
     if (configError) {
+        console.error(`[email:${EMAIL_PROVIDER}][${traceId}] Configuración inválida: ${configError}`);
         return { success: false, error: configError };
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'https://semackro.vercel.app';
+    const frontendUrl =
+        normalizeFrontendUrl(options.frontendUrl) ||
+        normalizeFrontendUrl(process.env.FRONTEND_URL) ||
+        'https://semackro.vercel.app';
+
+    const fromName = String(options.emailFromName || EMAIL_FROM_NAME || 'SEMACKRO').trim().slice(0, 80) || 'SEMACKRO';
     const enlaceRecuperacion = `${frontendUrl}/restablecer-password.html?token=${token}`;
+    console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Enlace de recuperación generado con frontend=${frontendUrl}`);
     
     const mailOptions = {
-        from: `"${EMAIL_FROM_NAME}" <${process.env.EMAIL_USER}>`,
+        from: `"${fromName}" <${process.env.EMAIL_USER}>`,
         to: destinatario,
         subject: 'Recuperación de Contraseña - SEMACKRO',
         html: `
@@ -179,11 +230,17 @@ const enviarCorreoRecuperacion = async (destinatario, token) => {
     };
 
     try {
-        const info = await sendMailWithTimeout(mailOptions);
-        console.log('Correo enviado:', info.messageId);
+        const info = await sendMailWithTimeout(mailOptions, EMAIL_TIMEOUT_MS, {
+            traceId,
+            destination: destinatarioMask
+        });
+        console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Correo de recuperación confirmado para ${destinatarioMask} messageId=${info.messageId || 'n/a'}`);
         return { success: true, messageId: info.messageId };
     } catch (error) {
-        console.error(`[email:${EMAIL_PROVIDER}] Error al enviar correo:`, error);
+        console.error(`[email:${EMAIL_PROVIDER}][${traceId}] Error al enviar correo de recuperación para ${destinatarioMask}:`, {
+            message: error && error.message,
+            code: error && (error.code || error.responseCode || error.command || 'UNKNOWN_ERROR')
+        });
         return { success: false, error: error.message };
     }
 };

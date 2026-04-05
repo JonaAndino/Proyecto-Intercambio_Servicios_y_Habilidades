@@ -6,12 +6,29 @@ const db = require('../db');
 const { enviarCorreoRecuperacion } = require('../config/email');
 const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_super_segura_2025_SEMACKRO';
 
+function maskEmail(email) {
+    if (!email || typeof email !== 'string' || !email.includes('@')) return '[email-invalido]';
+    const [local, domain] = email.split('@');
+    const visibleLocal = local.length <= 2 ? local[0] || '*' : local.slice(0, 2);
+    return `${visibleLocal}***@${domain}`;
+}
+
+function buildTraceId() {
+    return `pwdrec-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 // POST /api/password/solicitar-recuperacion
 // Solicitar recuperación de contraseña
 router.post('/solicitar-recuperacion', async (req, res) => {
-    const { correo } = req.body;
+    const { correo, FRONTEND_URL, EMAIL_FROM_NAME } = req.body;
+    const traceId = buildTraceId();
+    const startedAt = Date.now();
+    const maskedCorreo = maskEmail(correo);
+
+    console.log(`[password-recovery][${traceId}] Inicio solicitud para ${maskedCorreo}`);
 
     if (!correo) {
+        console.warn(`[password-recovery][${traceId}] Solicitud rechazada: correo ausente`);
         return res.status(400).json({ 
             success: false, 
             mensaje: 'El correo es requerido' 
@@ -22,13 +39,14 @@ router.post('/solicitar-recuperacion', async (req, res) => {
         // Verificar si el usuario existe
         const query = 'SELECT id_usuario, correo FROM Usuarios WHERE correo = ?';
         const [usuarios] = await db.query(query, [correo]);
+        console.log(`[password-recovery][${traceId}] Resultado búsqueda usuario: ${usuarios.length > 0 ? 'encontrado' : 'no encontrado'}`);
 
         // Por seguridad, siempre devolvemos el mismo mensaje
         // (no revelamos si el correo existe o no)
         const mensajeGenerico = 'Si el correo está registrado, recibirás instrucciones para recuperar tu contraseña.';
 
         if (usuarios.length === 0) {
-            console.log(`Intento de recuperación para correo no existente: ${correo}`);
+            console.log(`[password-recovery][${traceId}] Correo no registrado (${maskedCorreo}). Respuesta genérica enviada en ${Date.now() - startedAt}ms`);
             return res.status(200).json({ 
                 success: true, 
                 mensaje: mensajeGenerico 
@@ -47,31 +65,39 @@ router.post('/solicitar-recuperacion', async (req, res) => {
             JWT_SECRET,
             { expiresIn: '15m' }
         );
+        console.log(`[password-recovery][${traceId}] Token de recuperación generado para usuario ${usuario.id_usuario}`);
 
         // Responder de inmediato para evitar timeouts en la interfaz.
         res.status(200).json({
             success: true,
             mensaje: mensajeGenerico
         });
+        console.log(`[password-recovery][${traceId}] Respuesta genérica enviada en ${Date.now() - startedAt}ms`);
 
         // Enviar correo en segundo plano; los fallos se registran en logs.
         setImmediate(async () => {
+            const mailStartedAt = Date.now();
             try {
-                const resultado = await enviarCorreoRecuperacion(correo, token);
+                console.log(`[password-recovery][${traceId}] Intentando envío de correo a ${maskedCorreo}`);
+                const resultado = await enviarCorreoRecuperacion(correo, token, {
+                    frontendUrl: FRONTEND_URL,
+                    emailFromName: EMAIL_FROM_NAME,
+                    traceId
+                });
                 if (resultado.success) {
-                    console.log(`Correo de recuperación enviado a: ${correo}`);
+                    console.log(`[password-recovery][${traceId}] Correo enviado correctamente (${maskedCorreo}) messageId=${resultado.messageId || 'n/a'} en ${Date.now() - mailStartedAt}ms`);
                 } else {
-                    console.error(`No se pudo enviar correo de recuperación a ${correo}:`, resultado.error);
+                    console.error(`[password-recovery][${traceId}] Fallo al enviar correo (${maskedCorreo}) en ${Date.now() - mailStartedAt}ms:`, resultado.error);
                 }
             } catch (mailError) {
-                console.error(`Error inesperado al enviar correo de recuperación a ${correo}:`, mailError);
+                console.error(`[password-recovery][${traceId}] Error inesperado en envío de correo (${maskedCorreo}) en ${Date.now() - mailStartedAt}ms:`, mailError);
             }
         });
 
         return;
 
     } catch (error) {
-        console.error('Error en solicitar-recuperacion:', error);
+        console.error(`[password-recovery][${traceId}] Error en solicitar-recuperacion tras ${Date.now() - startedAt}ms:`, error);
         return res.status(500).json({ 
             success: false, 
             mensaje: 'Error del servidor' 
