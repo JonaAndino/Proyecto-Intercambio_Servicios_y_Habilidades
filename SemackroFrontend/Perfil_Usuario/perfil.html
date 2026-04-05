@@ -620,6 +620,17 @@
             max-width: 600px;
         }
 
+        .profile-bio #descripcion.editable {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .profile-bio #descripcion.editable.editing {
+            min-width: 0;
+            width: 100%;
+        }
+
         .verified-badge {
             display: inline-flex;
             align-items: center;
@@ -2687,7 +2698,7 @@
                     element: '#descripcion',
                     title: 'Describe tu perfil',
                     description: 'Explica en pocas lineas que haces y en que destacas.',
-                    side: 'bottom',
+                    side: 'top',
                     align: 'start',
                     mascot: 'Una buena descripcion te trae mejores oportunidades.',
                     autoAdvance: {
@@ -2833,12 +2844,24 @@
 
                 if (!container) return;
 
+                if (typeof container.scrollIntoView === 'function') {
+                    try {
+                        container.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                    } catch (_) {
+                        container.scrollIntoView();
+                    }
+                }
+
                 window.setTimeout(() => {
                     let input = container.querySelector('input, textarea');
 
                     if (!input && !container.classList.contains('editing')) {
                         container.click();
                         input = container.querySelector('input, textarea');
+
+                        if (profileTourInstance && typeof profileTourInstance.refresh === 'function') {
+                            profileTourInstance.refresh();
+                        }
                     }
 
                     if (!input) return;
@@ -2856,6 +2879,10 @@
                         }
                     } else if (typeof input.select === 'function') {
                         input.select();
+                    }
+
+                    if (profileTourInstance && typeof profileTourInstance.refresh === 'function') {
+                        profileTourInstance.refresh();
                     }
                 }, 80);
             };
