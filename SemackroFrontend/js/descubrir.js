@@ -892,9 +892,9 @@ function showLogoutModal() {
   const t = (key) => translations[currentLanguage][key] || key;
   const modalHTML = `
                 <div class="custom-modal-overlay" id="logoutModal" onclick="closeLogoutModal(event)">
-                    <div class="custom-modal" onclick="event.stopPropagation()">
+          <div class="custom-modal custom-modal-logout" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
                         <div class="modal-header">
-                            <div class="modal-icon">⚠</div>
+              <div class="modal-icon modal-icon-logout" aria-hidden="true">⚠</div>
                             <div class="modal-title" data-i18n="logout.title">${t("logout.title")}</div>
                         </div>
                         <div class="modal-message" data-i18n="logout.message">
