@@ -239,9 +239,14 @@
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700 mb-2"
                         data-i18n="login.password">Contraseña</label>
-                    <input type="password" id="password" name="password" required autocomplete="current-password"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-base sm:text-sm"
-                        placeholder="••••••••" data-i18n-placeholder="login.passwordPlaceholder">
+                    <div class="relative">
+                        <input type="password" id="password" name="password" required autocomplete="current-password"
+                            class="w-full px-4 py-3 pr-24 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-base sm:text-sm"
+                            placeholder="••••••••" data-i18n-placeholder="login.passwordPlaceholder">
+                        <button type="button" id="toggle-password-btn"
+                            class="absolute inset-y-0 right-3 my-auto h-fit text-sm font-semibold text-blue-600 hover:text-blue-500 focus:outline-none"
+                            data-i18n="login.showPassword" aria-controls="password" aria-label="Mostrar">Mostrar</button>
+                    </div>
                 </div>
 
                 <div class="flex items-center justify-end">
@@ -367,6 +372,23 @@
             }
         }
 
+        function syncLoginPasswordToggleLabel() {
+            const passwordInput = document.getElementById('password');
+            const togglePasswordBtn = document.getElementById('toggle-password-btn');
+
+            if (!passwordInput || !togglePasswordBtn) return;
+
+            const key = passwordInput.type === 'password' ? 'login.showPassword' : 'login.hidePassword';
+            const translatedText =
+                (typeof translations !== 'undefined' && translations[currentLanguage] && translations[currentLanguage][key])
+                    ? translations[currentLanguage][key]
+                    : (passwordInput.type === 'password' ? 'Mostrar' : 'Ocultar');
+
+            togglePasswordBtn.setAttribute('data-i18n', key);
+            togglePasswordBtn.textContent = translatedText;
+            togglePasswordBtn.setAttribute('aria-label', translatedText);
+        }
+
         function marcarOnboardingPostLoginPendiente() {
             try {
                 const usuarioId = localStorage.getItem('usuarioId') || '';
@@ -467,6 +489,19 @@
 
         // Script Principal
         document.addEventListener("DOMContentLoaded", async () => {
+            const passwordInput = document.getElementById('password');
+            const togglePasswordBtn = document.getElementById('toggle-password-btn');
+
+            if (passwordInput && togglePasswordBtn) {
+                togglePasswordBtn.addEventListener('click', () => {
+                    passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+                    syncLoginPasswordToggleLabel();
+                    passwordInput.focus({ preventScroll: true });
+                });
+
+                syncLoginPasswordToggleLabel();
+            }
+
             // Verificar sesión activa
             try {
                 const hasUser = localStorage.getItem('usuarioId');
@@ -609,6 +644,8 @@
                 'login.emailPlaceholder': 'Tucorreo@ejemplo.com',
                 'login.password': 'Contraseña',
                 'login.passwordPlaceholder': '••••••••',
+                'login.showPassword': 'Mostrar',
+                'login.hidePassword': 'Ocultar',
                 'login.forgotPassword': '¿Olvidaste tu contraseña?',
                 'login.submit': 'Iniciar sesión',
                 'login.orContinue': 'O continuar con',
@@ -633,6 +670,8 @@
                 'login.emailPlaceholder': 'Youremail@example.com',
                 'login.password': 'Password',
                 'login.passwordPlaceholder': '••••••••',
+                'login.showPassword': 'Show',
+                'login.hidePassword': 'Hide',
                 'login.forgotPassword': 'Forgot your password?',
                 'login.submit': 'Login',
                 'login.orContinue': 'Or continue with',
@@ -684,6 +723,8 @@
                 const translation = t(key);
                 element.placeholder = translation;
             });
+
+            syncLoginPasswordToggleLabel();
         }
 
         document.getElementById('languageBtn')?.addEventListener('click', function (e) {
