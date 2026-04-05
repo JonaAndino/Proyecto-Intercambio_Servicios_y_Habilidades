@@ -5,6 +5,8 @@ const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS || 15000);
 const EMAIL_PROVIDER = (process.env.EMAIL_PROVIDER || 'gmail').toLowerCase();
 const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'SEMACKRO';
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
+const EMAIL_FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS || process.env.EMAIL_USER || '';
+const EMAIL_HOST_LOWER = String(process.env.EMAIL_HOST || '').toLowerCase();
 
 let transporterInstance = null;
 
@@ -55,18 +57,35 @@ function parseFromAddress(rawFrom) {
 
     return {
         name: EMAIL_FROM_NAME || 'SEMACKRO',
-        email: process.env.EMAIL_USER || fromValue
+        email: EMAIL_FROM_ADDRESS || fromValue
     };
+}
+
+function canUseBrevoHttpFallback() {
+    return EMAIL_PROVIDER === 'smtp' &&
+        (EMAIL_HOST_LOWER.includes('brevo') || EMAIL_HOST_LOWER.includes('sendinblue'));
+}
+
+function getBrevoApiKeyWithSource() {
+    if (process.env.BREVO_API_KEY) {
+        return { key: process.env.BREVO_API_KEY, source: 'BREVO_API_KEY' };
+    }
+
+    if (canUseBrevoHttpFallback() && process.env.EMAIL_PASSWORD) {
+        return { key: process.env.EMAIL_PASSWORD, source: 'EMAIL_PASSWORD(smtp)' };
+    }
+
+    return { key: null, source: null };
 }
 
 const sendMailViaBrevoApi = (mailOptions, context = {}) =>
     new Promise((resolve, reject) => {
         const traceId = context.traceId || 'sin-trace';
         const destination = context.destination || maskEmail(mailOptions.to);
-        const apiKey = process.env.BREVO_API_KEY;
+        const { key: apiKey, source: keySource } = getBrevoApiKeyWithSource();
 
         if (!apiKey) {
-            const err = new Error('BREVO_API_KEY no configurada para fallback por API');
+            const err = new Error('No hay API key para fallback HTTP de Brevo (define BREVO_API_KEY o usa SMTP Brevo con EMAIL_PASSWORD)');
             err.code = 'BREVO_API_KEY_MISSING';
             return reject(err);
         }
@@ -95,7 +114,7 @@ const sendMailViaBrevoApi = (mailOptions, context = {}) =>
             }
         };
 
-        console.log(`[email:brevo-api][${traceId}] Intentando envío HTTP a ${destination}`);
+        console.log(`[email:brevo-api][${traceId}] Intentando envío HTTP a ${destination} usando key=${keySource}`);
 
         const req = https.request(requestOptions, (res) => {
             let body = '';
@@ -185,12 +204,13 @@ function getTransporter() {
 
 function getEmailConfigError() {
     if (EMAIL_PROVIDER === 'brevo-api') {
-        if (!process.env.BREVO_API_KEY) {
-            return 'BREVO_API_KEY no configurada para EMAIL_PROVIDER=brevo-api';
+        const { key: apiKey } = getBrevoApiKeyWithSource();
+        if (!apiKey) {
+            return 'No hay API key para EMAIL_PROVIDER=brevo-api (define BREVO_API_KEY)';
         }
 
-        if (!process.env.EMAIL_USER) {
-            return 'EMAIL_USER no configurada para EMAIL_PROVIDER=brevo-api';
+        if (!EMAIL_FROM_ADDRESS) {
+            return 'EMAIL_FROM_ADDRESS o EMAIL_USER no configurada para EMAIL_PROVIDER=brevo-api';
         }
 
         return null;
@@ -298,7 +318,7 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
     console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Enlace de recuperación generado con frontend=${frontendUrl}`);
     
     const mailOptions = {
-        from: `"${fromName}" <${process.env.EMAIL_USER}>`,
+        from: `"${fromName}" <${EMAIL_FROM_ADDRESS}>`,
         to: destinatario,
         subject: 'Recuperación de Contraseña - SEMACKRO',
         html: `
@@ -459,7 +479,7 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
                 }
             }
 
-            if (process.env.BREVO_API_KEY) {
+            if (process.env.BREVO_API_KEY || canUseBrevoHttpFallback()) {
                 try {
                     const apiInfo = await sendMailViaBrevoApi(mailOptions, {
                         traceId: `${traceId}-brevo-api`,
@@ -477,6 +497,8 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
                         code: apiError && apiError.code
                     });
                 }
+            } else {
+                console.warn(`[email:brevo-api][${traceId}] Se omite fallback HTTP: no hay BREVO_API_KEY y el host SMTP no parece ser Brevo.`);
             }
         }
 
