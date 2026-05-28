@@ -573,27 +573,6 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
             }
         }
 
-        // Si estamos en entorno de desarrollo local (localhost), simulamos éxito para no bloquear tus pruebas locales
-        const isLocalDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development' || 
-                           process.env.DB_HOST === 'localhost' || process.env.DB_HOST === '127.0.0.1';
-                           
-        if (isLocalDev) {
-            console.log('\n========================================================================');
-            console.log('⚠️ [SIMULACIÓN LOCAL] ENVÍO DE CORREO DE CONTRASEÑA FALLÓ (TIMEOUT/RED)');
-            console.log('Para no bloquear tus pruebas locales, hemos simulado un envío exitoso.');
-            console.log(`Destinatario: ${cleanDestinatario}`);
-            console.log(`Token de restablecimiento: ${token}`);
-            console.log(`Enlace generado: ${enlaceRecuperacion}`);
-            console.log('========================================================================\n');
-            
-            return { 
-                success: true, 
-                messageId: `simulado-dev-${Date.now()}`, 
-                simulated: true,
-                mensajeSimulado: 'Simulado localmente (error de SMTP de tu red física evitado)'
-            };
-        }
-
         return { success: false, error: error.message };
     }
 };
