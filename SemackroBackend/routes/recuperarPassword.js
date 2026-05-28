@@ -24,13 +24,14 @@ function buildTraceId() {
 // Solicitar recuperación de contraseña
 router.post('/solicitar-recuperacion', async (req, res) => {
     const { correo, FRONTEND_URL, EMAIL_FROM_NAME } = req.body;
+    const cleanCorreo = String(correo || '').trim();
     const traceId = buildTraceId();
     const startedAt = Date.now();
-    const maskedCorreo = maskEmail(correo);
+    const maskedCorreo = maskEmail(cleanCorreo);
 
     console.log(`[password-recovery][${traceId}] Inicio solicitud para ${maskedCorreo}`);
 
-    if (!correo) {
+    if (!cleanCorreo) {
         console.warn(`[password-recovery][${traceId}] Solicitud rechazada: correo ausente`);
         return res.status(400).json({ 
             success: false, 
@@ -41,7 +42,7 @@ router.post('/solicitar-recuperacion', async (req, res) => {
     try {
         // Verificar si el usuario existe
         const query = 'SELECT id_usuario, correo FROM Usuarios WHERE correo = ?';
-        const [usuarios] = await db.query(query, [correo]);
+        const [usuarios] = await db.query(query, [cleanCorreo]);
         console.log(`[password-recovery][${traceId}] Resultado búsqueda usuario: ${usuarios.length > 0 ? 'encontrado' : 'no encontrado'}`);
 
         // Por seguridad, siempre devolvemos el mismo mensaje
@@ -82,7 +83,7 @@ router.post('/solicitar-recuperacion', async (req, res) => {
             const mailStartedAt = Date.now();
             try {
                 console.log(`[password-recovery][${traceId}] Intentando envío de correo a ${maskedCorreo}`);
-                const resultado = await enviarCorreoRecuperacion(correo, token, {
+                const resultado = await enviarCorreoRecuperacion(cleanCorreo, token, {
                     frontendUrl: FRONTEND_URL,
                     emailFromName: EMAIL_FROM_NAME,
                     traceId
