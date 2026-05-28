@@ -1969,12 +1969,21 @@
                     throw new Error(json.error || 'Error desconocido al enviar el correo.');
                 }
 
-                await Swal.fire({
-                    icon: 'success',
-                    title: '¡Correo enviado!',
-                    text: json.mensaje || 'El correo fue enviado exitosamente y la solicitud fue marcada como Resuelta.',
-                    confirmButtonColor: '#4f46e5'
-                });
+                if (json.simulated) {
+                    await Swal.fire({
+                        icon: 'info',
+                        title: 'Envío Simulado (Desarrollo)',
+                        html: `<strong>¡Éxito en simulación!</strong><br><br>${json.mensajeSimulado || 'El correo físico no pudo enviarse debido al límite de tiempo de tu red (SMTP bloqueado), pero la solicitud fue marcada como <strong>Resuelta</strong> y las credenciales se imprimieron en la consola del servidor.'}`,
+                        confirmButtonColor: '#4f46e5'
+                    });
+                } else {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Correo enviado!',
+                        text: json.mensaje || 'El correo fue enviado exitosamente y la solicitud fue marcada como Resuelta.',
+                        confirmButtonColor: '#4f46e5'
+                    });
+                }
 
                 // Refrescar la tabla
                 await adminCargarSolicitudesRecuperar();

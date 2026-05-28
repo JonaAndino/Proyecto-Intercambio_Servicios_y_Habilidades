@@ -566,6 +566,27 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
             }
         }
 
+        // Si estamos en entorno de desarrollo local (localhost), simulamos éxito para no bloquear tus pruebas locales
+        const isLocalDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development' || 
+                           process.env.DB_HOST === 'localhost' || process.env.DB_HOST === '127.0.0.1';
+                           
+        if (isLocalDev) {
+            console.log('\n========================================================================');
+            console.log('⚠️ [SIMULACIÓN LOCAL] ENVÍO DE CORREO DE CONTRASEÑA FALLÓ (TIMEOUT/RED)');
+            console.log('Para no bloquear tus pruebas locales, hemos simulado un envío exitoso.');
+            console.log(`Destinatario: ${destinatario}`);
+            console.log(`Token de restablecimiento: ${token}`);
+            console.log(`Enlace generado: ${enlaceRecuperacion}`);
+            console.log('========================================================================\n');
+            
+            return { 
+                success: true, 
+                messageId: `simulado-dev-${Date.now()}`, 
+                simulated: true,
+                mensajeSimulado: 'Simulado localmente (error de SMTP de tu red física evitado)'
+            };
+        }
+
         return { success: false, error: error.message };
     }
 };
@@ -756,6 +777,27 @@ const enviarCorreoUsuarioRecuperado = async (destinatario, nombrePersona, correo
             return { success: true, messageId: apiInfo.messageId, channel: 'brevo-api' };
         } catch (apiError) {
             console.error(`[email:brevo-api][${traceId}] Error al enviar correo de recuperación de usuario para ${destinatarioMask}:`, apiError);
+            
+            const isLocalDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development' || 
+                               process.env.DB_HOST === 'localhost' || process.env.DB_HOST === '127.0.0.1';
+                               
+            if (isLocalDev) {
+                console.log('\n========================================================================');
+                console.log('⚠️ [SIMULACIÓN LOCAL] ENVÍO DE CORREO BREVO API FALLÓ');
+                console.log('Para no bloquear tus pruebas locales, hemos simulado un envío exitoso.');
+                console.log(`Destinatario: ${destinatario}`);
+                console.log(`Nombre: ${nombrePersona}`);
+                console.log(`Correo recuperado: ${correoUsuario}`);
+                console.log('========================================================================\n');
+                
+                return { 
+                    success: true, 
+                    messageId: `simulado-dev-${Date.now()}`, 
+                    simulated: true,
+                    mensajeSimulado: 'Simulado localmente (error de SMTP de tu red física evitado)'
+                };
+            }
+            
             return { success: false, error: apiError.message };
         }
     }
@@ -825,6 +867,27 @@ const enviarCorreoUsuarioRecuperado = async (destinatario, nombrePersona, correo
                 }
             }
         }
+        // Si estamos en entorno de desarrollo local (localhost), simulamos éxito para no bloquear tus pruebas locales
+        const isLocalDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development' || 
+                           process.env.DB_HOST === 'localhost' || process.env.DB_HOST === '127.0.0.1';
+                           
+        if (isLocalDev) {
+            console.log('\n========================================================================');
+            console.log('⚠️ [SIMULACIÓN LOCAL] ENVÍO DE CORREO DE USUARIO FALLÓ (TIMEOUT/RED)');
+            console.log('Para no bloquear tus pruebas locales, hemos simulado un envío exitoso.');
+            console.log(`Destinatario: ${destinatario}`);
+            console.log(`Nombre: ${nombrePersona}`);
+            console.log(`Correo recuperado: ${correoUsuario}`);
+            console.log('========================================================================\n');
+            
+            return { 
+                success: true, 
+                messageId: `simulado-dev-${Date.now()}`, 
+                simulated: true,
+                mensajeSimulado: 'Simulado localmente (error de SMTP de tu red física evitado)'
+            };
+        }
+
         return { success: false, error: error.message };
     }
 };

@@ -214,7 +214,9 @@ router.post('/enviar-usuario', async (req, res) => {
 
         return res.status(200).json({ 
             success: true, 
-            mensaje: 'El correo electrónico con los datos de inicio de sesión ha sido enviado exitosamente.' 
+            mensaje: 'El correo electrónico con los datos de inicio de sesión ha sido enviado exitosamente.',
+            simulated: !!emailResult.simulated,
+            mensajeSimulado: emailResult.mensajeSimulado
         });
 
     } catch (error) {
