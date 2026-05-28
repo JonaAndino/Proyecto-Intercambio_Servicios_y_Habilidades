@@ -192,31 +192,36 @@ router.post('/enviar-usuario', async (req, res) => {
             ? `${solicitud.nombre_Persona || ''} ${solicitud.apellido_Persona || ''}`.trim()
             : solicitud.nombre_ingresado;
 
-        // Enviar el correo con nodemailer / Brevo API
-        const emailResult = await enviarCorreoUsuarioRecuperado(
-            solicitud.correo_usuario,
-            nombreDestinatario,
-            solicitud.correo_usuario
-        );
-
-        if (!emailResult.success) {
-            return res.status(500).json({ 
-                success: false, 
-                error: `Error al enviar el correo electrónico: ${emailResult.error}` 
-            });
-        }
-
-        // Actualizar el estado de la solicitud a 'Resuelta'
+        // 1. Actualizar el estado de la solicitud a 'Resuelta' inmediatamente
         await db.query(
             'UPDATE solicitudes_recuperacion_email SET estado = "Resuelta" WHERE id_solicitud = ?',
             [id_solicitud]
         );
 
-        return res.status(200).json({ 
+        // 2. Enviar respuesta exitosa instantánea al frontend
+        res.status(200).json({ 
             success: true, 
-            mensaje: 'El correo electrónico con los datos de inicio de sesión ha sido enviado exitosamente.',
-            simulated: !!emailResult.simulated,
-            mensajeSimulado: emailResult.mensajeSimulado
+            mensaje: 'La solicitud ha sido marcada como Resuelta y el correo con los datos de inicio de sesión se está enviando en segundo plano.'
+        });
+
+        // 3. Enviar el correo en segundo plano para evitar bloqueos por lentitud o latencia de red SMTP
+        setImmediate(async () => {
+            const startedAt = Date.now();
+            try {
+                console.log(`[admin-recovery-email] Iniciando envío en segundo plano para ${solicitud.correo_usuario}`);
+                const emailResult = await enviarCorreoUsuarioRecuperado(
+                    solicitud.correo_usuario,
+                    nombreDestinatario,
+                    solicitud.correo_usuario
+                );
+                if (emailResult.success) {
+                    console.log(`[admin-recovery-email] Enviado con éxito a ${solicitud.correo_usuario} en ${Date.now() - startedAt}ms (messageId=${emailResult.messageId})`);
+                } else {
+                    console.error(`[admin-recovery-email] Falló envío a ${solicitud.correo_usuario} en ${Date.now() - startedAt}ms: ${emailResult.error}`);
+                }
+            } catch (err) {
+                console.error(`[admin-recovery-email] Error inesperado en segundo plano para ${solicitud.correo_usuario}:`, err.message);
+            }
         });
 
     } catch (error) {
