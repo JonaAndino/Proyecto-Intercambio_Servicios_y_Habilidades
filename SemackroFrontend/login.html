@@ -249,7 +249,10 @@
                     </div>
                 </div>
 
-                <div class="flex items-center justify-end">
+                <div class="flex items-center justify-between">
+                    <button type="button" id="forgot-email-btn"
+                        class="text-sm font-medium text-blue-600 hover:text-blue-500 transition duration-150 focus:outline-none"
+                        data-i18n="login.forgotEmail">¿Olvidaste tu correo?</button>
                     <a href="recuperar-password.html"
                         class="text-sm font-medium text-blue-600 hover:text-blue-500 transition duration-150"
                         data-i18n="login.forgotPassword">¿Olvidaste tu contraseña?</a>
@@ -627,6 +630,36 @@
                     });
                 }
             }
+
+            // Control del modal de "¿Olvidaste tu correo?"
+            const forgotEmailBtn = document.getElementById("forgot-email-btn");
+            const forgotEmailModal = document.getElementById("forgot-email-modal");
+            const closeEmailModalBtn = document.getElementById("close-email-modal-btn");
+            const acceptEmailModalBtn = document.getElementById("accept-email-modal-btn");
+
+            if (forgotEmailBtn && forgotEmailModal) {
+                forgotEmailBtn.addEventListener("click", () => {
+                    forgotEmailModal.classList.remove("hidden");
+                    setTimeout(() => {
+                        forgotEmailModal.firstElementChild.classList.remove("scale-95");
+                        forgotEmailModal.firstElementChild.classList.add("scale-100");
+                    }, 10);
+                });
+
+                const closeModal = () => {
+                    forgotEmailModal.firstElementChild.classList.remove("scale-100");
+                    forgotEmailModal.firstElementChild.classList.add("scale-95");
+                    setTimeout(() => {
+                        forgotEmailModal.classList.add("hidden");
+                    }, 150);
+                };
+
+                closeEmailModalBtn?.addEventListener("click", closeModal);
+                acceptEmailModalBtn?.addEventListener("click", closeModal);
+                forgotEmailModal.addEventListener("click", (e) => {
+                    if (e.target === forgotEmailModal) closeModal();
+                });
+            }
         });
     </script>
 
@@ -647,6 +680,12 @@
                 'login.showPassword': 'Mostrar',
                 'login.hidePassword': 'Ocultar',
                 'login.forgotPassword': '¿Olvidaste tu contraseña?',
+                'login.forgotEmail': '¿Olvidaste tu correo?',
+                'login.modalEmailTitle': '¿Olvidaste tu correo?',
+                'login.modalEmailSubtitle': 'Si has olvidado el correo electrónico registrado con tu cuenta, ponte en contacto con el administrador para recuperarlo.',
+                'login.modalEmailLabel': 'Correo de soporte',
+                'login.modalPhoneLabel': 'Teléfono de soporte',
+                'login.modalAccept': 'Aceptar',
                 'login.submit': 'Iniciar sesión',
                 'login.orContinue': 'O continuar con',
                 'login.googleFull': 'Continuar con Google',
@@ -673,6 +712,12 @@
                 'login.showPassword': 'Show',
                 'login.hidePassword': 'Hide',
                 'login.forgotPassword': 'Forgot your password?',
+                'login.forgotEmail': 'Forgot your email?',
+                'login.modalEmailTitle': 'Forgot your email?',
+                'login.modalEmailSubtitle': 'If you have forgotten the email address registered with your account, please contact the administrator to recover it.',
+                'login.modalEmailLabel': 'Support email',
+                'login.modalPhoneLabel': 'Support phone',
+                'login.modalAccept': 'Accept',
                 'login.submit': 'Login',
                 'login.orContinue': 'Or continue with',
                 'login.googleFull': 'Continue with google',
@@ -747,6 +792,67 @@
             applyTranslations();
         });
     </script>
+
+    <!-- MODAL ¿OLVIDASTE TU CORREO? -->
+    <div id="forgot-email-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black bg-opacity-50 backdrop-blur-sm transition-all duration-300">
+        <div class="bg-white/95 border border-white/20 rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full mx-4 relative transform scale-95 transition-transform duration-300">
+            <!-- Botón Cerrar -->
+            <button type="button" id="close-email-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition duration-150">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            
+            <div class="text-center">
+                <!-- Icono de contacto -->
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-900 mb-2" data-i18n="login.modalEmailTitle">¿Olvidaste tu correo?</h3>
+                <p class="text-sm text-gray-600 mb-6" data-i18n="login.modalEmailSubtitle">Si has olvidado el correo electrónico registrado con tu cuenta, ponte en contacto con el administrador para recuperarlo.</p>
+                
+                <!-- Opciones de Contacto -->
+                <div class="space-y-3 text-left">
+                    <!-- Correo de Soporte -->
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-150">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <div class="flex-1">
+                            <span class="block text-xs font-semibold text-gray-500" data-i18n="login.modalEmailLabel">Correo de soporte</span>
+                            <span class="block text-sm font-medium text-gray-800">soporte@semackro.com</span>
+                        </div>
+                        <button type="button" onclick="navigator.clipboard.writeText('soporte@semackro.com'); alert('¡Copiado!');" class="p-1.5 text-gray-400 hover:text-blue-600 rounded hover:bg-white transition duration-150" title="Copiar correo">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Teléfono de Asistencia -->
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-150">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        <div class="flex-1">
+                            <span class="block text-xs font-semibold text-gray-500" data-i18n="login.modalPhoneLabel">Teléfono de soporte</span>
+                            <span class="block text-sm font-medium text-gray-800">+504 9999-9999</span>
+                        </div>
+                        <button type="button" onclick="navigator.clipboard.writeText('+504 9999-9999'); alert('¡Copiado!');" class="p-1.5 text-gray-400 hover:text-blue-600 rounded hover:bg-white transition duration-150" title="Copiar teléfono">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="button" id="accept-email-modal-btn" class="mt-6 w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-150 active:scale-95 shadow-sm" data-i18n="login.modalAccept">Aceptar</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

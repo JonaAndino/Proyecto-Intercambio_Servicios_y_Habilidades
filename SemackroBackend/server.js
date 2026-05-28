@@ -130,7 +130,7 @@ app.use('/api/onboarding-drivers', onboardingDriversRoutes); // Estado de driver
 
 // 8. Prueba básica de que el servidor Express funciona
 app.get('/', (req, res) => {
-    res.send('Servidor Skill Connect Activo! ');
+    res.send('Servidor SEMACKRO Activo!');
 });
 
 // 9. Servir archivos estáticos del frontend (SEMACKROFrontend)

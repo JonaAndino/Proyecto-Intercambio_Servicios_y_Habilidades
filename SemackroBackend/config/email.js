@@ -419,7 +419,7 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
                     <p style="word-break: break-all; color: #4f46e5;">${enlaceRecuperacion}</p>
                     
                     <div class="warning">
-                        <strong>Importante:</strong> Este enlace expirará en <strong>15 minutos</strong> por razones de seguridad.
+                        <strong>Importante:</strong> Este enlace expirará en <strong>24 horas (1 día)</strong> por razones de seguridad.
                     </div>
                     
                     <p>Si no solicitaste restablecer tu contraseña, puedes ignorar este correo de forma segura.</p>

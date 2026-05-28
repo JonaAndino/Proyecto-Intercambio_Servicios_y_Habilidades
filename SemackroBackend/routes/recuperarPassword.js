@@ -6,6 +6,9 @@ const db = require('../db');
 const { enviarCorreoRecuperacion } = require('../config/email');
 const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_super_segura_2025_SEMACKRO';
 
+// Mapa para limitar usos exitosos de tokens de recuperación de contraseña (máximo 2 usos)
+const tokenUsageMap = new Map();
+
 function maskEmail(email) {
     if (!email || typeof email !== 'string' || !email.includes('@')) return '[email-invalido]';
     const [local, domain] = email.split('@');
@@ -55,7 +58,7 @@ router.post('/solicitar-recuperacion', async (req, res) => {
 
         const usuario = usuarios[0];
 
-        // Generar token JWT que expira en 15 minutos
+        // Generar token JWT que expira en 1 día (24 horas)
         const token = jwt.sign(
             { 
                 id_usuario: usuario.id_usuario, 
@@ -63,7 +66,7 @@ router.post('/solicitar-recuperacion', async (req, res) => {
                 tipo: 'recuperacion_password'
             },
             JWT_SECRET,
-            { expiresIn: '15m' }
+            { expiresIn: '1d' }
         );
         console.log(`[password-recovery][${traceId}] Token de recuperación generado para usuario ${usuario.id_usuario}`);
 
@@ -126,6 +129,15 @@ router.post('/validar-token', async (req, res) => {
             return res.status(400).json({ 
                 success: false, 
                 mensaje: 'Token inválido' 
+            });
+        }
+
+        // Verificar límite de usos exitosos
+        const currentCount = tokenUsageMap.get(token) || 0;
+        if (currentCount >= 2) {
+            return res.status(400).json({ 
+                success: false, 
+                mensaje: 'El enlace ha superado el número máximo de usos permitidos (2).' 
             });
         }
 
@@ -198,6 +210,15 @@ router.post('/restablecer', async (req, res) => {
             });
         }
 
+        // Verificar límite de usos exitosos
+        const currentCount = tokenUsageMap.get(token) || 0;
+        if (currentCount >= 2) {
+            return res.status(400).json({ 
+                success: false, 
+                mensaje: 'El enlace ha superado el número máximo de usos permitidos (2).' 
+            });
+        }
+
         // Hash de la nueva contraseña
         const hashedPassword = await bcrypt.hash(nuevaPassword, 10);
 
@@ -206,6 +227,9 @@ router.post('/restablecer', async (req, res) => {
         const [result] = await db.query(updateQuery, [hashedPassword, decoded.id_usuario]);
 
         console.log(`Contraseña actualizada para usuario ID: ${decoded.id_usuario}`, result);
+
+        // Incrementar el uso exitoso del token
+        tokenUsageMap.set(token, currentCount + 1);
 
         return res.status(200).json({ 
             success: true, 
