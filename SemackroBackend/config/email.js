@@ -736,11 +736,11 @@ const enviarCorreoUsuarioRecuperado = async (destinatario, nombrePersona, correo
                     <p>Los datos asociados a tu número de identidad son los siguientes:</p>
                     
                     <div class="info-box">
-                        <p style="margin: 0 0 10px 0; font-size: 16px;"><strong>Correo electrónico registrado:</strong></p>
+                        <p style="margin: 0 0 10px 0; font-size: 16px;"><strong>Usuario / Correo electrónico registrado:</strong></p>
                         <p style="margin: 0; font-size: 20px; font-weight: bold; color: #1e3a8a; word-break: break-all;">${correoUsuario}</p>
                     </div>
                     
-                    <p>Puedes utilizar este correo electrónico para iniciar sesión en la plataforma.</p>
+                    <p>Este correo electrónico es tu <strong>nombre de usuario</strong> para acceder a la plataforma. Puedes utilizarlo junto con tu contraseña para iniciar sesión.</p>
                     
                     <div style="text-align: center;">
                         <a href="${enlaceLogin}" class="button">Iniciar Sesión</a>
