@@ -634,4 +634,199 @@ const enviarNotificacionContextual = async (destinatario, alertas, frontendUrl) 
     }
 };
 
-module.exports = { enviarCorreoRecuperacion, enviarNotificacionContextual };
+
+const enviarCorreoUsuarioRecuperado = async (destinatario, nombrePersona, correoUsuario, options = {}) => {
+    const traceId = options.traceId || 'sin-trace';
+    const destinatarioMask = maskEmail(destinatario);
+
+    console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Preparando correo de recuperación de usuario para ${destinatarioMask}`);
+
+    const configError = getEmailConfigError();
+    if (configError) {
+        console.error(`[email:${EMAIL_PROVIDER}][${traceId}] Configuración inválida: ${configError}`);
+        return { success: false, error: configError };
+    }
+
+    const frontendUrl =
+        normalizeFrontendUrl(options.frontendUrl) ||
+        normalizeFrontendUrl(process.env.FRONTEND_URL) ||
+        'https://semackro.vercel.app';
+
+    const fromName = String(options.emailFromName || EMAIL_FROM_NAME || 'SEMACKRO').trim().slice(0, 80) || 'SEMACKRO';
+    const enlaceLogin = `${frontendUrl}/login.html`;
+    
+    const mailOptions = {
+        from: `"${fromName}" <${EMAIL_FROM_ADDRESS}>`,
+        to: destinatario,
+        subject: 'Recuperación de Usuario - SEMACKRO',
+        html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }
+                    .container {
+                        background-color: #f9f9f9;
+                        border-radius: 10px;
+                        padding: 30px;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                    }
+                    .header {
+                        text-align: center;
+                        color: #4f46e5;
+                        margin-bottom: 30px;
+                    }
+                    .info-box {
+                        background-color: #eff6ff;
+                        border-left: 4px solid #3b82f6;
+                        padding: 20px;
+                        margin: 20px 0;
+                        border-radius: 8px;
+                    }
+                    .button {
+                        display: inline-block;
+                        padding: 12px 30px;
+                        background-color: #4f46e5;
+                        color: white !important;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin: 20px 0;
+                        font-weight: bold;
+                    }
+                    .button:hover {
+                        background-color: #4338ca;
+                    }
+                    .footer {
+                        margin-top: 30px;
+                        padding-top: 20px;
+                        border-top: 1px solid #ddd;
+                        font-size: 12px;
+                        color: #666;
+                        text-align: center;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>SEMACKRO</h1>
+                        <h2>Recuperación de Usuario</h2>
+                    </div>
+                    
+                    <p>Hola <strong>${nombrePersona}</strong>,</p>
+                    
+                    <p>Hemos procesado tu solicitud de recuperación de usuario en SEMACKRO.</p>
+                    
+                    <p>Los datos asociados a tu número de identidad son los siguientes:</p>
+                    
+                    <div class="info-box">
+                        <p style="margin: 0 0 10px 0; font-size: 16px;"><strong>Correo electrónico registrado:</strong></p>
+                        <p style="margin: 0; font-size: 20px; font-weight: bold; color: #1e3a8a; word-break: break-all;">${correoUsuario}</p>
+                    </div>
+                    
+                    <p>Puedes utilizar este correo electrónico para iniciar sesión en la plataforma.</p>
+                    
+                    <div style="text-align: center;">
+                        <a href="${enlaceLogin}" class="button">Iniciar Sesión</a>
+                    </div>
+                    
+                    <div class="footer">
+                        <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+                        <p>&copy; 2025 SEMACKRO. Todos los derechos reservados.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `
+    };
+
+    if (EMAIL_PROVIDER === 'brevo-api') {
+        try {
+            const apiInfo = await sendMailViaBrevoApi(mailOptions, {
+                traceId,
+                destination: destinatarioMask
+            });
+            return { success: true, messageId: apiInfo.messageId, channel: 'brevo-api' };
+        } catch (apiError) {
+            console.error(`[email:brevo-api][${traceId}] Error al enviar correo de recuperación de usuario para ${destinatarioMask}:`, apiError);
+            return { success: false, error: apiError.message };
+        }
+    }
+
+    try {
+        const info = await sendMailWithTimeout(mailOptions, EMAIL_TIMEOUT_MS, {
+            traceId,
+            destination: destinatarioMask
+        });
+        console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Correo de recuperación de usuario enviado para ${destinatarioMask} messageId=${info.messageId || 'n/a'}`);
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        console.error(`[email:${EMAIL_PROVIDER}][${traceId}] Error al enviar correo de recuperación de usuario para ${destinatarioMask}:`, error);
+
+        if (isConnectionTimeoutError(error)) {
+            if (EMAIL_PROVIDER === 'gmail') {
+                try {
+                    const fallbackConfig = {
+                        host: 'smtp.gmail.com',
+                        port: 587,
+                        secure: false,
+                        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD },
+                        connectionTimeout: EMAIL_TIMEOUT_MS,
+                        greetingTimeout: EMAIL_TIMEOUT_MS,
+                        socketTimeout: EMAIL_TIMEOUT_MS
+                    };
+                    const fallbackInfo = await sendMailWithTransportConfig(mailOptions, fallbackConfig, EMAIL_TIMEOUT_MS, {
+                        traceId: `${traceId}-p587`,
+                        destination: destinatarioMask
+                    });
+                    return { success: true, messageId: fallbackInfo.messageId, fallbackPort: 587 };
+                } catch (fallbackError) {
+                    console.error(`[email:gmail][${traceId}] Fallback 587 también falló para ${destinatarioMask}`);
+                }
+            }
+            if (EMAIL_PROVIDER === 'smtp') {
+                const defaultPort = Number(process.env.EMAIL_PORT || 587);
+                const fallbackPorts = parseFallbackPorts(defaultPort);
+                for (const fallbackPort of fallbackPorts) {
+                    try {
+                        const fallbackConfig = {
+                            host: process.env.EMAIL_HOST,
+                            port: fallbackPort,
+                            secure: fallbackPort === 465,
+                            auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD },
+                            connectionTimeout: EMAIL_TIMEOUT_MS,
+                            greetingTimeout: EMAIL_TIMEOUT_MS,
+                            socketTimeout: EMAIL_TIMEOUT_MS
+                        };
+                        const fallbackInfo = await sendMailWithTransportConfig(mailOptions, fallbackConfig, EMAIL_TIMEOUT_MS, {
+                            traceId: `${traceId}-p${fallbackPort}`,
+                            destination: destinatarioMask
+                        });
+                        return { success: true, messageId: fallbackInfo.messageId, fallbackPort };
+                    } catch (_) {}
+                }
+            }
+            if (process.env.BREVO_API_KEY || canUseBrevoHttpFallback()) {
+                try {
+                    const apiInfo = await sendMailViaBrevoApi(mailOptions, {
+                        traceId: `${traceId}-brevo-api`,
+                        destination: destinatarioMask
+                    });
+                    return { success: true, messageId: apiInfo.messageId, channel: 'brevo-api' };
+                } catch (apiError) {
+                    console.error(`[email:brevo-api][${traceId}] Fallback HTTP también falló para ${destinatarioMask}:`, apiError);
+                }
+            }
+        }
+        return { success: false, error: error.message };
+    }
+};
+
+module.exports = { enviarCorreoRecuperacion, enviarNotificacionContextual, enviarCorreoUsuarioRecuperado };

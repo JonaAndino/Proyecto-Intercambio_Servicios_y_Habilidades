@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const { enviarCorreoUsuarioRecuperado } = require('../config/email');
 
 // ==========================================
 // RUTA: Solicitar recuperación de correo (Público)
@@ -142,6 +143,86 @@ router.delete('/solicitudes/:id', async (req, res) => {
     } catch (error) {
         console.error('Error al eliminar solicitud de recuperación de correo:', error.message);
         return res.status(500).json({ success: false, error: 'Error al eliminar la solicitud de la base de datos.' });
+    }
+});
+
+// ==========================================
+// RUTA: Enviar usuario por correo (Administrador)
+// POST /api/recuperar-email/enviar-usuario
+// ==========================================
+router.post('/enviar-usuario', async (req, res) => {
+    const { id_solicitud } = req.body;
+
+    if (!id_solicitud) {
+        return res.status(400).json({ success: false, error: 'Falta especificar el id de la solicitud.' });
+    }
+
+    try {
+        // Obtener la solicitud con el DNI y los datos cruzados de la persona/usuario
+        const [rows] = await db.query(`
+            SELECT 
+                s.id_solicitud,
+                s.nombre_ingresado,
+                s.identidad_ingresada,
+                s.fecha_solicitud,
+                s.estado,
+                p.nombre_Persona,
+                p.apellido_Persona,
+                u.correo AS correo_usuario
+            FROM solicitudes_recuperacion_email s
+            LEFT JOIN Personas p ON REPLACE(p.identificacion_Persona, '-', '') = REPLACE(s.identidad_ingresada, '-', '')
+            LEFT JOIN Usuarios u ON p.id_Usuario = u.id_usuario
+            WHERE s.id_solicitud = ?
+        `, [id_solicitud]);
+
+        if (!rows || rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'La solicitud de recuperación no existe.' });
+        }
+
+        const solicitud = rows[0];
+
+        if (!solicitud.correo_usuario) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'No se encontró ningún correo registrado asociado al DNI de esta solicitud.' 
+            });
+        }
+
+        const nombreDestinatario = (solicitud.nombre_Persona || solicitud.apellido_Persona)
+            ? `${solicitud.nombre_Persona || ''} ${solicitud.apellido_Persona || ''}`.trim()
+            : solicitud.nombre_ingresado;
+
+        // Enviar el correo con nodemailer / Brevo API
+        const emailResult = await enviarCorreoUsuarioRecuperado(
+            solicitud.correo_usuario,
+            nombreDestinatario,
+            solicitud.correo_usuario
+        );
+
+        if (!emailResult.success) {
+            return res.status(500).json({ 
+                success: false, 
+                error: `Error al enviar el correo electrónico: ${emailResult.error}` 
+            });
+        }
+
+        // Actualizar el estado de la solicitud a 'Resuelta'
+        await db.query(
+            'UPDATE solicitudes_recuperacion_email SET estado = "Resuelta" WHERE id_solicitud = ?',
+            [id_solicitud]
+        );
+
+        return res.status(200).json({ 
+            success: true, 
+            mensaje: 'El correo electrónico con los datos de inicio de sesión ha sido enviado exitosamente.' 
+        });
+
+    } catch (error) {
+        console.error('Error al procesar envío de correo de recuperación:', error.message);
+        return res.status(500).json({ 
+            success: false, 
+            error: 'Error interno en el servidor al enviar el correo de recuperación.' 
+        });
     }
 });
 
