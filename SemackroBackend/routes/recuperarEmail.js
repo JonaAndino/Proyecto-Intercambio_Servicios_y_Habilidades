@@ -192,35 +192,49 @@ router.post('/enviar-usuario', async (req, res) => {
             ? `${solicitud.nombre_Persona || ''} ${solicitud.apellido_Persona || ''}`.trim()
             : solicitud.nombre_ingresado;
 
-        // 1. Actualizar el estado de la solicitud a 'Resuelta' inmediatamente
-        await db.query(
-            'UPDATE solicitudes_recuperacion_email SET estado = "Resuelta" WHERE id_solicitud = ?',
-            [id_solicitud]
-        );
+        const emailDestinatario = String(solicitud.correo_usuario || '').trim();
 
-        // 2. Enviar respuesta exitosa instantánea al frontend
+        // 1. Enviar respuesta exitosa instantánea al frontend indicando que se inició el proceso
         res.status(200).json({ 
             success: true, 
-            mensaje: 'La solicitud ha sido marcada como Resuelta y el correo con los datos de inicio de sesión se está enviando en segundo plano.'
+            mensaje: 'El envío de correo se ha iniciado en segundo plano. La tabla se actualizará automáticamente con el estado definitivo.'
         });
 
-        // 3. Enviar el correo en segundo plano para evitar bloqueos por lentitud o latencia de red SMTP
+        // 2. Enviar el correo en segundo plano para evitar bloqueos por lentitud o latencia de red SMTP
         setImmediate(async () => {
             const startedAt = Date.now();
             try {
-                console.log(`[admin-recovery-email] Iniciando envío en segundo plano para ${solicitud.correo_usuario}`);
+                console.log(`[admin-recovery-email] Iniciando envío en segundo plano para ${emailDestinatario}`);
                 const emailResult = await enviarCorreoUsuarioRecuperado(
-                    solicitud.correo_usuario,
+                    emailDestinatario,
                     nombreDestinatario,
-                    solicitud.correo_usuario
+                    emailDestinatario
                 );
                 if (emailResult.success) {
-                    console.log(`[admin-recovery-email] Enviado con éxito a ${solicitud.correo_usuario} en ${Date.now() - startedAt}ms (messageId=${emailResult.messageId})`);
+                    console.log(`[admin-recovery-email] Enviado con éxito a ${emailDestinatario} en ${Date.now() - startedAt}ms (messageId=${emailResult.messageId})`);
+                    // Actualizar a Resuelta
+                    await db.query(
+                        'UPDATE solicitudes_recuperacion_email SET estado = "Resuelta" WHERE id_solicitud = ?',
+                        [id_solicitud]
+                    );
                 } else {
-                    console.error(`[admin-recovery-email] Falló envío a ${solicitud.correo_usuario} en ${Date.now() - startedAt}ms: ${emailResult.error}`);
+                    console.error(`[admin-recovery-email] Falló envío a ${emailDestinatario} en ${Date.now() - startedAt}ms: ${emailResult.error}`);
+                    // Actualizar a Error al enviar
+                    await db.query(
+                        'UPDATE solicitudes_recuperacion_email SET estado = "Error al enviar" WHERE id_solicitud = ?',
+                        [id_solicitud]
+                    );
                 }
             } catch (err) {
-                console.error(`[admin-recovery-email] Error inesperado en segundo plano para ${solicitud.correo_usuario}:`, err.message);
+                console.error(`[admin-recovery-email] Error inesperado en segundo plano para ${emailDestinatario}:`, err.message);
+                try {
+                    await db.query(
+                        'UPDATE solicitudes_recuperacion_email SET estado = "Error al enviar" WHERE id_solicitud = ?',
+                        [id_solicitud]
+                    );
+                } catch (dbErr) {
+                    console.error('[admin-recovery-email] Error al actualizar estado a error en base de datos:', dbErr.message);
+                }
             }
         });
 

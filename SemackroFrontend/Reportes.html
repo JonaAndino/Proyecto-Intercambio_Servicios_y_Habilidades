@@ -1834,6 +1834,9 @@
                 if (estadoNorm === 'resuelta') {
                     estadoCls = 'bg-green-100 text-green-700 border border-green-200';
                     estadoIcon = 'mdi:check-circle';
+                } else if (estadoNorm.includes('error') || estadoNorm.includes('fall')) {
+                    estadoCls = 'bg-red-100 text-red-700 border border-red-200';
+                    estadoIcon = 'mdi:alert-circle-outline';
                 } else {
                     estadoCls = 'bg-yellow-100 text-yellow-700 border border-yellow-200';
                     estadoIcon = 'mdi:clock-outline';
@@ -1971,8 +1974,8 @@
 
                 await Swal.fire({
                     icon: 'success',
-                    title: '¡Solicitud Resuelta!',
-                    text: json.mensaje || 'La solicitud fue marcada como Resuelta y el correo con los datos de inicio de sesión se está enviando en segundo plano.',
+                    title: '¡Envío Iniciado!',
+                    text: json.mensaje || 'El envío de correo se ha iniciado en segundo plano. La tabla se actualizará automáticamente con el estado definitivo. Por favor, recarga la tabla en unos segundos.',
                     confirmButtonColor: '#4f46e5'
                 });
 

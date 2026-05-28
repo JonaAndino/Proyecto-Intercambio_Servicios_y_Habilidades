@@ -50,7 +50,13 @@ function normalizeFrontendUrl(rawUrl) {
 function isConnectionTimeoutError(error) {
     const code = String((error && error.code) || '').toUpperCase();
     const command = String((error && error.command) || '').toUpperCase();
-    return code === 'ETIMEDOUT' || code === 'ECONNECTION' || code === 'EMAIL_TIMEOUT' || command === 'CONN';
+    return code.includes('TIMEDOUT') || 
+           code.includes('CONN') || 
+           code === 'ENOTFOUND' || 
+           code === 'EHOSTUNREACH' || 
+           code === 'EADDRNOTAVAIL' || 
+           code === 'EMAIL_TIMEOUT' || 
+           command === 'CONN';
 }
 
 function parseFallbackPorts(defaultPort) {
@@ -320,8 +326,9 @@ const sendMailWithTransportConfig = (mailOptions, transportConfig, timeoutMs = E
 
 // Función para enviar correo de recuperación de contraseña
 const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
+    const cleanDestinatario = String(destinatario || '').trim();
     const traceId = options.traceId || 'sin-trace';
-    const destinatarioMask = maskEmail(destinatario);
+    const destinatarioMask = maskEmail(cleanDestinatario);
 
     console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Preparando correo de recuperación para ${destinatarioMask}`);
 
@@ -342,7 +349,7 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
     
     const mailOptions = {
         from: `"${fromName}" <${EMAIL_FROM_ADDRESS}>`,
-        to: destinatario,
+        to: cleanDestinatario,
         subject: 'Recuperación de Contraseña - SEMACKRO',
         html: `
             <!DOCTYPE html>
@@ -574,7 +581,7 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
             console.log('\n========================================================================');
             console.log('⚠️ [SIMULACIÓN LOCAL] ENVÍO DE CORREO DE CONTRASEÑA FALLÓ (TIMEOUT/RED)');
             console.log('Para no bloquear tus pruebas locales, hemos simulado un envío exitoso.');
-            console.log(`Destinatario: ${destinatario}`);
+            console.log(`Destinatario: ${cleanDestinatario}`);
             console.log(`Token de restablecimiento: ${token}`);
             console.log(`Enlace generado: ${enlaceRecuperacion}`);
             console.log('========================================================================\n');
@@ -657,8 +664,10 @@ const enviarNotificacionContextual = async (destinatario, alertas, frontendUrl) 
 
 
 const enviarCorreoUsuarioRecuperado = async (destinatario, nombrePersona, correoUsuario, options = {}) => {
+    const cleanDestinatario = String(destinatario || '').trim();
+    const cleanCorreoUsuario = String(correoUsuario || '').trim();
     const traceId = options.traceId || 'sin-trace';
-    const destinatarioMask = maskEmail(destinatario);
+    const destinatarioMask = maskEmail(cleanDestinatario);
 
     console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Preparando correo de recuperación de usuario para ${destinatarioMask}`);
 
@@ -678,7 +687,7 @@ const enviarCorreoUsuarioRecuperado = async (destinatario, nombrePersona, correo
     
     const mailOptions = {
         from: `"${fromName}" <${EMAIL_FROM_ADDRESS}>`,
-        to: destinatario,
+        to: cleanDestinatario,
         subject: 'Recuperación de Usuario - SEMACKRO',
         html: `
             <!DOCTYPE html>
@@ -777,27 +786,6 @@ const enviarCorreoUsuarioRecuperado = async (destinatario, nombrePersona, correo
             return { success: true, messageId: apiInfo.messageId, channel: 'brevo-api' };
         } catch (apiError) {
             console.error(`[email:brevo-api][${traceId}] Error al enviar correo de recuperación de usuario para ${destinatarioMask}:`, apiError);
-            
-            const isLocalDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development' || 
-                               process.env.DB_HOST === 'localhost' || process.env.DB_HOST === '127.0.0.1';
-                               
-            if (isLocalDev) {
-                console.log('\n========================================================================');
-                console.log('⚠️ [SIMULACIÓN LOCAL] ENVÍO DE CORREO BREVO API FALLÓ');
-                console.log('Para no bloquear tus pruebas locales, hemos simulado un envío exitoso.');
-                console.log(`Destinatario: ${destinatario}`);
-                console.log(`Nombre: ${nombrePersona}`);
-                console.log(`Correo recuperado: ${correoUsuario}`);
-                console.log('========================================================================\n');
-                
-                return { 
-                    success: true, 
-                    messageId: `simulado-dev-${Date.now()}`, 
-                    simulated: true,
-                    mensajeSimulado: 'Simulado localmente (error de SMTP de tu red física evitado)'
-                };
-            }
-            
             return { success: false, error: apiError.message };
         }
     }
@@ -866,26 +854,6 @@ const enviarCorreoUsuarioRecuperado = async (destinatario, nombrePersona, correo
                     console.error(`[email:brevo-api][${traceId}] Fallback HTTP también falló para ${destinatarioMask}:`, apiError);
                 }
             }
-        }
-        // Si estamos en entorno de desarrollo local (localhost), simulamos éxito para no bloquear tus pruebas locales
-        const isLocalDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development' || 
-                           process.env.DB_HOST === 'localhost' || process.env.DB_HOST === '127.0.0.1';
-                           
-        if (isLocalDev) {
-            console.log('\n========================================================================');
-            console.log('⚠️ [SIMULACIÓN LOCAL] ENVÍO DE CORREO DE USUARIO FALLÓ (TIMEOUT/RED)');
-            console.log('Para no bloquear tus pruebas locales, hemos simulado un envío exitoso.');
-            console.log(`Destinatario: ${destinatario}`);
-            console.log(`Nombre: ${nombrePersona}`);
-            console.log(`Correo recuperado: ${correoUsuario}`);
-            console.log('========================================================================\n');
-            
-            return { 
-                success: true, 
-                messageId: `simulado-dev-${Date.now()}`, 
-                simulated: true,
-                mensajeSimulado: 'Simulado localmente (error de SMTP de tu red física evitado)'
-            };
         }
 
         return { success: false, error: error.message };
