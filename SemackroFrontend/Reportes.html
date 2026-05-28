@@ -2663,11 +2663,10 @@
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <div id="emailConfirmModalRoot" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
 
-        <!-- Backdrop semi-transparente -->
+        <!-- Backdrop transparente (sin fondo oscuro) -->
         <div
             id="emailConfirmBackdrop"
-            class="fixed inset-0 bg-black/40 backdrop-blur-sm"
-            id="emailConfirmBackdrop"
+            class="fixed inset-0 bg-transparent"
         ></div>
 
         <!-- Tarjeta del modal -->
@@ -2796,7 +2795,7 @@
                 _setSending(false);
                 root.style.display = 'flex';
                 // Aplicar clases de animación de entrada
-                backdrop.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm animate-backdrop-in';
+                backdrop.className = 'fixed inset-0 bg-transparent animate-backdrop-in';
                 card.className = card.className.replace('animate-modal-out', '').replace('animate-modal-in', '') + ' animate-modal-in';
             }
 
