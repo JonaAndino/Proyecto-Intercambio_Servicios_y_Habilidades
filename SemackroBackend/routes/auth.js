@@ -80,7 +80,7 @@ router.post('/login', async (req, res) => {
     try {
         // 2. BUSCAR USUARIO EN LA BASE DE DATOS POR CORREO
         const [rows] = await pool.execute(
-            'SELECT id_usuario, correo, contrasena_hash FROM Usuarios WHERE correo = ?',
+            'SELECT id_usuario, correo, contrasena_hash, activo FROM Usuarios WHERE correo = ?',
             [correo]
         );
 
@@ -90,6 +90,11 @@ router.post('/login', async (req, res) => {
         }
 
         const usuario = rows[0];
+
+        // Verificar si el acceso está restringido
+        if (usuario.activo === 0) {
+            return res.status(403).json({ error: 'Tu cuenta ha sido restringida por el administrador. Ponte en contacto con el soporte técnico.' });
+        }
 
         // 3. VERIFICAR CONTRASEÑA CON BCRYPT
         const contrasenaValida = await bcrypt.compare(contrasena, usuario.contrasena_hash);
@@ -126,7 +131,7 @@ router.post('/login-jwt', async (req, res) => {
     try {
         // 1. BUSCAR USUARIO
         const [rows] = await pool.execute(
-            'SELECT id_usuario, correo, contrasena_hash FROM Usuarios WHERE correo = ?',
+            'SELECT id_usuario, correo, contrasena_hash, activo FROM Usuarios WHERE correo = ?',
             [correo]
         );
 
@@ -135,6 +140,11 @@ router.post('/login-jwt', async (req, res) => {
         }
 
         const usuario = rows[0];
+
+        // Verificar si el acceso está restringido
+        if (usuario.activo === 0) {
+            return res.status(403).json({ error: 'Tu cuenta ha sido restringida por el administrador. Ponte en contacto con el soporte técnico.' });
+        }
 
         // 2. VERIFICAR CONTRASEÑA
         const contrasenaValida = await bcrypt.compare(contrasena, usuario.contrasena_hash);
@@ -201,6 +211,33 @@ router.get('/verificar-sesion', verificarToken, (req, res) => {
         usuarioId: req.usuario.usuarioId,
         correo: req.usuario.correo
     });
+});
+
+// **********************************************
+// PUT /api/usuarios/:id_usuario/activo (Restringir/Permitir acceso)
+// **********************************************
+router.put('/usuarios/:id_usuario/activo', async (req, res) => {
+    const id_usuario = parseInt(req.params.id_usuario);
+    const { activo } = req.body; // 0 o 1
+
+    if (isNaN(id_usuario)) {
+        return res.status(400).json({ success: false, error: 'ID de usuario no válido.' });
+    }
+
+    if (activo !== 0 && activo !== 1) {
+        return res.status(400).json({ success: false, error: 'Valor de estado "activo" no válido (debe ser 0 o 1).' });
+    }
+
+    try {
+        const [result] = await pool.execute('UPDATE Usuarios SET activo = ? WHERE id_usuario = ?', [activo, id_usuario]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado.' });
+        }
+        res.status(200).json({ success: true, mensaje: 'Acceso de usuario actualizado con éxito.' });
+    } catch (error) {
+        console.error('Error al actualizar estado del usuario:', error);
+        res.status(500).json({ success: false, error: 'Error del servidor al intentar actualizar el estado de acceso.' });
+    }
 });
 
 module.exports = router;

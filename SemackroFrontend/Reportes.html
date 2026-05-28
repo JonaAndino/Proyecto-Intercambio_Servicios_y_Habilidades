@@ -364,11 +364,12 @@
                             <th class="py-4 px-4" data-i18n="table.expertise">Expertise</th>
                             <th class="py-4 px-4" data-i18n="table.location">Ubicación</th>
                             <th class="py-4 px-4 text-center" data-i18n="table.availability">Disponibilidad</th>
+                            <th class="py-4 px-4 text-center">Acceso</th>
                         </tr>
                     </thead>
                     <tbody id="tablaTecnicosH3">
                         <tr>
-                            <td colspan="5" class="py-12 text-center text-gray-300 italic" data-i18n="table.syncing">Sincronizando directorio...</td>
+                            <td colspan="6" class="py-12 text-center text-gray-300 italic" data-i18n="table.syncing">Sincronizando directorio...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1524,7 +1525,7 @@
         async function cargarTecnicosDirectorio() {
             const tbody = document.getElementById('tablaTecnicosH3');
             if (!tbody) return;
-            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-sm text-gray-500">${t('table.loading')}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-sm text-gray-500">${t('table.loading')}</td></tr>`;
 
             console.log('[H3] Iniciando carga de técnicos usando lógica de Descubrir...');
             // Definir API_BASE asegurando que apunte a /api
@@ -1596,7 +1597,9 @@
                             skillList: skills, // Lista completa sin truncar para el filtro
                             ubicacion: ubicacion || t('card.noLocation'),
                             estado: estado,
-                            estadoKey: estadoKey
+                            estadoKey: estadoKey,
+                            id_Usuario: p.id_Usuario,
+                            activo: p.activo !== undefined && p.activo !== null ? p.activo : 1
                         };
 
                     } catch (errInner) {
@@ -1639,7 +1642,7 @@
 
             } catch (e) {
                 console.error('Error cargando técnicos (lógica frontend):', e);
-                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-sm text-gray-500">Error cargando listado de técnicos. por favor intente más tarde.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-sm text-gray-500">Error cargando listado de técnicos. por favor intente más tarde.</td></tr>';
             }
         }
 
@@ -1647,7 +1650,7 @@
             const tbody = document.getElementById('tablaTecnicosH3');
             if (!tbody) return;
             if (!lista.length) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-sm text-gray-500">${t('table.noRecords')}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-sm text-gray-500">${t('table.noRecords')}</td></tr>`;
                 return;
             }
 
@@ -1680,6 +1683,11 @@
                                 ${escapeHtml(t(tData.estadoKey || 'status.atWork'))}
                             </span>
                         </td>
+                        <td class="py-5 px-4 text-center">
+                            ${tData.activo === 0 ? 
+                              `<button onclick="toggleUserStatus(${tData.id_Usuario}, 1)" class="px-3 py-1.5 rounded-xl bg-red-100 text-red-700 font-bold text-xs hover:bg-red-200 transition-all flex items-center justify-center gap-1 mx-auto" style="min-width: 110px;"><span class="iconify" data-icon="mdi:lock"></span> Restringido</button>` :
+                              `<button onclick="toggleUserStatus(${tData.id_Usuario}, 0)" class="px-3 py-1.5 rounded-xl bg-green-100 text-green-700 font-bold text-xs hover:bg-green-200 transition-all flex items-center justify-center gap-1 mx-auto" style="min-width: 110px;"><span class="iconify" data-icon="mdi:lock-open"></span> Permitido</button>`}
+                        </td>
                     </tr>
                 `;
             }).join('');
@@ -1703,6 +1711,73 @@
             });
 
             actualizarTablaTecnicos(filtrados);
+        }
+
+        async function toggleUserStatus(idUsuario, nuevoEstado) {
+            if (!idUsuario) return;
+
+            const actionVerb = nuevoEstado === 0 ? 'restringir' : 'permitir';
+            const actionConfirmColor = nuevoEstado === 0 ? '#ef4444' : '#22c55e';
+
+            const { isConfirmed } = await Swal.fire({
+                title: `¿Confirmas ${actionVerb} el acceso?`,
+                text: nuevoEstado === 0 
+                    ? "El usuario no podrá iniciar sesión en la plataforma." 
+                    : "El usuario recuperará el acceso para iniciar sesión.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: actionConfirmColor,
+                cancelButtonColor: '#3b82f6',
+                confirmButtonText: 'Sí, confirmar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!isConfirmed) return;
+
+            Swal.fire({ 
+                title: 'Actualizando acceso...', 
+                allowOutsideClick: false, 
+                didOpen: () => { Swal.showLoading(); } 
+            });
+
+            try {
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = 'Bearer ' + token;
+
+                const API_BASE = `${window.APP_CONFIG.BACKEND_URL}/api`;
+                const res = await fetch(`${API_BASE}/usuarios/${idUsuario}/activo`, {
+                    method: 'PUT',
+                    headers,
+                    body: JSON.stringify({ activo: nuevoEstado })
+                });
+
+                Swal.close();
+
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.error || 'Error al actualizar el estado de acceso.');
+                }
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Acceso actualizado',
+                    text: `El acceso del usuario fue ${nuevoEstado === 0 ? 'restringido' : 'permitido'} con éxito.`,
+                    confirmButtonColor: '#3b82f6'
+                });
+
+                // Recargar el directorio
+                await cargarTecnicosDirectorio();
+
+            } catch (error) {
+                console.error('Error al actualizar acceso del usuario:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'No se pudo actualizar el acceso del usuario.',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
         }
 
         // Inicializar componentes H3

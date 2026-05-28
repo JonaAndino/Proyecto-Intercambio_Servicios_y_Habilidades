@@ -98,24 +98,27 @@ router.get('/', async (req, res) => {
         // Consulta directa para incluir todos los campos necesarios incluyendo disponibilidad y años de experiencia
         const [personas] = await db.execute(`
             SELECT 
-                id_Perfil_Persona,
-                nombre_Persona,
-                apellido_Persona,
-                fechaNac_Persona,
-                genero_Persona,
-                estadoCivil_Persona,
-                tipoIdentificacion_Persona,
-                identificacion_Persona,
-                imagenUrl_Persona,
-                imagen1Url_Persona,
-                imagen2Url_Persona,
-                imagen3Url_Persona,
-                descripcionPerfil_Persona,
-                disponibilidad,
-                url_Dni,
-                IFNULL(anios_experiencia, 0) AS anios_experiencia,
-                id_Usuario
-            FROM Personas
+                p.id_Perfil_Persona,
+                p.nombre_Persona,
+                p.apellido_Persona,
+                p.fechaNac_Persona,
+                p.genero_Persona,
+                p.estadoCivil_Persona,
+                p.tipoIdentificacion_Persona,
+                p.identificacion_Persona,
+                p.imagenUrl_Persona,
+                p.imagen1Url_Persona,
+                p.imagen2Url_Persona,
+                p.imagen3Url_Persona,
+                p.descripcionPerfil_Persona,
+                p.disponibilidad,
+                p.url_Dni,
+                IFNULL(p.anios_experiencia, 0) AS anios_experiencia,
+                p.id_Usuario,
+                u.activo,
+                u.correo
+            FROM Personas p
+            LEFT JOIN Usuarios u ON p.id_Usuario = u.id_usuario
         `);
         
         res.json({

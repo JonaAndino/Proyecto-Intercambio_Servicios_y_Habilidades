@@ -19,7 +19,7 @@ router.post('/login', async (req, res) => {
     try {
         // 1️⃣ Buscar usuario por correo
         const [rows] = await pool.execute(
-            'SELECT id_usuario, correo, contrasena_hash FROM Usuarios WHERE correo = ?',
+            'SELECT id_usuario, correo, contrasena_hash, activo FROM Usuarios WHERE correo = ?',
             [correo]
         );
 
@@ -28,6 +28,11 @@ router.post('/login', async (req, res) => {
         }
 
         const usuario = rows[0];
+
+        // Verificar si el acceso está restringido
+        if (usuario.activo === 0) {
+            return res.status(403).json({ error: 'Tu cuenta ha sido restringida por el administrador. Ponte en contacto con el soporte técnico.' });
+        }
 
         // 2️⃣ Verificar contraseña
         const esValida = await bcrypt.compare(contrasena, usuario.contrasena_hash);
