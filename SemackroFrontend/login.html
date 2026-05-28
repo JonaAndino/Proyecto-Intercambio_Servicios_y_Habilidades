@@ -635,10 +635,68 @@
             const forgotEmailBtn = document.getElementById("forgot-email-btn");
             const forgotEmailModal = document.getElementById("forgot-email-modal");
             const closeEmailModalBtn = document.getElementById("close-email-modal-btn");
-            const acceptEmailModalBtn = document.getElementById("accept-email-modal-btn");
+            const forgotEmailForm = document.getElementById("forgot-email-form");
+            const modalFeedback = document.getElementById("modal-email-feedback");
+            const identityError = document.getElementById("recover-identity-error");
+
+            function validarIdentidadHonduras(numeroIdentidad) {
+                const num = numeroIdentidad.trim();
+                const conGuiones = /^\d{4}-\d{4}-\d{5}$/;
+                const sinGuiones = /^\d{13}$/;
+
+                if (!conGuiones.test(num) && !sinGuiones.test(num)) {
+                    return {
+                        valido: false,
+                        mensaje: currentLanguage === 'es' ? 'Formato inválido (Ej: 0801-1990-12345)' : 'Invalid format (e.g. 0801-1990-12345)'
+                    };
+                }
+
+                let depto, anio, corr;
+                if (conGuiones.test(num)) {
+                    [depto, anio, corr] = num.split('-');
+                } else {
+                    depto = num.substring(0, 4);
+                    anio = num.substring(4, 8);
+                    corr = num.substring(8, 13);
+                }
+
+                const anioNum = parseInt(anio);
+                const anioActual = new Date().getFullYear();
+
+                if (anioNum < 1900 || anioNum > anioActual) {
+                    return {
+                        valido: false,
+                        mensaje: currentLanguage === 'es' ? `Año de nacimiento inválido: ${anio}` : `Invalid birth year: ${anio}`
+                    };
+                }
+
+                const codDepto = parseInt(depto);
+                if (codDepto < 101 || codDepto > 1899) {
+                    return {
+                        valido: false,
+                        mensaje: currentLanguage === 'es' ? 'Código de departamento/municipio inválido' : 'Invalid department/municipality code'
+                    };
+                }
+
+                return {
+                    valido: true,
+                    mensaje: 'Identidad válida'
+                };
+            }
 
             if (forgotEmailBtn && forgotEmailModal) {
                 forgotEmailBtn.addEventListener("click", () => {
+                    // Resetear formulario y feedbacks al abrir
+                    if (forgotEmailForm) forgotEmailForm.reset();
+                    if (modalFeedback) {
+                        modalFeedback.classList.add("hidden");
+                        modalFeedback.textContent = "";
+                    }
+                    if (identityError) {
+                        identityError.classList.add("hidden");
+                        identityError.textContent = "";
+                    }
+
                     forgotEmailModal.classList.remove("hidden");
                     setTimeout(() => {
                         forgotEmailModal.firstElementChild.classList.remove("scale-95");
@@ -655,9 +713,106 @@
                 };
 
                 closeEmailModalBtn?.addEventListener("click", closeModal);
-                acceptEmailModalBtn?.addEventListener("click", closeModal);
                 forgotEmailModal.addEventListener("click", (e) => {
                     if (e.target === forgotEmailModal) closeModal();
+                });
+
+                // Auto-formatear identidad con guiones mientras escribe
+                const identityInput = document.getElementById("recover-identity");
+                if (identityInput) {
+                    identityInput.addEventListener("input", (e) => {
+                        let value = e.target.value.replace(/\D/g, ""); // Solo dígitos
+                        if (value.length > 13) value = value.slice(0, 13);
+                        
+                        let formattedValue = "";
+                        if (value.length > 0) {
+                            formattedValue += value.substring(0, 4);
+                        }
+                        if (value.length > 4) {
+                            formattedValue += "-" + value.substring(4, 8);
+                        }
+                        if (value.length > 8) {
+                            formattedValue += "-" + value.substring(8, 13);
+                        }
+                        e.target.value = formattedValue;
+                        
+                        // Validar en tiempo real si el largo es suficiente
+                        if (value.length === 13) {
+                            const valResult = validarIdentidadHonduras(formattedValue);
+                            if (!valResult.valido) {
+                                identityError.textContent = valResult.mensaje;
+                                identityError.classList.remove("hidden");
+                            } else {
+                                identityError.classList.add("hidden");
+                            }
+                        } else {
+                            identityError.classList.add("hidden");
+                        }
+                    });
+                }
+
+                // Enviar formulario
+                forgotEmailForm?.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    
+                    const nombre = document.getElementById("recover-name").value.trim();
+                    const identidadRaw = document.getElementById("recover-identity").value.trim();
+                    
+                    if (modalFeedback) {
+                        modalFeedback.classList.add("hidden");
+                        modalFeedback.textContent = "";
+                    }
+
+                    // Validar identidad antes de enviar
+                    const valResult = validarIdentidadHonduras(identidadRaw);
+                    if (!valResult.valido) {
+                        if (identityError) {
+                            identityError.textContent = valResult.mensaje;
+                            identityError.classList.remove("hidden");
+                        }
+                        return;
+                    } else {
+                        if (identityError) identityError.classList.add("hidden");
+                    }
+
+                    const submitBtn = document.getElementById("submit-email-modal-btn");
+                    const originalBtnText = submitBtn.textContent;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = currentLanguage === 'es' ? "Enviando..." : "Sending...";
+
+                    try {
+                        const response = await fetch(`${BACKEND_HOST}/api/recuperar-email/solicitar`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ nombre, identidad: identidadRaw })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok && data.success) {
+                            modalFeedback.textContent = data.mensaje || (currentLanguage === 'es' ? "Solicitud enviada exitosamente." : "Request sent successfully.");
+                            modalFeedback.className = "p-3 text-sm font-medium rounded-lg mb-4 text-center bg-green-100 text-green-700";
+                            modalFeedback.classList.remove("hidden");
+                            
+                            // Resetear formulario
+                            forgotEmailForm.reset();
+                            
+                            // Cerrar modal después de unos segundos
+                            setTimeout(closeModal, 3000);
+                        } else {
+                            modalFeedback.textContent = "Error: " + (data.error || (currentLanguage === 'es' ? "No se pudo enviar la solicitud." : "Could not send request."));
+                            modalFeedback.className = "p-3 text-sm font-medium rounded-lg mb-4 text-center bg-red-100 text-red-700";
+                            modalFeedback.classList.remove("hidden");
+                        }
+                    } catch (err) {
+                        console.error("Error al solicitar recuperación de correo:", err);
+                        modalFeedback.textContent = currentLanguage === 'es' ? "Error de conexión al enviar la solicitud." : "Connection error when sending request.";
+                        modalFeedback.className = "p-3 text-sm font-medium rounded-lg mb-4 text-center bg-yellow-100 text-yellow-700";
+                        modalFeedback.classList.remove("hidden");
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalBtnText;
+                    }
                 });
             }
         });
@@ -682,10 +837,12 @@
                 'login.forgotPassword': '¿Olvidaste tu contraseña?',
                 'login.forgotEmail': '¿Olvidaste tu correo?',
                 'login.modalEmailTitle': '¿Olvidaste tu correo?',
-                'login.modalEmailSubtitle': 'Si has olvidado el correo electrónico registrado con tu cuenta, ponte en contacto con el administrador para recuperarlo.',
-                'login.modalEmailLabel': 'Correo de soporte',
-                'login.modalPhoneLabel': 'Teléfono de soporte',
-                'login.modalAccept': 'Aceptar',
+                'login.modalEmailSubtitle': 'Ingresa tu nombre y número de identidad para que el administrador pueda ayudarte a recuperar tu cuenta.',
+                'login.modalEmailNameLabel': 'Nombre completo',
+                'login.modalEmailNamePlaceholder': 'Juan Pérez',
+                'login.modalEmailIdentityLabel': 'Número de identidad (DNI)',
+                'login.modalEmailIdentityPlaceholder': '0801-1990-12345',
+                'login.modalSubmit': 'Enviar Solicitud',
                 'login.submit': 'Iniciar sesión',
                 'login.orContinue': 'O continuar con',
                 'login.googleFull': 'Continuar con Google',
@@ -714,10 +871,12 @@
                 'login.forgotPassword': 'Forgot your password?',
                 'login.forgotEmail': 'Forgot your email?',
                 'login.modalEmailTitle': 'Forgot your email?',
-                'login.modalEmailSubtitle': 'If you have forgotten the email address registered with your account, please contact the administrator to recover it.',
-                'login.modalEmailLabel': 'Support email',
-                'login.modalPhoneLabel': 'Support phone',
-                'login.modalAccept': 'Accept',
+                'login.modalEmailSubtitle': 'Enter your name and identity number so that the administrator can help you recover your account.',
+                'login.modalEmailNameLabel': 'Full Name',
+                'login.modalEmailNamePlaceholder': 'John Doe',
+                'login.modalEmailIdentityLabel': 'Identity Card Number (DNI)',
+                'login.modalEmailIdentityPlaceholder': '0801-1990-12345',
+                'login.modalSubmit': 'Send Request',
                 'login.submit': 'Login',
                 'login.orContinue': 'Or continue with',
                 'login.googleFull': 'Continue with google',
@@ -804,52 +963,39 @@
             </button>
             
             <div class="text-center">
-                <!-- Icono de contacto -->
+                <!-- Icono de contacto/recuperación -->
                 <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                 </div>
                 
                 <h3 class="text-xl font-bold text-gray-900 mb-2" data-i18n="login.modalEmailTitle">¿Olvidaste tu correo?</h3>
-                <p class="text-sm text-gray-600 mb-6" data-i18n="login.modalEmailSubtitle">Si has olvidado el correo electrónico registrado con tu cuenta, ponte en contacto con el administrador para recuperarlo.</p>
+                <p class="text-sm text-gray-600 mb-4" data-i18n="login.modalEmailSubtitle">Ingresa tu nombre y número de identidad para que el administrador pueda ayudarte a recuperar tu cuenta.</p>
                 
-                <!-- Opciones de Contacto -->
-                <div class="space-y-3 text-left">
-                    <!-- Correo de Soporte -->
-                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-150">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                        <div class="flex-1">
-                            <span class="block text-xs font-semibold text-gray-500" data-i18n="login.modalEmailLabel">Correo de soporte</span>
-                            <span class="block text-sm font-medium text-gray-800">soporte@semackro.com</span>
-                        </div>
-                        <button type="button" onclick="navigator.clipboard.writeText('soporte@semackro.com'); alert('¡Copiado!');" class="p-1.5 text-gray-400 hover:text-blue-600 rounded hover:bg-white transition duration-150" title="Copiar correo">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                            </svg>
-                        </button>
+                <!-- Contenedor de alerta interno en el modal -->
+                <div id="modal-email-feedback" class="p-3 text-sm font-medium rounded-lg mb-4 text-center hidden"></div>
+
+                <form id="forgot-email-form" class="space-y-4 text-left">
+                    <!-- Nombre Completo -->
+                    <div>
+                        <label for="recover-name" class="block text-xs font-semibold text-gray-500 mb-1" data-i18n="login.modalEmailNameLabel">Nombre completo</label>
+                        <input type="text" id="recover-name" name="recover-name" required
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 text-sm"
+                            placeholder="Juan Pérez" data-i18n-placeholder="login.modalEmailNamePlaceholder">
                     </div>
                     
-                    <!-- Teléfono de Asistencia -->
-                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-150">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                        <div class="flex-1">
-                            <span class="block text-xs font-semibold text-gray-500" data-i18n="login.modalPhoneLabel">Teléfono de soporte</span>
-                            <span class="block text-sm font-medium text-gray-800">+504 9999-9999</span>
-                        </div>
-                        <button type="button" onclick="navigator.clipboard.writeText('+504 9999-9999'); alert('¡Copiado!');" class="p-1.5 text-gray-400 hover:text-blue-600 rounded hover:bg-white transition duration-150" title="Copiar teléfono">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                            </svg>
-                        </button>
+                    <!-- Tarjeta de Identidad (DNI) -->
+                    <div>
+                        <label for="recover-identity" class="block text-xs font-semibold text-gray-500 mb-1" data-i18n="login.modalEmailIdentityLabel">Número de identidad (DNI)</label>
+                        <input type="text" id="recover-identity" name="recover-identity" required
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 text-sm"
+                            placeholder="0801-1990-12345" data-i18n-placeholder="login.modalEmailIdentityPlaceholder">
+                        <span id="recover-identity-error" class="block mt-1 text-xs text-red-600 hidden"></span>
                     </div>
-                </div>
-                
-                <button type="button" id="accept-email-modal-btn" class="mt-6 w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-150 active:scale-95 shadow-sm" data-i18n="login.modalAccept">Aceptar</button>
+
+                    <button type="submit" id="submit-email-modal-btn" class="mt-2 w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-150 active:scale-95 shadow-sm" data-i18n="login.modalSubmit">Enviar Solicitud</button>
+                </form>
             </div>
         </div>
     </div>

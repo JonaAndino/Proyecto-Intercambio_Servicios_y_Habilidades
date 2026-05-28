@@ -23,6 +23,7 @@ const geolocalizacionRoutes = require('./routes/Geolocalizacion');
 const solicitudesRoutes = require('./routes/SolicitudesIntercambio');
 const mensajeriaRoutes = require('./routes/Mensajeria');
 const recuperarPasswordRoutes = require('./routes/recuperarPassword');
+const recuperarEmailRoutes = require('./routes/recuperarEmail');
 const favoritosRoutes = require('./routes/favoritos');
 const intercambiosRoutes = require('./routes/intercambios');
 const verificacionUsuariosRoutes = require('./routes/verificacionUsuarios');
@@ -111,6 +112,7 @@ app.use('/api/geolocalizacion', geolocalizacionRoutes);
 app.use('/api/solicitudes-intercambio', solicitudesRoutes);
 app.use('/api/mensajeria', mensajeriaRoutes);
 app.use('/api/password', recuperarPasswordRoutes); // Rutas de recuperación de contraseña
+app.use('/api/recuperar-email', recuperarEmailRoutes); // Rutas de recuperación de correo por nombre e identidad DNI
 app.use('/api/favoritos', favoritosRoutes); // Rutas de favoritos
 app.use('/api/intercambios', intercambiosRoutes); // Rutas de intercambios finalizados y calificaciones
 app.use('/api/verificacion-usuarios', verificacionUsuariosRoutes); // Rutas de verificación de usuarios
