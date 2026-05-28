@@ -1,6 +1,26 @@
 const nodemailer = require('nodemailer');
 const https = require('https');
 
+// Limpiar variables de entorno para evitar espacios accidentales o caracteres extraños
+if (process.env.EMAIL_USER) {
+    process.env.EMAIL_USER = process.env.EMAIL_USER.trim();
+}
+if (process.env.EMAIL_PASSWORD) {
+    process.env.EMAIL_PASSWORD = process.env.EMAIL_PASSWORD.replace(/\s+/g, '');
+}
+if (process.env.EMAIL_FROM_ADDRESS) {
+    process.env.EMAIL_FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS.trim();
+}
+if (process.env.EMAIL_PROVIDER) {
+    process.env.EMAIL_PROVIDER = process.env.EMAIL_PROVIDER.trim();
+}
+if (process.env.EMAIL_HOST) {
+    process.env.EMAIL_HOST = process.env.EMAIL_HOST.trim();
+}
+if (process.env.EMAIL_PORT) {
+    process.env.EMAIL_PORT = String(process.env.EMAIL_PORT).trim();
+}
+
 const EMAIL_TIMEOUT_MS = Number(process.env.EMAIL_TIMEOUT_MS || 15000);
 const EMAIL_PROVIDER = (process.env.EMAIL_PROVIDER || 'gmail').toLowerCase();
 const EMAIL_FROM_NAME = process.env.EMAIL_FROM_NAME || 'SEMACKRO';
@@ -177,8 +197,11 @@ function getTransportConfig() {
         };
     }
 
+    // Para gmail, usar smtp.gmail.com con TLS directo (puerto 465) es mucho más robusto en Railway y entornos cloud.
     return {
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASSWORD
@@ -196,7 +219,7 @@ function getTransporter() {
 
     const descriptor = EMAIL_PROVIDER === 'smtp'
         ? `host=${transportConfig.host || 'no-definido'} port=${transportConfig.port} secure=${transportConfig.secure}`
-        : 'service=gmail';
+        : `host=smtp.gmail.com port=465 secure=true`;
 
     console.log(`[email:${EMAIL_PROVIDER}] Transporte inicializado (${descriptor}) user=${maskEmail(process.env.EMAIL_USER)}`);
     return transporterInstance;
@@ -440,16 +463,15 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
             code: error && (error.code || error.responseCode || error.command || 'UNKNOWN_ERROR')
         });
 
-        if (EMAIL_PROVIDER === 'smtp' && isConnectionTimeoutError(error)) {
-            const defaultPort = Number(process.env.EMAIL_PORT || 587);
-            const fallbackPorts = parseFallbackPorts(defaultPort);
-
-            for (const fallbackPort of fallbackPorts) {
+        // Fallback robusto si la conexión falla/tiempos de espera excedidos (especialmente común en Railway y hosting cloud)
+        if (isConnectionTimeoutError(error)) {
+            // Caso 1: Si es Gmail (o por defecto), intentamos alternar de puerto 465 (SSL) a puerto 587 (TLS)
+            if (EMAIL_PROVIDER === 'gmail') {
                 try {
                     const fallbackConfig = {
-                        host: process.env.EMAIL_HOST,
-                        port: fallbackPort,
-                        secure: fallbackPort === 465,
+                        host: 'smtp.gmail.com',
+                        port: 587,
+                        secure: false, // TLS
                         auth: {
                             user: process.env.EMAIL_USER,
                             pass: process.env.EMAIL_PASSWORD
@@ -464,7 +486,7 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
                         fallbackConfig,
                         EMAIL_TIMEOUT_MS,
                         {
-                            traceId: `${traceId}-p${fallbackPort}`,
+                            traceId: `${traceId}-p587`,
                             destination: destinatarioMask
                         }
                     );
@@ -472,13 +494,55 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
                     return {
                         success: true,
                         messageId: fallbackInfo.messageId,
-                        fallbackPort
+                        fallbackPort: 587
                     };
-                } catch (_) {
-                    // El detalle del error ya se registra en sendMailWithTransportConfig.
+                } catch (fallbackError) {
+                    console.error(`[email:gmail][${traceId}] Fallback de puerto 587 también falló para ${destinatarioMask}`);
                 }
             }
 
+            // Caso 2: Si es SMTP genérico, intentar los puertos de fallback configurados
+            if (EMAIL_PROVIDER === 'smtp') {
+                const defaultPort = Number(process.env.EMAIL_PORT || 587);
+                const fallbackPorts = parseFallbackPorts(defaultPort);
+
+                for (const fallbackPort of fallbackPorts) {
+                    try {
+                        const fallbackConfig = {
+                            host: process.env.EMAIL_HOST,
+                            port: fallbackPort,
+                            secure: fallbackPort === 465,
+                            auth: {
+                                user: process.env.EMAIL_USER,
+                                pass: process.env.EMAIL_PASSWORD
+                            },
+                            connectionTimeout: EMAIL_TIMEOUT_MS,
+                            greetingTimeout: EMAIL_TIMEOUT_MS,
+                            socketTimeout: EMAIL_TIMEOUT_MS
+                        };
+
+                        const fallbackInfo = await sendMailWithTransportConfig(
+                            mailOptions,
+                            fallbackConfig,
+                            EMAIL_TIMEOUT_MS,
+                            {
+                                traceId: `${traceId}-p${fallbackPort}`,
+                                destination: destinatarioMask
+                            }
+                        );
+
+                        return {
+                            success: true,
+                            messageId: fallbackInfo.messageId,
+                            fallbackPort
+                        };
+                    } catch (_) {
+                        // El detalle del error ya se registra en sendMailWithTransportConfig.
+                    }
+                }
+            }
+
+            // Caso 3: Fallback HTTP con la API de Brevo si está disponible
             if (process.env.BREVO_API_KEY || canUseBrevoHttpFallback()) {
                 try {
                     const apiInfo = await sendMailViaBrevoApi(mailOptions, {
