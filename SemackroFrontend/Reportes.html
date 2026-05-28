@@ -19,6 +19,48 @@
     <script
         src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <style>
+        /* Animaciones personalizadas para el modal de recuperación */
+        @keyframes customFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes customFadeOut {
+          from { opacity: 1; }
+          to { opacity: 0; }
+        }
+        @keyframes customScaleUp {
+          from { 
+            opacity: 0; 
+            transform: scale(0.95) translateY(12px); 
+          }
+          to { 
+            opacity: 1; 
+            transform: scale(1) translateY(0); 
+          }
+        }
+        @keyframes customScaleDown {
+          from { 
+            opacity: 1; 
+            transform: scale(1) translateY(0); 
+          }
+          to { 
+            opacity: 0; 
+            transform: scale(0.95) translateY(12px); 
+          }
+        }
+        .animate-backdrop-in {
+          animation: customFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-backdrop-out {
+          animation: customFadeOut 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-modal-in {
+          animation: customScaleUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .animate-modal-out {
+          animation: customScaleDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #ffffff;
@@ -2018,18 +2060,8 @@
 
         // ─── Enviar correo con datos del usuario recuperado ──────────────
         async function adminEnviarCorreoRecuperar(idSolicitud) {
-            const { isConfirmed } = await Swal.fire({
-                title: 'Enviar correo de recuperación',
-                html: `¿Deseas enviar el correo electrónico registrado al usuario de la solicitud <strong>#${idSolicitud}</strong>?<br><br><span class="text-sm text-gray-500">Se enviará un correo a la dirección asociada al número de identidad proporcionado.</span>`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, enviar',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#4f46e5',
-                cancelButtonColor: '#6b7280',
-                reverseButtons: true,
-                focusCancel: true
-            });
+            // Mostrar el modal personalizado y esperar confirmación
+            const isConfirmed = await showEmailConfirmModal(idSolicitud);
             if (!isConfirmed) return;
 
             Swal.fire({ title: 'Enviando correo...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
@@ -2625,5 +2657,186 @@
             }
         }
     </script>
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- MODAL PERSONALIZADO: Confirmar envío de correo de recuperación      -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <div id="emailConfirmModalRoot" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+
+        <!-- Backdrop semi-transparente -->
+        <div
+            id="emailConfirmBackdrop"
+            class="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            id="emailConfirmBackdrop"
+        ></div>
+
+        <!-- Tarjeta del modal -->
+        <div
+            id="emailConfirmCard"
+            class="relative bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 flex flex-col overflow-visible mt-16 z-10"
+        >
+            <!-- Cabecera con degradado -->
+            <div class="h-32 bg-gradient-to-r from-blue-100 to-indigo-50 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-4">
+
+                <!-- Botón cerrar -->
+                <button
+                    id="emailConfirmCloseBtn"
+                    class="absolute top-4 right-4 text-blue-800 hover:scale-110 transition-transform z-20 cursor-pointer"
+                    aria-label="Cerrar modal"
+                >
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <!-- Personajes flotantes -->
+                <div class="absolute -top-16 inset-x-0 flex justify-center items-end gap-6 pointer-events-none">
+
+                    <!-- Personaje izquierdo: Sobre de correo en azul -->
+                    <div class="w-16 h-16 bg-[#2563EB] rounded-2xl shadow-lg flex items-center justify-center border-4 border-white" style="transform: rotate(-12deg) translateY(8px);">
+                        <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 19v-8.93a2 2 0 01.89-1.664l8-5.333a2 2 0 012.22 0l8 5.333A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-2.25-1.5a2 2 0 00-2.22 0l-2.25 1.5" />
+                        </svg>
+                    </div>
+
+                    <!-- Personaje central: Signo de pregunta emoji (Twemoji SVG) -->
+                    <div class="relative w-24 h-24 bg-white rounded-full shadow-2xl flex items-center justify-center border-4 border-white" style="transform: translateY(-4px);">
+                        <div class="p-3">
+                            <svg width="64" height="64" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" preserveAspectRatio="xMidYMid meet">
+                                <path fill="#BE1931" d="M17 27a3 3 0 0 1-3-3v-4a3 3 0 0 1 3-3c.603-.006 6-1 6-5c0-2-2-4-5-4c-2.441 0-4 2-4 3a3 3 0 1 1-6 0c0-4.878 4.58-9 10-9c8 0 11 5.982 11 11c0 4.145-2.277 7.313-6.413 8.92c-.9.351-1.79.587-2.587.747V24a3 3 0 0 1-3 3z"></path>
+                                <circle fill="#BE1931" cx="17" cy="32" r="3"></circle>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Personaje derecho: Candado en azul secundario -->
+                    <div class="w-16 h-16 bg-[#3B82F6] rounded-2xl shadow-lg flex items-center justify-center border-4 border-white" style="transform: rotate(12deg) translateY(8px);">
+                        <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Cuerpo del modal -->
+            <div class="p-6 md:p-8 text-center" style="padding-top:2rem; padding-bottom:1.5rem;">
+                <h3 class="text-2xl font-black text-slate-800 tracking-tight mb-4">
+                    ¿Enviar correo de recuperación?
+                </h3>
+                <div class="text-slate-600 space-y-3">
+                    <p class="text-base leading-relaxed font-medium">
+                        ¿Deseas enviar el correo electrónico registrado al usuario de la solicitud
+                        <span
+                            id="emailConfirmIdLabel"
+                            class="font-bold text-[#2563EB] font-mono bg-blue-500/10 px-2 py-0.5 rounded-md"
+                        >#1</span>?
+                    </p>
+                    <p class="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                        Se enviará un enlace de seguridad único y temporal a la dirección asociada al número de identidad proporcionado para esta cuenta.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pie del modal con botones -->
+            <div class="p-6 md:p-8 bg-slate-50 rounded-b-3xl border-t border-slate-100 flex flex-col-reverse gap-3" style="flex-direction: row; justify-content: stretch;">
+
+                <!-- Botón Cancelar -->
+                <button
+                    id="emailConfirmCancelBtn"
+                    type="button"
+                    class="flex-1 px-5 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-sm font-bold transition-all cursor-pointer"
+                    style="margin-right: 0.75rem;"
+                >
+                    Cancelar
+                </button>
+
+                <!-- Botón Confirmar -->
+                <button
+                    id="emailConfirmSendBtn"
+                    type="button"
+                    class="flex-1 px-5 py-3 rounded-xl text-white text-sm font-bold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    style="background: linear-gradient(to right, #2563EB, #3B82F6);"
+                >
+                    <span id="emailConfirmBtnText">Sí, enviar</span>
+                    <svg id="emailConfirmSpinner" class="animate-spin h-5 w-5 text-white hidden" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Controlador del modal personalizado de confirmación de correo ──────
+        (function () {
+            let _resolveModal = null;
+            const root     = document.getElementById('emailConfirmModalRoot');
+            const backdrop = document.getElementById('emailConfirmBackdrop');
+            const card     = document.getElementById('emailConfirmCard');
+            const idLabel  = document.getElementById('emailConfirmIdLabel');
+            const closeBtn = document.getElementById('emailConfirmCloseBtn');
+            const cancelBtn = document.getElementById('emailConfirmCancelBtn');
+            const sendBtn  = document.getElementById('emailConfirmSendBtn');
+            const btnText  = document.getElementById('emailConfirmBtnText');
+            const spinner  = document.getElementById('emailConfirmSpinner');
+
+            function _setSending(on) {
+                sendBtn.disabled  = on;
+                cancelBtn.disabled = on;
+                closeBtn.disabled  = on;
+                spinner.classList.toggle('hidden', !on);
+                btnText.textContent = on ? 'Enviando...' : 'Sí, enviar';
+            }
+
+            function _openModal(idSolicitud) {
+                idLabel.textContent = '#' + idSolicitud;
+                _setSending(false);
+                root.style.display = 'flex';
+                // Aplicar clases de animación de entrada
+                backdrop.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm animate-backdrop-in';
+                card.className = card.className.replace('animate-modal-out', '').replace('animate-modal-in', '') + ' animate-modal-in';
+            }
+
+            function _closeModal(confirmed) {
+                // Animación de salida
+                backdrop.classList.remove('animate-backdrop-in');
+                backdrop.classList.add('animate-backdrop-out');
+                card.classList.remove('animate-modal-in');
+                card.classList.add('animate-modal-out');
+                setTimeout(() => {
+                    root.style.display = 'none';
+                    backdrop.classList.remove('animate-backdrop-out');
+                    card.classList.remove('animate-modal-out');
+                    if (_resolveModal) {
+                        _resolveModal(confirmed);
+                        _resolveModal = null;
+                    }
+                }, 260);
+            }
+
+            // Exponer la función para usarla desde adminEnviarCorreoRecuperar
+            window.showEmailConfirmModal = function (idSolicitud) {
+                return new Promise((resolve) => {
+                    _resolveModal = resolve;
+                    _openModal(idSolicitud);
+                });
+            };
+
+            // Eventos de cierre
+            closeBtn.addEventListener('click',  () => _closeModal(false));
+            cancelBtn.addEventListener('click', () => _closeModal(false));
+            backdrop.addEventListener('click',  () => { if (!sendBtn.disabled) _closeModal(false); });
+
+            // Evento de confirmación: muestra spinner 1.5 s (animación de UX) y resuelve
+            sendBtn.addEventListener('click', () => {
+                _setSending(true);
+                setTimeout(() => _closeModal(true), 1500);
+            });
+        })();
+    </script>
+
 </body>
 </html>
