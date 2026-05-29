@@ -1190,14 +1190,13 @@ async function cargarDatosUsuario() {
       }
     }
 
-    // Función para generar avatar con solo la primera inicial
+    // Función para generar avatar con DiceBear
     function generarAvatar(nombre, apellido, imagenUrl) {
       if (imagenUrl) {
         return imagenUrl;
       }
-      // Solo la primera letra del nombre
-      const inicial = (nombre || "U").charAt(0).toUpperCase();
-      return `https://ui-avatars.com/api/?name=${encodeURIComponent(inicial)}&background=3b82f6&color=fff&size=48&bold=true&rounded=true`;
+      const seed = encodeURIComponent(`${(nombre || "User")} ${(apellido || "")}`.trim());
+      return `https://api.dicebear.com/9.x/personas/svg?seed=${seed}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9`;
     }
 
     // Actualizar imagen de perfil
@@ -2233,10 +2232,18 @@ function mostrarFavoritos(favoritos) {
                                                    alt="${nombreCompleto}"
                                                    class="user-avatar object-cover"
                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                               <img src="https://api.dicebear.com/9.x/personas/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9" 
+                                                    alt="${nombreCompleto}" 
+                                                    class="user-avatar hidden"
+                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                                <div class="user-avatar hidden">
                                                    <span class="text-white text-3xl font-bold">${initials}</span>
                                                </div>`
-                                            : `<div class="user-avatar">
+                                            : `<img src="https://api.dicebear.com/9.x/personas/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9" 
+                                                    alt="${nombreCompleto}" 
+                                                    class="user-avatar"
+                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                               <div class="user-avatar hidden">
                                                    <span class="text-white text-3xl font-bold">${initials}</span>
                                                </div>`
                                         }
@@ -2957,8 +2964,8 @@ async function cargarPerfilEnSeccion(perfilId) {
                     <div class="profile-modal-avatar" style="cursor: ${persona.imagenUrl_Persona ? "zoom-in" : "default"};" ${persona.imagenUrl_Persona ? `onclick="openImageFullscreen('${persona.imagenUrl_Persona}')"` : ""}>
                         ${
                           persona.imagenUrl_Persona
-                            ? `<img src="${persona.imagenUrl_Persona}" alt="${Nombrecompleto}">`
-                            : `<span>${iniciales}</span>`
+                            ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}" onerror="this.src='https://api.dicebear.com/9.x/personas/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9'">`
+                            : `<img src="https://api.dicebear.com/9.x/personas/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9" alt="${nombreCompleto}">`
                         }
                     </div>
                 </div>
@@ -10082,9 +10089,9 @@ async function verDetalleOrden(id) {
           <div class="py-3 border-b border-gray-100 last:border-0">
             <!-- Fila superior: foto + nombre + estado -->
             <div class="flex items-start gap-3">
-              <img src="${p.imagen_tecnico || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(p.nombre_tecnico || 'U') + '&size=40&background=e0e7ff&color=4f46e5&rounded=true'}"
+              <img src="${p.imagen_tecnico || 'https://api.dicebear.com/9.x/personas/svg?seed=' + encodeURIComponent(p.nombre_tecnico || 'User') + '&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9'}"
                 class="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white shadow"
-                onerror="this.src='https://ui-avatars.com/api/?name=U&size=40&background=e0e7ff&color=4f46e5&rounded=true'">
+                onerror="this.src='https://api.dicebear.com/9.x/personas/svg?seed=User&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9'">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2 flex-wrap">
                   <p class="text-sm font-semibold text-gray-800 truncate">${escapeHtml(p.nombre_tecnico || 'Usuario')}</p>
