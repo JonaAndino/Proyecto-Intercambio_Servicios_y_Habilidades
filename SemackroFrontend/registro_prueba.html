@@ -552,7 +552,7 @@
     <!-- SCRIPTS -->
     <script>
         // Verificar si viene de autenticación con Google
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             const userId = urlParams.get('userId');
@@ -837,7 +837,9 @@
                 }
             });
 
-            syncRegisterPasswordToggleLabel();
+            if (typeof syncRegisterPasswordToggleLabel === 'function') {
+                syncRegisterPasswordToggleLabel();
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
