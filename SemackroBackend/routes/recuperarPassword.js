@@ -23,7 +23,7 @@ function buildTraceId() {
 // POST /api/password/solicitar-recuperacion
 // Solicitar recuperación de contraseña
 router.post('/solicitar-recuperacion', async (req, res) => {
-    const { correo, FRONTEND_URL, EMAIL_FROM_NAME } = req.body;
+    const { correo, tipoIdentificacion, numeroIdentificacion, FRONTEND_URL, EMAIL_FROM_NAME } = req.body;
     const cleanCorreo = String(correo || '').trim();
     const traceId = buildTraceId();
     const startedAt = Date.now();
@@ -39,10 +39,46 @@ router.post('/solicitar-recuperacion', async (req, res) => {
         });
     }
 
+    if (!tipoIdentificacion || !numeroIdentificacion) {
+        console.warn(`[password-recovery][${traceId}] Solicitud rechazada: datos de identificación incompletos`);
+        return res.status(400).json({ 
+            success: false, 
+            mensaje: 'Los datos de identificación son requeridos' 
+        });
+    }
+
+    // Limpiar identificación
+    let identificacionLimpia = String(numeroIdentificacion).trim();
+    if (tipoIdentificacion === 'DNI') {
+        identificacionLimpia = identificacionLimpia.replace(/-/g, '');
+        // Validar DNI hondureño (13 dígitos)
+        if (!/^\d{13}$/.test(identificacionLimpia)) {
+            console.warn(`[password-recovery][${traceId}] Solicitud rechazada: DNI inválido`);
+            return res.status(400).json({ 
+                success: false, 
+                mensaje: 'El DNI debe contener 13 dígitos' 
+            });
+        }
+    } else if (tipoIdentificacion === 'Pasaporte') {
+        // Validar pasaporte hondureño (letra + 6 dígitos)
+        if (!/^[A-Za-z]\d{6}$/.test(identificacionLimpia)) {
+            console.warn(`[password-recovery][${traceId}] Solicitud rechazada: pasaporte inválido`);
+            return res.status(400).json({ 
+                success: false, 
+                mensaje: 'El pasaporte debe contener 1 letra seguida de 6 dígitos' 
+            });
+        }
+    }
+
     try {
-        // Verificar si el usuario existe
-        const query = 'SELECT id_usuario, correo FROM Usuarios WHERE correo = ?';
-        const [usuarios] = await db.query(query, [cleanCorreo]);
+        // Verificar si el usuario existe y coincide con la identificación
+        const query = `
+            SELECT u.id_usuario, u.correo 
+            FROM Usuarios u
+            INNER JOIN Personas p ON u.id_usuario = p.id_Usuario
+            WHERE u.correo = ? AND REPLACE(p.identificacion_Persona, '-', '') = ?
+        `;
+        const [usuarios] = await db.query(query, [cleanCorreo, identificacionLimpia]);
         console.log(`[password-recovery][${traceId}] Resultado búsqueda usuario: ${usuarios.length > 0 ? 'encontrado' : 'no encontrado'}`);
 
         // Por seguridad, siempre devolvemos el mismo mensaje
