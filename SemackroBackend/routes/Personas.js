@@ -121,7 +121,9 @@ router.get('/', async (req, res) => {
                 p.mascota,
                 p.url_fondo_banner,
                 u.activo,
-                u.correo
+                u.correo,
+                u.intentos_fallidos,
+                u.bloqueado_hasta
             FROM Personas p
             LEFT JOIN Usuarios u ON p.id_Usuario = u.id_usuario
         `);

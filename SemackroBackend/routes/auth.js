@@ -347,7 +347,18 @@ router.put('/usuarios/:id_usuario/activo', async (req, res) => {
     }
 
     try {
-        const [result] = await pool.execute('UPDATE Usuarios SET activo = ? WHERE id_usuario = ?', [activo, id_usuario]);
+        let query, params;
+        if (activo === 1) {
+            // Si activamos el usuario, también reseteamos intentos fallidos y bloqueo
+            query = 'UPDATE Usuarios SET activo = ?, intentos_fallidos = 0, bloqueado_hasta = NULL WHERE id_usuario = ?';
+            params = [activo, id_usuario];
+        } else {
+            // Si desactivamos, solo actualizamos activo
+            query = 'UPDATE Usuarios SET activo = ? WHERE id_usuario = ?';
+            params = [activo, id_usuario];
+        }
+        
+        const [result] = await pool.execute(query, params);
         if (result.affectedRows === 0) {
             return res.status(404).json({ success: false, error: 'Usuario no encontrado.' });
         }
@@ -355,6 +366,31 @@ router.put('/usuarios/:id_usuario/activo', async (req, res) => {
     } catch (error) {
         console.error('Error al actualizar estado del usuario:', error);
         res.status(500).json({ success: false, error: 'Error del servidor al intentar actualizar el estado de acceso.' });
+    }
+});
+
+// **********************************************
+// PUT /api/usuarios/:id_usuario/desbloquear (Desbloquear cuenta por intentos fallidos)
+// **********************************************
+router.put('/usuarios/:id_usuario/desbloquear', async (req, res) => {
+    const id_usuario = parseInt(req.params.id_usuario);
+
+    if (isNaN(id_usuario)) {
+        return res.status(400).json({ success: false, error: 'ID de usuario no válido.' });
+    }
+
+    try {
+        const [result] = await pool.execute(
+            'UPDATE Usuarios SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE id_usuario = ?',
+            [id_usuario]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado.' });
+        }
+        res.status(200).json({ success: true, mensaje: 'Cuenta desbloqueada con éxito.' });
+    } catch (error) {
+        console.error('Error al desbloquear usuario:', error);
+        res.status(500).json({ success: false, error: 'Error del servidor al intentar desbloquear la cuenta.' });
     }
 });
 

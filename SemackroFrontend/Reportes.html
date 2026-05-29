@@ -478,12 +478,13 @@
                             <th class="py-4 px-4" data-i18n="table.expertise">Expertise</th>
                             <th class="py-4 px-4" data-i18n="table.location">Ubicación</th>
                             <th class="py-4 px-4 text-center" data-i18n="table.availability">Disponibilidad</th>
-                            <th class="py-4 px-4 text-center">Acceso</th>
+                            <th class="py-4 px-4 text-center">Intentos fallidos</th>
+                            <th class="py-4 px-4 text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tablaTecnicosH3">
                         <tr>
-                            <td colspan="6" class="py-12 text-center text-gray-300 italic" data-i18n="table.syncing">Sincronizando directorio...</td>
+                            <td colspan="7" class="py-12 text-center text-gray-300 italic" data-i18n="table.syncing">Sincronizando directorio...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1820,7 +1821,7 @@
         async function cargarTecnicosDirectorio() {
             const tbody = document.getElementById('tablaTecnicosH3');
             if (!tbody) return;
-            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-sm text-gray-500">${t('table.loading')}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-sm text-gray-500">${t('table.loading')}</td></tr>`;
 
             console.log('[H3] Iniciando carga de técnicos usando lógica de Descubrir...');
             // Definir API_BASE asegurando que apunte a /api
@@ -1894,7 +1895,9 @@
                             estado: estado,
                             estadoKey: estadoKey,
                             id_Usuario: p.id_Usuario,
-                            activo: p.activo !== undefined && p.activo !== null ? p.activo : 1
+                            activo: p.activo !== undefined && p.activo !== null ? p.activo : 1,
+                            intentos_fallidos: p.intentos_fallidos || 0,
+                            bloqueado_hasta: p.bloqueado_hasta
                         };
 
                     } catch (errInner) {
@@ -1939,7 +1942,7 @@
 
             } catch (e) {
                 console.error('Error cargando técnicos (lógica frontend):', e);
-                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-sm text-gray-500">Error cargando listado de técnicos. por favor intente más tarde.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-sm text-gray-500">Error cargando listado de técnicos. por favor intente más tarde.</td></tr>';
             }
         }
 
@@ -1955,13 +1958,17 @@
 
             // Renderizar filas de la tabla
             if (datosPagina.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-sm text-gray-500">${t('table.noRecords')}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-sm text-gray-500">${t('table.noRecords')}</td></tr>`;
             } else {
                 tbody.innerHTML = datosPagina.map(tData => {
                     const estado = tData.estado || 'No disp.';
                     let estadoColor = 'text-gray-400 bg-gray-50';
                     if (String(tData.estadoKey).includes('available')) estadoColor = 'text-green-600 bg-green-50/50';
                     if (String(tData.estadoKey).includes('Work') || String(tData.estadoKey).includes('busy')) estadoColor = 'text-orange-600 bg-orange-50/50';
+
+                    // Check if user is permanently blocked
+                    const isPermanentlyBlocked = tData.bloqueado_hasta && new Date(tData.bloqueado_hasta).getFullYear() === 9999;
+                    const isTemporarilyBlocked = tData.bloqueado_hasta && new Date(tData.bloqueado_hasta) > new Date();
 
                     const avatar = tData.imagenUrl_Persona ? tData.imagenUrl_Persona : `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(tData.nombre_Persona + ' ' + (tData.apellido_Persona || ''))}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9`;
 
@@ -1987,9 +1994,20 @@
                                 </span>
                             </td>
                             <td class="py-5 px-4 text-center">
-                                ${tData.activo === 0 ? 
-                                  `<button onclick="toggleUserStatus(${tData.id_Usuario}, 1)" class="px-3 py-1.5 rounded-xl bg-red-100 text-red-700 font-bold text-xs hover:bg-red-200 transition-all flex items-center justify-center gap-1 mx-auto" style="min-width: 110px;"><span class="iconify" data-icon="mdi:lock"></span> Restringido</button>` :
-                                  `<button onclick="toggleUserStatus(${tData.id_Usuario}, 0)" class="px-3 py-1.5 rounded-xl bg-green-100 text-green-700 font-bold text-xs hover:bg-green-200 transition-all flex items-center justify-center gap-1 mx-auto" style="min-width: 110px;"><span class="iconify" data-icon="mdi:lock-open"></span> Permitido</button>`}
+                                <span class="px-2 py-1 rounded-md text-xs font-bold ${tData.intentos_fallidos > 2 ? 'text-red-600 bg-red-50' : 'text-gray-700 bg-gray-50'}">
+                                    ${tData.intentos_fallidos}
+                                </span>
+                                ${isTemporarilyBlocked ? `<div class="text-[10px] text-orange-600 mt-1">Bloqueado temporal</div>` : ''}
+                                ${isPermanentlyBlocked ? `<div class="text-[10px] text-red-600 mt-1">Bloqueado permanente</div>` : ''}
+                            </td>
+                            <td class="py-5 px-4 text-center">
+                                <div class="flex flex-col gap-2 items-center">
+                                    ${tData.activo === 0 ? 
+                                      `<button onclick="toggleUserStatus(${tData.id_Usuario}, 1)" class="px-3 py-1.5 rounded-xl bg-red-100 text-red-700 font-bold text-xs hover:bg-red-200 transition-all flex items-center justify-center gap-1" style="min-width: 110px;"><span class="iconify" data-icon="mdi:lock"></span> Restringido</button>` :
+                                      `<button onclick="toggleUserStatus(${tData.id_Usuario}, 0)" class="px-3 py-1.5 rounded-xl bg-green-100 text-green-700 font-bold text-xs hover:bg-green-200 transition-all flex items-center justify-center gap-1" style="min-width: 110px;"><span class="iconify" data-icon="mdi:lock-open"></span> Permitido</button>`}
+                                    ${(isPermanentlyBlocked || isTemporarilyBlocked) ? 
+                                      `<button onclick="desbloquearUsuario(${tData.id_Usuario})" class="px-3 py-1.5 rounded-xl bg-yellow-100 text-yellow-700 font-bold text-xs hover:bg-yellow-200 transition-all flex items-center justify-center gap-1" style="min-width: 110px;"><span class="iconify" data-icon="mdi:lock-reset"></span> Desbloquear</button>` : ''}
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -2106,6 +2124,57 @@
                     icon: 'error',
                     title: 'Error',
                     text: error.message || 'No se pudo actualizar el acceso del usuario.',
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+
+        async function desbloquearUsuario(idUsuario) {
+            if (!idUsuario) return;
+
+            const isConfirmed = await window.showRestrictAccessModal({
+                title: '¿Confirmas desbloquear la cuenta?',
+                message: 'Se resetearán los intentos fallidos y el bloqueo de la cuenta.',
+                warning: 'Esta acción permitirá al usuario intentar iniciar sesión nuevamente.',
+                confirmColor: '#22c55e'
+            });
+
+            if (!isConfirmed) return;
+
+            try {
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = 'Bearer ' + token;
+
+                const API_BASE = `${window.APP_CONFIG.BACKEND_URL}/api`;
+                const res = await fetch(`${API_BASE}/usuarios/${idUsuario}/desbloquear`, {
+                    method: 'PUT',
+                    headers
+                });
+
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.error || 'Error al desbloquear la cuenta.');
+                }
+
+                Toast.success('Cuenta desbloqueada', 'La cuenta ha sido desbloqueada con éxito.');
+
+                // Actualizar el dato localmente y re-renderizar sin recargar todo
+                todosLosTecnicos = todosLosTecnicos.map(t => {
+                    if (t.id_Usuario === idUsuario) {
+                        return { ...t, intentos_fallidos: 0, bloqueado_hasta: null };
+                    }
+                    return t;
+                });
+                // Aplicar el filtro de nuevo para mantener los filtrados
+                filtrarTecnicos();
+
+            } catch (error) {
+                console.error('Error al desbloquear usuario:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'No se pudo desbloquear la cuenta.',
                     confirmButtonColor: '#ef4444'
                 });
             }
