@@ -437,6 +437,29 @@
             <!-- Formulario de Registro -->
             <form id="registroForm" class="space-y-4">
                 <div>
+                    <label for="nombre" class="block text-sm font-medium text-gray-700 mb-2">Nombre completo</label>
+                    <input type="text" id="nombre" name="nombre" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-base sm:text-sm"
+                        placeholder="Tu nombre completo">
+                </div>
+
+                <div>
+                    <label for="tipoIdentificacion" class="block text-sm font-medium text-gray-700 mb-2">Tipo de identificación</label>
+                    <select id="tipoIdentificacion" name="tipoIdentificacion" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-base sm:text-sm">
+                        <option value="DNI">DNI (Honduras)</option>
+                        <option value="Pasaporte">Pasaporte</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="numeroIdentificacion" class="block text-sm font-medium text-gray-700 mb-2">Número de identificación</label>
+                    <input type="text" id="numeroIdentificacion" name="numeroIdentificacion" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-base sm:text-sm"
+                        placeholder="Tu número de identificación">
+                </div>
+
+                <div>
                     <label for="correo" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="register.email">Correo electrónico</label>
                     <input type="email" id="correo" name="correo" required
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out text-base sm:text-sm"
@@ -567,6 +590,9 @@
         document.getElementById('registroForm').addEventListener('submit', async function (event) {
             event.preventDefault();
 
+            const nombre = document.getElementById('nombre').value;
+            const tipoIdentificacion = document.getElementById('tipoIdentificacion').value;
+            const numeroIdentificacion = document.getElementById('numeroIdentificacion').value;
             const correo = document.getElementById('correo').value;
             const contrasena = document.getElementById('contrasena').value;
             const mensajeDiv = document.getElementById('mensaje');
@@ -582,7 +608,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ correo, contrasena })
+                    body: JSON.stringify({ nombre, tipoIdentificacion, numeroIdentificacion, correo, contrasena })
                 });
 
                 const data = await response.json();

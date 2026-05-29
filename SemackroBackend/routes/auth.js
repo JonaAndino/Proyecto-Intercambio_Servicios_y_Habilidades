@@ -19,11 +19,17 @@ const JWT_EXPIRES_IN = '7d'; // Token válido por 7 días
 
 router.post('/registro', async (req, res) => {
     // 1. OBTENER DATOS (Paso F del Diagrama: Backend recibe datos)
-    const { correo, contrasena } = req.body;
+    const { nombre, tipoIdentificacion, numeroIdentificacion, correo, contrasena } = req.body;
 
     // 1.1 Validación básica de campos no vacíos (una vez que el frontend falle en validarlo)
-    if (!correo || !contrasena) {
-        return res.status(400).json({ error: 'Correo y contraseña son obligatorios.' });
+    if (!nombre || !tipoIdentificacion || !numeroIdentificacion || !correo || !contrasena) {
+        return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+    }
+
+    // 1.2 Validar tipo de identificación
+    const TIPOS_IDENTIFICACION_VALIDOS = ['DNI', 'Pasaporte'];
+    if (!TIPOS_IDENTIFICACION_VALIDOS.includes(tipoIdentificacion)) {
+        return res.status(400).json({ error: 'Tipo de identificación no válido.' });
     }
 
     try {
@@ -46,10 +52,15 @@ router.post('/registro', async (req, res) => {
 
         const nuevoUsuarioId = result.insertId;
 
-        // 5. CREAR REGISTRO EN TABLA PERSONAS (Reservar espacio para el perfil)
+        // 5. CREAR REGISTRO EN TABLA PERSONAS con los datos proporcionados
+        // Vamos a dividir el nombre completo en nombre y apellido (solo como aproximación, el primer espacio es el separador)
+        const nombreParts = nombre.trim().split(' ');
+        const nombrePersona = nombreParts[0] || '';
+        const apellidoPersona = nombreParts.slice(1).join(' ') || '';
+
         await pool.execute(
-            'INSERT INTO Personas (id_Usuario) VALUES (?)',
-            [nuevoUsuarioId]
+            'INSERT INTO Personas (id_Usuario, nombre_Persona, apellido_Persona, tipoIdentificacion_Persona, identificacion_Persona) VALUES (?, ?, ?, ?, ?)',
+            [nuevoUsuarioId, nombrePersona, apellidoPersona, tipoIdentificacion, numeroIdentificacion]
         );
 
         // 6. RESPUESTA DE ÉXITO (Paso L del Diagrama)
