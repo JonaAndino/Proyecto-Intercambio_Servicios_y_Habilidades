@@ -530,6 +530,8 @@
             const email = urlParams.get('email');
             const source = urlParams.get('source');
 
+            const isNew = urlParams.get('isNew') === 'true';
+            
             if (token && userId && email && source === 'google') {
                 localStorage.setItem('authToken', token);
                 localStorage.setItem('token', token);
@@ -545,6 +547,38 @@
                     }
                 } catch (e) {
                     console.warn('Error obteniendo rol:', e);
+                }
+
+                // If it's a new user, save the registration data from sessionStorage
+                if (isNew) {
+                    const registroDataStr = sessionStorage.getItem('googleRegistroData');
+                    if (registroDataStr) {
+                        const registroData = JSON.parse(registroDataStr);
+                        console.log('  - Enviando datos de registro de Google:', registroData);
+                        
+                        try {
+                            const response = await fetch(`${BACKEND_HOST}/api/registro/google/datos`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    id_usuario: parseInt(userId),
+                                    nombre: registroData.nombre,
+                                    tipoIdentificacion: registroData.tipoIdentificacion,
+                                    numeroIdentificacion: registroData.numeroIdentificacion
+                                })
+                            });
+                            
+                            if (response.ok) {
+                                console.log('✅ Datos de Google guardados correctamente');
+                                sessionStorage.removeItem('googleRegistroData');
+                            } else {
+                                const errorData = await response.json();
+                                console.error('❌ Error al guardar datos de Google:', errorData);
+                            }
+                        } catch (error) {
+                            console.error('❌ Error en la solicitud para guardar datos de Google:', error);
+                        }
+                    }
                 }
 
                 const successMessage = translations[currentLanguage]['login.successRedirect'] || "Sesión iniciada. Redirigiendo...";
