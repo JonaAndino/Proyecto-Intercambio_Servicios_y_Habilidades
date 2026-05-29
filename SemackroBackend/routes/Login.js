@@ -13,21 +13,27 @@ router.post('/login', async (req, res) => {
 
     // Validar campos vacíos
     if (!correo || !contrasena) {
-        return res.status(400).json({ error: 'Correo y contraseña son obligatorios.' });
+        return res.status(400).json({ error: 'Los campos no pueden estar vacíos.' });
     }
 
     try {
         // 1️⃣ Buscar usuario por correo
         const [rows] = await pool.execute(
-            'SELECT id_usuario, correo, contrasena_hash, activo FROM Usuarios WHERE correo = ?',
+            'SELECT id_usuario, correo, contrasena_hash, activo, intentos_fallidos, bloqueado_hasta FROM Usuarios WHERE correo = ?',
             [correo]
         );
 
         if (rows.length === 0) {
-            return res.status(401).json({ error: 'Correo no registrado.' });
+            return res.status(401).json({ error: 'El usuario no existe.' });
         }
 
         const usuario = rows[0];
+
+        // Verificar si está bloqueado
+        if (usuario.bloqueado_hasta && new Date() < new Date(usuario.bloqueado_hasta)) {
+            const minutosRestantes = Math.ceil((new Date(usuario.bloqueado_hasta) - new Date()) / (1000 * 60));
+            return res.status(423).json({ error: `Tu cuenta está bloqueada. Intenta de nuevo en ${minutosRestantes} minuto(s).` });
+        }
 
         // Verificar si el acceso está restringido
         if (usuario.activo === 0) {
@@ -38,8 +44,31 @@ router.post('/login', async (req, res) => {
         const esValida = await bcrypt.compare(contrasena, usuario.contrasena_hash);
 
         if (!esValida) {
-            return res.status(401).json({ error: 'Contraseña incorrecta.' });
+            // Incrementar contador de intentos fallidos
+            const nuevosIntentos = usuario.intentos_fallidos + 1;
+            let bloqueadoHasta = usuario.bloqueado_hasta;
+            
+            if (nuevosIntentos >= 5) {
+                bloqueadoHasta = new Date(Date.now() + 10 * 60 * 1000); // Bloquear por 10 minutos
+                await pool.execute(
+                    'UPDATE Usuarios SET intentos_fallidos = 0, bloqueado_hasta = ? WHERE id_usuario = ?',
+                    [bloqueadoHasta, usuario.id_usuario]
+                );
+                return res.status(423).json({ error: 'Tu cuenta está bloqueada por demasiados intentos fallidos. Intenta de nuevo en 10 minutos.' });
+            }
+            
+            await pool.execute(
+                'UPDATE Usuarios SET intentos_fallidos = ? WHERE id_usuario = ?',
+                [nuevosIntentos, usuario.id_usuario]
+            );
+            return res.status(401).json({ error: 'La contraseña es incorrecta.' });
         }
+
+        // Si la contraseña es correcta, resetear intentos fallidos y bloqueo
+        await pool.execute(
+            'UPDATE Usuarios SET intentos_fallidos = 0, bloqueado_hasta = NULL WHERE id_usuario = ?',
+            [usuario.id_usuario]
+        );
 
         // 3️⃣ Si todo está bien, responder con éxito
         res.status(200).json({

@@ -622,7 +622,7 @@
                             if (res.status === 403) {
                                 showMessage(data.error || "Tu cuenta ha sido restringida por el administrador. Ponte en contacto con el soporte técnico.", "bg-red-100 text-red-700");
                             } else {
-                                showMessage("Error: " + (data.error || "Error de sesión"), "bg-red-100 text-red-700");
+                                showMessage(data.error || "Error de sesión", "bg-red-100 text-red-700");
                             }
                         }
 
