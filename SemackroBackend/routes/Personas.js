@@ -98,7 +98,7 @@ router.get('/verificar-identificacion/:identificacion', async (req, res) => {
 // ----------------------------------------------------
 router.get('/', async (req, res) => {
     try {
-        // Consulta directa para incluir todos los campos necesarios incluyendo disponibilidad, años de experiencia y mascota
+        // Consulta directa para incluir todos los campos necesarios incluyendo disponibilidad, años de experiencia, mascota y fondo del banner
         const [personas] = await db.execute(`
             SELECT 
                 p.id_Perfil_Persona,
@@ -119,6 +119,7 @@ router.get('/', async (req, res) => {
                 IFNULL(p.anios_experiencia, 0) AS anios_experiencia,
                 p.id_Usuario,
                 p.mascota,
+                p.url_fondo_banner,
                 u.activo,
                 u.correo
             FROM Personas p
@@ -174,6 +175,7 @@ router.get('/:id', async (req, res) => {
                 IFNULL(p.anios_experiencia, 0) AS anios_experiencia,
                 p.id_Usuario,
                 p.mascota,
+                p.url_fondo_banner,
                 u.correo,
                 u.nombre AS nombre_usuario_cuenta,
                 u.activo
@@ -320,7 +322,7 @@ router.put('/:id', async (req, res) => {
         'estadoCivil_Persona', 'tipoIdentificacion_Persona', 'identificacion_Persona',
         'imagenUrl_Persona', 'imagen1Url_Persona', 'imagen2Url_Persona', 'imagen3Url_Persona',
         'descripcionPerfil_Persona', 'disponibilidad', 'anios_experiencia', 'url_Dni',
-        'mascota'
+        'mascota', 'url_fondo_banner'
     ];
     
     // Validar que mascota sea uno de los valores permitidos

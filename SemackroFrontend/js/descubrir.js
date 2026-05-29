@@ -2041,6 +2041,7 @@ async function cargarUsuariosReales() {
           avatarInitials: (persona.nombre_Persona || "U")[0].toUpperCase(),
           estadoVerificacion,
           mascota: persona.mascota || null,
+          urlFondoBanner: persona.url_fondo_banner || null,
         };
       } catch (error) {
         console.error(
@@ -2460,6 +2461,7 @@ function mostrarFavoritos(favoritos) {
         : fav.genero || fav.genero_Persona || fav.genero_Usuario || "";
       const bannerGradientClass = obtenerClaseBannerPorGenero(genero);
       const mascota = userCompleto ? userCompleto.mascota : (fav.mascota || null);
+      const urlFondoBanner = userCompleto ? userCompleto.urlFondoBanner : (fav.url_fondo_banner || null);
 
       const initials = nombreCompleto
         .split(" ")
@@ -2478,7 +2480,7 @@ function mostrarFavoritos(favoritos) {
                         </button>
 
                         <!-- Banner superior con gradiente y mascota -->
-                        <div class="user-card-banner ${bannerGradientClass} relative overflow-hidden">
+                        <div class="user-card-banner ${bannerGradientClass} relative overflow-hidden" style="${urlFondoBanner ? `background-image: url(${urlFondoBanner}); background-size: cover; background-position: center;` : ''}">
                             <div class="absolute top-2 left-4 opacity-15 text-white font-mono text-[8px] tracking-widest pointer-events-none select-none">
                                 ☁️ ☁️
                             </div>
@@ -2708,7 +2710,7 @@ function renderUserCardsReal() {
                     }
 
                     <!-- Banner superior con gradiente y mascota -->
-                    <div class="user-card-banner ${bannerGradientClass} relative overflow-hidden">
+                    <div class="user-card-banner ${bannerGradientClass} relative overflow-hidden" style="${user.urlFondoBanner ? `background-image: url(${user.urlFondoBanner}); background-size: cover; background-position: center;` : ''}">
                         <div class="absolute top-2 left-4 opacity-15 text-white font-mono text-[8px] tracking-widest pointer-events-none select-none">
                             ☁️ ☁️
                         </div>
