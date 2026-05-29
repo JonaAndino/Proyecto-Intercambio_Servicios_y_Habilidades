@@ -1181,8 +1181,7 @@
                 cargarEstadisticasReportes();
                 cargarTecnicosDirectorio();
 
-                // Iniciar polling automático
-                iniciarPollingVerificacion();
+                // Iniciar polling automático (solo para estadísticas)
                 iniciarPollingEstadisticas();
 
                 console.log('[REPORTES] Sistema de actualización automática iniciado');
@@ -1202,7 +1201,6 @@
                 console.log('[POLLING] Página visible, actualizando datos...');
                 const isAdmin = localStorage.getItem('usuarioRolId') === '1';
                 if (isAdmin) {
-                    cargarSolicitudesVerificacion();
                     cargarEstadisticasReportes();
                 }
             }
