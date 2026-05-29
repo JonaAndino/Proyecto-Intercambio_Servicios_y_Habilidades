@@ -560,8 +560,147 @@
             const source = urlParams.get('source');
 
             const mensajeDiv = document.getElementById('mensaje');
+            const isFromLoginRedirect = source === 'google' && !token;
 
-            if (token && userId && email && source === 'google') {
+            // Check if we're coming from login page (new Google user without registration data)
+            if (isFromLoginRedirect) {
+                // Pre-fill the email field
+                const emailInput = document.getElementById('correo');
+                if (emailInput) {
+                    emailInput.value = email;
+                    emailInput.readOnly = true;
+                }
+                
+                // Hide the password field and the toggle button since we're using Google
+                const passwordField = document.getElementById('contrasena');
+                const passwordLabel = passwordField ? passwordField.closest('div.mdc-text-field') : null;
+                const toggleBtn = document.getElementById('toggle-register-password-btn');
+                
+                if (passwordLabel) {
+                    passwordLabel.style.display = 'none';
+                }
+                if (toggleBtn) {
+                    toggleBtn.style.display = 'none';
+                }
+                
+                // Change the Google button's text and behavior
+                const googleBtn = document.getElementById("google-registro-btn");
+                if (googleBtn) {
+                    googleBtn.innerHTML = `
+                        <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Completar Registro
+                    `;
+                    
+                    googleBtn.addEventListener("click", async () => {
+                        console.log("Completing Google registration from login redirect");
+                        
+                        // Get values from form
+                        const nombre = document.getElementById('nombre').value.trim();
+                        const tipoIdentificacion = document.getElementById('tipoIdentificacion').value;
+                        const numeroIdentificacion = document.getElementById('numeroIdentificacion').value.trim();
+                        
+                        // Validate fields
+                        let errorMensaje = '';
+                        if (!nombre || nombre.length < 3 || nombre.length > 100) {
+                            errorMensaje = 'El nombre debe tener entre 3 y 100 caracteres.';
+                        } else if (!tipoIdentificacion) {
+                            errorMensaje = 'Selecciona un tipo de identificación.';
+                        } else {
+                            if (tipoIdentificacion === 'DNI') {
+                                const dniLimpio = numeroIdentificacion.replace(/-/g, '');
+                                if (!/^\d{13}$/.test(dniLimpio)) {
+                                    errorMensaje = 'El DNI debe contener 13 dígitos (ej: 0101199000123).';
+                                }
+                            } else if (tipoIdentificacion === 'Pasaporte') {
+                                if (!/^[A-Za-z]\d{6}$/.test(numeroIdentificacion)) {
+                                    errorMensaje = 'El pasaporte debe contener 1 letra seguida de 6 dígitos (ej: H123456).';
+                                }
+                            }
+                        }
+                        
+                        if (errorMensaje) {
+                            mensajeDiv.textContent = errorMensaje;
+                            mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-4 text-center bg-red-100 text-red-700 border border-red-400';
+                            mensajeDiv.classList.remove('hidden');
+                            return;
+                        }
+                        
+                        // Get the saved Google user data from localStorage
+                        const googleNewUserStr = localStorage.getItem('googleNewUser');
+                        if (!googleNewUserStr) {
+                            // If no saved user data, redirect to login
+                            window.location.href = './login.html';
+                            return;
+                        }
+                        
+                        const googleNewUser = JSON.parse(googleNewUserStr);
+                        
+                        // Save registration data in localStorage and send it to the backend!
+                        const registroData = {
+                            nombre,
+                            tipoIdentificacion,
+                            numeroIdentificacion
+                        };
+                        localStorage.setItem('googleRegistroData', JSON.stringify(registroData));
+                        
+                        try {
+                            // Send data to backend
+                            const response = await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/registro/google/datos`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    id_usuario: parseInt(googleNewUser.userId),
+                                    nombre,
+                                    tipoIdentificacion,
+                                    numeroIdentificacion
+                                })
+                            });
+                            
+                            if (response.ok) {
+                                console.log("✅ Datos guardados correctamente en Personas");
+                                
+                                // Set auth data in localStorage
+                                localStorage.setItem('authToken', googleNewUser.token);
+                                localStorage.setItem('token', googleNewUser.token);
+                                localStorage.setItem('usuarioId', googleNewUser.userId);
+                                localStorage.setItem('correoUsuario', googleNewUser.email);
+                                localStorage.setItem('firebaseUser', 'true');
+                                
+                                // Clear the temporary data
+                                localStorage.removeItem('googleNewUser');
+                                localStorage.removeItem('googleRegistroData');
+                                
+                                // Show success message and redirect
+                                mensajeDiv.classList.remove('hidden');
+                                const successMessage = translations[currentLanguage]['register.successGoogle'] || "Registro con Google exitoso. Redirigiendo...";
+                                mensajeDiv.textContent = successMessage;
+                                mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-6 text-center bg-green-100 text-green-700 border border-green-400';
+                                
+                                setTimeout(() => {
+                                    window.location.href = "Descubrir.html";
+                                }, 1500);
+                            } else {
+                                const data = await response.json();
+                                mensajeDiv.textContent = 'Error: ' + (data.error || 'No se pudo completar el registro');
+                                mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-4 text-center bg-red-100 text-red-700 border border-red-400';
+                                mensajeDiv.classList.remove('hidden');
+                            }
+                        } catch (error) {
+                            console.error("❌ Error al conectar con el backend:", error);
+                            mensajeDiv.textContent = 'Error de conexión con el servidor';
+                            mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-4 text-center bg-red-100 text-red-700 border border-red-400';
+                            mensajeDiv.classList.remove('hidden');
+                        }
+                    });
+                }
+            } else if (token && userId && email && source === 'google') {
                 console.log("Autenticación con Google exitosa");
                 console.log("   - Email:", email);
                 console.log("   - User ID:", userId);
@@ -574,8 +713,8 @@
 
                 const isNew = urlParams.get('isNew') === 'true';
                 if (isNew) {
-                    // Obtener datos guardados en sessionStorage
-                    const registroDataStr = sessionStorage.getItem('googleRegistroData');
+                    // Obtener datos guardados en localStorage
+                    const registroDataStr = localStorage.getItem('googleRegistroData');
                     if (registroDataStr) {
                         const registroData = JSON.parse(registroDataStr);
                         console.log("   - Datos de registro guardados:", registroData);
@@ -598,8 +737,8 @@
                             const data = await response.json();
                             if (response.ok) {
                                 console.log("✅ Datos guardados correctamente en Personas");
-                                // Limpiar sessionStorage
-                                sessionStorage.removeItem('googleRegistroData');
+                                // Limpiar localStorage
+                                localStorage.removeItem('googleRegistroData');
                             } else {
                                 console.error("❌ Error al guardar datos:", data.error);
                             }

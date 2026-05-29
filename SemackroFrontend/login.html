@@ -533,6 +533,22 @@
             const isNew = urlParams.get('isNew') === 'true';
             
             if (token && userId && email && source === 'google') {
+                // If it's a new user and they don't have registration data, redirect them to the registration form!
+                if (isNew) {
+                    const registroDataStr = localStorage.getItem('googleRegistroData');
+                    if (!registroDataStr) {
+                        // No registration data, redirect to registration page with pre-filled email
+                        localStorage.setItem('googleNewUser', JSON.stringify({
+                            token,
+                            userId,
+                            email
+                        }));
+                        window.location.href = './registro_prueba.html?source=google&email=' + encodeURIComponent(email);
+                        return;
+                    }
+                }
+                
+                // User has registration data or is not new, proceed with login!
                 localStorage.setItem('authToken', token);
                 localStorage.setItem('token', token);
                 localStorage.setItem('usuarioId', userId);
