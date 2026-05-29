@@ -9521,7 +9521,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
       : '';
 
     return `
-      <div class="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col overflow-hidden border border-gray-100 min-h-[420px]">
+      <div class="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col overflow-hidden border border-gray-100 min-h-[340px]">
         <!-- Cabecera con estado -->
         <div class="px-5 pt-5 pb-3 flex items-start justify-between">
           <h3 class="font-bold text-gray-800 text-base leading-tight flex-1 mr-3 line-clamp-2">${titulo}</h3>
@@ -9687,6 +9687,7 @@ function abrirModalCrearOrden() {
 
   cargarEspecialidadesOrden();
   modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 
   // SCRUM-25: Resetear y ocultar mapa al abrir
   if (window.MapaOT) MapaOT.reset();
@@ -9696,6 +9697,7 @@ function abrirModalCrearOrden() {
 function cerrarModalOrden(event) {
   if (event && event.target !== document.getElementById('modalOrdenBackdrop') && event.target !== document.getElementById('modalOrdenTrabajo')) return;
   document.getElementById('modalOrdenTrabajo').style.display = 'none';
+  document.body.style.overflow = '';
   // SCRUM-25: Resetear mapa al cerrar
   if (window.MapaOT) MapaOT.reset();
 }
@@ -9750,6 +9752,7 @@ async function guardarOrdenTrabajo(event) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     document.getElementById('modalOrdenTrabajo').style.display = 'none';
+    document.body.style.overflow = '';
     Toast.success(id ? 'Orden actualizada' : 'Orden creada', id ? 'Los cambios fueron guardados correctamente.' : 'La orden fue creada exitosamente.');
     await cargarOrdenesTrabajo();
   } catch (err) {
@@ -9785,6 +9788,7 @@ async function editarOrden(id) {
   document.getElementById('modalOrdenBtnText').textContent = 'Guardar cambios';
   document.getElementById('modalOrdenSpinner').classList.add('hidden');
   document.getElementById('modalOrdenTrabajo').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 
   // SCRUM-25: Resetear mapa al editar para evitar estados anteriores
   if (window.MapaOT) MapaOT.reset();
@@ -9815,9 +9819,10 @@ async function cancelarOrden(id) {
       </div>`);
 
     const modal = document.getElementById(modalId);
-    const close = (val) => { modal.remove(); resolve(val); };
+    const close = (val) => { modal.remove(); document.body.style.overflow = ''; resolve(val); };
     document.getElementById('ot-cancel-no').onclick = () => close(false);
     document.getElementById('ot-cancel-yes').onclick = () => close(true);
+    document.body.style.overflow = 'hidden';
   });
 
   if (!confirmado) return;
@@ -9898,6 +9903,7 @@ async function verDetalleOrden(id) {
     </div>`;
 
   document.getElementById('modalDetalleOrden').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 
   // Cargar postulantes para admin (SCRUM-25)
   if (esAdmin) {
@@ -10029,6 +10035,7 @@ async function verDetalleOrden(id) {
 function cerrarDetalleOrden(event) {
   if (event && event.target !== document.getElementById('modalDetalleOrdenBackdrop') && event.target !== document.getElementById('modalDetalleOrden')) return;
   document.getElementById('modalDetalleOrden').style.display = 'none';
+  document.body.style.overflow = '';
 }
 
 /** SCRUM-30: Genera y descarga un PDF con los detalles de la orden */
