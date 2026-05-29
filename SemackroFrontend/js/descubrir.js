@@ -1141,26 +1141,45 @@ function logout() {
 function showLogoutModal() {
   const t = (key) => translations[currentLanguage][key] || key;
   const modalHTML = `
-                <div class="custom-modal-overlay" id="logoutModal" onclick="closeLogoutModal(event)">
-          <div class="custom-modal custom-modal-logout" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
-                        <div class="modal-header">
-              <div class="modal-icon modal-icon-logout" aria-hidden="true"><svg class="logout-title-svg" xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72"><path fill="#fcea2b" d="M32.294 14.233a3.892 3.892 0 0 1 6.706 0l20.12 40.142a4.5 4.5 0 0 1 .574 1.916a3.885 3.885 0 0 1-3.832 3.88H15.528a3.803 3.803 0 0 1-3.832-3.784a3.45 3.45 0 0 1 .575-1.916z"/><path fill="#d22f27" d="M35.854 39.049c0 1.505-2.728 3.81-2.728 5.991l-.06.188s-.322 1.428-1.39 1.428a1.3 1.3 0 0 1-.772-.325c-.262-.244-.6.13-.547.458c.16 1.31 3.023 5.521 5.17 5.521c2.456 0 4.629-2.945 4.822-3.985c0-.498-.834-.187-.834-.873c0-.582.507-.964.507-1.729a.41.41 0 0 0-.424-.378c-.191 0-.46.134-.674.134c-.82 0-1.007-.746-1.007-1.51c0 0 .154.05.154-1.58a5.9 5.9 0 0 0-1.422-3.493a.55.55 0 0 0-.357-.133c-.19 0-.438.084-.438.286"/><g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M29.548 52.622a8.3 8.3 0 0 0 5.936 2.332a8.84 8.84 0 0 0 6.02-2.332M27.69 50.224s-4.452-4.75-.212-11.025c0 0 .856 1.088 1.508 2.132c.486.56 1.367 1.515 1.833 1.515a1.004 1.004 0 0 0 1.018-1.102v-.382a15.5 15.5 0 0 1 1.526-7.293s2.969 1.611 1.697-6.191c0 0 6.763 4.558 6.509 12.106c0 .551.248.975.847.975c.59 0 2.388-.572 2.388-1.124c.042.043 2.671 5.555-1.06 10.389"/><path d="M33.079 45.118s-.298 1.641-1.488 1.527a2.7 2.7 0 0 1-.61-.245c-.328-.36-.674.084-.624.39a10.96 10.96 0 0 0 3.02 4.472s.93.685.98.685m2.609.063a12.4 12.4 0 0 0 1.547-1.048a6.84 6.84 0 0 0 1.806-2.487a.335.335 0 0 0-.297-.458a.78.78 0 0 1-.496-.458h0s-.1-.305.297-.992a1.6 1.6 0 0 0 .199-.916a.47.47 0 0 0-.645-.267a.96.96 0 0 1-1.29-.42s-.312-.153-.014-1.64a6 6 0 0 0-1.425-4.428a.55.55 0 0 0-.377-.133a.395.395 0 0 0-.417.286"/><path d="M32.294 14.233a3.892 3.892 0 0 1 6.706 0l20.12 40.142a4.5 4.5 0 0 1 .574 1.916a3.885 3.885 0 0 1-3.832 3.88H15.528a3.803 3.803 0 0 1-3.832-3.784a3.45 3.45 0 0 1 .575-1.916z"/></g></svg></div>
-                            <div class="modal-title" data-i18n="logout.title">${t("logout.title")}</div>
-                        </div>
-                        <div class="modal-message" data-i18n="logout.message">
-                            ${t("logout.message")}
-                        </div>
-                        <div class="modal-actions">
-                            <button class="modal-btn modal-btn-cancel" onclick="closeLogoutModal()" data-i18n="logout.cancel">
-                                ${t("logout.cancel")}
-                            </button>
-                            <button class="modal-btn modal-btn-confirm" onclick="confirmLogout()" data-i18n="logout.confirm">
-                                ${t("logout.confirm")}
-                            </button>
-                        </div>
-                    </div>
+        <div class="fixed inset-0 z-[10000] flex items-center justify-center" id="logoutModal" onclick="closeLogoutModal(event)">
+          <div class="relative bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-100 flex flex-col overflow-visible z-10 max-h-[95vh]" onclick="event.stopPropagation()">
+            <div class="h-20 md:h-28 bg-gradient-to-r from-red-50 to-amber-50 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-2 md:pb-3">
+              <button class="absolute top-2 right-2 md:top-3 md:right-3 text-red-800 hover:scale-110 transition-transform z-20 cursor-pointer" aria-label="Cerrar modal" onclick="closeLogoutModal()">
+                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+              <div class="absolute -top-10 md:-top-14 inset-x-0 flex justify-center items-end gap-3 md:gap-5 pointer-events-none">
+                <div class="w-10 h-10 md:w-14 md:h-14 bg-[#ef4444] rounded-xl md:rounded-2xl rotate-[-12deg] shadow-lg flex items-center justify-center border-2 md:border-4 border-white transform translate-y-2">
+                  <svg class="w-5 h-5 md:w-7 md:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                  </svg>
                 </div>
-            `;
+                <div class="relative w-14 h-14 md:w-20 md:h-20 bg-white rounded-full shadow-2xl flex items-center justify-center border-2 md:border-4 border-white transform -translate-y-1">
+                  <div class="p-1 w-full h-full flex items-center justify-center">
+                    <svg class="logout-title-svg" xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72"><path fill="#fcea2b" d="M32.294 14.233a3.892 3.892 0 0 1 6.706 0l20.12 40.142a4.5 4.5 0 0 1 .574 1.916a3.885 3.885 0 0 1-3.832 3.88H15.528a3.803 3.803 0 0 1-3.832-3.784a3.45 3.45 0 0 1 .575-1.916z"></path><path fill="#d22f27" d="M35.854 39.049c0 1.505-2.728 3.81-2.728 5.991l-.06.188s-.322 1.428-1.39 1.428a1.3 1.3 0 0 1-.772-.325c-.262-.244-.6.13-.547.458c.16 1.31 3.023 5.521 5.17 5.521c2.456 0 4.629-2.945 4.822-3.985c0-.498-.834-.187-.834-.873c0-.582.507-.964.507-1.729a.41.41 0 0 0-.424-.378c-.191 0-.46.134-.674.134c-.82 0-1.007-.746-1.007-1.51c0 0 .154.05.154-1.58a5.9 5.9 0 0 0-1.422-3.493a.55.55 0 0 0-.357-.133c-.19 0-.438.084-.438.286"></path><g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M29.548 52.622a8.3 8.3 0 0 0 5.936 2.332a8.84 8.84 0 0 0 6.02-2.332M27.69 50.224s-4.452-4.75-.212-11.025c0 0 .856 1.088 1.508 2.132c.486.56 1.367 1.515 1.833 1.515a1.004 1.004 0 0 0 1.018-1.102v-.382a15.5 15.5 0 0 1 1.526-7.293s2.969 1.611 1.697-6.191c0 0 6.763 4.558 6.509 12.106c0 .551.248.975.847.975c.59 0 2.388-.572 2.388-1.124c.042.043 2.671 5.555-1.06 10.389"></path><path d="M33.079 45.118s-.298 1.641-1.488 1.527a2.7 2.7 0 0 1-.61-.245c-.328-.36-.674.084-.624.39a10.96 10.96 0 0 0 3.02 4.472s.93.685.98.685m2.609.063a12.4 12.4 0 0 0 1.547-1.048a6.84 6.84 0 0 0 1.806-2.487a.335.335 0 0 0-.297-.458a.78.78 0 0 1-.496-.458h0s-.1-.305.297-.992a1.6 1.6 0 0 0 .199-.916a.47.47 0 0 0-.645-.267a.96.96 0 0 1-1.29-.42s-.312-.153-.014-1.64a6 6 0 0 0-1.425-4.428a.55.55 0 0 0-.377-.133a.395.395 0 0 0-.417.286"></path><path d="M32.294 14.233a3.892 3.892 0 0 1 6.706 0l20.12 40.142a4.5 4.5 0 0 1 .574 1.916a3.885 3.885 0 0 1-3.832 3.88H15.528a3.803 3.803 0 0 1-3.832-3.784a3.45 3.45 0 0 1 .575-1.916z"></path></g></svg>
+                  </div>
+                </div>
+                <div class="w-10 h-10 md:w-14 md:h-14 bg-[#f97316] rounded-xl md:rounded-2xl rotate-[12deg] shadow-lg flex items-center justify-center border-2 md:border-4 border-white transform translate-y-2">
+                  <svg class="w-5 h-5 md:w-7 md:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="px-4 md:px-8 py-4 md:py-6 text-center">
+              <h3 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">${t("logout.title")}</h3>
+              <p class="text-sm md:text-base text-slate-500 mt-2">${t("logout.message")}</p>
+            </div>
+            <div class="px-4 md:px-8 pb-4 md:pb-6 bg-slate-50 rounded-b-3xl border-t border-slate-100">
+              <div class="flex gap-3 md:gap-4 justify-center flex-wrap">
+                <button class="flex-1 min-w-[140px] bg-white border-2 border-slate-200 text-slate-700 font-bold py-3 md:py-4 rounded-2xl hover:border-slate-300 hover:bg-slate-50 transition-all active:scale-[0.98]" onclick="closeLogoutModal()">${t("logout.cancel")}</button>
+                <button class="flex-1 min-w-[140px] bg-gradient-to-r from-orange-500 to-red-500 text-white font-black py-3 md:py-4 rounded-2xl shadow-lg shadow-orange-500/30 hover:from-orange-600 hover:to-red-600 hover:shadow-orange-500/40 transition-all active:scale-[0.98]" onclick="confirmLogout()">${t("logout.confirm")}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
 
   document.body.insertAdjacentHTML("beforeend", modalHTML);
 }
