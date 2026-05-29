@@ -891,9 +891,6 @@
 
                 if (!isConfirmed) return;
 
-                // Mostrar loader mientras se procesa la petición
-                Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-
                 const token = localStorage.getItem('token') || localStorage.getItem('authToken');
                 const adminId = localStorage.getItem('usuarioId') || null;
                 const headers = { 'Content-Type': 'application/json' };
@@ -905,8 +902,6 @@
                     headers,
                     body: JSON.stringify({ estado: nuevoEstado, revisado_por: adminId, comentario_admin: '' })
                 });
-
-                Swal.close();
 
                 if (!res.ok) {
                     const text = await res.text().catch(() => '');
@@ -941,9 +936,6 @@
 
                 if (!isConfirmed) return;
 
-                // Mostrar loader mientras se procesa la petición
-                Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-
                 const token = localStorage.getItem('token') || localStorage.getItem('authToken');
                 const headers = {};
                 if (token) headers['Authorization'] = 'Bearer ' + token;
@@ -953,8 +945,6 @@
                     method: 'DELETE',
                     headers
                 });
-
-                Swal.close();
 
                 if (!res.ok) {
                     const text = await res.text().catch(() => '');
@@ -1773,13 +1763,6 @@
 
             if (!isConfirmed) return;
 
-            // Mantener el loader de Swal para el proceso asíncrono real
-            Swal.fire({ 
-                title: 'Actualizando acceso...', 
-                allowOutsideClick: false, 
-                didOpen: () => { Swal.showLoading(); } 
-            });
-
             try {
                 const token = localStorage.getItem('token') || localStorage.getItem('authToken');
                 const headers = { 'Content-Type': 'application/json' };
@@ -1791,8 +1774,6 @@
                     headers,
                     body: JSON.stringify({ activo: nuevoEstado })
                 });
-
-                Swal.close();
 
                 if (!res.ok) {
                     const data = await res.json().catch(() => ({}));
@@ -2057,8 +2038,6 @@
             const isConfirmed = await showEmailConfirmModal(idSolicitud);
             if (!isConfirmed) return;
 
-            Swal.fire({ title: 'Enviando correo...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-
             try {
                 const res = await fetch(RECUPERAR_API + '/enviar-usuario', {
                     method: 'POST',
@@ -2066,7 +2045,6 @@
                     body: JSON.stringify({ id_solicitud: idSolicitud })
                 });
                 const json = await res.json();
-                Swal.close();
 
                 if (!res.ok || !json.success) {
                     throw new Error(json.error || 'Error desconocido al enviar el correo.');
