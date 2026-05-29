@@ -565,11 +565,49 @@
                 console.log("Autenticación con Google exitosa");
                 console.log("   - Email:", email);
                 console.log("   - User ID:", userId);
+                console.log("   - Is new user:", urlParams.get('isNew'));
 
                 localStorage.setItem('authToken', token);
                 localStorage.setItem('usuarioId', userId);
                 localStorage.setItem('correoUsuario', email);
                 localStorage.setItem('firebaseUser', 'true');
+
+                const isNew = urlParams.get('isNew') === 'true';
+                if (isNew) {
+                    // Obtener datos guardados en sessionStorage
+                    const registroDataStr = sessionStorage.getItem('googleRegistroData');
+                    if (registroDataStr) {
+                        const registroData = JSON.parse(registroDataStr);
+                        console.log("   - Datos de registro guardados:", registroData);
+                        
+                        // Enviar datos al backend
+                        try {
+                            const response = await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/registro/google/datos`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    id_usuario: parseInt(userId),
+                                    nombre: registroData.nombre,
+                                    tipoIdentificacion: registroData.tipoIdentificacion,
+                                    numeroIdentificacion: registroData.numeroIdentificacion
+                                })
+                            });
+
+                            const data = await response.json();
+                            if (response.ok) {
+                                console.log("✅ Datos guardados correctamente en Personas");
+                                // Limpiar sessionStorage
+                                sessionStorage.removeItem('googleRegistroData');
+                            } else {
+                                console.error("❌ Error al guardar datos:", data.error);
+                            }
+                        } catch (error) {
+                            console.error("❌ Error al conectar con el backend:", error);
+                        }
+                    }
+                }
 
                 mensajeDiv.classList.remove('hidden');
                 const successGoogleMessage = translations[currentLanguage]['register.successGoogle'] || "Registro con Google exitoso. Redirigiendo...";
@@ -715,6 +753,49 @@
             googleBtn.addEventListener("click", () => {
                 console.log("Click en Continuar con Google");
                 const mensajeDiv = document.getElementById('mensaje');
+                
+                // Obtener valores del formulario
+                const nombre = document.getElementById('nombre').value.trim();
+                const tipoIdentificacion = document.getElementById('tipoIdentificacion').value;
+                const numeroIdentificacion = document.getElementById('numeroIdentificacion').value.trim();
+                const correo = document.getElementById('correo').value.trim();
+                
+                // Validar campos
+                let errorMensaje = '';
+                
+                if (!nombre || nombre.length < 3 || nombre.length > 100) {
+                    errorMensaje = 'El nombre debe tener entre 3 y 100 caracteres.';
+                } else if (!tipoIdentificacion) {
+                    errorMensaje = 'Selecciona un tipo de identificación.';
+                } else {
+                    if (tipoIdentificacion === 'DNI') {
+                        const dniLimpio = numeroIdentificacion.replace(/-/g, '');
+                        if (!/^\d{13}$/.test(dniLimpio)) {
+                            errorMensaje = 'El DNI debe contener 13 dígitos (ej: 0101199000123).';
+                        }
+                    } else if (tipoIdentificacion === 'Pasaporte') {
+                        if (!/^[A-Za-z]\d{6}$/.test(numeroIdentificacion)) {
+                            errorMensaje = 'El pasaporte debe contener 1 letra seguida de 6 dígitos (ej: H123456).';
+                        }
+                    }
+                }
+                
+                if (errorMensaje) {
+                    mensajeDiv.textContent = errorMensaje;
+                    mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-4 text-center bg-red-100 text-red-700 border border-red-400';
+                    mensajeDiv.classList.remove('hidden');
+                    return;
+                }
+                
+                // Guardar datos en sessionStorage para después
+                const registroData = {
+                    nombre,
+                    tipoIdentificacion,
+                    numeroIdentificacion
+                };
+                sessionStorage.setItem('googleRegistroData', JSON.stringify(registroData));
+                
+                // Redirigir a Google
                 mensajeDiv.classList.remove('hidden');
                 const redirectMessage = translations[currentLanguage]['register.redirectingGoogle'] || 'Redirigiendo a Google...';
                 mensajeDiv.textContent = redirectMessage;

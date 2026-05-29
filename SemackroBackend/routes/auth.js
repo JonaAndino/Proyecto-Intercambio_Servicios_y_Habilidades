@@ -110,11 +110,67 @@ router.post('/registro', async (req, res) => {
 // POST /api/login 
 // **********************************************
 
+// Endpoint para actualizar datos de Personas después de registro con Google
+router.put('/registro/google/datos', async (req, res) => {
+    const { id_usuario, nombre, tipoIdentificacion, numeroIdentificacion } = req.body;
+
+    // Validar campos
+    if (!id_usuario || !nombre || !tipoIdentificacion || !numeroIdentificacion) {
+        return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+    }
+
+    if (nombre.trim().length < 3 || nombre.trim().length > 100) {
+        return res.status(400).json({ error: 'El nombre debe tener entre 3 y 100 caracteres.' });
+    }
+
+    const TIPOS_ID_VALIDOS = ['DNI', 'Pasaporte'];
+    if (!TIPOS_ID_VALIDOS.includes(tipoIdentificacion)) {
+        return res.status(400).json({ error: 'Tipo de identificación no válido.' });
+    }
+
+    // Limpiar número de identificación
+    let identificacionLimpia = numeroIdentificacion.trim();
+    if (tipoIdentificacion === 'DNI') {
+        identificacionLimpia = identificacionLimpia.replace(/-/g, '');
+        if (!/^\d{13}$/.test(identificacionLimpia)) {
+            return res.status(400).json({ error: 'El DNI debe contener 13 dígitos.' });
+        }
+    } else if (tipoIdentificacion === 'Pasaporte') {
+        if (!/^[A-Za-z]\d{6}$/.test(identificacionLimpia)) {
+            return res.status(400).json({ error: 'El pasaporte debe contener 1 letra seguida de 6 dígitos.' });
+        }
+    }
+
+    try {
+        // Verificar si el usuario existe
+        const [usuarios] = await pool.execute('SELECT id_usuario FROM Usuarios WHERE id_usuario = ?', [id_usuario]);
+        if (usuarios.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado.' });
+        }
+
+        // Dividir nombre completo en nombre y apellido
+        const nombreParts = nombre.trim().split(' ');
+        const nombrePersona = nombreParts[0] || '';
+        const apellidoPersona = nombreParts.slice(1).join(' ') || '';
+
+        // Actualizar Personas
+        await pool.execute(
+            'UPDATE Personas SET nombre_Persona = ?, apellido_Persona = ?, tipoIdentificacion_Persona = ?, identificacion_Persona = ? WHERE id_Usuario = ?',
+            [nombrePersona, apellidoPersona, tipoIdentificacion, identificacionLimpia, id_usuario]
+        );
+
+        res.status(200).json({ mensaje: 'Datos actualizados correctamente.' });
+    } catch (error) {
+        console.error('Error al actualizar datos de Google:', error);
+        res.status(500).json({ error: 'Error del servidor al actualizar los datos.' });
+    }
+});
+
 router.post('/login', async (req, res) => {
     // 1. OBTENER DATOS DEL FRONTEND
     const { correo, contrasena } = req.body;
 
-    // 1.1 Validación básica de campos
+    // 1.1 Validar campos no vacíos
     if (!correo || !contrasena) {
         return res.status(400).json({ error: 'Los campos no pueden estar vacíos.' });
     }

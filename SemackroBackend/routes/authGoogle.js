@@ -55,7 +55,7 @@ router.get('/google/callback',
       // Redirigir al frontend con el token en la URL
       // El frontend capturará estos parámetros y los guardará en localStorage
       const frontendUrl = process.env.FRONTEND_URL || 'https://semackro.vercel.app';
-      const redirectUrl = `${getFrontendLoginUrl(frontendUrl)}?token=${token}&userId=${user.id_usuario}&email=${encodeURIComponent(user.correo)}&source=google`;
+      const redirectUrl = `${getFrontendLoginUrl(frontendUrl)}?token=${token}&userId=${user.id_usuario}&email=${encodeURIComponent(user.correo)}&source=google&isNew=${user.isNew}`;
       
       console.log(' Redirigiendo a:', redirectUrl);
       
