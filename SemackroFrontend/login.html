@@ -586,9 +586,10 @@
 
                 marcarOnboardingPostLoginPendiente();
 
+                // Wait 2 seconds to make sure data is saved before redirecting
                 setTimeout(() => {
                     window.location.href = obtenerDestinoDescubrirOnboarding();
-                }, 1500);
+                }, 2000);
 
                 return;
             }

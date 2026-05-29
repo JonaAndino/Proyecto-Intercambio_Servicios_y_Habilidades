@@ -153,11 +153,22 @@ router.put('/registro/google/datos', async (req, res) => {
         const nombrePersona = nombreParts[0] || '';
         const apellidoPersona = nombreParts.slice(1).join(' ') || '';
 
-        // Actualizar Personas
-        await pool.execute(
-            'UPDATE Personas SET nombre_Persona = ?, apellido_Persona = ?, tipoIdentificacion_Persona = ?, identificacion_Persona = ? WHERE id_Usuario = ?',
-            [nombrePersona, apellidoPersona, tipoIdentificacion, identificacionLimpia, id_usuario]
-        );
+        // Check if Persona record exists
+        const [existingPersonas] = await pool.execute('SELECT id_Perfil_Persona FROM Personas WHERE id_Usuario = ?', [id_usuario]);
+        
+        if (existingPersonas.length === 0) {
+            // Create Persona record if it doesn't exist
+            await pool.execute(
+                'INSERT INTO Personas (id_Usuario, nombre_Persona, apellido_Persona, tipoIdentificacion_Persona, identificacion_Persona) VALUES (?, ?, ?, ?, ?)',
+                [id_usuario, nombrePersona, apellidoPersona, tipoIdentificacion, identificacionLimpia]
+            );
+        } else {
+            // Update existing Persona record
+            await pool.execute(
+                'UPDATE Personas SET nombre_Persona = ?, apellido_Persona = ?, tipoIdentificacion_Persona = ?, identificacion_Persona = ? WHERE id_Usuario = ?',
+                [nombrePersona, apellidoPersona, tipoIdentificacion, identificacionLimpia, id_usuario]
+            );
+        }
 
         res.status(200).json({ mensaje: 'Datos actualizados correctamente.' });
     } catch (error) {
