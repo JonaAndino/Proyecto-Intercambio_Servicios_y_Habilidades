@@ -1196,7 +1196,7 @@ async function cargarDatosUsuario() {
         return imagenUrl;
       }
       const seed = encodeURIComponent(`${(nombre || "User")} ${(apellido || "")}`.trim());
-      return `https://api.dicebear.com/9.x/adventurer/svg?seed=${seed}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9`;
+      return `https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=${seed}&backgroundColor=ffffff`;
     }
 
     // Actualizar imagen de perfil
@@ -2232,14 +2232,14 @@ function mostrarFavoritos(favoritos) {
                                                    alt="${nombreCompleto}"
                                                    class="user-avatar object-cover"
                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                               <img src="https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9" 
+                                               <img src="https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=ffffff" 
                                                     alt="${nombreCompleto}" 
                                                     class="user-avatar hidden"
                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                                <div class="user-avatar hidden">
                                                    <span class="text-white text-3xl font-bold">${initials}</span>
                                                </div>`
-                                            : `<img src="https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9" 
+                                            : `<img src="https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=ffffff" 
                                                     alt="${nombreCompleto}" 
                                                     class="user-avatar"
                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -2444,8 +2444,8 @@ function renderUserCardsReal() {
                                     ${
                                       user.avatar
                                   ? `<img src="${user.avatar}" alt="${user.name}" class="user-avatar object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                        <img src="https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9" alt="${user.name}" class="user-avatar hidden">`
-                                        : `<img src="https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9" alt="${user.name}" class="user-avatar">`
+                                        <img src="https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=ffffff" alt="${user.name}" class="user-avatar hidden">`
+                                        : `<img src="https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=ffffff" alt="${user.name}" class="user-avatar">`
                                     }
                                     ${user.online ? '<div class="online-badge"></div>' : ""}
                                 </div>
@@ -2965,8 +2965,8 @@ async function cargarPerfilEnSeccion(perfilId) {
                     <div class="profile-modal-avatar" style="cursor: ${persona.imagenUrl_Persona ? "zoom-in" : "default"};" ${persona.imagenUrl_Persona ? `onclick="openImageFullscreen('${persona.imagenUrl_Persona}')"` : ""}>
                         ${
                           persona.imagenUrl_Persona
-                            ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}" onerror="this.src='https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9'">`
-                            : `<img src="https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9" alt="${nombreCompleto}">`
+                            ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}" onerror="this.src='https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=ffffff'">`
+                            : `<img src="https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=ffffff" alt="${nombreCompleto}">`
                         }
                     </div>
                 </div>
@@ -10090,9 +10090,9 @@ async function verDetalleOrden(id) {
           <div class="py-3 border-b border-gray-100 last:border-0">
             <!-- Fila superior: foto + nombre + estado -->
             <div class="flex items-start gap-3">
-              <img src="${p.imagen_tecnico || 'https://api.dicebear.com/9.x/adventurer/svg?seed=' + encodeURIComponent(p.nombre_tecnico || 'User') + '&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9'}"
+              <img src="${p.imagen_tecnico || 'https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=' + encodeURIComponent(p.nombre_tecnico || 'User') + '&backgroundColor=ffffff'}"
                 class="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white shadow"
-                onerror="this.src='https://api.dicebear.com/9.x/adventurer/svg?seed=User&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9'">
+                onerror="this.src='https://api.dicebear.com/9.x/adventurer-neutral/svg?seed=User&backgroundColor=ffffff'">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2 flex-wrap">
                   <p class="text-sm font-semibold text-gray-800 truncate">${escapeHtml(p.nombre_tecnico || 'Usuario')}</p>
