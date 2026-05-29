@@ -9280,6 +9280,7 @@ let _ubicacionUsuarioActual = null; // ubicación en texto del usuario logueado 
 let _ordenesCurrentPage = 1;
 const _ordenesItemsPerPage = 6;
 let _filtroMesOrdenes = null;
+let _busquedaOrdenes = '';
 
 /**
  * Compara dos cadenas de ubicación de forma insensible a mayúsculas/minúsculas.
@@ -9478,6 +9479,17 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
       
       const date = new Date(fecha);
       return date.getFullYear() === filterYear && (date.getMonth() + 1) === filterMonth;
+    });
+  }
+
+  // Aplicar filtro por búsqueda
+  if (_busquedaOrdenes) {
+    const busqueda = _busquedaOrdenes.toLowerCase().trim();
+    ordenesFiltradas = ordenesFiltradas.filter(o => {
+      const titulo = (o.titulo || '').toLowerCase();
+      const descripcion = (o.descripcion || '').toLowerCase();
+      const ubicacion = (o.ubicacion || o.ubicacion_obra || '').toLowerCase();
+      return titulo.includes(busqueda) || descripcion.includes(busqueda) || ubicacion.includes(busqueda);
     });
   }
 
@@ -9721,6 +9733,14 @@ function limpiarFiltroMes() {
   const inputMes = document.getElementById('filtroMesOrdenes');
   inputMes.value = '';
   _filtroMesOrdenes = null;
+  _ordenesCurrentPage = 1;
+  renderizarOrdenes(_todasLasOrdenes, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap);
+}
+
+/** Aplica búsqueda por texto a las órdenes */
+function aplicarBusquedaOrdenes() {
+  const inputBusqueda = document.getElementById('buscarOrdenes');
+  _busquedaOrdenes = inputBusqueda.value || '';
   _ordenesCurrentPage = 1;
   renderizarOrdenes(_todasLasOrdenes, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap);
 }

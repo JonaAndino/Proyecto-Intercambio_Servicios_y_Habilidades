@@ -910,6 +910,14 @@
                                     class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                             </label>
                             <button onclick="limpiarFiltroMes()" class="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition">Limpiar</button>
+                            
+                            <div class="border-l border-gray-300 h-6 mx-2"></div>
+                            
+                            <label class="flex items-center gap-2 text-sm text-gray-600">
+                                <span>Buscar:</span>
+                                <input type="text" id="buscarOrdenes" oninput="aplicarBusquedaOrdenes()" placeholder="Buscar por título..."
+                                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-64">
+                            </label>
                         </div>
 
                         <!-- Toggle Filtro Geográfico (Solo Admin) -->
@@ -940,7 +948,7 @@
             <!-- Modal Crear / Editar Orden de Trabajo -->
             <div id="modalOrdenTrabajo" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center p-2 overflow-hidden">
                 <div id="modalOrdenBackdrop" class="fixed inset-0 bg-transparent"></div>
-                <div id="modalOrdenCard" class="relative bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-100 flex flex-col overflow-visible z-10 max-h-[95vh]">
+                <div id="modalOrdenCard" class="relative bg-white rounded-3xl w-full max-w-4xl shadow-2xl border border-slate-100 flex flex-col overflow-visible z-10 max-h-[95vh]">
                     <div class="h-20 md:h-28 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-2 md:pb-3">
                         <button id="modalOrdenCloseBtn" class="absolute top-2 right-2 md:top-3 md:right-3 text-blue-800 hover:scale-110 transition-transform z-20 cursor-pointer" aria-label="Cerrar modal" onclick="cerrarModalOrden()">
                             <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
