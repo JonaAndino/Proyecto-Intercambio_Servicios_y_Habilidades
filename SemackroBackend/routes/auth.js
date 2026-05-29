@@ -92,8 +92,12 @@ router.post('/login', async (req, res) => {
 
         // Verificar si está bloqueado
         if (usuario.bloqueado_hasta && new Date() < new Date(usuario.bloqueado_hasta)) {
-            const minutosRestantes = Math.ceil((new Date(usuario.bloqueado_hasta) - new Date()) / (1000 * 60));
-            return res.status(423).json({ error: `Tu cuenta está bloqueada. Intenta de nuevo en ${minutosRestantes} minuto(s).` });
+            if (usuario.bloqueado_hasta.getFullYear() === 9999) {
+                return res.status(423).json({ error: 'Tu cuenta está bloqueada permanentemente. Contacta al administrador para desbloquearla.' });
+            } else {
+                const minutosRestantes = Math.ceil((new Date(usuario.bloqueado_hasta) - new Date()) / (1000 * 60));
+                return res.status(423).json({ error: `Tu cuenta está bloqueada temporalmente. Intenta de nuevo en ${minutosRestantes} minuto(s).` });
+            }
         }
 
         // Verificar si el acceso está restringido
@@ -109,13 +113,22 @@ router.post('/login', async (req, res) => {
             const nuevosIntentos = usuario.intentos_fallidos + 1;
             let bloqueadoHasta = usuario.bloqueado_hasta;
             
-            if (nuevosIntentos >= 5) {
-                bloqueadoHasta = new Date(Date.now() + 10 * 60 * 1000); // Bloquear por 10 minutos
+            if (nuevosIntentos === 5) {
+                // Bloquear temporalmente por 2 minutos después de 5 intentos
+                bloqueadoHasta = new Date(Date.now() + 2 * 60 * 1000);
+                await pool.execute(
+                    'UPDATE Usuarios SET intentos_fallidos = ?, bloqueado_hasta = ? WHERE id_usuario = ?',
+                    [nuevosIntentos, bloqueadoHasta, usuario.id_usuario]
+                );
+                return res.status(423).json({ error: 'Has alcanzado 5 intentos fallidos. Tu cuenta está bloqueada temporalmente por 2 minutos.' });
+            } else if (nuevosIntentos >= 8) {
+                // Bloquear permanentemente después de 8 intentos (5 + 3)
+                bloqueadoHasta = new Date('9999-12-31 23:59:59');
                 await pool.execute(
                     'UPDATE Usuarios SET intentos_fallidos = 0, bloqueado_hasta = ? WHERE id_usuario = ?',
                     [bloqueadoHasta, usuario.id_usuario]
                 );
-                return res.status(423).json({ error: 'Tu cuenta está bloqueada por demasiados intentos fallidos. Intenta de nuevo en 10 minutos.' });
+                return res.status(423).json({ error: 'Tu cuenta está bloqueada permanentemente por demasiados intentos fallidos. Contacta al administrador para desbloquearla.' });
             }
             
             await pool.execute(
@@ -170,8 +183,12 @@ router.post('/login-jwt', async (req, res) => {
 
         // Verificar si está bloqueado
         if (usuario.bloqueado_hasta && new Date() < new Date(usuario.bloqueado_hasta)) {
-            const minutosRestantes = Math.ceil((new Date(usuario.bloqueado_hasta) - new Date()) / (1000 * 60));
-            return res.status(423).json({ error: `Tu cuenta está bloqueada. Intenta de nuevo en ${minutosRestantes} minuto(s).` });
+            if (usuario.bloqueado_hasta.getFullYear() === 9999) {
+                return res.status(423).json({ error: 'Tu cuenta está bloqueada permanentemente. Contacta al administrador para desbloquearla.' });
+            } else {
+                const minutosRestantes = Math.ceil((new Date(usuario.bloqueado_hasta) - new Date()) / (1000 * 60));
+                return res.status(423).json({ error: `Tu cuenta está bloqueada temporalmente. Intenta de nuevo en ${minutosRestantes} minuto(s).` });
+            }
         }
 
         // Verificar si el acceso está restringido
@@ -187,13 +204,22 @@ router.post('/login-jwt', async (req, res) => {
             const nuevosIntentos = usuario.intentos_fallidos + 1;
             let bloqueadoHasta = usuario.bloqueado_hasta;
             
-            if (nuevosIntentos >= 5) {
-                bloqueadoHasta = new Date(Date.now() + 10 * 60 * 1000); // Bloquear por 10 minutos
+            if (nuevosIntentos === 5) {
+                // Bloquear temporalmente por 2 minutos después de 5 intentos
+                bloqueadoHasta = new Date(Date.now() + 2 * 60 * 1000);
+                await pool.execute(
+                    'UPDATE Usuarios SET intentos_fallidos = ?, bloqueado_hasta = ? WHERE id_usuario = ?',
+                    [nuevosIntentos, bloqueadoHasta, usuario.id_usuario]
+                );
+                return res.status(423).json({ error: 'Has alcanzado 5 intentos fallidos. Tu cuenta está bloqueada temporalmente por 2 minutos.' });
+            } else if (nuevosIntentos >= 8) {
+                // Bloquear permanentemente después de 8 intentos (5 + 3)
+                bloqueadoHasta = new Date('9999-12-31 23:59:59');
                 await pool.execute(
                     'UPDATE Usuarios SET intentos_fallidos = 0, bloqueado_hasta = ? WHERE id_usuario = ?',
                     [bloqueadoHasta, usuario.id_usuario]
                 );
-                return res.status(423).json({ error: 'Tu cuenta está bloqueada por demasiados intentos fallidos. Intenta de nuevo en 10 minutos.' });
+                return res.status(423).json({ error: 'Tu cuenta está bloqueada permanentemente por demasiados intentos fallidos. Contacta al administrador para desbloquearla.' });
             }
             
             await pool.execute(
