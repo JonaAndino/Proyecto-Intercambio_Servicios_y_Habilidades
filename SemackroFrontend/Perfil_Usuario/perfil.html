@@ -255,10 +255,10 @@
 
         .action-buttons {
             position: absolute;
-            top: 24px;
-            right: 24px;
+            top: 16px;
+            right: 16px;
             display: flex;
-            gap: 12px;
+            gap: 8px;
             z-index: 10;
         }
 
@@ -267,18 +267,19 @@
         }
 
         .logout-button {
-            padding: 12px 24px;
+            padding: 8px 16px;
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: white;
             border: none;
-            border-radius: 24px;
+            border-radius: 16px;
             font-weight: 600;
+            font-size: 0.875rem;
             cursor: pointer;
             transition: all 0.3s;
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         /* Review Reply Styles */
@@ -6699,8 +6700,8 @@
         // ======================
         function showLogoutModal() {
             const modalHTML = `
-        <div class="custom-modal-overlay" id="logoutModal" onclick="closeLogoutModal(event)">
-          <div class="relative bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 flex flex-col overflow-visible z-10 max-h-[95vh]" onclick="event.stopPropagation()">
+        <div class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm" id="logoutModal" onclick="closeLogoutModal(event)">
+          <div class="relative bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-100 flex flex-col overflow-visible z-10 max-h-[95vh]" onclick="event.stopPropagation()">
             <div class="h-20 md:h-28 bg-gradient-to-r from-red-50 to-amber-50 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-2 md:pb-3">
               <button class="absolute top-2 right-2 md:top-3 md:right-3 text-red-800 hover:scale-110 transition-transform z-20 cursor-pointer" aria-label="Cerrar modal" onclick="closeLogoutModal()">
                 <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -6733,14 +6734,14 @@
                 </div>
               </div>
             </div>
-            <div class="px-3 md:px-5 py-3 md:py-5 text-center">
-              <h3 class="text-lg md:text-xl font-black text-slate-800 tracking-tight">${t('logoutTitle')}</h3>
-              <p class="text-xs text-slate-500 mt-1">${t('logoutMessage')}</p>
+            <div class="px-4 md:px-8 py-4 md:py-6 text-center">
+              <h3 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">${t('logoutTitle')}</h3>
+              <p class="text-sm md:text-base text-slate-500 mt-2">${t('logoutMessage')}</p>
             </div>
-            <div class="px-3 md:px-5 pb-3 md:pb-5 bg-slate-50 rounded-b-3xl border-t border-slate-100">
-              <div class="flex gap-3 justify-center flex-wrap">
-                <button class="flex-1 min-w-[140px] bg-white border-2 border-slate-200 text-slate-700 font-bold py-4 rounded-2xl hover:border-slate-300 hover:bg-slate-50 transition-all active:scale-[0.98]" onclick="closeLogoutModal()">${t('cancel')}</button>
-                <button class="flex-1 min-w-[140px] bg-gradient-to-r from-orange-500 to-red-500 text-white font-black py-4 rounded-2xl shadow-lg shadow-orange-500/30 hover:from-orange-600 hover:to-red-600 hover:shadow-orange-500/40 transition-all active:scale-[0.98]" onclick="confirmLogout()">${t('logoutConfirm')}</button>
+            <div class="px-4 md:px-8 pb-4 md:pb-6 bg-slate-50 rounded-b-3xl border-t border-slate-100">
+              <div class="flex gap-3 md:gap-4 justify-center flex-wrap">
+                <button class="flex-1 min-w-[140px] bg-white border-2 border-slate-200 text-slate-700 font-bold py-3 md:py-4 rounded-2xl hover:border-slate-300 hover:bg-slate-50 transition-all active:scale-[0.98]" onclick="closeLogoutModal()">${t('cancel')}</button>
+                <button class="flex-1 min-w-[140px] bg-gradient-to-r from-orange-500 to-red-500 text-white font-black py-3 md:py-4 rounded-2xl shadow-lg shadow-orange-500/30 hover:from-orange-600 hover:to-red-600 hover:shadow-orange-500/40 transition-all active:scale-[0.98]" onclick="confirmLogout()">${t('logoutConfirm')}</button>
               </div>
             </div>
           </div>
