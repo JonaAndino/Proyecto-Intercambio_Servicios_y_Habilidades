@@ -670,105 +670,177 @@
 </div> <!-- Fin workbook -->
 
         <!-- Modal Crear / Editar Orden (Admin – overlay fijo fuera del flujo) -->
-        <div id="adminModalOrden" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"
-             onclick="adminCerrarModal(event)">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-                 onclick="event.stopPropagation()">
-                <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
-                    <h3 id="adminModalOrdenTitulo" class="text-xl font-bold text-gray-800">Nueva orden de trabajo</h3>
-                    <button onclick="adminCerrarModal()" class="p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        <div id="adminModalOrdenRoot" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+            <div id="adminModalOrdenBackdrop" class="fixed inset-0 bg-transparent"></div>
+            <div id="adminModalOrdenCard" class="relative bg-white rounded-3xl w-full max-w-5xl shadow-2xl border border-slate-100 flex flex-col overflow-visible mt-16 z-10">
+                <div class="h-32 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-4">
+                    <button id="adminModalOrdenCloseBtn" class="absolute top-4 right-4 text-blue-800 hover:scale-110 transition-transform z-20 cursor-pointer" aria-label="Cerrar modal">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
+                    <div class="absolute -top-16 inset-x-0 flex justify-center items-end gap-6 pointer-events-none">
+                        <div class="w-16 h-16 bg-[#3b82f6] rounded-2xl rotate-[-12deg] shadow-lg flex items-center justify-center border-4 border-white transform translate-y-2">
+                            <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                            </svg>
+                        </div>
+                        <div class="relative w-24 h-24 bg-white rounded-full shadow-2xl flex items-center justify-center border-4 border-white transform -translate-y-1">
+                            <div class="p-2 w-full h-full flex items-center justify-center">
+                                <svg viewBox="0 0 512 512" xmlSpace="preserve" class="w-16 h-16">
+                                    <circle style="fill:#3b82f6" cx="256" cy="256" r="256"/>
+                                    <g>
+                                        <rect x="220" y="160" width="72" height="32" rx="8" style="fill:#fff"/>
+                                        <rect x="220" y="208" width="72" height="32" rx="8" style="fill:#fff"/>
+                                        <rect x="220" y="256" width="72" height="32" rx="8" style="fill:#fff"/>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="w-16 h-16 bg-[#1d4ed8] rounded-2xl rotate-[12deg] shadow-lg flex items-center justify-center border-4 border-white transform translate-y-2">
+                            <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
-                <form id="adminFormOrden" onsubmit="adminGuardarOrden(event)" class="px-6 py-5 space-y-4">
+
+                <div class="px-6 md:px-8 py-6 text-center">
+                    <h3 id="adminModalOrdenTitulo" class="text-2xl font-black text-slate-800 tracking-tight">Nueva orden de trabajo</h3>
+                    <p class="text-sm text-slate-500 mt-2">Completa la información para crear o editar una orden de trabajo</p>
+                </div>
+
+                <form id="adminFormOrden" onsubmit="adminGuardarOrden(event)" class="px-6 md:px-8 pb-6">
                     <input type="hidden" id="adminOrdenId">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Título <span class="text-red-500">*</span></label>
-                        <input type="text" id="adminOrdenTitulo" required placeholder="Ej: instalación eléctrica residencial"
-                               class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                        <textarea id="adminOrdenDesc" rows="3" placeholder="Describe el trabajo a realizar..."
-                                  class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-gray-50"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Ubicación de obra</label>
-                        <input type="text" id="adminOrdenUbicacion" placeholder="Ej: col. la paz, tegucigalpa"
-                               class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio <span class="text-red-500">*</span></label>
-                            <input type="date" id="adminOrdenFechaInicio" required
-                                   class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Título <span class="text-red-500">*</span></label>
+                                <input type="text" id="adminOrdenTitulo" required placeholder="Ej: instalación eléctrica residencial"
+                                       class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Descripción</label>
+                                <textarea id="adminOrdenDesc" rows="4" placeholder="Describe el trabajo a realizar..."
+                                          class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition-all"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Ubicación de obra</label>
+                                <input type="text" id="adminOrdenUbicacion" placeholder="Ej: col. la paz, tegucigalpa"
+                                       class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition-all">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Fin <span class="text-red-500">*</span></label>
-                            <input type="date" id="adminOrdenFechaFin" required
-                                   class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Fecha Inicio <span class="text-red-500">*</span></label>
+                                    <input type="date" id="adminOrdenFechaInicio" required
+                                           class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition-all">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Fecha Fin <span class="text-red-500">*</span></label>
+                                    <input type="date" id="adminOrdenFechaFin" required
+                                           class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition-all">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Especialidad <span class="text-red-500">*</span></label>
+                                <select id="adminOrdenEspecialidad" required
+                                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition-all">
+                                    <option value="">Seleccionar especialidad</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Presupuesto (L)</label>
+                                    <input type="number" id="adminOrdenPresupuesto" min="0" step="0.01" placeholder="Ej: 15000"
+                                           class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition-all">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Max. Postulantes <span class="text-red-500">*</span></label>
+                                    <input type="number" id="adminOrdenMaxPostulantes" min="1" value="1" required
+                                           class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition-all"
+                                           placeholder="Ej: 3">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Estado</label>
+                                <select id="adminOrdenEstado"
+                                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 transition-all">
+                                    <option value="pendiente">Pendiente</option>
+                                    <option value="en_progreso">En Progreso</option>
+                                    <option value="completada">Completada</option>
+                                    <option value="cancelada">Cancelada</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Especialidad <span class="text-red-500">*</span></label>
-                        <select id="adminOrdenEspecialidad" required
-                                class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
-                            <option value="">Seleccionar especialidad</option>
-                        </select>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Presupuesto estimado (l)</label>
-                            <input type="number" id="adminOrdenPresupuesto" min="0" step="0.01" placeholder="Ej: 15000"
-                                   class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                            <select id="adminOrdenEstado"
-                                    class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
-                                <option value="pendiente">Pendiente</option>
-                                <option value="en_progreso">En Progreso</option>
-                                <option value="completada">Completada</option>
-                                <option value="cancelada">Cancelada</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Máximo de Postulantes <span class="text-red-500">*</span></label>
-                        <input type="number" id="adminOrdenMaxPostulantes" min="1" value="1" required
-                               class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
-                               placeholder="Ej: 3">
-                        <p class="text-xs text-gray-400 mt-1">Número máximo de técnicos que pueden postularse a esta orden.</p>
-                    </div>
-                    <div class="flex justify-end gap-3 pt-2">
-                        <button type="button" onclick="adminCerrarModal()"
-                                class="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition text-sm">Cancelar</button>
+
+                    <div class="pt-6 flex flex-col-reverse md:flex-row justify-end gap-3">
+                        <button type="button" id="adminModalOrdenCancelBtn"
+                                class="flex-1 md:flex-none px-6 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold transition-all cursor-pointer">
+                            Cancelar
+                        </button>
                         <button type="submit" id="adminBtnGuardar"
-                                class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition text-sm shadow">Crear orden</button>
+                                class="flex-1 md:flex-none px-6 py-3 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#3B82F6] hover:from-[#1D4ED8] hover:to-[#2563EB] active:from-[#1E3A8A] active:to-[#1D4ED8] text-white text-sm font-bold shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                            <span id="adminModalOrdenBtnText">Crear orden</span>
+                            <svg id="adminModalOrdenSpinner" class="animate-spin h-5 w-5 text-white hidden" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- Modal Ver Postulantes (Admin) -->
-        <div id="adminModalPostulaciones" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"
-             onclick="if(event.target===this) this.classList.add('hidden')">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col" onclick="event.stopPropagation()">
-                <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 shrink-0">
-                    <h3 id="adminPostulacionesTitulo" class="text-lg font-bold text-gray-800">Postulantes</h3>
-                    <button onclick="document.getElementById('adminModalPostulaciones').classList.add('hidden')"
-                            class="p-2 rounded-lg hover:bg-gray-100 transition text-gray-500">
-                        <span class="iconify" data-icon="mdi:close" style="font-size:20px;"></span>
+        <div id="adminModalPostulacionesRoot" style="display:none" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+            <div id="adminModalPostulacionesBackdrop" class="fixed inset-0 bg-transparent"></div>
+            <div id="adminModalPostulacionesCard" class="relative bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 flex flex-col overflow-visible mt-16 z-10">
+                <div class="h-32 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-4">
+                    <button id="adminModalPostulacionesCloseBtn" class="absolute top-4 right-4 text-blue-800 hover:scale-110 transition-transform z-20 cursor-pointer" aria-label="Cerrar modal">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
                     </button>
+                    <div class="absolute -top-16 inset-x-0 flex justify-center items-end gap-6 pointer-events-none">
+                        <div class="w-16 h-16 bg-[#3b82f6] rounded-2xl rotate-[-12deg] shadow-lg flex items-center justify-center border-4 border-white transform translate-y-2">
+                            <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-3-3H5a3 3 0 00-3 3v2"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12a3 3 0 100-6 3 3 0 000 6z"></path>
+                            </svg>
+                        </div>
+                        <div class="relative w-24 h-24 bg-white rounded-full shadow-2xl flex items-center justify-center border-4 border-white transform -translate-y-1">
+                            <div class="p-2 w-full h-full flex items-center justify-center">
+                                <svg viewBox="0 0 512 512" xmlSpace="preserve" class="w-16 h-16">
+                                    <circle style="fill:#3b82f6" cx="256" cy="256" r="256"></circle>
+                                    <g>
+                                        <circle style="fill:#ffffff" cx="256" cy="192" r="48"></circle>
+                                        <path style="fill:#ffffff" d="M256,336c-53.024,0-96-42.976-96-96H352,336z"></path>
+                                    </g>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="w-16 h-16 bg-[#1d4ed8] rounded-2xl rotate-[12deg] shadow-lg flex items-center justify-center border-4 border-white transform translate-y-2">
+                            <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-3-3H5a3 3 0 00-3 3v2"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12a3 3 0 100-6 3 3 0 000 6z"></path>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
-                <div id="adminPostulacionesContent" class="overflow-y-auto px-6 py-4 space-y-3 flex-1">
+                <div class="px-6 md:px-8 py-4 text-center">
+                    <h3 id="adminPostulacionesTitulo" class="text-2xl font-black text-slate-800 tracking-tight">Postulantes</h3>
+                </div>
+                <div id="adminPostulacionesContent" class="overflow-y-auto px-6 py-4 space-y-3 flex-1" style="max-height: 400px;">
                     <p class="text-gray-400 text-center py-8 italic">Cargando...</p>
                 </div>
-                <div class="px-6 py-3 border-t border-gray-100 flex justify-end shrink-0">
-                    <button onclick="document.getElementById('adminModalPostulaciones').classList.add('hidden')"
-                        class="px-5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm transition">Cerrar</button>
+                <div class="px-6 md:px-8 py-4 bg-slate-50 rounded-b-3xl border-t border-slate-100 flex justify-end shrink-0">
+                    <button id="adminModalPostulacionesCancelBtn" class="px-6 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-sm font-bold transition-all cursor-pointer">
+                        Cerrar
+                    </button>
                 </div>
             </div>
         </div>
@@ -2632,9 +2704,9 @@
             document.getElementById('adminFormOrden').reset();
             document.getElementById('adminOrdenId').value = '';
             document.getElementById('adminModalOrdenTitulo').textContent = 'Nueva Orden de Trabajo';
-            document.getElementById('adminBtnGuardar').textContent = 'Crear Orden';
+            document.getElementById('adminModalOrdenBtnText').textContent = 'Crear Orden';
             adminCargarEspecialidades();
-            document.getElementById('adminModalOrden').classList.remove('hidden');
+            adminModalOrdenOpen();
         }
 
         function adminAbrirModalEditar(id) {
@@ -2653,13 +2725,12 @@
                 document.getElementById('adminOrdenEspecialidad').value = o.especialidad || '';
             });
             document.getElementById('adminModalOrdenTitulo').textContent = 'Editar Orden de Trabajo';
-            document.getElementById('adminBtnGuardar').textContent = 'Guardar Cambios';
-            document.getElementById('adminModalOrden').classList.remove('hidden');
+            document.getElementById('adminModalOrdenBtnText').textContent = 'Guardar Cambios';
+            adminModalOrdenOpen();
         }
 
         function adminCerrarModal(event) {
-            if (event && event.target !== document.getElementById('adminModalOrden')) return;
-            document.getElementById('adminModalOrden').classList.add('hidden');
+            adminModalOrdenClose();
         }
 
         // ---------- CRUD ----------
@@ -2678,12 +2749,16 @@
             const maxPostulantes = parseInt(document.getElementById('adminOrdenMaxPostulantes').value) || 1;
 
             if (fechaFin < fechaInicio) {
-                Swal.fire({ icon: 'warning', title: 'Fechas inválidas', text: 'La fecha de fin no puede ser anterior a la fecha de inicio.', confirmButtonColor: '#3b82f6' });
+                Toast.error('Fechas inválidas', 'La fecha de fin no puede ser anterior a la fecha de inicio.');
                 return;
             }
 
             const btn = document.getElementById('adminBtnGuardar');
-            btn.disabled = true; btn.textContent = 'Guardando...';
+            const btnText = document.getElementById('adminModalOrdenBtnText');
+            const spinner = document.getElementById('adminModalOrdenSpinner');
+            btn.disabled = true;
+            btnText.textContent = 'Guardando...';
+            spinner.classList.remove('hidden');
 
             const usuarioId = localStorage.getItem('usuarioId');
             const body = JSON.stringify({ usuario_id: usuarioId, titulo, descripcion, ubicacion_obra: ubicacion, fecha_inicio: fechaInicio, fecha_fin: fechaFin, especialidad, presupuesto_estimado: presupuesto || null, estado, max_postulantes: maxPostulantes });
@@ -2693,15 +2768,16 @@
             try {
                 const res = await fetch(url, { method, headers: _otHeaders(), body });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
-                document.getElementById('adminModalOrden').classList.add('hidden');
+                adminModalOrdenClose();
                 await adminCargarOrdenes();
                 Toast.success(id ? 'Orden actualizada' : 'Orden creada', id ? 'Los cambios fueron guardados correctamente.' : 'La nueva orden fue creada exitosamente.');
             } catch (err) {
                 console.error('[AdminOT guardar]', err);
-                Swal.fire({ icon: 'error', title: 'Error al guardar', text: 'No se pudo guardar la orden. Verifica la conexión al servidor.', confirmButtonColor: '#3b82f6' });
+                Toast.error('Error al guardar', 'No se pudo guardar la orden. Verifica la conexión al servidor.');
             } finally {
                 btn.disabled = false;
-                btn.textContent = id ? 'Guardar Cambios' : 'Crear Orden';
+                btnText.textContent = id ? 'Guardar Cambios' : 'Crear Orden';
+                spinner.classList.add('hidden');
             }
         }
 
@@ -2719,21 +2795,18 @@
                 Toast.success('Estado actualizado', 'El estado de la orden ha sido modificado.');
             } catch (err) {
                 console.error('[AdminOT estado]', err);
-                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar el estado.', confirmButtonColor: '#3b82f6' });
+                Toast.error('Error', 'No se pudo actualizar el estado.');
             }
         }
 
         async function adminEliminarOrden(id) {
-            const { isConfirmed } = await Swal.fire({
+            const isConfirmed = await showRestrictAccessModal({
                 title: '¿Eliminar orden?',
-                text: 'Esta acción no se puede deshacer.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar'
+                message: 'Esta acción no se puede deshacer.',
+                warning: 'Confirmar para eliminar la orden #' + id,
+                confirmColor: '#ef4444'
             });
+
             if (!isConfirmed) return;
             try {
                 const res = await fetch(`${OT_API}/${id}`, { method: 'DELETE', headers: _otHeaders() });
@@ -2742,21 +2815,20 @@
                 Toast.success('Orden eliminada', 'La orden fue eliminada correctamente.');
             } catch (err) {
                 console.error('[AdminOT eliminar]', err);
-                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo eliminar la orden.', confirmButtonColor: '#3b82f6' });
+                Toast.error('Error', 'No se pudo eliminar la orden.');
             }
         }
 
         // ---------- Ver postulaciones ----------
         async function adminVerPostulaciones(idOrden) {
-            const modal = document.getElementById('adminModalPostulaciones');
             const content = document.getElementById('adminPostulacionesContent');
             const titulo = document.getElementById('adminPostulacionesTitulo');
-            if (!modal || !content) return;
+            if (!content) return;
 
             const orden = _adminTodasOrdenes.find(o => (o.id_orden || o.id) == idOrden);
             if (titulo) titulo.textContent = `Postulantes: ${orden ? orden.titulo : '#' + idOrden}`;
             content.innerHTML = '<p class="text-gray-400 text-center py-8">Cargando...</p>';
-            modal.classList.remove('hidden');
+            adminModalPostulacionesOpen();
 
             try {
                 const res = await fetch(`${OT_API}/${idOrden}/postulaciones`, { headers: _otHeaders() });
@@ -2923,7 +2995,7 @@
                 Toast.success(nuevoEstado === 'aceptada' ? 'Postulante aceptado' : 'Postulante rechazado', 'Se ha actualizado el estado de la postulación.');
             } catch (err) {
                 console.error('[AdminOT cambiar postulacion]', err);
-                Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar la postulación.', confirmButtonColor: '#3b82f6' });
+                Toast.error('Error', 'No se pudo actualizar la postulación.');
             }
         }
     </script>
@@ -3313,6 +3385,76 @@
                 _setLoading(true);
                 setTimeout(() => _closeModal(true), 1500);
             });
+        })();
+    </script>
+    <script>
+        (function () {
+            const root     = document.getElementById('adminModalOrdenRoot');
+            const backdrop = document.getElementById('adminModalOrdenBackdrop');
+            const card     = document.getElementById('adminModalOrdenCard');
+            const closeBtn = document.getElementById('adminModalOrdenCloseBtn');
+            const cancelBtn = document.getElementById('adminModalOrdenCancelBtn');
+
+            function _openModal() {
+                root.style.display = 'flex';
+                backdrop.className = 'fixed inset-0 bg-transparent animate-backdrop-in';
+                card.className = 'relative bg-white rounded-3xl w-full max-w-5xl shadow-2xl border border-slate-100 flex flex-col overflow-visible mt-16 z-10 animate-modal-in';
+            }
+
+            window.adminModalOrdenOpen = function () {
+                _openModal();
+            };
+
+            window.adminModalOrdenClose = function () {
+                backdrop.classList.remove('animate-backdrop-in');
+                backdrop.classList.add('animate-backdrop-out');
+                card.classList.remove('animate-modal-in');
+                card.classList.add('animate-modal-out');
+                setTimeout(() => {
+                    root.style.display = 'none';
+                    backdrop.classList.remove('animate-backdrop-out');
+                    card.classList.remove('animate-modal-out');
+                }, 260);
+            };
+
+            closeBtn.addEventListener('click',  window.adminModalOrdenClose);
+            cancelBtn.addEventListener('click', window.adminModalOrdenClose);
+            backdrop.addEventListener('click',  window.adminModalOrdenClose);
+        })();
+
+        // Controlador para modal de postulantes
+        (function () {
+            const root     = document.getElementById('adminModalPostulacionesRoot');
+            const backdrop = document.getElementById('adminModalPostulacionesBackdrop');
+            const card     = document.getElementById('adminModalPostulacionesCard');
+            const closeBtn = document.getElementById('adminModalPostulacionesCloseBtn');
+            const cancelBtn = document.getElementById('adminModalPostulacionesCancelBtn');
+
+            function _openModal() {
+                root.style.display = 'flex';
+                backdrop.className = 'fixed inset-0 bg-transparent animate-backdrop-in';
+                card.className = 'relative bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 flex flex-col overflow-visible mt-16 z-10 animate-modal-in';
+            }
+
+            window.adminModalPostulacionesOpen = function () {
+                _openModal();
+            };
+
+            window.adminModalPostulacionesClose = function () {
+                backdrop.classList.remove('animate-backdrop-in');
+                backdrop.classList.add('animate-backdrop-out');
+                card.classList.remove('animate-modal-in');
+                card.classList.add('animate-modal-out');
+                setTimeout(() => {
+                    root.style.display = 'none';
+                    backdrop.classList.remove('animate-backdrop-out');
+                    card.classList.remove('animate-modal-out');
+                }, 260);
+            };
+
+            closeBtn.addEventListener('click',  window.adminModalPostulacionesClose);
+            cancelBtn.addEventListener('click', window.adminModalPostulacionesClose);
+            backdrop.addEventListener('click',  window.adminModalPostulacionesClose);
         })();
     </script>
     <script src="js/toast.js"></script>
