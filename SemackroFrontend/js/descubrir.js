@@ -9277,6 +9277,8 @@ let _todasLasOrdenes = [];
 let _filtroActualOrden = 'todas';
 let _misPostulacionesMap = {};
 let _ubicacionUsuarioActual = null; // ubicación en texto del usuario logueado (city/depto)
+let _ordenesCurrentPage = 1;
+const _ordenesItemsPerPage = 6;
 
 /**
  * Compara dos cadenas de ubicación de forma insensible a mayúsculas/minúsculas.
@@ -9436,6 +9438,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
   if (esAdmin === undefined) esAdmin = localStorage.getItem('usuarioRolId') === '1';
   if (!misPostulacionesMap) misPostulacionesMap = {};
   const grid = document.getElementById('ordenesTrabajoGrid');
+  const paginationContainer = document.getElementById('ordenes-trabajo-pagination');
   if (!grid) return;
 
   const estadoConfig = {
@@ -9456,6 +9459,11 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
     });
   }
 
+  // Aplicar filtro por estado
+  if (_filtroActualOrden !== 'todas') {
+    ordenesFiltradas = ordenesFiltradas.filter(o => o.estado === _filtroActualOrden);
+  }
+
   if (!ordenesFiltradas || ordenesFiltradas.length === 0) {
     grid.innerHTML = `
       <div class="col-span-full flex items-center justify-center py-16">
@@ -9465,10 +9473,20 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
           ${esAdmin ? '<p class="text-gray-400 text-sm mt-1">Haz clic en &ldquo;nueva orden&rdquo; para crear una</p>' : ''}
         </div>
       </div>`;
+    if (paginationContainer) paginationContainer.innerHTML = '';
     return;
   }
 
-  grid.innerHTML = ordenesFiltradas.map(o => {
+  // Paginación
+  const totalPages = Math.ceil(ordenesFiltradas.length / _ordenesItemsPerPage);
+  if (_ordenesCurrentPage > totalPages) _ordenesCurrentPage = totalPages;
+  if (_ordenesCurrentPage < 1) _ordenesCurrentPage = 1;
+
+  const startIndex = (_ordenesCurrentPage - 1) * _ordenesItemsPerPage;
+  const endIndex = startIndex + _ordenesItemsPerPage;
+  const paginatedOrdenes = ordenesFiltradas.slice(startIndex, endIndex);
+
+  grid.innerHTML = paginatedOrdenes.map(o => {
     const est = estadoConfig[o.estado] || estadoConfig['pendiente'];
     const fechaInicio = o.fecha_inicio ? new Date(o.fecha_inicio).toLocaleDateString('es-HN') : '—';
     const fechaFin    = o.fecha_fin    ? new Date(o.fecha_fin).toLocaleDateString('es-HN')    : '—';
@@ -9503,10 +9521,10 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
       : '';
 
     return `
-      <div class="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col overflow-hidden border border-gray-100">
+      <div class="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col overflow-hidden border border-gray-100 min-h-[420px]">
         <!-- Cabecera con estado -->
         <div class="px-5 pt-5 pb-3 flex items-start justify-between">
-          <h3 class="font-bold text-gray-800 text-base leading-tight flex-1 mr-3">${titulo}</h3>
+          <h3 class="font-bold text-gray-800 text-base leading-tight flex-1 mr-3 line-clamp-2">${titulo}</h3>
           <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${est.color} shrink-0">
             <span class="w-1.5 h-1.5 rounded-full ${est.dot}"></span>
             ${est.label}
@@ -9525,7 +9543,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
           ${ubicacion ? `
           <div class="flex items-center gap-2">
             <span class="iconify text-gray-400" data-icon="mdi:map-marker-outline" style="font-size:16px;"></span>
-            <span>${ubicacion}</span>
+            <span class="line-clamp-2">${ubicacion}</span>
           </div>` : ''}
           <div class="flex items-center gap-2">
             <span class="iconify text-gray-400" data-icon="mdi:calendar-range" style="font-size:16px;"></span>
@@ -9547,7 +9565,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
         </div>
 
         <!-- Acciones -->
-        <div class="px-5 pb-4 pt-2 flex gap-2 border-t border-gray-50">
+        <div class="px-5 pb-4 pt-2 flex gap-2 border-t border-gray-50 mt-auto">
           <button onclick="verDetalleOrden(${o.id_orden || o.id})"
             class="flex-1 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-medium transition flex items-center justify-center gap-1">
             <span class="iconify" data-icon="mdi:eye-outline" style="font-size:14px;"></span> Ver
@@ -9570,13 +9588,58 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
       </div>`;
   }).join('');
 
+  // Renderizar paginación
+  if (paginationContainer) {
+    if (totalPages <= 1) {
+      paginationContainer.innerHTML = '';
+    } else {
+      let paginationHtml = '<div class="flex items-center justify-center gap-2">';
+      
+      // Botón anterior
+      paginationHtml += `
+        <button onclick="cambiarPaginaOrdenes(${_ordenesCurrentPage - 1})" 
+          ${_ordenesCurrentPage === 1 ? 'disabled' : ''} 
+          class="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 text-xs font-medium transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
+          <span class="iconify" data-icon="mdi:chevron-left"></span> Anterior
+        </button>`;
+
+      // Números de página
+      for (let i = 1; i <= totalPages; i++) {
+        paginationHtml += `
+          <button onclick="cambiarPaginaOrdenes(${i})" 
+            class="px-3 py-1.5 rounded-lg text-xs font-medium transition ${i === _ordenesCurrentPage 
+              ? 'bg-blue-600 text-white' 
+              : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}">
+            ${i}
+          </button>`;
+      }
+
+      // Botón siguiente
+      paginationHtml += `
+        <button onclick="cambiarPaginaOrdenes(${_ordenesCurrentPage + 1})" 
+          ${_ordenesCurrentPage === totalPages ? 'disabled' : ''} 
+          class="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 text-xs font-medium transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
+          Siguiente <span class="iconify" data-icon="mdi:chevron-right"></span>
+        </button>`;
+
+      paginationHtml += '</div>';
+      paginationContainer.innerHTML = paginationHtml;
+    }
+  }
+
   // Reactivar iconify para los nuevos elementos
   if (window.Iconify) Iconify.scan();
+}
+
+function cambiarPaginaOrdenes(nuevaPagina) {
+  _ordenesCurrentPage = nuevaPagina;
+  renderizarOrdenes(_todasLasOrdenes, undefined, _misPostulacionesMap);
 }
 
 /** Filtra la lista local por estado */
 function filtrarOrdenes(filtro) {
   _filtroActualOrden = filtro;
+  _ordenesCurrentPage = 1;
 
   // Resaltar botón activo
   document.querySelectorAll('.filtro-orden-btn').forEach(btn => {
@@ -9618,11 +9681,12 @@ function abrirModalCrearOrden() {
   // Resetear formulario
   document.getElementById('formOrdenTrabajo').reset();
   document.getElementById('ordenTrabajoId').value = '';
-  document.getElementById('modalOrdenTitulo').textContent = 'Crear Nueva Orden de Trabajo';
-  document.getElementById('btnGuardarOrden').textContent = 'Crear Orden';
+  document.getElementById('modalOrdenTitulo').textContent = 'Crear nueva orden de trabajo';
+  document.getElementById('modalOrdenBtnText').textContent = 'Crear orden';
+  document.getElementById('modalOrdenSpinner').classList.add('hidden');
 
   cargarEspecialidadesOrden();
-  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
 
   // SCRUM-25: Resetear y ocultar mapa al abrir
   if (window.MapaOT) MapaOT.reset();
@@ -9630,8 +9694,8 @@ function abrirModalCrearOrden() {
 
 /** Cierra el modal de crear/editar */
 function cerrarModalOrden(event) {
-  if (event && event.target !== document.getElementById('modalOrdenTrabajo')) return;
-  document.getElementById('modalOrdenTrabajo').classList.add('hidden');
+  if (event && event.target !== document.getElementById('modalOrdenBackdrop') && event.target !== document.getElementById('modalOrdenTrabajo')) return;
+  document.getElementById('modalOrdenTrabajo').style.display = 'none';
   // SCRUM-25: Resetear mapa al cerrar
   if (window.MapaOT) MapaOT.reset();
 }
@@ -9656,8 +9720,11 @@ async function guardarOrdenTrabajo(event) {
   }
 
   const btn = document.getElementById('btnGuardarOrden');
+  const btnText = document.getElementById('modalOrdenBtnText');
+  const spinner = document.getElementById('modalOrdenSpinner');
   btn.disabled = true;
-  btn.textContent = 'Guardando...';
+  btnText.textContent = 'Guardando...';
+  spinner.classList.remove('hidden');
 
   try {
     const usuarioId = localStorage.getItem('usuarioId');
@@ -9682,7 +9749,7 @@ async function guardarOrdenTrabajo(event) {
     const res = await fetch(url, { method, headers, body });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    document.getElementById('modalOrdenTrabajo').classList.add('hidden');
+    document.getElementById('modalOrdenTrabajo').style.display = 'none';
     Toast.success(id ? 'Orden actualizada' : 'Orden creada', id ? 'Los cambios fueron guardados correctamente.' : 'La orden fue creada exitosamente.');
     await cargarOrdenesTrabajo();
   } catch (err) {
@@ -9690,7 +9757,8 @@ async function guardarOrdenTrabajo(event) {
     Toast.error('Error al guardar', 'No se pudo guardar la orden. Por favor intenta de nuevo.');
   } finally {
     btn.disabled = false;
-    btn.textContent = id ? 'Guardar Cambios' : 'Crear Orden';
+    btnText.textContent = id ? 'Guardar cambios' : 'Crear orden';
+    spinner.classList.add('hidden');
   }
 }
 
@@ -9713,9 +9781,10 @@ async function editarOrden(id) {
   await cargarEspecialidadesOrden();
   document.getElementById('ordenEspecialidad').value = orden.especialidad || '';
 
-  document.getElementById('modalOrdenTitulo').textContent = 'Editar Orden de Trabajo';
-  document.getElementById('btnGuardarOrden').textContent = 'Guardar Cambios';
-  document.getElementById('modalOrdenTrabajo').classList.remove('hidden');
+  document.getElementById('modalOrdenTitulo').textContent = 'Editar orden de trabajo';
+  document.getElementById('modalOrdenBtnText').textContent = 'Guardar cambios';
+  document.getElementById('modalOrdenSpinner').classList.add('hidden');
+  document.getElementById('modalOrdenTrabajo').style.display = 'flex';
 
   // SCRUM-25: Resetear mapa al editar para evitar estados anteriores
   if (window.MapaOT) MapaOT.reset();
@@ -9828,7 +9897,7 @@ async function verDetalleOrden(id) {
       </div>` : ''}
     </div>`;
 
-  document.getElementById('modalDetalleOrden').classList.remove('hidden');
+  document.getElementById('modalDetalleOrden').style.display = 'flex';
 
   // Cargar postulantes para admin (SCRUM-25)
   if (esAdmin) {
@@ -9958,8 +10027,8 @@ async function verDetalleOrden(id) {
 
 /** Cierra el modal de detalle */
 function cerrarDetalleOrden(event) {
-  if (event && event.target !== document.getElementById('modalDetalleOrden')) return;
-  document.getElementById('modalDetalleOrden').classList.add('hidden');
+  if (event && event.target !== document.getElementById('modalDetalleOrdenBackdrop') && event.target !== document.getElementById('modalDetalleOrden')) return;
+  document.getElementById('modalDetalleOrden').style.display = 'none';
 }
 
 /** SCRUM-30: Genera y descarga un PDF con los detalles de la orden */
