@@ -18,6 +18,9 @@ router.get('/by-usuario/:usuarioId', async (req, res) => {
         res.status(500).json({ success: false, message: 'Error al buscar persona', error: error.message });
     }
 });
+
+// Lista de tipos de mascotas válidos
+const TIPOS_MASCOTAS_VALIDOS = ['CAT', 'DOG', 'SLIME', 'CRAB', 'FOX', 'FROG', 'DINO', 'GHOST'];
 // Personas.js
 // ========================================
 // API Personas - SEMACKRO2025
@@ -95,7 +98,7 @@ router.get('/verificar-identificacion/:identificacion', async (req, res) => {
 // ----------------------------------------------------
 router.get('/', async (req, res) => {
     try {
-        // Consulta directa para incluir todos los campos necesarios incluyendo disponibilidad y años de experiencia
+        // Consulta directa para incluir todos los campos necesarios incluyendo disponibilidad, años de experiencia y mascota
         const [personas] = await db.execute(`
             SELECT 
                 p.id_Perfil_Persona,
@@ -115,6 +118,7 @@ router.get('/', async (req, res) => {
                 p.url_Dni,
                 IFNULL(p.anios_experiencia, 0) AS anios_experiencia,
                 p.id_Usuario,
+                p.mascota,
                 u.activo,
                 u.correo
             FROM Personas p
@@ -169,6 +173,7 @@ router.get('/:id', async (req, res) => {
                 p.url_Dni,
                 IFNULL(p.anios_experiencia, 0) AS anios_experiencia,
                 p.id_Usuario,
+                p.mascota,
                 u.correo,
                 u.nombre AS nombre_usuario_cuenta,
                 u.activo
@@ -314,8 +319,19 @@ router.put('/:id', async (req, res) => {
         'nombre_Persona', 'apellido_Persona', 'fechaNac_Persona', 'genero_Persona',
         'estadoCivil_Persona', 'tipoIdentificacion_Persona', 'identificacion_Persona',
         'imagenUrl_Persona', 'imagen1Url_Persona', 'imagen2Url_Persona', 'imagen3Url_Persona',
-        'descripcionPerfil_Persona', 'disponibilidad', 'anios_experiencia', 'url_Dni'
+        'descripcionPerfil_Persona', 'disponibilidad', 'anios_experiencia', 'url_Dni',
+        'mascota'
     ];
+    
+    // Validar que mascota sea uno de los valores permitidos
+    if ('mascota' in req.body && req.body.mascota !== null) {
+        if (!TIPOS_MASCOTAS_VALIDOS.includes(req.body.mascota)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Tipo de mascota no válido. Los valores permitidos son: CAT, DOG, SLIME, CRAB, FOX, FROG, DINO, GHOST' 
+            });
+        }
+    }
     const camposActualizar = Object.keys(req.body).filter(campo => camposPermitidos.includes(campo));
     if (camposActualizar.length === 0) {
         return res.status(400).json({ success: false, message: 'No se enviaron campos válidos para actualizar.' });

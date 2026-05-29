@@ -2,14 +2,14 @@
 // MASCOTAS VIRTUALES
 // ========================================
 const PET_TYPES = {
-  CAT: 'cat',
-  DOG: 'dog',
-  SLIME: 'slime',
-  CRAB: 'crab',
-  FOX: 'fox',
-  FROG: 'frog',
-  DINO: 'dino',
-  GHOST: 'ghost'
+  CAT: 'CAT',
+  DOG: 'DOG',
+  SLIME: 'SLIME',
+  CRAB: 'CRAB',
+  FOX: 'FOX',
+  FROG: 'FROG',
+  DINO: 'DINO',
+  GHOST: 'GHOST'
 };
 
 const PET_INFO = {
@@ -22,6 +22,8 @@ const PET_INFO = {
   [PET_TYPES.DINO]: { label: '🦕 Dino Rex', color: 'text-teal-500' },
   [PET_TYPES.GHOST]: { label: '👻 Fantasmita Boo', color: 'text-slate-400' }
 };
+
+const TIPOS_MASCOTAS_VALIDOS = Object.values(PET_TYPES);
 
 const petAnimations = new Map();
 const petTypes = Object.values(PET_TYPES);
@@ -177,13 +179,25 @@ function renderMiniPixelPetSprite(type, frame, direction) {
 }
 
 function initializePetAnimations() {
-  const banners = document.querySelectorAll('.user-card-banner');
-  
-  banners.forEach((banner, index) => {
-    let posX = 15 + Math.random() * 30;
-    let direction = Math.random() > 0.5 ? 1 : -1;
-    let frame = 0;
-    let petType = getRandomPetType();
+    const banners = document.querySelectorAll('.user-card-banner');
+    
+    banners.forEach((banner, index) => {
+        let posX = 15 + Math.random() * 30;
+        let direction = Math.random() > 0.5 ? 1 : -1;
+        let frame = 0;
+        // Get the user card's data-mascota attribute or use random as fallback
+        const userCard = banner.closest('.user-card');
+        let petType = 'CAT'; // default
+        if (userCard) {
+            const storedPet = userCard.getAttribute('data-mascota');
+            if (storedPet && TIPOS_MASCOTAS_VALIDOS.includes(storedPet)) {
+                petType = storedPet;
+            } else {
+                petType = getRandomPetType();
+            }
+        } else {
+            petType = getRandomPetType();
+        }
     
     const movementInterval = setInterval(() => {
       posX += direction * 1.5;
@@ -2006,6 +2020,7 @@ async function cargarUsuariosReales() {
           avatar: persona.imagenUrl_Persona || null,
           avatarInitials: (persona.nombre_Persona || "U")[0].toUpperCase(),
           estadoVerificacion,
+          mascota: persona.mascota || null,
         };
       } catch (error) {
         console.error(
@@ -2424,6 +2439,7 @@ function mostrarFavoritos(favoritos) {
         ? userCompleto.genero
         : fav.genero || fav.genero_Persona || fav.genero_Usuario || "";
       const bannerGradientClass = obtenerClaseBannerPorGenero(genero);
+      const mascota = userCompleto ? userCompleto.mascota : (fav.mascota || null);
 
       const initials = nombreCompleto
         .split(" ")
@@ -2433,7 +2449,7 @@ function mostrarFavoritos(favoritos) {
         .toUpperCase();
 
       return `
-                    <div class="user-card" onclick="viewProfile(${userId})">
+                    <div class="user-card" onclick="viewProfile(${userId})" data-mascota="${mascota || ''}">
                         <!-- Botón de favoritos -->
                         <button onclick="toggleFavorite(event, ${userId}, '${nombreCompleto.replace(/'/g, "\\'")}'); localStorage.setItem('actualizarFavoritos', Date.now().toString()); cargarFavoritosDesdeBackend().then(() => { renderUserCardsReal(); });"
                                 class="favorite-btn active"
@@ -2655,7 +2671,7 @@ function renderUserCardsReal() {
         const availabilityData = obtenerEstadoDisponibilidadCard(user.availability);
 
         return `
-                <div class="user-card" onclick="viewProfile(${user.id})">
+                <div class="user-card" onclick="viewProfile(${user.id})" data-mascota="${user.mascota || ''}">
                     <!-- Botón de favoritos (ocultar si es el propio usuario) -->
                     ${
                       user.usuarioId !== usuarioActualId
