@@ -401,7 +401,7 @@
 
         <!-- Sección: Solicitudes de Verificación -->
         <div id="verificationSection" class="mt-16 pt-10 border-t border-black/20">
-            <div class="mb-8 flex justify-between items-end">
+            <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
                         <span class="iconify text-yellow-500" data-icon="mdi:account-check-outline"></span>
@@ -410,10 +410,26 @@
                     <p class="text-sm text-gray-400" data-i18n="reports.verificationDesc">Cola de validadores para identidad
                         y certificaciones.</p>
                 </div>
-                <button onclick="cargarSolicitudesVerificacion()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-black/20 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-semibold transition-all">
-                    <span class="iconify" data-icon="mdi:refresh"></span>
-                    Actualizar
-                </button>
+                <div class="flex gap-2 flex-wrap items-center">
+                    <button onclick="cargarSolicitudesVerificacion()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-black/20 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-semibold transition-all">
+                        <span class="iconify" data-icon="mdi:refresh"></span>
+                        Actualizar
+                    </button>
+                    <div class="relative">
+                        <span class="iconify absolute left-3 top-2.5 text-gray-400" data-icon="mdi:magnify"></span>
+                        <input type="text" id="busquedaSolicitud" oninput="filtrarSolicitudes()" placeholder="Buscar técnico..."
+                            data-i18n-placeholder="reports.search"
+                            class="pl-9 pr-3 py-2 text-xs border border-black/20 rounded-xl bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all w-48">
+                    </div>
+                    <select id="filtroEstadoSolicitud" onchange="filtrarSolicitudes()"
+                        class="border border-black/20 rounded-xl px-3 py-2 text-xs bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Estado</option>
+                        <option value="todos">Todos</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="aprobada">Aprobada</option>
+                        <option value="rechazada">Rechazada</option>
+                    </select>
+                </div>
             </div>
 
             <div id="verificationTableContainer" class="overflow-x-auto table-wrapper">
@@ -1002,6 +1018,7 @@
                     };
                 });
 
+                todasLasSolicitudesVerificacionFiltradas = todasLasSolicitudesVerificacion;
                 paginaActualVerificacion = 1; // Resetear a la primera página al cargar nuevos datos
                 renderizarTablaVerificacion();
 
@@ -1020,7 +1037,7 @@
             // Calcular índices para la paginación
             const inicio = (paginaActualVerificacion - 1) * itemsPorPaginaVerificacion;
             const fin = inicio + itemsPorPaginaVerificacion;
-            const datosPagina = todasLasSolicitudesVerificacion.slice(inicio, fin);
+            const datosPagina = todasLasSolicitudesVerificacionFiltradas.slice(inicio, fin);
 
             // Renderizar filas de la tabla
             if (datosPagina.length === 0) {
@@ -1058,13 +1075,32 @@
             renderizarPaginacionVerificacion(wrapper);
         }
 
+        // Función para filtrar las solicitudes
+        function filtrarSolicitudes() {
+            const busqueda = document.getElementById('busquedaSolicitud').value.toLowerCase();
+            const estado = document.getElementById('filtroEstadoSolicitud').value;
+
+            todasLasSolicitudesVerificacionFiltradas = todasLasSolicitudesVerificacion.filter(r => {
+                const matchBusqueda = !busqueda || r.nombre.toLowerCase().includes(busqueda);
+                let matchEstado = true;
+                if (estado && estado !== 'todos') {
+                    matchEstado = r.normalizedEstado === estado;
+                }
+
+                return matchBusqueda && matchEstado;
+            });
+
+            paginaActualVerificacion = 1;
+            renderizarTablaVerificacion();
+        }
+
         // Función para renderizar los botones de paginación para la tabla de verificación
         function renderizarPaginacionVerificacion(container) {
             // Eliminar paginación anterior si existe
             let paginationDiv = container.querySelector('.pagination-container');
             if (paginationDiv) paginationDiv.remove();
 
-            const totalPaginas = Math.ceil(todasLasSolicitudesVerificacion.length / itemsPorPaginaVerificacion);
+            const totalPaginas = Math.ceil(todasLasSolicitudesVerificacionFiltradas.length / itemsPorPaginaVerificacion);
 
             // No mostrar paginación si solo hay una página
             if (totalPaginas <= 1) return;
@@ -1087,7 +1123,7 @@
 
         // Función para cambiar de página en la tabla de verificación
         function cambiarPaginaVerificacion(nuevaPagina) {
-            const totalPaginas = Math.ceil(todasLasSolicitudesVerificacion.length / itemsPorPaginaVerificacion);
+            const totalPaginas = Math.ceil(todasLasSolicitudesVerificacionFiltradas.length / itemsPorPaginaVerificacion);
             if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
             paginaActualVerificacion = nuevaPagina;
             renderizarTablaVerificacion();
@@ -1816,6 +1852,7 @@
         const itemsPorPaginaReportes = 5;
 
         let todasLasSolicitudesVerificacion = [];
+        let todasLasSolicitudesVerificacionFiltradas = [];
         let paginaActualVerificacion = 1;
         const itemsPorPaginaVerificacion = 5;
 
