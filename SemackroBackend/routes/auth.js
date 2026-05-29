@@ -57,6 +57,16 @@ router.post('/registro', async (req, res) => {
         }
     }
 
+    // 1.6 Verificar que la identificación no esté ya registrada
+    const [existingIdentificacion] = await pool.execute(
+        'SELECT id_Perfil_Persona FROM Personas WHERE identificacion_Persona = ?',
+        [identificacionLimpia]
+    );
+    
+    if (existingIdentificacion.length > 0) {
+        return res.status(409).json({ error: 'Este número de identificación ya está registrado.' });
+    }
+
     try {
         // 2. CONSULTAR DB: ¿CORREO YA EXISTE? (Paso G del Diagrama)
         const [rows] = await pool.execute('SELECT id_usuario FROM Usuarios WHERE correo = ?', [correo]);
@@ -141,6 +151,16 @@ router.put('/registro/google/datos', async (req, res) => {
         }
     }
 
+    // Verificar que la identificación no esté ya registrada
+    const [existingIdentificacion] = await pool.execute(
+        'SELECT id_Perfil_Persona FROM Personas WHERE identificacion_Persona = ?',
+        [identificacionLimpia]
+    );
+    
+    if (existingIdentificacion.length > 0) {
+        return res.status(409).json({ error: 'Este número de identificación ya está registrado.' });
+    }
+
     try {
         // Verificar si el usuario existe
         const [usuarios] = await pool.execute('SELECT id_usuario FROM Usuarios WHERE id_usuario = ?', [id_usuario]);
@@ -174,6 +194,30 @@ router.put('/registro/google/datos', async (req, res) => {
     } catch (error) {
         console.error('Error al actualizar datos de Google:', error);
         res.status(500).json({ error: 'Error del servidor al actualizar los datos.' });
+    }
+});
+
+// Endpoint to check if identification number already exists
+router.post('/check-identificacion', async (req, res) => {
+    const { numeroIdentificacion } = req.body;
+    
+    if (!numeroIdentificacion) {
+        return res.status(400).json({ exists: false, error: 'Número de identificación es requerido.' });
+    }
+    
+    try {
+        // Check both with and without hyphens for DNI (since we store without hyphens)
+        let identificacionToCheck = numeroIdentificacion.trim().replace(/-/g, '');
+        
+        const [result] = await pool.execute(
+            'SELECT id_Perfil_Persona FROM Personas WHERE identificacion_Persona = ?',
+            [identificacionToCheck]
+        );
+        
+        res.status(200).json({ exists: result.length > 0 });
+    } catch (error) {
+        console.error('Error al verificar identificación:', error);
+        res.status(500).json({ exists: false, error: 'Error del servidor al verificar la identificación.' });
     }
 });
 

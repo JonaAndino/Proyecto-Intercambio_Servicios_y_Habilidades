@@ -551,6 +551,68 @@
 
     <!-- SCRIPTS -->
     <script>
+        // Debounce function to limit API calls
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Variable to track if identification number is valid
+        let identificacionValida = true;
+        let verificandoIdentificacion = false;
+        
+        // Function to check if identification number exists
+        const verificarIdentificacion = debounce(async (numeroIdentificacion, tipoIdentificacion) => {
+            if (!numeroIdentificacion || !tipoIdentificacion) {
+                identificacionValida = true;
+                return;
+            }
+            
+            // First do basic format validation
+            let formatValid = true;
+            if (tipoIdentificacion === 'DNI') {
+                const dniLimpio = numeroIdentificacion.replace(/-/g, '');
+                if (!/^\d{13}$/.test(dniLimpio)) {
+                    formatValid = false;
+                }
+            } else if (tipoIdentificacion === 'Pasaporte') {
+                if (!/^[A-Za-z]\d{6}$/.test(numeroIdentificacion)) {
+                    formatValid = false;
+                }
+            }
+            
+            if (!formatValid) {
+                identificacionValida = true; // Don't show duplicate error if format is wrong
+                return;
+            }
+            
+            verificandoIdentificacion = true;
+            identificacionValida = true;
+            
+            try {
+                const response = await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/check-identificacion`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ numeroIdentificacion })
+                });
+                
+                const data = await response.json();
+                identificacionValida = !data.exists;
+            } catch (error) {
+                console.error('Error al verificar identificación:', error);
+                identificacionValida = true; // Assume valid if there's an error
+            } finally {
+                verificandoIdentificacion = false;
+            }
+        }, 500); // 500ms debounce
+        
         // Verificar si viene de autenticación con Google
         window.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -621,6 +683,11 @@
                                     errorMensaje = 'El pasaporte debe contener 1 letra seguida de 6 dígitos (ej: H123456).';
                                 }
                             }
+                        }
+                        
+                        // Check if identification number is already taken
+                        if (!errorMensaje && !identificacionValida) {
+                            errorMensaje = 'Este número de identificación ya está registrado.';
                         }
                         
                         if (errorMensaje) {
@@ -771,6 +838,20 @@
                     mensajeDiv.className = 'p-3 text-sm font-medium rounded-lg mb-6 text-center bg-red-100 text-red-700 border border-red-400';
                 }
             }
+            
+            // Add real-time validation to identification fields
+            const tipoIdentificacionSelect = document.getElementById('tipoIdentificacion');
+            const numeroIdentificacionInput = document.getElementById('numeroIdentificacion');
+            
+            if (tipoIdentificacionSelect && numeroIdentificacionInput) {
+                tipoIdentificacionSelect.addEventListener('change', () => {
+                    verificarIdentificacion(numeroIdentificacionInput.value, tipoIdentificacionSelect.value);
+                });
+                
+                numeroIdentificacionInput.addEventListener('input', () => {
+                    verificarIdentificacion(numeroIdentificacionInput.value, tipoIdentificacionSelect.value);
+                });
+            }
         });
 
         // REGISTRO TRADICIONAL
@@ -792,7 +873,7 @@
             } else if (contrasena.length < 6) {
                 errorMensaje = 'La contraseña debe tener al menos 6 caracteres.';
             } else {
-                // Validate identification
+                // Validate identification format
                 if (tipoIdentificacion === 'DNI') {
                     const dniLimpio = numeroIdentificacion.replace(/-/g, '');
                     if (!/^\d{13}$/.test(dniLimpio)) {
@@ -803,6 +884,11 @@
                         errorMensaje = 'El pasaporte debe contener 1 letra seguida de 6 dígitos (ej: H123456).';
                     }
                 }
+            }
+            
+            // Check if identification number is already taken
+            if (!errorMensaje && !identificacionValida) {
+                errorMensaje = 'Este número de identificación ya está registrado.';
             }
 
             if (errorMensaje) {
