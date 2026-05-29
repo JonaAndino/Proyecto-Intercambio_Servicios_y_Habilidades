@@ -9279,6 +9279,7 @@ let _misPostulacionesMap = {};
 let _ubicacionUsuarioActual = null; // ubicación en texto del usuario logueado (city/depto)
 let _ordenesCurrentPage = 1;
 const _ordenesItemsPerPage = 6;
+let _filtroMesOrdenes = null;
 
 /**
  * Compara dos cadenas de ubicación de forma insensible a mayúsculas/minúsculas.
@@ -9462,6 +9463,22 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
   // Aplicar filtro por estado
   if (_filtroActualOrden !== 'todas') {
     ordenesFiltradas = ordenesFiltradas.filter(o => o.estado === _filtroActualOrden);
+  }
+
+  // Aplicar filtro por mes/año
+  if (_filtroMesOrdenes) {
+    const [year, month] = _filtroMesOrdenes.split('-'); // "2026-05" → ["2026", "05"]
+    const filterYear = parseInt(year);
+    const filterMonth = parseInt(month);
+    
+    ordenesFiltradas = ordenesFiltradas.filter(o => {
+      // Verificar fecha_inicio o fecha_fin? Vamos a usar fecha_inicio por defecto
+      const fecha = o.fecha_inicio || o.fecha_fin;
+      if (!fecha) return false;
+      
+      const date = new Date(fecha);
+      return date.getFullYear() === filterYear && (date.getMonth() + 1) === filterMonth;
+    });
   }
 
   if (!ordenesFiltradas || ordenesFiltradas.length === 0) {
@@ -9691,6 +9708,23 @@ function filtrarOrdenes(filtro) {
   renderizarOrdenes(filtradas, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap);
 }
 
+/** Aplica filtro por mes/año a las órdenes */
+function aplicarFiltroMes() {
+  const inputMes = document.getElementById('filtroMesOrdenes');
+  _filtroMesOrdenes = inputMes.value || null;
+  _ordenesCurrentPage = 1;
+  renderizarOrdenes(_todasLasOrdenes, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap);
+}
+
+/** Limpia el filtro por mes/año */
+function limpiarFiltroMes() {
+  const inputMes = document.getElementById('filtroMesOrdenes');
+  inputMes.value = '';
+  _filtroMesOrdenes = null;
+  _ordenesCurrentPage = 1;
+  renderizarOrdenes(_todasLasOrdenes, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap);
+}
+
 /** Toggles the geographic filter for Admin orders view */
 async function toggleFiltroGeografico() {
     // Limpiamos caché de OT para forzar recarga
@@ -9699,6 +9733,19 @@ async function toggleFiltroGeografico() {
     
     // Recargamos órdenes aplicando el nuevo estado del toggle
     await cargarOrdenesTrabajo();
+}
+
+/** Función para bloquear scroll sin shift */
+function bloquearScroll() {
+  const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+  document.body.style.overflow = 'hidden';
+  document.body.style.paddingRight = `${scrollbarWidth}px`;
+}
+
+/** Función para desbloquear scroll */
+function desbloquearScroll() {
+  document.body.style.overflow = '';
+  document.body.style.paddingRight = '';
 }
 
 /** Abre el modal para crear una nueva orden */
@@ -9715,7 +9762,7 @@ function abrirModalCrearOrden() {
 
   cargarEspecialidadesOrden();
   modal.style.display = 'flex';
-  document.body.style.overflow = 'hidden';
+  bloquearScroll();
 
   // SCRUM-25: Resetear y ocultar mapa al abrir
   if (window.MapaOT) MapaOT.reset();
@@ -9725,7 +9772,7 @@ function abrirModalCrearOrden() {
 function cerrarModalOrden(event) {
   if (event && event.target !== document.getElementById('modalOrdenBackdrop') && event.target !== document.getElementById('modalOrdenTrabajo')) return;
   document.getElementById('modalOrdenTrabajo').style.display = 'none';
-  document.body.style.overflow = '';
+  desbloquearScroll();
   // SCRUM-25: Resetear mapa al cerrar
   if (window.MapaOT) MapaOT.reset();
 }
@@ -9780,7 +9827,7 @@ async function guardarOrdenTrabajo(event) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     document.getElementById('modalOrdenTrabajo').style.display = 'none';
-    document.body.style.overflow = '';
+    desbloquearScroll();
     Toast.success(id ? 'Orden actualizada' : 'Orden creada', id ? 'Los cambios fueron guardados correctamente.' : 'La orden fue creada exitosamente.');
     await cargarOrdenesTrabajo();
   } catch (err) {
@@ -9816,7 +9863,7 @@ async function editarOrden(id) {
   document.getElementById('modalOrdenBtnText').textContent = 'Guardar cambios';
   document.getElementById('modalOrdenSpinner').classList.add('hidden');
   document.getElementById('modalOrdenTrabajo').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
+  bloquearScroll();
 
   // SCRUM-25: Resetear mapa al editar para evitar estados anteriores
   if (window.MapaOT) MapaOT.reset();
@@ -9847,10 +9894,10 @@ async function cancelarOrden(id) {
       </div>`);
 
     const modal = document.getElementById(modalId);
-    const close = (val) => { modal.remove(); document.body.style.overflow = ''; resolve(val); };
+    const close = (val) => { modal.remove(); desbloquearScroll(); resolve(val); };
     document.getElementById('ot-cancel-no').onclick = () => close(false);
     document.getElementById('ot-cancel-yes').onclick = () => close(true);
-    document.body.style.overflow = 'hidden';
+    bloquearScroll();
   });
 
   if (!confirmado) return;
@@ -9931,7 +9978,7 @@ async function verDetalleOrden(id) {
     </div>`;
 
   document.getElementById('modalDetalleOrden').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
+  bloquearScroll();
 
   // Cargar postulantes para admin (SCRUM-25)
   if (esAdmin) {
@@ -10063,7 +10110,7 @@ async function verDetalleOrden(id) {
 function cerrarDetalleOrden(event) {
   if (event && event.target !== document.getElementById('modalDetalleOrdenBackdrop') && event.target !== document.getElementById('modalDetalleOrden')) return;
   document.getElementById('modalDetalleOrden').style.display = 'none';
-  document.body.style.overflow = '';
+  desbloquearScroll();
 }
 
 /** SCRUM-30: Genera y descarga un PDF con los detalles de la orden */
