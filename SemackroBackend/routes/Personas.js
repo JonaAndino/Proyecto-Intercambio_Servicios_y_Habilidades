@@ -7,14 +7,33 @@ router.get('/by-usuario/:usuarioId', async (req, res) => {
         return res.status(400).json({ success: false, message: 'ID de usuario no válido' });
     }
     try {
-        const [rows] = await db.execute(`
+        let [rows] = await db.execute(`
             SELECT *, IFNULL(anios_experiencia, 0) AS anios_experiencia 
             FROM Personas WHERE id_Usuario = ?`, [usuarioId]);
+        
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'No se encontró persona para este usuario' });
+            // First check that the user exists in Usuarios
+            const [userCheck] = await db.execute('SELECT correo FROM Usuarios WHERE id_usuario = ?', [usuarioId]);
+            if (userCheck.length === 0) {
+                return res.status(404).json({ success: false, message: 'No se encontró el usuario' });
+            }
+            
+            // Create a basic Persona record
+            const nombreDefault = userCheck[0].correo.split('@')[0];
+            await db.execute(
+                'INSERT INTO Personas (id_Usuario, nombre_Persona) VALUES (?, ?)',
+                [usuarioId, nombreDefault]
+            );
+            
+            // Fetch the newly created record
+            [rows] = await db.execute(`
+                SELECT *, IFNULL(anios_experiencia, 0) AS anios_experiencia 
+                FROM Personas WHERE id_Usuario = ?`, [usuarioId]);
         }
+        
         res.json({ success: true, data: rows[0] });
     } catch (error) {
+        console.error('Error en /personas/by-usuario:', error);
         res.status(500).json({ success: false, message: 'Error al buscar persona', error: error.message });
     }
 });
