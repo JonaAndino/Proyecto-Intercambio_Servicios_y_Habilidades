@@ -181,13 +181,18 @@
             border-radius: 12px;
             overflow: hidden;
             background-color: white;
-            min-height: 450px; /* Altura mínima constante para evitar deformaciones */
+            height: 450px; /* Altura fija para evitar saltos de layout */
             display: flex;
             flex-direction: column;
         }
 
         .table-wrapper table {
             flex: 1;
+            width: 100%;
+        }
+
+        .table-wrapper tbody {
+            vertical-align: top;
         }
 
         .pagination-container {
