@@ -549,9 +549,9 @@
                     console.warn('Error obteniendo rol:', e);
                 }
 
-                // If it's a new user, save the registration data from sessionStorage
+                // If it's a new user, save the registration data from localStorage
                 if (isNew) {
-                    const registroDataStr = sessionStorage.getItem('googleRegistroData');
+                    const registroDataStr = localStorage.getItem('googleRegistroData');
                     if (registroDataStr) {
                         const registroData = JSON.parse(registroDataStr);
                         console.log('  - Enviando datos de registro de Google:', registroData);
@@ -570,7 +570,7 @@
                             
                             if (response.ok) {
                                 console.log('✅ Datos de Google guardados correctamente');
-                                sessionStorage.removeItem('googleRegistroData');
+                                localStorage.removeItem('googleRegistroData');
                             } else {
                                 const errorData = await response.json();
                                 console.error('❌ Error al guardar datos de Google:', errorData);

@@ -3580,18 +3580,48 @@
                     // No mostrar nada
                 }
 
-                // 3. Mapear datos con defaults inteligentes
+                // 3. Mapear datos con defaults inteligentes, usando datos de Google si están disponibles
                 const correoUsuario = localStorage.getItem('correoUsuario') || '';
                 const nombreDelCorreo = correoUsuario.split('@')[0] || 'Usuario';
-
+                
                 // Capitalizar primera letra
                 const nombreDefault = nombreDelCorreo.charAt(0).toUpperCase() + nombreDelCorreo.slice(1);
+                
+                let googleData = null;
+                try {
+                    const googleDataStr = localStorage.getItem('googleRegistroData');
+                    if (googleDataStr) {
+                        googleData = JSON.parse(googleDataStr);
+                    }
+                } catch (e) {
+                    console.warn('Error parsing googleRegistroData:', e);
+                }
+                
+                let nombreFinal = personaDB.nombre_Persona;
+                let apellidoFinal = personaDB.apellido_Persona;
+                let tipoIdentificacionFinal = personaDB.tipoIdentificacion_Persona;
+                let identificacionFinal = personaDB.identificacion_Persona;
+                
+                // If we have Google data and the DB fields are still default/empty, use the Google data
+                if (googleData) {
+                    if (!nombreFinal || nombreFinal === nombreDefault) {
+                        const nombreParts = googleData.nombre.split(' ');
+                        nombreFinal = nombreParts[0] || nombreDefault;
+                        apellidoFinal = nombreParts.slice(1).join(' ') || apellidoFinal;
+                    }
+                    if (!tipoIdentificacionFinal) {
+                        tipoIdentificacionFinal = googleData.tipoIdentificacion;
+                    }
+                    if (!identificacionFinal) {
+                        identificacionFinal = googleData.numeroIdentificacion;
+                    }
+                }
 
-                const avatarDefault = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombreDefault)}&background=3b82f6&color=fff&size=200&bold=true&rounded=true`;
+                const avatarDefault = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombreFinal || nombreDefault)}&background=3b82f6&color=fff&size=200&bold=true&rounded=true`;
 
                 usuario = {
-                    nombre_Usuario: personaDB.nombre_Persona || nombreDefault,
-                    apellido_Usuario: personaDB.apellido_Persona || '',
+                    nombre_Usuario: nombreFinal || nombreDefault,
+                    apellido_Usuario: apellidoFinal || '',
                     descripcion_Usuario: personaDB.descripcionPerfil_Persona || '¡Hola! Soy nuevo en SEMACKRO y estoy listo para intercambiar habilidades.',
                     imagenUrl_Usuario: personaDB.imagenUrl_Persona || avatarDefault,
                     imagen1Url_Usuario: personaDB.imagen1Url_Persona || '',
@@ -3603,8 +3633,8 @@
                     codigoPostal: direccionDB && (direccionDB.codigoPostal_Direccion || direccionDB.codigoPostal) || '',
                     estadoCivil_Usuario: personaDB.estadoCivil_Persona || 'Soltero',
                     genero_Usuario: personaDB.genero_Persona || 'Otro',
-                    tipoIdentificacion_Usuario: personaDB.tipoIdentificacion_Persona || 'DNI',
-                    identificacion_usuario: personaDB.identificacion_Persona || '',
+                    tipoIdentificacion_Usuario: tipoIdentificacionFinal || 'DNI',
+                    identificacion_usuario: identificacionFinal || '',
                     fechaNacimiento: personaDB.fechaNac_Persona || '',
                     anios_experiencia: personaDB.anios_experiencia || 0,
                     url_Dni: personaDB.url_Dni || '',
@@ -5117,6 +5147,12 @@
                             console.error('Error al actualizar en BD:', backendError);
                             if (window.Toast) {
                                 Toast.error('No se pudo actualizar', backendError);
+                            }
+                        } else {
+                            // If we saved the name or identification, clear the Google data from localStorage
+                            const camposClave = ['nombre_Usuario', 'apellido_Usuario', 'tipoIdentificacion_Usuario', 'identificacion_usuario'];
+                            if (camposClave.includes(campo)) {
+                                localStorage.removeItem('googleRegistroData');
                             }
                         }
                         setGuardando(false);

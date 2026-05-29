@@ -758,7 +758,6 @@
                 const nombre = document.getElementById('nombre').value.trim();
                 const tipoIdentificacion = document.getElementById('tipoIdentificacion').value;
                 const numeroIdentificacion = document.getElementById('numeroIdentificacion').value.trim();
-                const correo = document.getElementById('correo').value.trim();
                 
                 // Validar campos
                 let errorMensaje = '';
@@ -787,13 +786,13 @@
                     return;
                 }
                 
-                // Guardar datos en sessionStorage para después
+                // Guardar datos en localStorage (persiste mejor) para después
                 const registroData = {
                     nombre,
                     tipoIdentificacion,
                     numeroIdentificacion
                 };
-                sessionStorage.setItem('googleRegistroData', JSON.stringify(registroData));
+                localStorage.setItem('googleRegistroData', JSON.stringify(registroData));
                 
                 // Redirigir a Google
                 mensajeDiv.classList.remove('hidden');
