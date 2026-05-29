@@ -2102,47 +2102,113 @@
 
         // ─── Eliminar solicitud ──────────────────────────────────────────
         async function adminEliminarSolicitudRecuperar(idSolicitud) {
-            const { isConfirmed } = await Swal.fire({
-                title: '¿Eliminar solicitud?',
-                html: `¿Estás seguro de eliminar permanentemente la solicitud <strong>#${idSolicitud}</strong>?<br><br><span style="color:#ef4444;">Esta acción no se puede deshacer.</span>`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#6b7280',
-                reverseButtons: true,
-                focusCancel: true
+            const oldModal = document.getElementById('deleteSolicitudModalRoot');
+            if (oldModal) oldModal.remove();
+
+            const root = document.createElement('div');
+            root.id = 'deleteSolicitudModalRoot';
+            root.className = 'fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto';
+            root.innerHTML = [
+                '<div data-delete-backdrop class="fixed inset-0 bg-transparent animate-backdrop-in"></div>',
+                '<div data-delete-card class="relative bg-white dark:bg-slate-900 rounded-3xl w-full max-w-lg shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col overflow-visible mt-16 z-10 animate-modal-in">',
+                    '<div class="h-32 bg-gradient-to-r from-red-50 to-amber-50 dark:from-red-950/20 dark:to-amber-950/10 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-4">',
+                        '<button data-delete-close class="absolute top-4 right-4 text-red-800 dark:text-red-400 hover:scale-110 transition-transform disabled:opacity-30 z-20 cursor-pointer" aria-label="Cerrar modal">',
+                            '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>',
+                        '</button>',
+                        '<div class="absolute -top-16 inset-x-0 flex justify-center items-end gap-6 pointer-events-none">',
+                            '<div class="w-16 h-16 bg-[#EF4444] rounded-2xl shadow-lg flex items-center justify-center border-4 border-white dark:border-slate-900" style="transform: rotate(-12deg) translateY(8px);">',
+                                '<svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>',
+                            '</div>',
+                            '<div class="relative w-24 h-24 bg-white dark:bg-slate-800 rounded-full shadow-2xl flex items-center justify-center border-4 border-white dark:border-slate-900" style="transform: translateY(-4px);">',
+                                '<div class="p-2 w-full h-full flex items-center justify-center">',
+                                    '<svg viewBox="0 0 508 508" xmlSpace="preserve" class="w-16 h-16"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><circle style="fill:#ffa424" cx="254" cy="254" r="254"></circle><path style="fill:#FFFFFF" d="M424.1,336.3L270.2,64c-7.1-12.6-25.2-12.6-32.3,0l-154,272.3c-7,12.4,1.9,27.7,16.2,27.7H408 C422.2,364,431.1,348.7,424.1,336.3z"></path><polygon style="fill:#ff0000" points="109.2,337.4 254,81.2 398.8,337.4"></polygon><g><path style="fill:#FFFFFF" d="M272.7,197c0,35.1-8.4,89.1-18.7,89.1c-10.4,0-18.7-54-18.7-89.1s8.4-38.1,18.7-38.1 C264.4,158.9,272.7,161.9,272.7,197z"></path><circle style="fill:#FFFFFF" cx="254" cy="304.4" r="10.6"></circle></g></g></svg>',
+                                '</div>',
+                            '</div>',
+                            '<div class="w-16 h-16 bg-[#F59E0B] rounded-2xl shadow-lg flex items-center justify-center border-4 border-white dark:border-slate-900" style="transform: rotate(12deg) translateY(8px);">',
+                                '<svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v3m-9 0h.01M9 21h3m-3-3h.01M12 5h.01M12 9h.01M12 13h.01M12 17h.01M12 21h.01M12 25h.01M8 5a2 2 0 012-2h4a2 2 0 012 2v16a2 2 0 01-2 2H10a2 2 0 01-2-2V5z" /></svg>',
+                            '</div>',
+                        '</div>',
+                    '</div>',
+                    '<div class="p-6 md:p-8 text-center space-y-4">',
+                        '<h3 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight">&iquest;Eliminar solicitud?</h3>',
+                        '<div class="text-slate-600 dark:text-slate-300 space-y-4">',
+                            '<p class="text-base leading-relaxed font-medium">&iquest;Est&aacute;s seguro de eliminar permanentemente la solicitud <span class="font-bold text-[#f26a36] dark:text-red-400 font-mono bg-red-500/10 px-2 py-0.5 rounded-md">#' + idSolicitud + '</span>?</p>',
+                            '<div class="bg-transparent border-none rounded-xl p-2 max-w-sm mx-auto flex items-center justify-center gap-2">',
+                                '<svg class="w-5 h-5 text-[#EF4444] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>',
+                                '<span class="text-sm font-bold text-[#EF4444] tracking-wide">Esta acci&oacute;n no se puede deshacer.</span>',
+                            '</div>',
+                        '</div>',
+                    '</div>',
+                    '<div class="p-6 md:p-8 bg-slate-50 dark:bg-slate-800/50 rounded-b-3xl border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row gap-3">',
+                        '<button data-delete-cancel type="button" class="flex-1 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-bold transition-all cursor-pointer disabled:opacity-50">Cancelar</button>',
+                        '<button data-delete-confirm type="button" class="flex-1 px-5 py-3 rounded-xl bg-[#f26a36] hover:bg-[#df5624] active:bg-[#c94519] text-white text-sm font-bold shadow-lg shadow-orange-600/20 hover:shadow-orange-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"><span>S&iacute;, eliminar</span></button>',
+                    '</div>',
+                '</div>'
+            ].join('');
+
+            document.body.appendChild(root);
+
+            const backdrop = root.querySelector('[data-delete-backdrop]');
+            const card = root.querySelector('[data-delete-card]');
+            const closeBtn = root.querySelector('[data-delete-close]');
+            const cancelBtn = root.querySelector('[data-delete-cancel]');
+            const confirmBtn = root.querySelector('[data-delete-confirm]');
+            let isClosing = false;
+            let isDeleting = false;
+
+            const closeModal = () => new Promise((resolve) => {
+                if (isClosing) return resolve();
+                isClosing = true;
+                backdrop.classList.remove('animate-backdrop-in');
+                backdrop.classList.add('animate-backdrop-out');
+                card.classList.remove('animate-modal-in');
+                card.classList.add('animate-modal-out');
+                setTimeout(() => {
+                    root.remove();
+                    resolve();
+                }, 260);
             });
-            if (!isConfirmed) return;
 
-            Swal.fire({ title: 'Eliminando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            const cancelModal = () => {
+                if (!isDeleting) closeModal();
+            };
 
-            try {
-                const res = await fetch(RECUPERAR_API + '/solicitudes/' + idSolicitud, { method: 'DELETE' });
-                const json = await res.json();
-                Swal.close();
+            backdrop.addEventListener('click', cancelModal);
+            closeBtn.addEventListener('click', cancelModal);
+            cancelBtn.addEventListener('click', cancelModal);
 
-                if (!res.ok || !json.success) throw new Error(json.error || 'Error desconocido');
+            confirmBtn.addEventListener('click', async () => {
+                if (isDeleting) return;
+                isDeleting = true;
+                closeBtn.disabled = true;
+                cancelBtn.disabled = true;
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Eliminando...</span>';
 
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Solicitud eliminada',
-                    text: `La solicitud #${idSolicitud} fue eliminada permanentemente.`,
-                    confirmButtonColor: '#4f46e5'
-                });
+                try {
+                    const res = await fetch(RECUPERAR_API + '/solicitudes/' + idSolicitud, { method: 'DELETE' });
+                    const json = await res.json();
+                    if (!res.ok || !json.success) throw new Error(json.error || 'Error desconocido');
 
-                await adminCargarSolicitudesRecuperar();
-
-            } catch (err) {
-                console.error('[AdminRecuperar eliminar]', err);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error al eliminar',
-                    text: err.message || 'No se pudo eliminar la solicitud.',
-                    confirmButtonColor: '#ef4444'
-                });
-            }
+                    await closeModal();
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Solicitud eliminada',
+                        text: `La solicitud #${idSolicitud} fue eliminada permanentemente.`,
+                        confirmButtonColor: '#4f46e5'
+                    });
+                    await adminCargarSolicitudesRecuperar();
+                } catch (err) {
+                    console.error('[AdminRecuperar eliminar]', err);
+                    await closeModal();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al eliminar',
+                        text: err.message || 'No se pudo eliminar la solicitud.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                }
+            });
         }
     </script>
 
@@ -2661,11 +2727,6 @@
     <!-- ═══════════════════════════════════════════════════════════════════ -->
     <!-- MODAL PERSONALIZADO: Confirmar envío de correo de recuperación      -->
     <!-- ═══════════════════════════════════════════════════════════════════ -->
-    <!-- ---- HOJA 3 � Recuperar Usuario (solo Admin) ---- -->
-    <div id="sheetRecuperar" class="sheet-panel hidden">
-        <!-- existing content stays above modal -->
-    </div>
-
     <!-- ------------------------------------------------------------------- -->
     <!-- MODAL PERSONALIZADO: Confirmar env�o de correo de recuperaci�n      -->
     <!-- ------------------------------------------------------------------- -->
