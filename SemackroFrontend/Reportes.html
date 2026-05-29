@@ -15,6 +15,7 @@
     <!-- Chart.js para gráficos dinámicos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="js/translations.js"></script>
+    <link rel="stylesheet" href="css/toast.css">
     <!-- Plugin Chart.js: datalabels para mostrar valores encima de las barras -->
     <script
         src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -912,7 +913,7 @@
                     throw new Error(text || 'Error en la petición');
                 }
 
-                await Swal.fire({ icon: 'success', title: 'Solicitud actualizada', text: `La solicitud ${id} fue marcada como ${nuevoEstado}.`, confirmButtonColor: '#2563eb' });
+                Toast.success('Solicitud actualizada', `La solicitud ${id} fue marcada como ${nuevoEstado}.`);
 
                 // Refrescar la tabla
                 await cargarSolicitudesVerificacion();
@@ -1798,12 +1799,7 @@
                     throw new Error(data.error || 'Error al actualizar el estado de acceso.');
                 }
 
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Acceso actualizado',
-                    text: `El acceso del usuario fue ${nuevoEstado === 0 ? 'restringido' : 'permitido'} con éxito.`,
-                    confirmButtonColor: '#3b82f6'
-                });
+                Toast.success('Acceso actualizado', `El acceso del usuario fue ${nuevoEstado === 0 ? 'restringido' : 'permitido'} con éxito.`);
 
                 // Recargar el directorio
                 await cargarTecnicosDirectorio();
@@ -2076,12 +2072,7 @@
                     throw new Error(json.error || 'Error desconocido al enviar el correo.');
                 }
 
-                await Swal.fire({
-                    icon: 'success',
-                    title: '¡Envío Iniciado!',
-                    text: json.mensaje || 'El envío de correo se ha iniciado en segundo plano. La tabla se actualizará automáticamente con el estado definitivo. Por favor, recarga la tabla en unos segundos.',
-                    confirmButtonColor: '#4f46e5'
-                });
+                Toast.success('¡Envío Iniciado!', json.mensaje || 'El envío de correo se ha iniciado en segundo plano.');
 
                 // Refrescar la tabla
                 await adminCargarSolicitudesRecuperar();
@@ -2188,12 +2179,7 @@
                     if (!res.ok || !json.success) throw new Error(json.error || 'Error desconocido');
 
                     await closeModal();
-                    await Swal.fire({
-                        icon: 'success',
-                        title: 'Solicitud eliminada',
-                        text: `La solicitud #${idSolicitud} fue eliminada permanentemente.`,
-                        confirmButtonColor: '#4f46e5'
-                    });
+                    Toast.success('Solicitud eliminada', `La solicitud #${idSolicitud} fue eliminada permanentemente.`);
                     await adminCargarSolicitudesRecuperar();
                 } catch (err) {
                     console.error('[AdminRecuperar eliminar]', err);
@@ -2488,7 +2474,7 @@
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 document.getElementById('adminModalOrden').classList.add('hidden');
                 await adminCargarOrdenes();
-                Swal.fire({ icon: 'success', title: id ? 'Orden actualizada' : 'Orden creada', text: id ? 'Los cambios fueron guardados correctamente.' : 'La nueva orden fue creada exitosamente.', confirmButtonColor: '#3b82f6', timer: 2500, timerProgressBar: true });
+                Toast.success(id ? 'Orden actualizada' : 'Orden creada', id ? 'Los cambios fueron guardados correctamente.' : 'La nueva orden fue creada exitosamente.');
             } catch (err) {
                 console.error('[AdminOT guardar]', err);
                 Swal.fire({ icon: 'error', title: 'Error al guardar', text: 'No se pudo guardar la orden. Verifica la conexión al servidor.', confirmButtonColor: '#3b82f6' });
@@ -2509,7 +2495,7 @@
                 });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 await adminCargarOrdenes();
-                Swal.fire({ icon: 'success', title: 'Estado actualizado', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false, timerProgressBar: true, showClass: { popup: '' }, hideClass: { popup: '' } });
+                Toast.success('Estado actualizado', 'El estado de la orden ha sido modificado.');
             } catch (err) {
                 console.error('[AdminOT estado]', err);
                 Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar el estado.', confirmButtonColor: '#3b82f6' });
@@ -2532,7 +2518,7 @@
                 const res = await fetch(`${OT_API}/${id}`, { method: 'DELETE', headers: _otHeaders() });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 await adminCargarOrdenes();
-                Swal.fire({ icon: 'success', title: 'Orden eliminada', text: 'La orden fue eliminada correctamente.', confirmButtonColor: '#3b82f6', timer: 2000, timerProgressBar: true });
+                Toast.success('Orden eliminada', 'La orden fue eliminada correctamente.');
             } catch (err) {
                 console.error('[AdminOT eliminar]', err);
                 Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo eliminar la orden.', confirmButtonColor: '#3b82f6' });
@@ -2713,7 +2699,7 @@
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 await adminVerPostulaciones(idOrden);
                 await adminCargarOrdenes();
-                Swal.fire({ icon: 'success', title: nuevoEstado === 'aceptada' ? 'Postulante aceptado' : 'Postulante rechazado', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false, timerProgressBar: true, showClass: { popup: '' }, hideClass: { popup: '' } });
+                Toast.success(nuevoEstado === 'aceptada' ? 'Postulante aceptado' : 'Postulante rechazado', 'Se ha actualizado el estado de la postulación.');
             } catch (err) {
                 console.error('[AdminOT cambiar postulacion]', err);
                 Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar la postulación.', confirmButtonColor: '#3b82f6' });
@@ -2980,6 +2966,6 @@
             });
         })();
     </script>
-
+    <script src="js/toast.js"></script>
 </body>
 </html>
