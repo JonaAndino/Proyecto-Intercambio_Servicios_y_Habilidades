@@ -35,6 +35,13 @@ function getRandomPetType() {
 function renderMiniPixelPetSprite(type, frame, direction) {
   const transform = direction === -1 ? 'scaleX(-1)' : 'scaleX(1)';
   
+  // Si es una URL (empieza con http o https), mostrar la imagen
+  if (type && (type.startsWith('http://') || type.startsWith('https://'))) {
+    return `
+      <img src="${type}" alt="Mascota personalizada" class="w-12 h-12 object-contain" style="transform: ${transform};" />
+    `;
+  }
+  
   switch (type) {
     case PET_TYPES.SLIME:
       const slimeHeight = frame === 0 ? 14 : 18;
@@ -190,7 +197,7 @@ function initializePetAnimations() {
         let petType = null; // No pet by default
         if (userCard) {
             const storedPet = userCard.getAttribute('data-mascota');
-            if (storedPet && TIPOS_MASCOTAS_VALIDOS.includes(storedPet)) {
+            if (storedPet && (TIPOS_MASCOTAS_VALIDOS.includes(storedPet) || storedPet.startsWith('http://') || storedPet.startsWith('https://'))) {
                 petType = storedPet;
             }
         }
@@ -1288,6 +1295,10 @@ function normalizarDisponibilidad(valorDisponibilidad) {
     return "disponible";
   }
 
+  if (["no disponible", "no_disponible", "inactivo", "inactive"].includes(disponibilidad)) {
+    return "no_disponible";
+  }
+
   if (
     [
       "en obra",
@@ -1295,10 +1306,6 @@ function normalizarDisponibilidad(valorDisponibilidad) {
       "ocupado",
       "busy",
       "trabajando",
-      "no disponible",
-      "no_disponible",
-      "inactivo",
-      "inactive",
     ].includes(disponibilidad)
   ) {
     return "en_obra";
@@ -1323,6 +1330,14 @@ function obtenerEstadoDisponibilidadCard(valorDisponibilidad) {
       label: "En obra",
       textColor: "#b45309",
       dotColor: "#f59e0b",
+    };
+  }
+
+  if (disponibilidad === "no_disponible") {
+    return {
+      label: "No disponible",
+      textColor: "#dc2626",
+      dotColor: "#ef4444",
     };
   }
 
