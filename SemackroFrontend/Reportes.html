@@ -1963,7 +1963,7 @@
                     if (String(tData.estadoKey).includes('available')) estadoColor = 'text-green-600 bg-green-50/50';
                     if (String(tData.estadoKey).includes('Work') || String(tData.estadoKey).includes('busy')) estadoColor = 'text-orange-600 bg-orange-50/50';
 
-                    const avatar = tData.imagenUrl_Persona ? tData.imagenUrl_Persona : `https://api.dicebear.com/9.x/personas/svg?seed=${encodeURIComponent(tData.nombre_Persona + ' ' + (tData.apellido_Persona || ''))}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9`;
+                    const avatar = tData.imagenUrl_Persona ? tData.imagenUrl_Persona : `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(tData.nombre_Persona + ' ' + (tData.apellido_Persona || ''))}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9`;
 
                     return `
                         <tr class="border-b border-black/5 hover:bg-gray-50 transition-colors">
