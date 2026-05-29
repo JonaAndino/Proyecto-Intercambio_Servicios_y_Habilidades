@@ -6761,13 +6761,16 @@
         }
 
         function confirmLogout() {
+            // Cerrar cualquier sidebar o elementos abiertos
+            document.body.style.overflow = "";
+            
             // Limpiar localStorage
-            localStorage.removeItem('usuarioId');
-            localStorage.removeItem('token');
-            localStorage.removeItem('usuario');
+            localStorage.removeItem("usuarioId");
+            localStorage.removeItem("token");
+            localStorage.removeItem("usuario");
 
-            // Redirigir al login o página principal
-            window.location.href = '../login.html'; // Ajusta la ruta según tu estructura
+            // Redirigir al login (ruta correcta desde Perfil_Usuario)
+            window.location.href = "../login.html";
         }
 
         // Animación de salida del modal

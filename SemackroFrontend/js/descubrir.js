@@ -1194,6 +1194,9 @@ function closeLogoutModal(event) {
 }
 
 function confirmLogout() {
+  // Cerrar sidebar
+  closeSidebarFn();
+  
   // Limpiar localStorage (igual que en perfil.html)
   localStorage.removeItem("usuarioId");
   localStorage.removeItem("token");
