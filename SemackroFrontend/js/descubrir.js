@@ -9603,14 +9603,42 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
           <span class="iconify" data-icon="mdi:chevron-left"></span> Anterior
         </button>`;
 
-      // Números de página
-      for (let i = 1; i <= totalPages; i++) {
+      // Números de página (máximo 5)
+      let startPage = Math.max(1, _ordenesCurrentPage - 2);
+      let endPage = Math.min(totalPages, startPage + 4);
+      if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+      }
+
+      if (startPage > 1) {
+        paginationHtml += `
+          <button onclick="cambiarPaginaOrdenes(1)" 
+            class="px-3 py-1.5 rounded-lg text-xs font-medium transition border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
+            1
+          </button>`;
+        if (startPage > 2) {
+          paginationHtml += `<span class="text-gray-500 px-1">...</span>`;
+        }
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
         paginationHtml += `
           <button onclick="cambiarPaginaOrdenes(${i})" 
             class="px-3 py-1.5 rounded-lg text-xs font-medium transition ${i === _ordenesCurrentPage 
               ? 'bg-blue-600 text-white' 
               : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}">
             ${i}
+          </button>`;
+      }
+
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          paginationHtml += `<span class="text-gray-500 px-1">...</span>`;
+        }
+        paginationHtml += `
+          <button onclick="cambiarPaginaOrdenes(${totalPages})" 
+            class="px-3 py-1.5 rounded-lg text-xs font-medium transition border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
+            ${totalPages}
           </button>`;
       }
 
