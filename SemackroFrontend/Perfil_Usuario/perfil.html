@@ -6700,7 +6700,7 @@
         // ======================
         function showLogoutModal() {
             const modalHTML = `
-        <div class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm" id="logoutModal" onclick="closeLogoutModal(event)">
+        <div class="fixed inset-0 z-[10000] flex items-center justify-center" id="logoutModal" onclick="closeLogoutModal(event)">
           <div class="relative bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-100 flex flex-col overflow-visible z-10 max-h-[95vh]" onclick="event.stopPropagation()">
             <div class="h-20 md:h-28 bg-gradient-to-r from-red-50 to-amber-50 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-2 md:pb-3">
               <button class="absolute top-2 right-2 md:top-3 md:right-3 text-red-800 hover:scale-110 transition-transform z-20 cursor-pointer" aria-label="Cerrar modal" onclick="closeLogoutModal()">
