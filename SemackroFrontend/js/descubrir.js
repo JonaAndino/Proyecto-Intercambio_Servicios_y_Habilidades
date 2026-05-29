@@ -185,18 +185,23 @@ function initializePetAnimations() {
         let posX = 15 + Math.random() * 30;
         let direction = Math.random() > 0.5 ? 1 : -1;
         let frame = 0;
-        // Get the user card's data-mascota attribute or use random as fallback
+        // Get the user card's data-mascota attribute
         const userCard = banner.closest('.user-card');
-        let petType = 'CAT'; // default
+        let petType = null; // No pet by default
         if (userCard) {
             const storedPet = userCard.getAttribute('data-mascota');
             if (storedPet && TIPOS_MASCOTAS_VALIDOS.includes(storedPet)) {
                 petType = storedPet;
-            } else {
-                petType = getRandomPetType();
             }
-        } else {
-            petType = getRandomPetType();
+        }
+    
+        // If no pet, leave the container empty
+        if (!petType) {
+            const petContainer = banner.querySelector('.pet-container');
+            if (petContainer) {
+                petContainer.innerHTML = '';
+            }
+            return; // Skip animation
         }
     
     const movementInterval = setInterval(() => {
