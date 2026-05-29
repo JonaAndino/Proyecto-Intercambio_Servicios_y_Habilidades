@@ -32,6 +32,31 @@ router.post('/registro', async (req, res) => {
         return res.status(400).json({ error: 'Tipo de identificación no válido.' });
     }
 
+    // 1.3 Validar nombre completo (mínimo 3 caracteres, máximo 100)
+    if (nombre.trim().length < 3 || nombre.trim().length > 100) {
+        return res.status(400).json({ error: 'El nombre debe tener entre 3 y 100 caracteres.' });
+    }
+
+    // 1.4 Validar contraseña (mínimo 6 caracteres)
+    if (contrasena.length < 6) {
+        return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres.' });
+    }
+
+    // 1.5 Validar número de identificación según el tipo (Honduran standards)
+    let identificacionLimpia = numeroIdentificacion.trim();
+    if (tipoIdentificacion === 'DNI') {
+        // DNI Hondureño: 13 dígitos (puede contener guiones, los quitamos para validar)
+        identificacionLimpia = identificacionLimpia.replace(/-/g, '');
+        if (!/^\d{13}$/.test(identificacionLimpia)) {
+            return res.status(400).json({ error: 'El DNI debe contener 13 dígitos (ej: 0101199000123).' });
+        }
+    } else if (tipoIdentificacion === 'Pasaporte') {
+        // Pasaporte Hondureño: empieza por H (o cualquier letra) seguido de 6 dígitos
+        if (!/^[A-Za-z]\d{6}$/.test(identificacionLimpia)) {
+            return res.status(400).json({ error: 'El pasaporte debe contener 1 letra seguida de 6 dígitos (ej: H123456).' });
+        }
+    }
+
     try {
         // 2. CONSULTAR DB: ¿CORREO YA EXISTE? (Paso G del Diagrama)
         const [rows] = await pool.execute('SELECT id_usuario FROM Usuarios WHERE correo = ?', [correo]);
@@ -41,10 +66,16 @@ router.post('/registro', async (req, res) => {
             return res.status(409).json({ error: 'El correo electrónico ya está registrado. Por favor, intenta con otro.' });
         }
 
-        // 3. GENERAR HASH SEGURO (Paso J del Diagrama)
+        // 3. CONSULTAR DB: ¿IDENTIFICACIÓN YA EXISTE?
+        const [identificacionRows] = await pool.execute('SELECT id_Usuario FROM Personas WHERE identificacion_Persona = ?', [identificacionLimpia]);
+        if (identificacionRows.length > 0) {
+            return res.status(409).json({ error: 'El número de identificación ya está registrado.' });
+        }
+
+        // 4. GENERAR HASH SEGURO (Paso J del Diagrama)
         const contrasena_hash = await bcrypt.hash(contrasena, saltRounds);
 
-        // 4. GUARDAR NUEVO USUARIO EN DB (Paso K del Diagrama)
+        // 5. GUARDAR NUEVO USUARIO EN DB (Paso K del Diagrama)
         const [result] = await pool.execute(
             'INSERT INTO Usuarios (correo, contrasena_hash) VALUES (?, ?)',
             [correo, contrasena_hash]
@@ -52,7 +83,7 @@ router.post('/registro', async (req, res) => {
 
         const nuevoUsuarioId = result.insertId;
 
-        // 5. CREAR REGISTRO EN TABLA PERSONAS con los datos proporcionados
+        // 6. CREAR REGISTRO EN TABLA PERSONAS con los datos proporcionados
         // Vamos a dividir el nombre completo en nombre y apellido (solo como aproximación, el primer espacio es el separador)
         const nombreParts = nombre.trim().split(' ');
         const nombrePersona = nombreParts[0] || '';
@@ -60,7 +91,7 @@ router.post('/registro', async (req, res) => {
 
         await pool.execute(
             'INSERT INTO Personas (id_Usuario, nombre_Persona, apellido_Persona, tipoIdentificacion_Persona, identificacion_Persona) VALUES (?, ?, ?, ?, ?)',
-            [nuevoUsuarioId, nombrePersona, apellidoPersona, tipoIdentificacion, numeroIdentificacion]
+            [nuevoUsuarioId, nombrePersona, apellidoPersona, tipoIdentificacion, identificacionLimpia]
         );
 
         // 6. RESPUESTA DE ÉXITO (Paso L del Diagrama)
