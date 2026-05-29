@@ -2443,8 +2443,9 @@ function renderUserCardsReal() {
                                 <div class="relative inline-block">
                                     ${
                                       user.avatar
-                                  ? `<img src="${user.avatar}" alt="${user.name}" class="user-avatar object-cover">`
-                                        : `<div class="user-avatar"><span class="text-white text-3xl font-bold">${user.avatarInitials}</span></div>`
+                                  ? `<img src="${user.avatar}" alt="${user.name}" class="user-avatar object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <img src="https://api.dicebear.com/9.x/personas/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9" alt="${user.name}" class="user-avatar hidden">`
+                                        : `<img src="https://api.dicebear.com/9.x/personas/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=b6e3f4,c0aade,d1d4f9,ffd5dc,ffdfa9" alt="${user.name}" class="user-avatar">`
                                     }
                                     ${user.online ? '<div class="online-badge"></div>' : ""}
                                 </div>
