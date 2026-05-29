@@ -1328,8 +1328,8 @@ function obtenerEstadoDisponibilidadCard(valorDisponibilidad) {
   if (disponibilidad === "en_obra") {
     return {
       label: "En obra",
-      textColor: "#b45309",
-      dotColor: "#f59e0b",
+      textColor: "#dc2626",
+      dotColor: "#ef4444",
     };
   }
 
@@ -1341,10 +1341,11 @@ function obtenerEstadoDisponibilidadCard(valorDisponibilidad) {
     };
   }
 
+  // Si es "no definido", mostramos "En obra" en rojo
   return {
-    label: "Estado no definido",
-    textColor: "#6b7280",
-    dotColor: "#9ca3af",
+    label: "En obra",
+    textColor: "#dc2626",
+    dotColor: "#ef4444",
   };
 }
 
