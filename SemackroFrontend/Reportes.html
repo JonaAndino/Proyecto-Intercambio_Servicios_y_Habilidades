@@ -453,7 +453,7 @@
                 </div>
             </div>
 
-            <div class="overflow-x-auto table-wrapper">
+            <div id="directorioTableContainer" class="overflow-x-auto table-wrapper">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr
@@ -1872,7 +1872,7 @@
 
         function renderizarTablaTecnicos() {
             const tbody = document.getElementById('tablaTecnicosH3');
-            const wrapper = document.querySelector('#directorioSection .table-wrapper');
+            const wrapper = document.getElementById('directorioTableContainer');
             if (!tbody) return;
 
             // Calcular índices para la paginación
