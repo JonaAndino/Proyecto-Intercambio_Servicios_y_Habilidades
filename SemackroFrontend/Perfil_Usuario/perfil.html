@@ -6761,16 +6761,19 @@
         }
 
         function confirmLogout() {
-            // Cerrar cualquier sidebar o elementos abiertos
-            document.body.style.overflow = "";
-            
             // Limpiar localStorage
             localStorage.removeItem("usuarioId");
             localStorage.removeItem("token");
             localStorage.removeItem("usuario");
 
-            // Redirigir al login (ruta correcta desde Perfil_Usuario)
-            window.location.href = "../login.html";
+            // Verificar si estamos dentro de un iframe
+            if (window.parent && window.parent !== window) {
+                // Enviar mensaje al padre para que maneje el cierre de sesión
+                window.parent.postMessage({ type: "LOGOUT" }, "*");
+            } else {
+                // Si no es iframe, redirigir directamente
+                window.location.href = "../login.html";
+            }
         }
 
         // Animación de salida del modal

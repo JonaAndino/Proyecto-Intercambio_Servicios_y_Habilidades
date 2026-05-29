@@ -1229,6 +1229,14 @@ window.addEventListener("perfilActualizado", (e) => {
   }
 });
 
+// Escuchar mensajes desde iframes (como perfil.html)
+window.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "LOGOUT") {
+    // Llamar a la función de cierre de sesión del padre
+    confirmLogout();
+  }
+});
+
 // Verificar si hay actualizaciones pendientes al cargar
 function verificarActualizacionesPendientes() {
   const imagenActualizada = localStorage.getItem("perfilImagenActualizada");
