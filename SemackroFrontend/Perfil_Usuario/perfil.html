@@ -1967,25 +1967,10 @@
                             </svg>
                             <span>Fondo del banner</span>
                         </h3>
-                        <div style="margin-top: 12px;">
-                            <input type="text" id="urlFondoBannerInput" 
-                                placeholder="Pega la URL de tu imagen (PNG, JPG, GIF)..."
-                                style="width: 100%; padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; transition: all 0.2s;"
-                                oninput="actualizarFondoBanner(this.value)">
-                            <div id="fondoBannerPreview" style="margin-top: 12px; display: none; position: relative;">
-                                <img id="fondoBannerImage" src="" alt="Vista previa del fondo"
-                                    style="width: 100%; height: 120px; object-fit: cover; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                                <button type="button" id="removeFondoBanner"
-                                    style="position: absolute; top: -10px; right: -10px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                                    </svg>
-                                </button>
-                            </div>
+                        <div id="fondoBannerContainer" style="margin-top: 12px;">
+                            <!-- Se renderizará aquí -->
                         </div>
+                        <input type="file" id="fondoBannerUpload" accept="image/jpeg, image/png, image/gif" style="display: none;" onchange="handleFondoBannerUpload(event)">
                     </div>
 
                     <script>
@@ -2750,49 +2735,164 @@
         // FUNCIONES FONDO BANNER
         // ======================
         function renderFondoBanner() {
-            const input = document.getElementById('urlFondoBannerInput');
-            const preview = document.getElementById('fondoBannerPreview');
-            const img = document.getElementById('fondoBannerImage');
-            const removeBtn = document.getElementById('removeFondoBanner');
-            
-            if (!input) return;
+            const container = document.getElementById('fondoBannerContainer');
+            if (!container) return;
+            container.innerHTML = '';
 
-            input.value = urlFondoBanner || '';
-            
             if (urlFondoBanner) {
+                // Mostrar la imagen de fondo del banner
+                const previewDiv = document.createElement('div');
+                previewDiv.style.position = 'relative';
+                
+                const img = document.createElement('img');
                 img.src = urlFondoBanner;
-                preview.style.display = 'block';
+                img.alt = 'Fondo del banner';
+                img.style.width = '100%';
+                img.style.height = '120px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '10px';
+                img.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                img.onerror = function() {
+                    previewDiv.innerHTML = `
+                        <div style="width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; background: rgba(229, 231, 235, 0.5); color: #9ca3af; border-radius: 10px;">
+                            Error al cargar la imagen
+                        </div>
+                    `;
+                };
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.style.position = 'absolute';
+                removeBtn.style.top = '-10px';
+                removeBtn.style.right = '-10px';
+                removeBtn.style.background = '#ef4444';
+                removeBtn.style.color = 'white';
+                removeBtn.style.border = 'none';
+                removeBtn.style.borderRadius = '50%';
+                removeBtn.style.width = '24px';
+                removeBtn.style.height = '24px';
+                removeBtn.style.display = 'flex';
+                removeBtn.style.alignItems = 'center';
+                removeBtn.style.justifyContent = 'center';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                removeBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                `;
+                removeBtn.addEventListener('click', handleFondoBannerRemove);
+                
+                const changeBtn = document.createElement('button');
+                changeBtn.type = 'button';
+                changeBtn.style.marginTop = '12px';
+                changeBtn.style.padding = '8px 16px';
+                changeBtn.style.backgroundColor = '#2563eb';
+                changeBtn.style.color = 'white';
+                changeBtn.style.border = 'none';
+                changeBtn.style.borderRadius = '10px';
+                changeBtn.style.cursor = 'pointer';
+                changeBtn.textContent = 'Cambiar imagen';
+                changeBtn.addEventListener('click', () => document.getElementById('fondoBannerUpload').click());
+                
+                previewDiv.appendChild(img);
+                previewDiv.appendChild(removeBtn);
+                container.appendChild(previewDiv);
+                container.appendChild(changeBtn);
             } else {
-                preview.style.display = 'none';
-            }
-
-            // Add event listener to remove button (only once)
-            if (removeBtn && !removeBtn.dataset.listenerAdded) {
-                removeBtn.addEventListener('click', () => handleFondoBannerRemove());
-                removeBtn.dataset.listenerAdded = 'true';
+                // Mostrar placeholder de subida
+                const uploadDiv = document.createElement('div');
+                uploadDiv.style.border = '2px dashed #e5e7eb';
+                uploadDiv.style.borderRadius = '12px';
+                uploadDiv.style.padding = '24px';
+                uploadDiv.style.textAlign = 'center';
+                uploadDiv.style.backgroundColor = '#f9fafb';
+                uploadDiv.style.transition = 'all 0.3s';
+                uploadDiv.style.cursor = 'pointer';
+                uploadDiv.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" style="width: 56px; height: 56px; color: #818cf8;" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z" />
+                            <path d="M9 13h2v5a1 1 0 11-2 0v-5z" />
+                        </svg>
+                        <span style="color: #6366f1; font-size: 13px; font-weight: 600;">Subir imagen de fondo</span>
+                        <span style="font-size: 12px; color: #9ca3af;">PNG, JPG o GIF</span>
+                    </div>
+                `;
+                uploadDiv.addEventListener('click', () => document.getElementById('fondoBannerUpload').click());
+                container.appendChild(uploadDiv);
             }
         }
 
-        async function actualizarFondoBanner(value) {
-            const preview = document.getElementById('fondoBannerPreview');
-            const img = document.getElementById('fondoBannerImage');
+        async function handleFondoBannerUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
             
-            if (value && value.trim()) {
-                urlFondoBanner = value.trim();
-                img.src = urlFondoBanner;
-                preview.style.display = 'block';
-            } else {
-                urlFondoBanner = null;
-                preview.style.display = 'none';
+            try {
+                setGuardando(true);
+                
+                // Obtener la URL de la imagen antigua para eliminarla
+                const oldImageUrl = urlFondoBanner;
+                
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                if (oldImageUrl && oldImageUrl.includes('r2.dev')) {
+                    formData.append('oldImageUrl', oldImageUrl);
+                }
+                
+                // Subir a Cloudflare R2
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    urlFondoBanner = result.url;
+                    await saveFondoBannerToAPI();
+                    renderFondoBanner();
+                    console.log('Fondo del banner subido a Cloudflare:', result.url);
+                } else {
+                    console.error('Error al subir fondo del banner:', result.error);
+                    alert('Error al subir la imagen. Inténtalo de nuevo.');
+                }
+                
+                setGuardando(false);
+            } catch (error) {
+                console.error('Error al subir fondo del banner:', error);
+                alert('Error de conexión al subir la imagen.');
+                setGuardando(false);
             }
             
-            await saveFondoBannerToAPI();
+            event.target.value = '';
         }
 
         async function handleFondoBannerRemove() {
+            if (urlFondoBanner && urlFondoBanner.includes('r2.dev')) {
+                try {
+                    setGuardando(true);
+                    const response = await fetch(`${API_BASE}/upload`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imageUrl: urlFondoBanner })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        console.log('Imagen eliminada de Cloudflare:', urlFondoBanner);
+                    }
+                } catch (err) {
+                    console.error('Error al eliminar de Cloudflare:', err);
+                }
+            }
+            
             urlFondoBanner = null;
-            renderFondoBanner();
             await saveFondoBannerToAPI();
+            renderFondoBanner();
+            setGuardando(false);
         }
 
         async function saveFondoBannerToAPI() {
