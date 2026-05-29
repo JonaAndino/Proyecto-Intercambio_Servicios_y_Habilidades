@@ -3641,6 +3641,30 @@
                     disponibilidad_Usuario: personaDB.disponibilidad_Persona || personaDB.disponibilidad || 'Disponible'
                 };
 
+                // Auto-save Google data to DB if available
+                if (googleData) {
+                    try {
+                        // Save name first
+                        if (nombreFinal && (!personaDB.nombre_Persona || personaDB.nombre_Persona === nombreDefault)) {
+                            await updateUsuario('nombre_Usuario', nombreFinal);
+                        }
+                        // Save last name
+                        if (apellidoFinal && !personaDB.apellido_Persona) {
+                            await updateUsuario('apellido_Usuario', apellidoFinal);
+                        }
+                        // Save ID type
+                        if (tipoIdentificacionFinal && !personaDB.tipoIdentificacion_Persona) {
+                            await updateUsuario('tipoIdentificacion_Usuario', tipoIdentificacionFinal);
+                        }
+                        // Save ID number
+                        if (identificacionFinal && !personaDB.identificacion_Persona) {
+                            await updateUsuario('identificacion_usuario', identificacionFinal);
+                        }
+                    } catch (error) {
+                        console.error('Error auto-saving Google registration data:', error);
+                    }
+                }
+
                 // Set selected pet from DB
                 selectedPet = personaDB.mascota || null;
                 urlFondoBanner = personaDB.url_fondo_banner || null;
