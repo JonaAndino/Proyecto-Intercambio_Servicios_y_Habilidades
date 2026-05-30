@@ -6,13 +6,20 @@ require('dotenv').config();
 // 2. Importar el driver de MySQL (mysql2)
 const mysql = require('mysql2');
 
-// 3. Crear el pool de conexiones a la base de datos
+// 3. Determinar host/puerto de DB
+// - En producción respetamos `DB_HOST`/`DB_PORT` únicamente.
+// - Para desarrollo/pruebas se permiten `DB_HOST_OVERRIDE`/`DB_PORT_OVERRIDE`.
+const isProd = process.env.NODE_ENV === 'production';
+const dbHost = (!isProd && process.env.DB_HOST_OVERRIDE) ? process.env.DB_HOST_OVERRIDE : (process.env.DB_HOST || 'localhost');
+const dbPort = (!isProd && process.env.DB_PORT_OVERRIDE) ? process.env.DB_PORT_OVERRIDE : (process.env.DB_PORT || 3306);
+
+// 4. Crear el pool de conexiones a la base de datos
 const pool = mysql.createPool({
-    host: process.env.DB_HOST,
+    host: dbHost,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
-    port: process.env.DB_PORT,
+    port: dbPort,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
@@ -26,7 +33,11 @@ pool.getConnection((err, connection) => {
         console.error(err); 
         return;
     }
-    console.log('Conexión exitosa a la base de datos SkillConnect2025 (vía túnel SSH).');
+    const usedHost = dbHost;
+    console.log(`Conexión exitosa a la base de datos SkillConnect2025 (host: ${usedHost}, port: ${dbPort}).`);
+    if (usedHost === 'localhost') {
+        console.log('Nota: `DB_HOST` está en localhost. Si la base de datos está en la nube, actualiza SemackroBackend/.env con el host remoto o usa DB_HOST_OVERRIDE para pruebas.');
+    }
     connection.release(); // Libera la conexión de vuelta al pool
 });
 
