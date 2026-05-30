@@ -138,6 +138,20 @@ app.get('/', (req, res) => {
 // 9. Servir archivos estáticos del frontend (SEMACKROFrontend)
 const frontendPath = path.join(__dirname, '..', 'SEMACKROFrontend');
 
+// Fallback para enrutamiento del lado del cliente (SOLO en desarrollo)
+// Esto permite recargar la página en rutas como /perfil, /descubrir, etc.
+// DEBE estar ANTES de los middlewares de archivos estáticos
+if (process.env.NODE_ENV !== 'production') {
+    app.use((req, res, next) => {
+        // Si no es una ruta de API y no es un archivo estático
+        if (!req.path.startsWith('/api') && !req.path.startsWith('/SEMACKROFrontend')) {
+            res.sendFile(path.join(frontendPath, 'index.html'));
+        } else {
+            next();
+        }
+    });
+}
+
 // Middleware para establecer CSP (relajada para desarrollo)
 app.use('/SEMACKROFrontend', (req, res, next) => {
     // Política de ejemplo: permite recursos propios, fuentes/estilos de Google

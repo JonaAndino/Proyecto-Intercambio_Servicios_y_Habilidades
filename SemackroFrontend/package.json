@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "dev": "node dev-server.js"
+  },
+  "dependencies": {
+    "connect-history-api-fallback": "^2.0.0",
+    "express": "^5.2.1",
+    "serve-static": "^2.2.1"
+  }
+}

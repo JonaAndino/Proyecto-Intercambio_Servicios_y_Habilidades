@@ -14,7 +14,7 @@ const dbHost = (!isProd && process.env.DB_HOST_OVERRIDE) ? process.env.DB_HOST_O
 const dbPort = (!isProd && process.env.DB_PORT_OVERRIDE) ? process.env.DB_PORT_OVERRIDE : (process.env.DB_PORT || 3306);
 
 // 4. Crear el pool de conexiones a la base de datos
-const pool = mysql.createPool({
+const poolConfig = {
     host: dbHost,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -23,7 +23,15 @@ const pool = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
-});
+};
+
+// Configuraciones adicionales SOLO para desarrollo (no afecta producción)
+if (!isProd) {
+    poolConfig.connectTimeout = 10000;
+    console.log('ℹ️  Modo desarrollo: Configuraciones de keepalive activadas para conexiones DB');
+}
+
+const pool = mysql.createPool(poolConfig);
 
 // 4. Función de prueba: Intenta conectarse a la DB al iniciar el servidor
 pool.getConnection((err, connection) => {
