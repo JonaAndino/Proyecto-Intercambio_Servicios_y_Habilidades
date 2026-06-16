@@ -1,252 +1,3 @@
-// ========================================
-// MASCOTAS VIRTUALES
-// ========================================
-const PET_TYPES = {
-  CAT: 'CAT',
-  DOG: 'DOG',
-  SLIME: 'SLIME',
-  CRAB: 'CRAB',
-  FOX: 'FOX',
-  FROG: 'FROG',
-  DINO: 'DINO',
-  GHOST: 'GHOST'
-};
-
-const PET_INFO = {
-  [PET_TYPES.CAT]: { label: '🐈 Gato Neko', color: 'text-amber-400' },
-  [PET_TYPES.DOG]: { label: '🐕 Perro Rocky', color: 'text-orange-400' },
-  [PET_TYPES.SLIME]: { label: '🟢 Slime Bubbles', color: 'text-emerald-400' },
-  [PET_TYPES.CRAB]: { label: '🦀 Cangrejo Sebastián', color: 'text-red-400' },
-  [PET_TYPES.FOX]: { label: '🦊 Zorro Foxy', color: 'text-orange-500' },
-  [PET_TYPES.FROG]: { label: '🐸 Rana Kero', color: 'text-green-500' },
-  [PET_TYPES.DINO]: { label: '🦕 Dino Rex', color: 'text-teal-500' },
-  [PET_TYPES.GHOST]: { label: '👻 Fantasmita Boo', color: 'text-slate-400' }
-};
-
-const TIPOS_MASCOTAS_VALIDOS = Object.values(PET_TYPES);
-
-const petAnimations = new Map();
-const petTypes = Object.values(PET_TYPES);
-
-function getRandomPetType() {
-  return petTypes[Math.floor(Math.random() * petTypes.length)];
-}
-
-function renderMiniPixelPetSprite(type, frame, direction) {
-  const transform = direction === -1 ? 'scaleX(-1)' : 'scaleX(1)';
-  
-  // Si es una URL (empieza con http o https), mostrar la imagen
-  if (type && (type.startsWith('http://') || type.startsWith('https://'))) {
-    return `
-      <img src="${type}" alt="Mascota personalizada" class="w-12 h-12 object-contain" style="transform: ${transform};" />
-    `;
-  }
-  
-  switch (type) {
-    case PET_TYPES.SLIME:
-      const slimeHeight = frame === 0 ? 14 : 18;
-      const slimeWidth = frame === 0 ? 26 : 22;
-      const slimeYOffset = frame === 0 ? 4 : 1;
-      return `
-        <svg viewBox="0 0 32 32" class="w-12 h-12" style="transform: ${transform}; imageRendering: pixelated;">
-          <ellipse cx="16" cy="${20 + slimeYOffset}" rx="${slimeWidth / 2}" ry="${slimeHeight / 2}" fill="#10B981" stroke="#047857" stroke-width="2" />
-          <circle cx="13" cy="18" r="1.5" fill="white" />
-          <circle cx="19" cy="18" r="1.5" fill="white" />
-          <circle cx="13" cy="18" r="0.5" fill="black" />
-          <circle cx="19" cy="18" r="0.5" fill="black" />
-          <ellipse cx="12" cy="14" rx="1.5" ry="0.75" fill="#A7F3D0" />
-        </svg>
-      `;
-
-    case PET_TYPES.CRAB:
-      const legOffset = frame === 0 ? 1 : -1;
-      return `
-        <svg viewBox="0 0 32 32" class="w-12 h-12" style="transform: ${transform}; imageRendering: pixelated;">
-          <rect x="8" y="14" width="16" height="8" rx="2" fill="#EF4444" stroke="#B91C1C" stroke-width="2" />
-          <rect x="11" y="10" width="3" height="4" fill="#EF4444" />
-          <rect x="18" y="10" width="3" height="4" fill="#EF4444" />
-          <circle cx="12.5" cy="10" r="1.5" fill="white" />
-          <circle cx="19.5" cy="10" r="1.5" fill="white" />
-          <circle cx="12.5" cy="10" r="0.5" fill="black" />
-          <circle cx="19.5" cy="10" r="0.5" fill="black" />
-          <path d="${frame === 0 ? 'M5 9h5v5H5z' : 'M4 11h5v5H4z'}" fill="#EF4444" stroke="#B91C1C" stroke-width="1.5" />
-          <path d="${frame === 0 ? 'M22 9h5v5h-5z' : 'M23 11h5v5h-5z'}" fill="#EF4444" stroke="#B91C1C" stroke-width="1.5" />
-          <line x1="10" y1="22" x2="${8 + legOffset}" y2="26" stroke="#EF4444" stroke-width="2" />
-          <line x1="14" y1="22" x2="${13 - legOffset}" y2="26" stroke="#EF4444" stroke-width="2" />
-          <line x1="18" y1="22" x2="${19 + legOffset}" y2="26" stroke="#EF4444" stroke-width="2" />
-          <line x1="22" y1="22" x2="${24 - legOffset}" y2="26" stroke="#EF4444" stroke-width="2" />
-        </svg>
-      `;
-
-    case PET_TYPES.DOG:
-      const tailAngleDog = frame === 0 ? 'rotate(-10 8 16)' : 'rotate(15 8 16)';
-      return `
-        <svg viewBox="0 0 32 32" class="w-12 h-12" style="transform: ${transform}; imageRendering: pixelated;">
-          <rect x="8" y="14" width="14" height="10" rx="2" fill="#D97706" stroke="#92400E" stroke-width="2" />
-          <rect x="16" y="8" width="10" height="10" rx="2" fill="#D97706" stroke="#92400E" stroke-width="2" />
-          <rect x="15" y="10" width="3" height="8" rx="1" fill="#78350F" />
-          <rect x="23" y="13" width="5" height="4" fill="#FBBF24" />
-          <circle cx="26" cy="14" r="1" fill="black" />
-          <circle cx="21" cy="11" r="1" fill="black" />
-          <path d="M8 16l-5-4" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" transform="${tailAngleDog}" />
-          <rect x="10" y="24" width="2" height="3.5" fill="${frame === 0 ? '#78350F' : '#D97706'}" />
-          <rect x="14" y="24" width="2" height="3.5" fill="${frame === 1 ? '#78350F' : '#D97706'}" />
-          <rect x="18" y="24" width="2" height="3.5" fill="${frame === 0 ? '#78350F' : '#D97706'}" />
-        </svg>
-      `;
-
-    case PET_TYPES.FOX:
-      const tailAngleFox = frame === 0 ? 'rotate(-8 8 16)' : 'rotate(12 8 16)';
-      return `
-        <svg viewBox="0 0 32 32" class="w-12 h-12" style="transform: ${transform}; imageRendering: pixelated;">
-          <path d="M8 16l-5-2" stroke="#EA580C" stroke-width="3" stroke-linecap="round" transform="${tailAngleFox}" />
-          <rect x="8" y="14" width="13" height="9" rx="1.5" fill="#F97316" stroke="#C2410C" stroke-width="1.8" />
-          <rect x="15" y="9" width="9" height="8" rx="1.5" fill="#F97316" stroke="#C2410C" stroke-width="1.8" />
-          <polygon points="15,9 15,5 18,9" fill="#C2410C" />
-          <polygon points="20,9 23,5 23,9" fill="#C2410C" />
-          <rect x="16" y="13" width="2.5" height="2" fill="white" />
-          <rect x="21" y="13" width="2.5" height="2" fill="white" />
-          <circle cx="19" cy="12" r="0.8" fill="black" />
-          <circle cx="22" cy="12" r="0.8" fill="black" />
-          <polygon points="20,14 21,14 20.5,14.5" fill="black" />
-          <rect x="10" y="23" width="2" height="3.5" fill="${frame === 0 ? '#7C2D12' : '#F97316'}" />
-          <rect x="14" y="23" width="2" height="3.5" fill="${frame === 1 ? '#7C2D12' : '#F97316'}" />
-          <rect x="18" y="23" width="2" height="3.5" fill="${frame === 0 ? '#7C2D12' : '#F97316'}" />
-        </svg>
-      `;
-
-    case PET_TYPES.FROG:
-      const frogHeight = frame === 0 ? 11 : 13;
-      const frogY = frame === 0 ? -3 : 0;
-      return `
-        <svg viewBox="0 0 32 32" class="w-12 h-12" style="transform: ${transform}; imageRendering: pixelated;">
-          <circle cx="11" cy="${11 + frogY}" r="2.5" fill="#4ADE80" stroke="#166534" stroke-width="1.5" />
-          <circle cx="19" cy="${11 + frogY}" r="2.5" fill="#4ADE80" stroke="#166534" stroke-width="1.5" />
-          <circle cx="11" cy="${11 + frogY}" r="0.8" fill="black" />
-          <circle cx="19" cy="${11 + frogY}" r="0.8" fill="black" />
-          <rect x="7" y="${13 + frogY}" width="16" height="${frogHeight}" rx="3" fill="#22C55E" stroke="#166534" stroke-width="1.8" />
-          <circle cx="9" cy="${16 + frogY}" r="1" fill="#F43F5E" />
-          <circle cx="21" cy="${16 + frogY}" r="1" fill="#F43F5E" />
-          <path d="M12 18q2 1.5 4 0" stroke="#166534" stroke-width="1" fill="none" />
-          <rect x="10" y="${13 + frogHeight + frogY}" width="2.5" height="3" fill="#15803D" />
-          <rect x="17" y="${13 + frogHeight + frogY}" width="2.5" height="3" fill="#15803D" />
-        </svg>
-      `;
-
-    case PET_TYPES.DINO:
-      const tailAngleDino = frame === 0 ? 'rotate(-6 8 17)' : 'rotate(6 8 17)';
-      return `
-        <svg viewBox="0 0 32 32" class="w-12 h-12" style="transform: ${transform}; imageRendering: pixelated;">
-          <path d="M9 19l-4 1" stroke="#0D9488" stroke-width="3" stroke-linecap="round" transform="${tailAngleDino}" />
-          <polygon points="11,13 9,10 13,13" fill="#EC4899" />
-          <polygon points="15,13 13,10 17,13" fill="#EC4899" />
-          <rect x="10" y="14" width="11" height="9" rx="1.5" fill="#0D9488" stroke="#115E59" stroke-width="1.8" />
-          <rect x="14" y="8" width="10" height="9" rx="1.5" fill="#0D9488" stroke="#115E59" stroke-width="1.8" />
-          <circle cx="20" cy="11" r="0.8" fill="black" />
-          <polygon points="22,15 23,16 24,15" fill="white" />
-          <line x1="18" y1="18" x2="20" y2="19" stroke="#115E59" stroke-width="1.5" stroke-linecap="round" />
-          <rect x="12" y="23" width="2" height="3.5" fill="${frame === 0 ? '#115E59' : '#0D9488'}" />
-          <rect x="17" y="23" width="2" height="3.5" fill="${frame === 1 ? '#115E59' : '#0D9488'}" />
-        </svg>
-      `;
-
-    case PET_TYPES.GHOST:
-      const ghostYOffset = frame === 0 ? 0 : -2.5;
-      return `
-        <svg viewBox="0 0 32 32" class="w-12 h-12" style="transform: ${transform}; imageRendering: pixelated;">
-          <path d="M9 23V13a6 6 0 0112 0v10l-2-2-2 2-2-2-2 2-2-2z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="1.8" style="transform: translateY(${ghostYOffset}px); transition: transform 0.15s ease;" />
-          <circle cx="12" cy="${14 + ghostYOffset}" r="0.8" fill="black" />
-          <circle cx="17" cy="${14 + ghostYOffset}" r="0.8" fill="black" />
-          <circle cx="10.5" cy="${16 + ghostYOffset}" r="0.8" fill="#F43F5E" opacity="0.6" />
-          <circle cx="18.5" cy="${16 + ghostYOffset}" r="0.8" fill="#F43F5E" opacity="0.6" />
-        </svg>
-      `;
-
-    case PET_TYPES.CAT:
-    default:
-      const catTailY = frame === 0 ? 0 : -1.5;
-      return `
-        <svg viewBox="0 0 32 32" class="w-12 h-12" style="transform: ${transform}; imageRendering: pixelated;">
-          <path d="M8 17c-2-3-1-7-1-7" fill="none" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round" style="transform: translateY(${catTailY}px); transition: transform 0.15s ease;" />
-          <rect x="10" y="14" width="14" height="9" rx="1.5" fill="#F59E0B" stroke="#D97706" stroke-width="2" />
-          <rect x="17" y="9" width="9" height="9" rx="1.5" fill="#F59E0B" stroke="#D97706" stroke-width="2" />
-          <polygon points="17,9 17,5 21,9" fill="#D97706" />
-          <polygon points="22,9 26,5 26,9" fill="#D97706" />
-          <circle cx="21" cy="12" r="1" fill="black" />
-          <circle cx="24" cy="12" r="1" fill="black" />
-          <polygon points="22.5,13.5 23.5,13.5 23,14" fill="#EF4444" />
-          <line x1="25" y1="13" x2="28" y2="12.5" stroke="#78350F" stroke-width="0.5" />
-          <line x1="25" y1="14" x2="28" y2="14" stroke="#78350F" stroke-width="0.5" />
-          <rect x="11" y="23" width="2" height="3.5" fill="${frame === 0 ? '#B45309' : '#F59E0B'}" />
-          <rect x="15" y="23" width="2" height="3.5" fill="${frame === 1 ? '#B45309' : '#F59E0B'}" />
-          <rect x="19" y="23" width="2" height="3.5" fill="${frame === 0 ? '#B45309' : '#F59E0B'}" />
-        </svg>
-      `;
-  }
-}
-
-function initializePetAnimations() {
-    const banners = document.querySelectorAll('.user-card-banner');
-    
-    banners.forEach((banner, index) => {
-        let posX = 15 + Math.random() * 30;
-        let direction = Math.random() > 0.5 ? 1 : -1;
-        let frame = 0;
-        // Get the user card's data-mascota attribute
-        const userCard = banner.closest('.user-card');
-        let petType = null; // No pet by default
-        if (userCard) {
-            const storedPet = userCard.getAttribute('data-mascota');
-            if (storedPet && (TIPOS_MASCOTAS_VALIDOS.includes(storedPet) || storedPet.startsWith('http://') || storedPet.startsWith('https://'))) {
-                petType = storedPet;
-            }
-        }
-    
-        // If no pet, leave the container empty
-        if (!petType) {
-            const petContainer = banner.querySelector('.pet-container');
-            if (petContainer) {
-                petContainer.innerHTML = '';
-            }
-            return; // Skip animation
-        }
-    
-    const movementInterval = setInterval(() => {
-      posX += direction * 1.5;
-      
-      if (posX >= 75) {
-        direction = -1;
-        posX = 75;
-      } else if (posX <= 2) {
-        direction = 1;
-        posX = 2;
-      }
-      
-      frame = frame === 0 ? 1 : 0;
-      
-      const petContainer = banner.querySelector('.pet-container');
-      if (petContainer) {
-        petContainer.style.left = `${posX}%`;
-        petContainer.innerHTML = renderMiniPixelPetSprite(petType, frame, direction);
-      }
-    }, 140);
-    
-    petAnimations.set(banner, {
-      interval: movementInterval,
-      posX,
-      direction,
-      frame,
-      petType
-    });
-  });
-}
-
-function cleanupPetAnimations() {
-  petAnimations.forEach((anim) => {
-    clearInterval(anim.interval);
-  });
-  petAnimations.clear();
-}
 
 // Helper para traducciones
 var t = (key) => {
@@ -2502,7 +2253,7 @@ function mostrarFavoritos(favoritos) {
         .toUpperCase();
 
       return `
-                    <div class="user-card" onclick="viewProfile(${userId})" data-mascota="${mascota || ''}">
+                    <div class="user-card" onclick="viewProfile(${userId})">
                         <!-- Botón de favoritos -->
                         <button onclick="toggleFavorite(event, ${userId}, '${nombreCompleto.replace(/'/g, "\\'")}'); localStorage.setItem('actualizarFavoritos', Date.now().toString()); cargarFavoritosDesdeBackend().then(() => { renderUserCardsReal(); });"
                                 class="favorite-btn active"
@@ -2518,7 +2269,7 @@ function mostrarFavoritos(favoritos) {
                             <div class="absolute top-4 right-16 opacity-10 text-white font-mono text-[8px] tracking-widest pointer-events-none select-none">
                                 ☁️
                             </div>
-                            <div class="pet-container absolute bottom-1.5 transition-all duration-150 ease-linear pointer-events-none select-none" style="left: 30%;"></div>
+
                             <div class="absolute bottom-0 inset-x-0 h-1 bg-white/10"></div>
                         </div>
 
@@ -2627,11 +2378,7 @@ function mostrarFavoritos(favoritos) {
     })
     .join("");
   
-  // Clean up previous animations
-  cleanupPetAnimations();
-  
-  // Initialize pet animations
-  initializePetAnimations();
+
 }
 
 // Mostrar estado vacío de favoritos
@@ -2724,7 +2471,7 @@ function renderUserCardsReal() {
         const availabilityData = obtenerEstadoDisponibilidadCard(user.availability);
 
         return `
-                <div class="user-card" onclick="viewProfile(${user.id})" data-mascota="${user.mascota || ''}">
+                <div class="user-card" onclick="viewProfile(${user.id})">
                     <!-- Botón de favoritos (ocultar si es el propio usuario) -->
                     ${
                       user.usuarioId !== usuarioActualId
@@ -2748,7 +2495,7 @@ function renderUserCardsReal() {
                         <div class="absolute top-4 right-16 opacity-10 text-white font-mono text-[8px] tracking-widest pointer-events-none select-none">
                             ☁️
                         </div>
-                        <div class="pet-container absolute bottom-1.5 transition-all duration-150 ease-linear pointer-events-none select-none" style="left: 30%;"></div>
+
                         <div class="absolute bottom-0 inset-x-0 h-1 bg-white/10"></div>
                     </div>
 
@@ -2845,11 +2592,7 @@ function renderUserCardsReal() {
     )
     .join("");
 
-  // Clean up previous animations
-  cleanupPetAnimations();
-  
-  // Initialize pet animations
-  initializePetAnimations();
+
 
   // Renderizar controles de paginación
   renderPagination();
@@ -5183,12 +4926,7 @@ function mostrarSolicitudesEnDropdown(solicitudes) {
     })
     .join("");
   
-  // Clean up previous animations
-  cleanupPetAnimations();
-  
-  // Initialize pet animations
-  initializePetAnimations();
-}
+
 
 // Mostrar estado vacío
 function mostrarDropdownVacio() {
@@ -5425,12 +5163,7 @@ function mostrarSolicitudesEnviadas(solicitudes) {
     })
     .join("");
   
-  // Clean up previous animations
-  cleanupPetAnimations();
-  
-  // Initialize pet animations
-  initializePetAnimations();
-}
+
 
 // Mostrar estado vacío
 function mostrarEstadoVacioEnviadas() {
@@ -5756,12 +5489,7 @@ function mostrarConversacionesDashboard(conversaciones) {
     })
     .join("");
   
-  // Clean up previous animations
-  cleanupPetAnimations();
-  
-  // Initialize pet animations
-  initializePetAnimations();
-}
+
 
 // Actualizar badge de mensajes no leídos en el sidebar
 function actualizarBadgeSidebarMensajes(conversaciones) {
