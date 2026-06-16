@@ -5,6 +5,17 @@
  * ========================================
  */
 
+// Guard: verificar que React esté disponible antes de ejecutar el módulo
+(function initWhenReady() {
+    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+        console.warn('⏳ React/ReactDOM no disponible aún, reintentando...');
+        setTimeout(initWhenReady, 50);
+        return;
+    }
+    initPerfilNuevo();
+})();
+
+function initPerfilNuevo() {
 // Destructuring de React
 const { useState, useEffect, useCallback, useMemo } = React;
 
@@ -1763,3 +1774,4 @@ window.NuevoPerfilComponents = {
     TechnicalEvaluation,
     ImageModal
 };
+} // fin initPerfilNuevo

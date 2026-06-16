@@ -3144,17 +3144,39 @@ async function cargarPerfilEnSeccion(perfilId) {
 
   // ========================================
   // USAR NUEVO PERFIL REACT SI ESTÁ DISPONIBLE
+  // Esperar hasta 3s a que React termine de inicializarse
   // ========================================
-  if (typeof window.renderNuevoPerfilUsuario === "function") {
-    console.log("🎨 Usando nuevo perfil React para perfilId:", perfilId);
+  const reactDisponible = await new Promise((resolve) => {
+    if (typeof window.renderNuevoPerfilUsuario === "function") {
+      resolve(true);
+      return;
+    }
+    if (container) {
+      container.innerHTML = `
+        <div class="flex items-center justify-center py-20">
+          <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+        </div>`;
+    }
+    let intentos = 0;
+    const maxIntentos = 60; // 60 * 50ms = 3 segundos
+    const intervalo = setInterval(() => {
+      intentos++;
+      if (typeof window.renderNuevoPerfilUsuario === "function") {
+        clearInterval(intervalo);
+        resolve(true);
+      } else if (intentos >= maxIntentos) {
+        clearInterval(intervalo);
+        console.warn("⚠️ Componente React no disponible tras 3s, usando vista legacy");
+        resolve(false);
+      }
+    }, 50);
+  });
 
-    // NO limpiar el contenedor manualmente - React lo maneja
-    // Renderizar el nuevo componente React
+  if (reactDisponible) {
+    console.log("🎨 Usando nuevo perfil React para perfilId:", perfilId);
     window.renderNuevoPerfilUsuario("perfilSeccionContent", perfilId, {
       onVolver: () => volverAlGrid(),
       onSolicitar: (id, persona) => {
-        // El componente React ProfileHeader ahora maneja esto internamente
-        // usando window.sendRequest cuando es necesario
         const nombreCompleto = persona
           ? `${persona.nombre_Persona || ""} ${persona.apellido_Persona || ""}`.trim()
           : "Usuario";
@@ -3168,11 +3190,9 @@ async function cargarPerfilEnSeccion(perfilId) {
         }
       },
     });
-
-    return; // Salir de la función, el componente React maneja todo
+    return; // React maneja todo desde aquí
   }
-  // ========================================
-  // FIN NUEVO PERFIL REACT
+  // FIN NUEVO PERFIL REACT - Fallback a vista legacy
   // ========================================
 
   // Mostrar loader (código legacy)
@@ -3622,7 +3642,7 @@ async function cargarPerfilEnModal(perfilId) {
                 <div class="profile-modal-avatar" style="cursor: ${persona.imagenUrl_Persona ? "zoom-in" : "default"};" ${persona.imagenUrl_Persona ? `onclick="openImageFullscreen('${persona.imagenUrl_Persona}')"` : ""}>
                     ${
                       persona.imagenUrl_Persona
-                        ? `<img src="${persona.imagenUrl_Persona}" alt="${Nombrecompleto}">`
+                        ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}">`
                         : `<span>${iniciales}</span>`
                     }
                 </div>
@@ -4001,7 +4021,7 @@ async function cargarEstadisticasYCalificaciones(perfilId) {
                                 <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; overflow: hidden; position: relative;">
                                     ${
                                       getImagenCalificador(cal)
-                                        ? `<img src="${getImagenCalificador(cal)}" alt="${Nombrecalificador}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">`
+                                        ? `<img src="${getImagenCalificador(cal)}" alt="${nombreCalificador}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">`
                                         : `<span style="font-size: 20px;">${iniciales}</span>`
                                     }
                                 </div>

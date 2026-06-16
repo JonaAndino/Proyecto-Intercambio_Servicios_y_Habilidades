@@ -22,7 +22,9 @@ const poolConfig = {
     port: dbPort,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0
 };
 
 // Configuraciones adicionales SOLO para desarrollo (no afecta producción)

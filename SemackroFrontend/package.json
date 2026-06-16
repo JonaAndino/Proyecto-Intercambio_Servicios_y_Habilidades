@@ -6,5 +6,10 @@
     "connect-history-api-fallback": "^2.0.0",
     "express": "^5.2.1",
     "serve-static": "^2.2.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.29.7",
+    "@babel/core": "^7.29.7",
+    "@babel/preset-react": "^7.29.7"
   }
 }

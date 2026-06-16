@@ -324,6 +324,7 @@ router.post('/login', async (req, res) => {
 
     } catch (error) {
         console.error('Error durante el login:', error);
+        require('fs').appendFileSync('error_login.log', new Date().toISOString() + '\\n' + (error.stack || error) + '\\n\\n');
         res.status(500).json({ error: 'Ocurrió un error en el servidor al intentar iniciar sesión.', details: error.message });
     }
 });
@@ -444,6 +445,7 @@ router.post('/login-jwt', async (req, res) => {
 
     } catch (error) {
         console.error('Error durante el login JWT:', error);
+        require('fs').appendFileSync('error_login.log', new Date().toISOString() + '\\n' + (error.stack || error) + '\\n\\n');
         res.status(500).json({ error: 'Ocurrió un error en el servidor al intentar iniciar sesión.', details: error.message });
     }
 });

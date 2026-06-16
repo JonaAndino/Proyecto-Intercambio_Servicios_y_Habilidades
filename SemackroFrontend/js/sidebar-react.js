@@ -1,4 +1,14 @@
+// Guard: verificar que React esté disponible antes de ejecutar el módulo
+(function initWhenReady() {
+    if (typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+        console.warn('⏳ React/ReactDOM no disponible aún, reintentando...');
+        setTimeout(initWhenReady, 50);
+        return;
+    }
+    initSidebar();
+})();
 
+function initSidebar() {
 const { useState, useEffect } = React;
 
 /**
@@ -194,3 +204,4 @@ const rootElement = document.getElementById("sidebar-react-root");
 if (rootElement) {
     ReactDOM.createRoot(rootElement).render(<SidebarReact />);
 }
+} // fin initSidebar
