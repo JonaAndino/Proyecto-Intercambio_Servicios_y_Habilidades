@@ -1,4 +1,3 @@
-
 // Helper para traducciones
 var t = (key) => {
   if (window.t_real && typeof window.t_real === 'function') return window.t_real(key);
@@ -452,7 +451,7 @@ function iniciarTourOnboardingPerfil() {
 
   let activeStepIndex = 0;
   let autoAdvanceLock = false;
-  let removeTourInteractionListeners = () => {};
+  let removeTourInteractionListeners = () => { };
 
   const moveToNextFromInteraction = (driverInstance) => {
     if (!driverInstance || autoAdvanceLock) return;
@@ -892,45 +891,26 @@ function logout() {
 function showLogoutModal() {
   const t = (key) => translations[currentLanguage][key] || key;
   const modalHTML = `
-        <div class="fixed inset-0 z-[10000] flex items-center justify-center" id="logoutModal" onclick="closeLogoutModal(event)">
-          <div class="relative bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-100 flex flex-col overflow-visible z-10 max-h-[95vh]" onclick="event.stopPropagation()">
-            <div class="h-20 md:h-28 bg-gradient-to-r from-red-50 to-amber-50 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-2 md:pb-3">
-              <button class="absolute top-2 right-2 md:top-3 md:right-3 text-red-800 hover:scale-110 transition-transform z-20 cursor-pointer" aria-label="Cerrar modal" onclick="closeLogoutModal()">
-                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-              <div class="absolute -top-10 md:-top-14 inset-x-0 flex justify-center items-end gap-3 md:gap-5 pointer-events-none">
-                <div class="w-10 h-10 md:w-14 md:h-14 bg-[#ef4444] rounded-xl md:rounded-2xl rotate-[-12deg] shadow-lg flex items-center justify-center border-2 md:border-4 border-white transform translate-y-2">
-                  <svg class="w-5 h-5 md:w-7 md:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                  </svg>
+                <div class="custom-modal-overlay" id="logoutModal" onclick="closeLogoutModal(event)">
+                    <div class="custom-modal" onclick="event.stopPropagation()">
+                        <div class="modal-header">
+                            <div class="modal-icon">⚠</div>
+                            <div class="modal-title" data-i18n="logout.title">${t("logout.title")}</div>
+                        </div>
+                        <div class="modal-message" data-i18n="logout.message">
+                            ${t("logout.message")}
+                        </div>
+                        <div class="modal-actions">
+                            <button class="modal-btn modal-btn-cancel" onclick="closeLogoutModal()" data-i18n="logout.cancel">
+                                ${t("logout.cancel")}
+                            </button>
+                            <button class="modal-btn modal-btn-confirm" onclick="confirmLogout()" data-i18n="logout.confirm">
+                                ${t("logout.confirm")}
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="relative w-14 h-14 md:w-20 md:h-20 bg-white rounded-full shadow-2xl flex items-center justify-center border-2 md:border-4 border-white transform -translate-y-1">
-                  <div class="p-1 w-full h-full flex items-center justify-center">
-                    <svg class="logout-title-svg" xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72"><path fill="#fcea2b" d="M32.294 14.233a3.892 3.892 0 0 1 6.706 0l20.12 40.142a4.5 4.5 0 0 1 .574 1.916a3.885 3.885 0 0 1-3.832 3.88H15.528a3.803 3.803 0 0 1-3.832-3.784a3.45 3.45 0 0 1 .575-1.916z"></path><path fill="#d22f27" d="M35.854 39.049c0 1.505-2.728 3.81-2.728 5.991l-.06.188s-.322 1.428-1.39 1.428a1.3 1.3 0 0 1-.772-.325c-.262-.244-.6.13-.547.458c.16 1.31 3.023 5.521 5.17 5.521c2.456 0 4.629-2.945 4.822-3.985c0-.498-.834-.187-.834-.873c0-.582.507-.964.507-1.729a.41.41 0 0 0-.424-.378c-.191 0-.46.134-.674.134c-.82 0-1.007-.746-1.007-1.51c0 0 .154.05.154-1.58a5.9 5.9 0 0 0-1.422-3.493a.55.55 0 0 0-.357-.133c-.19 0-.438.084-.438.286"></path><g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M29.548 52.622a8.3 8.3 0 0 0 5.936 2.332a8.84 8.84 0 0 0 6.02-2.332M27.69 50.224s-4.452-4.75-.212-11.025c0 0 .856 1.088 1.508 2.132c.486.56 1.367 1.515 1.833 1.515a1.004 1.004 0 0 0 1.018-1.102v-.382a15.5 15.5 0 0 1 1.526-7.293s2.969 1.611 1.697-6.191c0 0 6.763 4.558 6.509 12.106c0 .551.248.975.847.975c.59 0 2.388-.572 2.388-1.124c.042.043 2.671 5.555-1.06 10.389"></path><path d="M33.079 45.118s-.298 1.641-1.488 1.527a2.7 2.7 0 0 1-.61-.245c-.328-.36-.674.084-.624.39a10.96 10.96 0 0 0 3.02 4.472s.93.685.98.685m2.609.063a12.4 12.4 0 0 0 1.547-1.048a6.84 6.84 0 0 0 1.806-2.487a.335.335 0 0 0-.297-.458a.78.78 0 0 1-.496-.458h0s-.1-.305.297-.992a1.6 1.6 0 0 0 .199-.916a.47.47 0 0 0-.645-.267a.96.96 0 0 1-1.29-.42s-.312-.153-.014-1.64a6 6 0 0 0-1.425-4.428a.55.55 0 0 0-.377-.133a.395.395 0 0 0-.417.286"></path><path d="M32.294 14.233a3.892 3.892 0 0 1 6.706 0l20.12 40.142a4.5 4.5 0 0 1 .574 1.916a3.885 3.885 0 0 1-3.832 3.88H15.528a3.803 3.803 0 0 1-3.832-3.784a3.45 3.45 0 0 1 .575-1.916z"></path></g></svg>
-                  </div>
-                </div>
-                <div class="w-10 h-10 md:w-14 md:h-14 bg-[#f97316] rounded-xl md:rounded-2xl rotate-[12deg] shadow-lg flex items-center justify-center border-2 md:border-4 border-white transform translate-y-2">
-                  <svg class="w-5 h-5 md:w-7 md:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <div class="px-4 md:px-8 py-4 md:py-6 text-center">
-              <h3 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">${t("logout.title")}</h3>
-              <p class="text-sm md:text-base text-slate-500 mt-2">${t("logout.message")}</p>
-            </div>
-            <div class="px-4 md:px-8 pb-4 md:pb-6 bg-slate-50 rounded-b-3xl border-t border-slate-100">
-              <div class="flex gap-3 md:gap-4 justify-center flex-wrap">
-                <button class="flex-1 min-w-[140px] bg-white border-2 border-slate-200 text-slate-700 font-bold py-3 md:py-4 rounded-2xl hover:border-slate-300 hover:bg-slate-50 transition-all active:scale-[0.98]" onclick="closeLogoutModal()">${t("logout.cancel")}</button>
-                <button class="flex-1 min-w-[140px] bg-gradient-to-r from-orange-500 to-red-500 text-white font-black py-3 md:py-4 rounded-2xl shadow-lg shadow-orange-500/30 hover:from-orange-600 hover:to-red-600 hover:shadow-orange-500/40 transition-all active:scale-[0.98]" onclick="confirmLogout()">${t("logout.confirm")}</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
+            `;
 
   document.body.insertAdjacentHTML("beforeend", modalHTML);
 }
@@ -945,9 +925,6 @@ function closeLogoutModal(event) {
 }
 
 function confirmLogout() {
-  // Cerrar sidebar
-  closeSidebarFn();
-  
   // Limpiar localStorage (igual que en perfil.html)
   localStorage.removeItem("usuarioId");
   localStorage.removeItem("token");
@@ -977,14 +954,6 @@ window.addEventListener("perfilActualizado", (e) => {
   if (sidebarUserImage && e.detail && e.detail.imagenUrl) {
     sidebarUserImage.src = e.detail.imagenUrl;
     console.log("Imagen del sidebar actualizada desde evento personalizado");
-  }
-});
-
-// Escuchar mensajes desde iframes (como perfil.html)
-window.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "LOGOUT") {
-    // Llamar a la función de cierre de sesión del padre
-    confirmLogout();
   }
 });
 
@@ -1076,10 +1045,6 @@ function normalizarDisponibilidad(valorDisponibilidad) {
     return "disponible";
   }
 
-  if (["no disponible", "no_disponible", "inactivo", "inactive"].includes(disponibilidad)) {
-    return "no_disponible";
-  }
-
   if (
     [
       "en obra",
@@ -1087,6 +1052,10 @@ function normalizarDisponibilidad(valorDisponibilidad) {
       "ocupado",
       "busy",
       "trabajando",
+      "no disponible",
+      "no_disponible",
+      "inactivo",
+      "inactive",
     ].includes(disponibilidad)
   ) {
     return "en_obra";
@@ -1109,24 +1078,15 @@ function obtenerEstadoDisponibilidadCard(valorDisponibilidad) {
   if (disponibilidad === "en_obra") {
     return {
       label: "En obra",
-      textColor: "#dc2626",
-      dotColor: "#ef4444",
+      textColor: "#b45309",
+      dotColor: "#f59e0b",
     };
   }
 
-  if (disponibilidad === "no_disponible") {
-    return {
-      label: "No disponible",
-      textColor: "#dc2626",
-      dotColor: "#ef4444",
-    };
-  }
-
-  // Si es "no definido", mostramos "En obra" en rojo
   return {
-    label: "En obra",
-    textColor: "#dc2626",
-    dotColor: "#ef4444",
+    label: "Estado no definido",
+    textColor: "#6b7280",
+    dotColor: "#9ca3af",
   };
 }
 
@@ -1230,13 +1190,14 @@ async function cargarDatosUsuario() {
       }
     }
 
-    // Función para generar avatar con DiceBear
+    // Función para generar avatar con solo la primera inicial
     function generarAvatar(nombre, apellido, imagenUrl) {
       if (imagenUrl) {
         return imagenUrl;
       }
-      const seed = encodeURIComponent(`${(nombre || "User")} ${(apellido || "")}`.trim());
-      return `https://api.dicebear.com/9.x/lorelei/svg?seed=${seed}&backgroundColor=f1f5f9`;
+      // Solo la primera letra del nombre
+      const inicial = (nombre || "U").charAt(0).toUpperCase();
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(inicial)}&background=3b82f6&color=fff&size=48&bold=true&rounded=true`;
     }
 
     // Actualizar imagen de perfil
@@ -1822,8 +1783,6 @@ async function cargarUsuariosReales() {
           avatar: persona.imagenUrl_Persona || null,
           avatarInitials: (persona.nombre_Persona || "U")[0].toUpperCase(),
           estadoVerificacion,
-          mascota: persona.mascota || null,
-          urlFondoBanner: persona.url_fondo_banner || null,
         };
       } catch (error) {
         console.error(
@@ -2224,10 +2183,10 @@ function mostrarFavoritos(favoritos) {
       const availabilityRaw = userCompleto
         ? userCompleto.availability
         : fav.disponibilidad ||
-          fav.disponibilidad_Persona ||
-          fav.disponibilidad_Usuario ||
-          fav.estado_disponibilidad ||
-          "";
+        fav.disponibilidad_Persona ||
+        fav.disponibilidad_Usuario ||
+        fav.estado_disponibilidad ||
+        "";
       const availabilityData = obtenerEstadoDisponibilidadCard(availabilityRaw);
       const habilidades = userCompleto
         ? userCompleto.skills
@@ -2242,8 +2201,7 @@ function mostrarFavoritos(favoritos) {
         ? userCompleto.genero
         : fav.genero || fav.genero_Persona || fav.genero_Usuario || "";
       const bannerGradientClass = obtenerClaseBannerPorGenero(genero);
-      const mascota = userCompleto ? userCompleto.mascota : (fav.mascota || null);
-      const urlFondoBanner = userCompleto ? userCompleto.urlFondoBanner : (fav.url_fondo_banner || null);
+      const urlFondoBanner = userCompleto ? userCompleto.urlFondoBanner : fav.url_fondo_banner || null;
 
       const initials = nombreCompleto
         .split(" ")
@@ -2261,7 +2219,7 @@ function mostrarFavoritos(favoritos) {
                             <span class="iconify favorite-icon" data-icon="ph:heart-fill"></span>
                         </button>
 
-                        <!-- Banner superior con gradiente y mascota -->
+                        <!-- Banner superior con gradiente -->
                         <div class="user-card-banner ${bannerGradientClass} relative overflow-hidden" style="${urlFondoBanner ? `background-image: url(${urlFondoBanner}); background-size: cover; background-position: center;` : ''}">
                             <div class="absolute top-2 left-4 opacity-15 text-white font-mono text-[8px] tracking-widest pointer-events-none select-none">
                                 ☁️ ☁️
@@ -2269,7 +2227,6 @@ function mostrarFavoritos(favoritos) {
                             <div class="absolute top-4 right-16 opacity-10 text-white font-mono text-[8px] tracking-widest pointer-events-none select-none">
                                 ☁️
                             </div>
-
                             <div class="absolute bottom-0 inset-x-0 h-1 bg-white/10"></div>
                         </div>
 
@@ -2279,9 +2236,8 @@ function mostrarFavoritos(favoritos) {
                                 <!-- Avatar -->
                                 <div class="user-card-avatar-container">
                                     <div class="relative inline-block">
-                                        ${
-                                          imagenUrl
-                                            ? `<img src="${imagenUrl}"
+                                        ${imagenUrl
+            ? `<img src="${imagenUrl}"
                                                    alt="${nombreCompleto}"
                                                    class="user-avatar object-cover"
                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -2292,14 +2248,10 @@ function mostrarFavoritos(favoritos) {
                                                <div class="user-avatar hidden">
                                                    <span class="text-white text-3xl font-bold">${initials}</span>
                                                </div>`
-                                            : `<img src="https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=f1f5f9" 
+            : `<img src="https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=f1f5f9" 
                                                     alt="${nombreCompleto}" 
-                                                    class="user-avatar"
-                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                               <div class="user-avatar hidden">
-                                                   <span class="text-white text-3xl font-bold">${initials}</span>
-                                               </div>`
-                                        }
+                                                    class="user-avatar">`
+          }
                                     </div>
                                 </div>
 
@@ -2329,31 +2281,29 @@ function mostrarFavoritos(favoritos) {
                                 <!-- Habilidades -->
                                 <div class="skills-container-card">
                                     <div class="flex flex-wrap gap-1">
-                                        ${
-                                          habilidades.length > 0
-                                            ? habilidades
-                                                .slice(0, 4)
-                                                .map(
-                                                  (skill) =>
-                                                    `<span class="skill-badge">${skill}</span>`,
-                                                )
-                                                .join("")
-                                            : '<span class="text-gray-400 text-sm">Sin habilidades registradas</span>'
-                                        }
+                                        ${habilidades.length > 0
+          ? habilidades
+            .slice(0, 4)
+            .map(
+              (skill) =>
+                `<span class="skill-badge">${skill}</span>`,
+            )
+            .join("")
+          : '<span class="text-gray-400 text-sm">Sin habilidades registradas</span>'
+        }
                                     </div>
                                 </div>
 
                                 <!-- Estadísticas -->
                                 <div class="flex items-center justify-between text-sm pb-4 border-b border-gray-200">
                                     <div class="flex items-center">
-                                        ${
-                                          rating > 0
-                                            ? `<svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        ${rating > 0
+          ? `<svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                                                </svg>
                                                <span class="font-semibold text-gray-700">${rating.toFixed(1)}</span>`
-                                            : `<span class="text-gray-400 text-xs">${t("card.noRating")}</span>`
-                                        }
+          : `<span class="text-gray-400 text-xs">${t("card.noRating")}</span>`
+        }
                                     </div>
                                     <div class="text-gray-600">
                                         <span class="font-semibold">${intercambios}</span> ${t("card.exchanges").toLowerCase()}
@@ -2377,8 +2327,6 @@ function mostrarFavoritos(favoritos) {
                 `;
     })
     .join("");
-  
-
 }
 
 // Mostrar estado vacío de favoritos
@@ -2400,9 +2348,9 @@ function showNotification(message, type = "info") {
   // Limpiar mensaje agresivamente para asegurar una sola línea
   let cleanMessage = message
     ? String(message)
-        .replace(/<br\s*\/?>|<\/?div>|<\/?p>|\n/gi, " ")
-        .replace(/\s+/g, " ")
-        .trim()
+      .replace(/<br\s*\/?>|<\/?div>|<\/?p>|\n/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim()
     : "";
 
   // Usar el sistema global Toast si está disponible, sino fallback
@@ -2473,9 +2421,8 @@ function renderUserCardsReal() {
         return `
                 <div class="user-card" onclick="viewProfile(${user.id})">
                     <!-- Botón de favoritos (ocultar si es el propio usuario) -->
-                    ${
-                      user.usuarioId !== usuarioActualId
-                        ? `
+                    ${user.usuarioId !== usuarioActualId
+            ? `
                     <button type="button"
                             onclick="toggleFavorite(event, ${user.id}, '${user.name.replace(/'/g, "\\'")}')"
                             class="favorite-btn ${esFavorito(user.id) ? "active" : ""}"
@@ -2484,10 +2431,10 @@ function renderUserCardsReal() {
                         <span class="iconify favorite-icon" data-icon="${esFavorito(user.id) ? "ph:heart-fill" : "ph:heart"}"></span>
                     </button>
                     `
-                        : ""
-                    }
+            : ""
+          }
 
-                    <!-- Banner superior con gradiente y mascota -->
+                    <!-- Banner superior con gradiente -->
                     <div class="user-card-banner ${bannerGradientClass} relative overflow-hidden" style="${user.urlFondoBanner ? `background-image: url(${user.urlFondoBanner}); background-size: cover; background-position: center;` : ''}">
                         <div class="absolute top-2 left-4 opacity-15 text-white font-mono text-[8px] tracking-widest pointer-events-none select-none">
                             ☁️ ☁️
@@ -2495,7 +2442,6 @@ function renderUserCardsReal() {
                         <div class="absolute top-4 right-16 opacity-10 text-white font-mono text-[8px] tracking-widest pointer-events-none select-none">
                             ☁️
                         </div>
-
                         <div class="absolute bottom-0 inset-x-0 h-1 bg-white/10"></div>
                     </div>
 
@@ -2505,12 +2451,11 @@ function renderUserCardsReal() {
                             <!-- Avatar con badge de estado - Alineado a la izquierda -->
                             <div class="user-card-avatar-container">
                                 <div class="relative inline-block">
-                                    ${
-                                      user.avatar
-                                  ? `<img src="${user.avatar}" alt="${user.name}" class="user-avatar object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    ${user.avatar
+            ? `<img src="${user.avatar}" alt="${user.name}" class="user-avatar object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                         <img src="https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=f1f5f9" alt="${user.name}" class="user-avatar hidden">`
-                                        : `<img src="https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=f1f5f9" alt="${user.name}" class="user-avatar">`
-                                    }
+            : `<img src="https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(user.name)}&backgroundColor=f1f5f9" alt="${user.name}" class="user-avatar">`
+          }
                                     ${user.online ? '<div class="online-badge"></div>' : ""}
                                 </div>
                             </div>
@@ -2541,31 +2486,29 @@ function renderUserCardsReal() {
                             <!-- Habilidades -->
                             <div class="skills-container-card">
                                 <div class="flex flex-wrap gap-1">
-                                    ${
-                                      user.skills.length > 0
-                                        ? user.skills
-                                            .slice(0, 4)
-                                            .map(
-                                              (skill) =>
-                                                `<span class="skill-badge">${skill}</span>`,
-                                            )
-                                            .join("")
-                                        : '<span class="text-gray-400 text-sm">Sin habilidades registradas</span>'
-                                    }
+                                    ${user.skills.length > 0
+            ? user.skills
+              .slice(0, 4)
+              .map(
+                (skill) =>
+                  `<span class="skill-badge">${skill}</span>`,
+              )
+              .join("")
+            : '<span class="text-gray-400 text-sm">Sin habilidades registradas</span>'
+          }
                                 </div>
                             </div>
 
                             <!-- Estadísticas -->
                             <div class="flex items-center justify-between text-sm pb-4 border-b border-gray-200">
                                 <div class="flex items-center">
-                                    ${
-                                      user.rating > 0
-                                        ? `<svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    ${user.rating > 0
+            ? `<svg class="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                                            </svg>
                                            <span class="font-semibold text-gray-700">${user.rating.toFixed(1)}</span>`
-                                        : `<span class="text-gray-400 text-xs">${t("card.noRating")}</span>`
-                                    }
+            : `<span class="text-gray-400 text-xs">${t("card.noRating")}</span>`
+          }
                                 </div>
                                 <div class="text-gray-600">
                                     <span class="font-semibold">${user.exchanges}</span> ${t("card.exchanges").toLowerCase()}
@@ -2588,11 +2531,9 @@ function renderUserCardsReal() {
                     </div>
                 </div>
                 `;
-              },
+      },
     )
     .join("");
-
-
 
   // Renderizar controles de paginación
   renderPagination();
@@ -2887,39 +2828,17 @@ async function cargarPerfilEnSeccion(perfilId) {
 
   // ========================================
   // USAR NUEVO PERFIL REACT SI ESTÁ DISPONIBLE
-  // Esperar hasta 3s a que React termine de inicializarse
   // ========================================
-  const reactDisponible = await new Promise((resolve) => {
-    if (typeof window.renderNuevoPerfilUsuario === "function") {
-      resolve(true);
-      return;
-    }
-    if (container) {
-      container.innerHTML = `
-        <div class="flex items-center justify-center py-20">
-          <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
-        </div>`;
-    }
-    let intentos = 0;
-    const maxIntentos = 60; // 60 * 50ms = 3 segundos
-    const intervalo = setInterval(() => {
-      intentos++;
-      if (typeof window.renderNuevoPerfilUsuario === "function") {
-        clearInterval(intervalo);
-        resolve(true);
-      } else if (intentos >= maxIntentos) {
-        clearInterval(intervalo);
-        console.warn("⚠️ Componente React no disponible tras 3s, usando vista legacy");
-        resolve(false);
-      }
-    }, 50);
-  });
-
-  if (reactDisponible) {
+  if (typeof window.renderNuevoPerfilUsuario === "function") {
     console.log("🎨 Usando nuevo perfil React para perfilId:", perfilId);
+
+    // NO limpiar el contenedor manualmente - React lo maneja
+    // Renderizar el nuevo componente React
     window.renderNuevoPerfilUsuario("perfilSeccionContent", perfilId, {
       onVolver: () => volverAlGrid(),
       onSolicitar: (id, persona) => {
+        // El componente React ProfileHeader ahora maneja esto internamente
+        // usando window.sendRequest cuando es necesario
         const nombreCompleto = persona
           ? `${persona.nombre_Persona || ""} ${persona.apellido_Persona || ""}`.trim()
           : "Usuario";
@@ -2933,9 +2852,11 @@ async function cargarPerfilEnSeccion(perfilId) {
         }
       },
     });
-    return; // React maneja todo desde aquí
+
+    return; // Salir de la función, el componente React maneja todo
   }
-  // FIN NUEVO PERFIL REACT - Fallback a vista legacy
+  // ========================================
+  // FIN NUEVO PERFIL REACT
   // ========================================
 
   // Mostrar loader (código legacy)
@@ -3049,11 +2970,10 @@ async function cargarPerfilEnSeccion(perfilId) {
                 <!-- Banner y Avatar -->
                 <div class="profile-modal-banner">
                     <div class="profile-modal-avatar" style="cursor: ${persona.imagenUrl_Persona ? "zoom-in" : "default"};" ${persona.imagenUrl_Persona ? `onclick="openImageFullscreen('${persona.imagenUrl_Persona}')"` : ""}>
-                        ${
-                          persona.imagenUrl_Persona
-                            ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}" onerror="this.src='https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=f1f5f9'">`
-                            : `<img src="https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=f1f5f9" alt="${nombreCompleto}">`
-                        }
+                        ${persona.imagenUrl_Persona
+        ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}">`
+        : `<span>${iniciales}</span>`
+      }
                     </div>
                 </div>
 
@@ -3094,9 +3014,8 @@ async function cargarPerfilEnSeccion(perfilId) {
 
                 <div class="px-6 pb-8">
                     <!-- Descripción -->
-                    ${
-                      persona.descripcionPerfil_Persona
-                        ? `
+                    ${persona.descripcionPerfil_Persona
+        ? `
                     <div class="profile-modal-section border-b border-gray-100 py-8">
                         <h3 class="profile-modal-section-title text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3107,13 +3026,12 @@ async function cargarPerfilEnSeccion(perfilId) {
                         <p class="text-gray-700 leading-relaxed text-lg">${persona.descripcionPerfil_Persona}</p>
                     </div>
                     `
-                        : ""
-                    }
+        : ""
+      }
 
                     <!-- Habilidades que ofrece -->
-                    ${
-                      habilidadesOfrece.length > 0
-                        ? `
+                    ${habilidadesOfrece.length > 0
+        ? `
                     <div class="profile-modal-section border-b border-gray-100 py-8">
                         <h3 class="profile-modal-section-title text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3124,26 +3042,25 @@ async function cargarPerfilEnSeccion(perfilId) {
                         <p class="text-sm text-gray-500 mb-4">Estas son las habilidades que ofrece para un intercambio.</p>
                         <div class="skills-container flex flex-wrap gap-3" id="offeredSkillsContainer">
                             ${habilidadesOfrece
-                              .map((skill) => {
-                                const categoria = categorias.find(
-                                  (c) =>
-                                    c.id_categorias_Habilidades_Servicios ===
-                                    skill.id_categorias_Habilidades_Servicios,
-                                );
-                                return `<span class="skill-tag-offered px-4 py-2 bg-green-50 text-green-700 rounded-full border border-green-100 font-medium cursor-pointer hover:bg-green-100 transition-colors" onclick='showSkillDetailInModal(${JSON.stringify(skill)}, ${JSON.stringify(categoria)}, "offered")'>${skill.nombre_Habilidad}</span>`;
-                              })
-                              .join("")}
+          .map((skill) => {
+            const categoria = categorias.find(
+              (c) =>
+                c.id_categorias_Habilidades_Servicios ===
+                skill.id_categorias_Habilidades_Servicios,
+            );
+            return `<span class="skill-tag-offered px-4 py-2 bg-green-50 text-green-700 rounded-full border border-green-100 font-medium cursor-pointer hover:bg-green-100 transition-colors" onclick='showSkillDetailInModal(${JSON.stringify(skill)}, ${JSON.stringify(categoria)}, "offered")'>${skill.nombre_Habilidad}</span>`;
+          })
+          .join("")}
                         </div>
                         <div id="selectedOfferedDetail" class="mt-4" style="display: none;"></div>
                     </div>
                     `
-                        : ""
-                    }
+        : ""
+      }
 
                     <!-- Habilidades que necesita -->
-                    ${
-                      habilidadesNecesita.length > 0
-                        ? `
+                    ${habilidadesNecesita.length > 0
+        ? `
                     <div class="profile-modal-section border-b border-gray-100 py-8">
                         <h3 class="profile-modal-section-title text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3154,26 +3071,25 @@ async function cargarPerfilEnSeccion(perfilId) {
                         <p class="text-sm text-gray-500 mb-4">Busca a otros usuarios con estas habilidades para iniciar un trueque.</p>
                         <div class="skills-container flex flex-wrap gap-3" id="requiredSkillsContainer">
                             ${habilidadesNecesita
-                              .map((skill) => {
-                                const categoria = categorias.find(
-                                  (c) =>
-                                    c.id_categorias_Habilidades_Servicios ===
-                                    skill.id_categorias_Habilidades_Servicios,
-                                );
-                                return `<span class="skill-tag-required px-4 py-2 bg-orange-50 text-orange-700 rounded-full border border-orange-100 font-medium cursor-pointer hover:bg-orange-100 transition-colors" onclick='showSkillDetailInModal(${JSON.stringify(skill)}, ${JSON.stringify(categoria)}, "required")'>${skill.nombre_Habilidad}</span>`;
-                              })
-                              .join("")}
+          .map((skill) => {
+            const categoria = categorias.find(
+              (c) =>
+                c.id_categorias_Habilidades_Servicios ===
+                skill.id_categorias_Habilidades_Servicios,
+            );
+            return `<span class="skill-tag-required px-4 py-2 bg-orange-50 text-orange-700 rounded-full border border-orange-100 font-medium cursor-pointer hover:bg-orange-100 transition-colors" onclick='showSkillDetailInModal(${JSON.stringify(skill)}, ${JSON.stringify(categoria)}, "required")'>${skill.nombre_Habilidad}</span>`;
+          })
+          .join("")}
                         </div>
                         <div id="selectedRequiredDetail" class="mt-4" style="display: none;"></div>
                     </div>
                     `
-                        : ""
-                    }
+        : ""
+      }
 
                     <!-- Galería de imágenes -->
-                    ${
-                      galeriaImagenes.length > 0
-                        ? `
+                    ${galeriaImagenes.length > 0
+        ? `
                     <div class="profile-modal-section border-b border-gray-100 py-8">
                         <h3 class="profile-modal-section-title text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                             <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3183,19 +3099,19 @@ async function cargarPerfilEnSeccion(perfilId) {
                         </h3>
                         <div class="profile-gallery">
                             ${galeriaImagenes
-                              .map(
-                                (img) => `
+          .map(
+            (img) => `
                                 <div class="profile-gallery-item" onclick="openImageFullscreen('${img}')">
                                     <img src="${img}" alt="Imagen de galería" onerror="this.parentElement.style.display='none'">
                                 </div>
                             `,
-                              )
-                              .join("")}
+          )
+          .join("")}
                         </div>
                     </div>
                     `
-                        : ""
-                    }
+        : ""
+      }
 
                     <!-- Sección de Calificaciones y Reseñas -->
                     <div id="calificaciones-section" class="profile-modal-section py-8" style="display: none;">
@@ -3383,11 +3299,10 @@ async function cargarPerfilEnModal(perfilId) {
             <!-- Banner y Avatar -->
             <div class="profile-modal-banner">
                 <div class="profile-modal-avatar" style="cursor: ${persona.imagenUrl_Persona ? "zoom-in" : "default"};" ${persona.imagenUrl_Persona ? `onclick="openImageFullscreen('${persona.imagenUrl_Persona}')"` : ""}>
-                    ${
-                      persona.imagenUrl_Persona
-                        ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}">`
-                        : `<span>${iniciales}</span>`
-                    }
+                    ${persona.imagenUrl_Persona
+        ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}">`
+        : `<span>${iniciales}</span>`
+      }
                 </div>
             </div>
 
@@ -3425,9 +3340,8 @@ async function cargarPerfilEnModal(perfilId) {
             </div>
 
             <!-- Descripción -->
-            ${
-              persona.descripcionPerfil_Persona
-                ? `
+            ${persona.descripcionPerfil_Persona
+        ? `
             <div class="profile-modal-section">
                 <h3 class="profile-modal-section-title">
                     <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3438,13 +3352,12 @@ async function cargarPerfilEnModal(perfilId) {
                 <p class="text-gray-700 leading-relaxed">${persona.descripcionPerfil_Persona}</p>
             </div>
             `
-                : ""
-            }
+        : ""
+      }
 
             <!-- Habilidades que ofrece -->
-            ${
-              habilidadesOfrece.length > 0
-                ? `
+            ${habilidadesOfrece.length > 0
+        ? `
             <div class="profile-modal-section">
                 <h3 class="profile-modal-section-title">
                     <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3455,26 +3368,25 @@ async function cargarPerfilEnModal(perfilId) {
                 <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Estas son las habilidades que ofrece para un intercambio.</p>
                 <div class="skills-container" id="offeredSkillsContainer">
                     ${habilidadesOfrece
-                      .map((skill) => {
-                        const categoria = categorias.find(
-                          (c) =>
-                            c.id_categorias_Habilidades_Servicios ===
-                            skill.id_categorias_Habilidades_Servicios,
-                        );
-                        return `<span class="skill-tag-offered" onclick='showSkillDetailInModal(${JSON.stringify(skill)}, ${JSON.stringify(categoria)}, "offered")'>${skill.nombre_Habilidad}</span>`;
-                      })
-                      .join("")}
+          .map((skill) => {
+            const categoria = categorias.find(
+              (c) =>
+                c.id_categorias_Habilidades_Servicios ===
+                skill.id_categorias_Habilidades_Servicios,
+            );
+            return `<span class="skill-tag-offered" onclick='showSkillDetailInModal(${JSON.stringify(skill)}, ${JSON.stringify(categoria)}, "offered")'>${skill.nombre_Habilidad}</span>`;
+          })
+          .join("")}
                 </div>
                 <div id="selectedOfferedDetail" style="display: none;"></div>
             </div>
             `
-                : ""
-            }
+        : ""
+      }
 
             <!-- Habilidades que necesita -->
-            ${
-              habilidadesNecesita.length > 0
-                ? `
+            ${habilidadesNecesita.length > 0
+        ? `
             <div class="profile-modal-section">
                 <h3 class="profile-modal-section-title">
                     <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3485,26 +3397,25 @@ async function cargarPerfilEnModal(perfilId) {
                 <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px;">Busca a otros usuarios con estas habilidades para iniciar un trueque.</p>
                 <div class="skills-container" id="requiredSkillsContainer">
                     ${habilidadesNecesita
-                      .map((skill) => {
-                        const categoria = categorias.find(
-                          (c) =>
-                            c.id_categorias_Habilidades_Servicios ===
-                            skill.id_categorias_Habilidades_Servicios,
-                        );
-                        return `<span class="skill-tag-required" onclick='showSkillDetailInModal(${JSON.stringify(skill)}, ${JSON.stringify(categoria)}, "required")'>${skill.nombre_Habilidad}</span>`;
-                      })
-                      .join("")}
+          .map((skill) => {
+            const categoria = categorias.find(
+              (c) =>
+                c.id_categorias_Habilidades_Servicios ===
+                skill.id_categorias_Habilidades_Servicios,
+            );
+            return `<span class="skill-tag-required" onclick='showSkillDetailInModal(${JSON.stringify(skill)}, ${JSON.stringify(categoria)}, "required")'>${skill.nombre_Habilidad}</span>`;
+          })
+          .join("")}
                 </div>
                 <div id="selectedRequiredDetail" style="display: none;"></div>
             </div>
             `
-                : ""
-            }
+        : ""
+      }
 
             <!-- Galería de imágenes -->
-            ${
-              galeriaImagenes.length > 0
-                ? `
+            ${galeriaImagenes.length > 0
+        ? `
             <div class="profile-modal-section">
                 <h3 class="profile-modal-section-title">
                     <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3514,19 +3425,19 @@ async function cargarPerfilEnModal(perfilId) {
                 </h3>
                 <div class="profile-gallery">
                     ${galeriaImagenes
-                      .map(
-                        (img) => `
+          .map(
+            (img) => `
                         <div class="profile-gallery-item" onclick="openImageFullscreen('${img}')">
                             <img src="${img}" alt="Imagen de galería" onerror="this.parentElement.style.display='none'">
                         </div>
                     `,
-                      )
-                      .join("")}
+          )
+          .join("")}
                 </div>
             </div>
             `
-                : ""
-            }
+        : ""
+      }
 
             <!-- Sección de Calificaciones y Reseñas -->
             <div id="calificaciones-section" class="profile-modal-section" style="display: none;">
@@ -3607,16 +3518,15 @@ async function cargarEstadisticasYCalificaciones(perfilId) {
                 </div>
                 <div class="profile-stat-card">
                     <div class="profile-stat-value">
-                        ${
-                          estadisticas.promedio_calificacion > 0
-                            ? `<div class="flex items-center justify-center space-x-1">
+                        ${estadisticas.promedio_calificacion > 0
+          ? `<div class="flex items-center justify-center space-x-1">
                                 <span>${estadisticas.promedio_calificacion.toFixed(1)}</span>
                                 <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                                 </svg>
                             </div>`
-                            : '<span class="text-gray-400 text-sm">Sin calificar</span>'
-                        }
+          : '<span class="text-gray-400 text-sm">Sin calificar</span>'
+        }
                     </div>
                     <div class="profile-stat-label">Valoración</div>
                 </div>
@@ -3708,17 +3618,17 @@ async function cargarEstadisticasYCalificaciones(perfilId) {
                     </div>
                     <div style="flex: 1; max-width: 300px; margin-left: 32px;">
                         ${[5, 4, 3, 2, 1]
-                          .map((star) => {
-                            const count =
-                              estadisticas[`distribucion_estrellas_${star}`] ||
-                              0;
-                            const percentage =
-                              totalCalificaciones > 0
-                                ? ((count / totalCalificaciones) * 100).toFixed(
-                                    0,
-                                  )
-                                : 0;
-                            return `
+        .map((star) => {
+          const count =
+            estadisticas[`distribucion_estrellas_${star}`] ||
+            0;
+          const percentage =
+            totalCalificaciones > 0
+              ? ((count / totalCalificaciones) * 100).toFixed(
+                0,
+              )
+              : 0;
+          return `
                             <div class="flex items-center space-x-2 mb-1">
                                 <span style="color: #92400e; font-size: 12px; font-weight: 600; width: 50px; display: flex; align-items: center; gap: 4px;">
                                     ${star}
@@ -3731,42 +3641,40 @@ async function cargarEstadisticasYCalificaciones(perfilId) {
                                 </div>
                                 <span style="color: #92400e; font-size: 12px; width: 35px; text-align: right;">${count}</span>
                             </div>`;
-                          })
-                          .join("")}
+        })
+        .join("")}
                     </div>
                 </div>
             </div>
 
             <!-- Lista de comentarios -->
-            ${
-              calificaciones.length > 0
-                ? `
+            ${calificaciones.length > 0
+        ? `
                 <h4 style="font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 16px;">
                     Comentarios de Usuarios (${calificaciones.length})
                 </h4>
                 <div style="max-height: 400px; overflow-y: auto;">
                     ${calificaciones
-                      .map((cal) => {
-                        const nombreCalificador =
-                          `${cal.nombre_calificador || ""} ${cal.apellido_calificador || ""}`.trim();
-                        const iniciales = `${(cal.nombre_calificador || "U")[0]}${(cal.apellido_calificador || "S")[0]}`;
-                        const fechaFormateada = new Date(
-                          cal.fecha_calificacion,
-                        ).toLocaleDateString("es-ES", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        });
+          .map((cal) => {
+            const nombreCalificador =
+              `${cal.nombre_calificador || ""} ${cal.apellido_calificador || ""}`.trim();
+            const iniciales = `${(cal.nombre_calificador || "U")[0]}${(cal.apellido_calificador || "S")[0]}`;
+            const fechaFormateada = new Date(
+              cal.fecha_calificacion,
+            ).toLocaleDateString("es-ES", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            });
 
-                        return `
+            return `
                             <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; gap: 12px;">
                                 <!-- Avatar del calificador -->
                                 <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0; overflow: hidden; position: relative;">
-                                    ${
-                                      getImagenCalificador(cal)
-                                        ? `<img src="${getImagenCalificador(cal)}" alt="${nombreCalificador}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">`
-                                        : `<span style="font-size: 20px;">${iniciales}</span>`
-                                    }
+                                    ${getImagenCalificador(cal)
+                ? `<img src="${getImagenCalificador(cal)}" alt="${Nombrecalificador}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">`
+                : `<span style="font-size: 20px;">${iniciales}</span>`
+              }
                                 </div>
 
                                 <!-- Contenido de la reseña -->
@@ -3778,29 +3686,27 @@ async function cargarEstadisticasYCalificaciones(perfilId) {
                                         </div>
                                         <div style="display: flex; align-items: center; gap: 4px; color: #fbbf24;">
                                             ${Array(Math.round(cal.puntuacion))
-                                              .fill(0)
-                                              .map(
-                                                () => `
+                .fill(0)
+                .map(
+                  () => `
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display: inline-block;">
                                                     <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
                                                 </svg>
                                             `,
-                                              )
-                                              .join("")}
+                )
+                .join("")}
                                         </div>
                                     </div>
-                                    ${
-                                      cal.comentario
-                                        ? `
+                                    ${cal.comentario
+                ? `
                                         <p style="color: #4b5563; font-size: 14px; line-height: 1.5; margin: 8px 0 0 0;">
                                             "${cal.comentario}"
                                         </p>
                                     `
-                                        : ""
-                                    }
-                                    ${
-                                      cal.respuesta_del_dueno
-                                        ? `
+                : ""
+              }
+                                    ${cal.respuesta_del_dueno
+                ? `
                                         <div style="margin-top:12px; padding:12px; background:#f0f9ff; border-left:4px solid #2563eb; border-radius:6px;">
                                             <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-weight:600; color:#1f2937; font-size:13px;">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style="color: #2563eb;">
@@ -3812,21 +3718,21 @@ async function cargarEstadisticasYCalificaciones(perfilId) {
                                             <p style="color:#9ca3af; font-size:12px; margin-top:8px;">Respondido ${new Date(cal.fecha_respuesta).toLocaleDateString("es-ES")}</p>
                                         </div>
                                     `
-                                        : ""
-                                    }
+                : ""
+              }
                                 </div>
                             </div>
                         `;
-                      })
-                      .join("")}
+          })
+          .join("")}
                 </div>
             `
-                : `
+        : `
                 <p style="text-align: center; color: #6b7280; font-size: 14px; padding: 24px;">
                     Este usuario aún no tiene comentarios escritos.
                 </p>
             `
-            }
+      }
         `;
   } catch (error) {
     console.error("Error al cargar estadísticas y calificaciones:", error);
@@ -3923,12 +3829,11 @@ async function verificarYMostrarBotonSolicitud(perfilId, nombreCompleto) {
                             ${iconoHTML}
                             <div class="flex-1">
                                 <p class="font-semibold">${mensajeTexto}</p>
-                                ${
-                                  solicitud.estado === "Pendiente" &&
-                                  !solicitud.esMiSolicitud
-                                    ? '<p class="text-sm mt-1">Ve a la sección de notificaciones para responder.</p>'
-                                    : ""
-                                }
+                                ${solicitud.estado === "Pendiente" &&
+          !solicitud.esMiSolicitud
+          ? '<p class="text-sm mt-1">Ve a la sección de notificaciones para responder.</p>'
+          : ""
+        }
                             </div>
                         </div>
                     `;
@@ -4037,9 +3942,8 @@ function showSkillDetailInModal(skill, categoria, type) {
   detailDiv.innerHTML = `
                 <div class="skill-detail-card">
                     <p class="skill-detail-title">${skill.nombre_Habilidad}</p>
-                    ${
-                      categoryName
-                        ? `
+                    ${categoryName
+      ? `
                         <p style="font-size: 13px; color: #94a3b8; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
                                 <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
@@ -4047,8 +3951,8 @@ function showSkillDetailInModal(skill, categoria, type) {
                             ${categoryName}
                         </p>
                     `
-                        : ""
-                    }
+      : ""
+    }
                     <p class="skill-detail-text">${skill.descripcion_Habilidad || "Sin descripción."}</p>
                 </div>
             `;
@@ -4385,21 +4289,21 @@ async function mostrarFormularioSolicitudDetallada(
     const opcionesOfrecidas =
       habilidadesOfrecidas.length > 0
         ? habilidadesOfrecidas
-            .map(
-              (h) =>
-                `<option value="${h.id_Habilidad}">${h.nombre_Habilidad}</option>`,
-            )
-            .join("")
+          .map(
+            (h) =>
+              `<option value="${h.id_Habilidad}">${h.nombre_Habilidad}</option>`,
+          )
+          .join("")
         : `<option value="">${t("requestModal.noSkillsToOffer")}</option>`;
 
     const opcionesBuscadas =
       habilidadesBuscadas.length > 0
         ? habilidadesBuscadas
-            .map(
-              (h) =>
-                `<option value="${h.id_Habilidad}">${h.nombre_Habilidad}</option>`,
-            )
-            .join("")
+          .map(
+            (h) =>
+              `<option value="${h.id_Habilidad}">${h.nombre_Habilidad}</option>`,
+          )
+          .join("")
         : `<option value="">${t("requestModal.noSkillsRequested")}</option>`;
 
     // Obtener fecha mínima (hoy)
@@ -4663,7 +4567,7 @@ window.addEventListener("storage", function (e) {
         // limpiar la bandera
         try {
           localStorage.removeItem("SEMACKRO_notification_delta");
-        } catch (err) {}
+        } catch (err) { }
       }
     }
   } catch (err) {
@@ -4816,14 +4720,14 @@ function mostrarSolicitudesEnDropdown(solicitudes) {
                                 <span class="iconify text-gray-700" data-icon="mdi:calendar" data-width="16" data-height="16"></span>
                                 <span class="font-semibold">${t("notifications.date")}</span>
                                 <span>${fechaPropuesta.toLocaleDateString(
-                                  "es-HN",
-                                  {
-                                    weekday: "short",
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric",
-                                  },
-                                )}</span>
+            "es-HN",
+            {
+              weekday: "short",
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            },
+          )}</span>
                             </div>`;
         }
 
@@ -4881,29 +4785,28 @@ function mostrarSolicitudesEnDropdown(solicitudes) {
       return `
                     <div class="p-4 hover:bg-gray-50 transition border-b border-gray-100 last:border-b-0">
                         <div class="flex items-start gap-3">
-                            ${
-                              solicitud.foto_solicitante
-                                ? `<img src="${solicitud.foto_solicitante}" alt="${nombreCompleto}" class="w-12 h-12 rounded-full object-cover flex-shrink-0" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                            ${solicitud.foto_solicitante
+          ? `<img src="${solicitud.foto_solicitante}" alt="${nombreCompleto}" class="w-12 h-12 rounded-full object-cover flex-shrink-0" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
                                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 items-center justify-center text-white font-bold text-lg flex-shrink-0" style="display:none;">
                                     ${inicial}
                                    </div>`
-                                : `<div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+          : `<div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                                     ${inicial}
                                    </div>`
-                            }
+        }
                             <div class="flex-1 min-w-0">
                                 <p class="font-semibold text-gray-800 truncate">${nombreCompleto || "Usuario"}</p>
                                 <p class="text-sm text-gray-600 mb-1">${t("notifications.wantsToExchange")}</p>
                                 <p class="text-xs text-gray-400 mb-2">${new Date(
-                                  solicitud.fecha_solicitud,
-                                ).toLocaleString("es-HN", {
-                                  month: "short",
-                                  day: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: true,
-                                  timeZone: "America/Tegucigalpa",
-                                })}</p>
+          solicitud.fecha_solicitud,
+        ).toLocaleString("es-HN", {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+          timeZone: "America/Tegucigalpa",
+        })}</p>
 
                                 ${detallesHTML}
 
@@ -4925,8 +4828,7 @@ function mostrarSolicitudesEnDropdown(solicitudes) {
                 `;
     })
     .join("");
-  
-
+}
 
 // Mostrar estado vacío
 function mostrarDropdownVacio() {
@@ -5117,30 +5019,29 @@ function mostrarSolicitudesEnviadas(solicitudes) {
                     <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-gray-100">
                         <div class="p-6">
                             <div class="flex items-center space-x-4 mb-4">
-                                ${
-                                  imagenUrl
-                                    ? `<img src="${imagenUrl}"
+                                ${imagenUrl
+          ? `<img src="${imagenUrl}"
                                          class="w-16 h-16 rounded-full object-cover border-2 border-blue-500 shadow-md"
                                          alt="${nombreCompleto}"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                      <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full items-center justify-center text-white font-bold text-xl shadow-md hidden">
                                         ${initials}
                                      </div>`
-                                    : `<div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">
+          : `<div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">
                                         ${initials}
                                     </div>`
-                                }
+        }
                                 <div class="flex-1">
                                     <p class="font-semibold text-gray-800">${nombreCompleto}</p>
                                     <p class="text-sm text-gray-600">${t("sentRequests.pending")}</p>
                                     <p class="text-xs text-gray-400 mt-1">${new Date(
-                                      solicitud.fecha_solicitud,
-                                    ).toLocaleString("es-ES", {
-                                      month: "short",
-                                      day: "numeric",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })}</p>
+          solicitud.fecha_solicitud,
+        ).toLocaleString("es-ES", {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        })}</p>
                                 </div>
                             </div>
 
@@ -5162,8 +5063,7 @@ function mostrarSolicitudesEnviadas(solicitudes) {
                 `;
     })
     .join("");
-  
-
+}
 
 // Mostrar estado vacío
 function mostrarEstadoVacioEnviadas() {
@@ -5451,23 +5351,22 @@ function mostrarConversacionesDashboard(conversaciones) {
                     <div class="conv-item ${isActive ? "active" : ""} flex items-center space-x-3 cursor-pointer"
                          onclick="seleccionarConversacionDashboard(${conv.id_conversacion})">
                         <div class="relative flex-shrink-0">
-                            ${
-                              esGrupo
-                                ? `<div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center shadow-sm">
+                            ${esGrupo
+          ? `<div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center shadow-sm">
                                      <span class="iconify text-white" data-icon="mdi:account-group" style="font-size:22px;"></span>
                                    </div>`
-                                : tieneImagen
-                                ? `<img src="${conv.imagenUrl_contacto}"
+          : tieneImagen
+            ? `<img src="${conv.imagenUrl_contacto}"
                                      class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
                                      alt="${nombreContacto}"
                                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                  <div class="w-12 h-12 ${colorClass} rounded-full items-center justify-center text-white font-semibold shadow-sm hidden">
                                     ${initials}
                                  </div>`
-                                : `<div class="w-12 h-12 ${colorClass} rounded-full flex items-center justify-center text-white font-semibold shadow-sm">
+            : `<div class="w-12 h-12 ${colorClass} rounded-full flex items-center justify-center text-white font-semibold shadow-sm">
                                     ${initials}
                                 </div>`
-                            }
+        }
                         </div>
                         <div class="flex-grow min-w-0">
                             <p class="text-sm font-bold text-gray-900 truncate">${nombreContacto}</p>
@@ -5475,21 +5374,19 @@ function mostrarConversacionesDashboard(conversaciones) {
                                 ${conv.ultimo_mensaje || "Sin mensajes aún"}
                             </p>
                         </div>
-                        ${
-                          mensajesNoLeidos > 0
-                            ? `
+                        ${mensajesNoLeidos > 0
+          ? `
                             <div class="unread-badge bg-indigo-600 text-white text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0">
                                 ${mensajesNoLeidos}
                             </div>
                         `
-                            : ""
-                        }
+          : ""
+        }
                     </div>
                 `;
     })
     .join("");
-  
-
+}
 
 // Actualizar badge de mensajes no leídos en el sidebar
 function actualizarBadgeSidebarMensajes(conversaciones) {
@@ -5610,14 +5507,14 @@ function actualizarHeaderChatDashboard(conv) {
          <span class="iconify text-white" data-icon="mdi:account-group" style="font-size:22px;"></span>
        </div>`
     : tieneImagen
-    ? `<img src="${conv.imagenUrl_contacto}"
+      ? `<img src="${conv.imagenUrl_contacto}"
               class="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border-2 border-white shadow-sm"
             alt="${nombreContacto}"
               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
          <div class="w-10 h-10 md:w-12 md:h-12 ${colorClass} rounded-full items-center justify-center text-white font-bold text-sm md:text-base hidden shadow-sm">
             ${initials}
          </div>`
-    : `<div class="w-10 h-10 md:w-12 md:h-12 ${colorClass} rounded-full flex items-center justify-center text-white font-bold text-sm md:text-base shadow-sm">
+      : `<div class="w-10 h-10 md:w-12 md:h-12 ${colorClass} rounded-full flex items-center justify-center text-white font-bold text-sm md:text-base shadow-sm">
             ${initials}
         </div>`;
 
@@ -5696,8 +5593,8 @@ async function cargarMensajesDashboard(idConversacion, scrollToEnd = true) {
   const esSolicitudObsoleta = () => {
     const idConversacionActiva = Number(
       window.conversacionActivaDashboard?.id_conversacion ||
-        conversacionActivaDashboard?.id_conversacion ||
-        0,
+      conversacionActivaDashboard?.id_conversacion ||
+      0,
     );
 
     return (
@@ -5787,8 +5684,8 @@ function mostrarMensajesDashboard(mensajes, idConversacionRender = null) {
   if (idConversacionRender !== null) {
     const idConversacionActiva = Number(
       window.conversacionActivaDashboard?.id_conversacion ||
-        conversacionActivaDashboard?.id_conversacion ||
-        0,
+      conversacionActivaDashboard?.id_conversacion ||
+      0,
     );
     if (idConversacionActiva !== Number(idConversacionRender)) {
       return;
@@ -5939,7 +5836,7 @@ function renderAdjuntosHTML(adjuntos) {
 
   const images = [];
   const videos = [];
-  const docs   = [];
+  const docs = [];
 
   adjuntos.forEach((a) => {
     const mime = (a.mime || a.tipo_mime || "").toLowerCase();
@@ -6293,7 +6190,7 @@ async function generateVideoThumbnail(file, maxWidth = 480) {
       const cleanup = () => {
         try {
           URL.revokeObjectURL(url);
-        } catch (e) {}
+        } catch (e) { }
       };
 
       const onError = (e) => {
@@ -6383,7 +6280,7 @@ async function uploadSelectedFiles(filesArray) {
           ? Math.round((totalUploaded / totalMainBytes) * 100)
           : 0;
       inner.style.width = pct + "%";
-    } catch (e) {}
+    } catch (e) { }
   };
 
   for (let i = 0; i < filesArray.length; i++) {
@@ -6470,7 +6367,7 @@ async function uploadSelectedFiles(filesArray) {
         const thumbFile = await generateVideoThumbnail(file, 480);
         // upload thumbnail with simple progress to circle
         try {
-          const thumbResp = await uploadSingle(thumbFile, () => {});
+          const thumbResp = await uploadSingle(thumbFile, () => { });
           thumbMeta = {
             url:
               thumbResp.url ||
@@ -6603,13 +6500,13 @@ function createAttachmentPreview(file, index) {
     const ext = (file.name || '').split('.').pop().toLowerCase();
     let iconSvg;
     if (ext === 'pdf') {
-        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8" style="width:28px;height:28px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`;
+      iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8" style="width:28px;height:28px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`;
     } else if (ext === 'doc' || ext === 'docx') {
-        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" style="width:28px;height:28px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`;
+      iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" style="width:28px;height:28px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`;
     } else if (ext === 'ppt' || ext === 'pptx') {
-        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="1.8" style="width:28px;height:28px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`;
+      iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="1.8" style="width:28px;height:28px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`;
     } else {
-        iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="1.8" style="width:28px;height:28px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`;
+      iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="1.8" style="width:28px;height:28px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`;
     }
     const fileName = file.name.length > 12 ? file.name.substring(0, 12) + '...' : file.name;
     box.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;">${iconSvg}</div><div class="text-xs text-gray-600 text-center break-words mt-1">${fileName}</div>`;
@@ -6810,7 +6707,7 @@ async function confirmarBorrarMensaje(idMensaje, tipo) {
         );
 
         if (response.status === 410) {
-          await response.json().catch(() => {});
+          await response.json().catch(() => { });
           Toast.error(
             t("messages.deleteExpired"),
             t("messages.deleteExpiredText"),
@@ -7253,14 +7150,14 @@ function mostrarModalCalificacionDashboard(
                         <!-- Sistema de estrellas (sin cambios en la funcionalidad) -->
                         <div class="flex justify-center space-x-2 mb-4" id="sistemaEstrellasDashboard" style="padding: 8px 0;">
                             ${[1, 2, 3, 4, 5]
-                              .map(
-                                (num) => `
+      .map(
+        (num) => `
                                 <button type="button" class="estrella-dashboard text-gray-300 hover:text-yellow-400 transition transform hover:scale-110" data-valor="${num}" style="background: none; border: none; cursor: pointer;">
                                     <span class="iconify" data-icon="mdi:star" data-width="48"></span>
                                 </button>
                             `,
-                              )
-                              .join("")}
+      )
+      .join("")}
                         </div>
 
                         <!-- Texto de calificación seleccionada -->
@@ -7595,21 +7492,21 @@ function mostrarModalCalificacionDashboard(
                 puntualidad: Math.round(
                   (actuales.puntualidad * cantidadAnterior +
                     metricas.puntualidad) /
-                    nuevaCantidad,
+                  nuevaCantidad,
                 ),
                 calidad_trabajo: Math.round(
                   (actuales.calidad_trabajo * cantidadAnterior +
                     metricas.calidad_trabajo) /
-                    nuevaCantidad,
+                  nuevaCantidad,
                 ),
                 limpieza: Math.round(
                   (actuales.limpieza * cantidadAnterior + metricas.limpieza) /
-                    nuevaCantidad,
+                  nuevaCantidad,
                 ),
                 comunicacion: Math.round(
                   (actuales.comunicacion * cantidadAnterior +
                     metricas.comunicacion) /
-                    nuevaCantidad,
+                  nuevaCantidad,
                 ),
                 cantidad_calificaciones: nuevaCantidad,
               };
@@ -7859,7 +7756,7 @@ function abrirMenuMensajeDesdeInline(event, element) {
   if (!datos || !datos.messageId) return false;
 
   mostrarMenuContextual(
-    event || { preventDefault: () => {}, pageX: 0, pageY: 0 },
+    event || { preventDefault: () => { }, pageX: 0, pageY: 0 },
     datos.messageId,
     datos.messageContent,
     datos.puedeEditar,
@@ -8129,7 +8026,7 @@ function agregarLongPressListeners() {
           const touch = e.touches[0];
           mostrarMenuContextual(
             {
-              preventDefault: () => {},
+              preventDefault: () => { },
               pageX: touch.pageX,
               pageY: touch.pageY,
             },
@@ -8247,11 +8144,11 @@ window.addEventListener("beforeunload", () => {
         // establecer estado sin agregar al historial
         try {
           history.replaceState({ view: p }, "", window.location.href);
-        } catch (e) {}
+        } catch (e) { }
         const target = document.querySelector('[data-view="' + p + '"]');
         if (target) target.click();
       }
-    } catch (e) {}
+    } catch (e) { }
   });
 
   // Nota: usar rutas tipo `/home` puede generar 404 al recargar si el servidor
@@ -9013,7 +8910,7 @@ window.addEventListener("beforeunload", () => {
           let payload = {};
           try {
             payload = JSON.parse(notif.payload || "{}");
-          } catch (e) {}
+          } catch (e) { }
 
           const callerName =
             payload.caller_name || notif.caller_name || "Desconocido";
@@ -9050,7 +8947,7 @@ window.addEventListener("beforeunload", () => {
     if (jitsiApi) {
       try {
         jitsiApi.dispose();
-      } catch (e) {}
+      } catch (e) { }
       jitsiApi = null;
     }
 
@@ -9151,7 +9048,7 @@ window.addEventListener("beforeunload", () => {
     if (jitsiApi) {
       try {
         jitsiApi.dispose();
-      } catch (e) {}
+      } catch (e) { }
       jitsiApi = null;
     }
 
@@ -9312,7 +9209,7 @@ window.addEventListener("beforeunload", () => {
                 localStorage.getItem("usuario_actual") || "{}",
               );
               personaIdActual = u.id || u.id_persona;
-            } catch (e) {}
+            } catch (e) { }
           }
 
           // console.log('[JITSI DEBUG] Último mensaje:', ultimoMensaje.contenido, 'De:', ultimoMensaje.id_persona_envia, 'Para mí:', personaIdActual);
@@ -9333,8 +9230,8 @@ window.addEventListener("beforeunload", () => {
             if (diffMinutos > 2) {
               console.log(
                 "[JITSI] Videollamada antigua ignorada (" +
-                  diffMinutos.toFixed(1) +
-                  " min)",
+                diffMinutos.toFixed(1) +
+                " min)",
               );
             } else {
               // Validar ownership: si yo no lo envié, es para mí.
@@ -9374,10 +9271,6 @@ let _todasLasOrdenes = [];
 let _filtroActualOrden = 'todas';
 let _misPostulacionesMap = {};
 let _ubicacionUsuarioActual = null; // ubicación en texto del usuario logueado (city/depto)
-let _ordenesCurrentPage = 1;
-const _ordenesItemsPerPage = 6;
-let _filtroMesOrdenes = null;
-let _busquedaOrdenes = '';
 
 /**
  * Compara dos cadenas de ubicación de forma insensible a mayúsculas/minúsculas.
@@ -9416,8 +9309,8 @@ async function obtenerUbicacionUsuario() {
     const d = jD?.data;
     if (!d) return null;
     // Combinar ciudad + departamento para que coincida con cualquiera de los dos
-    const ciudad    = d.ciudad_Direccion    || d.ciudad    || '';
-    const depto     = d.departamento_Direccion || d.departamento || '';
+    const ciudad = d.ciudad_Direccion || d.ciudad || '';
+    const depto = d.departamento_Direccion || d.departamento || '';
     const ubic = [ciudad, depto].filter(Boolean).join(' ').trim() || null;
     _ubicacionUsuarioActual = ubic;
     return _ubicacionUsuarioActual;
@@ -9440,13 +9333,13 @@ async function cargarOrdenesTrabajo() {
   // Mostrar u ocultar botón "Nueva Orden" y control geo-filtro según rol
   const btnNuevaOrden = document.getElementById('btnNuevaOrden');
   if (btnNuevaOrden) btnNuevaOrden.style.display = esAdmin ? '' : 'none';
-  
+
   const geoContainer = document.getElementById('adminGeoFilterContainer');
   if (geoContainer) geoContainer.classList.toggle('hidden', !esAdmin);
 
   // ── CACHÉ sessionStorage (5 min) ──────────────────────────────
   const _OT_CACHE_KEY_DATA = 'cache_ot_data';
-  const _OT_CACHE_KEY_TS   = 'cache_ot_ts';
+  const _OT_CACHE_KEY_TS = 'cache_ot_ts';
   const ahora = Date.now();
   const tsCache = parseInt(sessionStorage.getItem(_OT_CACHE_KEY_TS) || '0', 10);
   if (tsCache && (ahora - tsCache) < _OT_CACHE_TTL) {
@@ -9537,14 +9430,13 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
   if (esAdmin === undefined) esAdmin = localStorage.getItem('usuarioRolId') === '1';
   if (!misPostulacionesMap) misPostulacionesMap = {};
   const grid = document.getElementById('ordenesTrabajoGrid');
-  const paginationContainer = document.getElementById('ordenes-trabajo-pagination');
   if (!grid) return;
 
   const estadoConfig = {
-    pendiente:    { color: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-400', label: 'Pendiente' },
-    en_progreso:  { color: 'bg-blue-100 text-blue-700',    dot: 'bg-blue-500',   label: 'En Progreso' },
-    completada:   { color: 'bg-green-100 text-green-700',  dot: 'bg-green-500',  label: 'Completada' },
-    cancelada:    { color: 'bg-red-100 text-red-700',      dot: 'bg-red-400',    label: 'Cancelada' },
+    pendiente: { color: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-400', label: 'Pendiente' },
+    en_progreso: { color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500', label: 'En Progreso' },
+    completada: { color: 'bg-green-100 text-green-700', dot: 'bg-green-500', label: 'Completada' },
+    cancelada: { color: 'bg-red-100 text-red-700', dot: 'bg-red-400', label: 'Cancelada' },
   };
 
   // Para no-admins: filtrar órdenes con restricción de ubicación
@@ -9558,38 +9450,6 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
     });
   }
 
-  // Aplicar filtro por estado
-  if (_filtroActualOrden !== 'todas') {
-    ordenesFiltradas = ordenesFiltradas.filter(o => o.estado === _filtroActualOrden);
-  }
-
-  // Aplicar filtro por mes/año
-  if (_filtroMesOrdenes) {
-    const [year, month] = _filtroMesOrdenes.split('-'); // "2026-05" → ["2026", "05"]
-    const filterYear = parseInt(year);
-    const filterMonth = parseInt(month);
-    
-    ordenesFiltradas = ordenesFiltradas.filter(o => {
-      // Verificar fecha_inicio o fecha_fin? Vamos a usar fecha_inicio por defecto
-      const fecha = o.fecha_inicio || o.fecha_fin;
-      if (!fecha) return false;
-      
-      const date = new Date(fecha);
-      return date.getFullYear() === filterYear && (date.getMonth() + 1) === filterMonth;
-    });
-  }
-
-  // Aplicar filtro por búsqueda
-  if (_busquedaOrdenes) {
-    const busqueda = _busquedaOrdenes.toLowerCase().trim();
-    ordenesFiltradas = ordenesFiltradas.filter(o => {
-      const titulo = (o.titulo || '').toLowerCase();
-      const descripcion = (o.descripcion || '').toLowerCase();
-      const ubicacion = (o.ubicacion || o.ubicacion_obra || '').toLowerCase();
-      return titulo.includes(busqueda) || descripcion.includes(busqueda) || ubicacion.includes(busqueda);
-    });
-  }
-
   if (!ordenesFiltradas || ordenesFiltradas.length === 0) {
     grid.innerHTML = `
       <div class="col-span-full flex items-center justify-center py-16">
@@ -9599,29 +9459,19 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
           ${esAdmin ? '<p class="text-gray-400 text-sm mt-1">Haz clic en &ldquo;nueva orden&rdquo; para crear una</p>' : ''}
         </div>
       </div>`;
-    if (paginationContainer) paginationContainer.innerHTML = '';
     return;
   }
 
-  // Paginación
-  const totalPages = Math.ceil(ordenesFiltradas.length / _ordenesItemsPerPage);
-  if (_ordenesCurrentPage > totalPages) _ordenesCurrentPage = totalPages;
-  if (_ordenesCurrentPage < 1) _ordenesCurrentPage = 1;
-
-  const startIndex = (_ordenesCurrentPage - 1) * _ordenesItemsPerPage;
-  const endIndex = startIndex + _ordenesItemsPerPage;
-  const paginatedOrdenes = ordenesFiltradas.slice(startIndex, endIndex);
-
-  grid.innerHTML = paginatedOrdenes.map(o => {
+  grid.innerHTML = ordenesFiltradas.map(o => {
     const est = estadoConfig[o.estado] || estadoConfig['pendiente'];
     const fechaInicio = o.fecha_inicio ? new Date(o.fecha_inicio).toLocaleDateString('es-HN') : '—';
-    const fechaFin    = o.fecha_fin    ? new Date(o.fecha_fin).toLocaleDateString('es-HN')    : '—';
+    const fechaFin = o.fecha_fin ? new Date(o.fecha_fin).toLocaleDateString('es-HN') : '—';
     const presupuesto = o.presupuesto_estimado
       ? `L ${Number(o.presupuesto_estimado).toLocaleString('es-HN', { minimumFractionDigits: 2 })}`
       : '—';
-    const titulo      = escapeHtml(o.titulo || 'Sin título');
+    const titulo = escapeHtml(o.titulo || 'Sin título');
     const descripcion = escapeHtml(o.descripcion || '');
-    const ubicacion   = escapeHtml(o.ubicacion || o.ubicacion_obra || '');
+    const ubicacion = escapeHtml(o.ubicacion || o.ubicacion_obra || '');
     const especialidad = escapeHtml(o.especialidad || o.nombre_categoria || '');
 
     // Badge de restricción por ubicación (solo visible para admin)
@@ -9635,9 +9485,9 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
     // Badge del estado de la postulación del usuario
     const estadoPost = misPostulacionesMap[idOrden];
     const postBadgeConfig = {
-      pendiente:  { cls: 'bg-yellow-50 text-yellow-700 border border-yellow-200', icon: 'mdi:clock-outline',        label: 'Tu postulación: En revisión' },
-      aceptada:   { cls: 'bg-green-50 text-green-700 border border-green-200',   icon: 'mdi:check-circle-outline',  label: 'Tu postulación: Aceptada ✓' },
-      rechazada:  { cls: 'bg-red-50 text-red-600 border border-red-200',         icon: 'mdi:close-circle-outline',  label: 'Tu postulación: No seleccionado' },
+      pendiente: { cls: 'bg-yellow-50 text-yellow-700 border border-yellow-200', icon: 'mdi:clock-outline', label: 'Tu postulación: En revisión' },
+      aceptada: { cls: 'bg-green-50 text-green-700 border border-green-200', icon: 'mdi:check-circle-outline', label: 'Tu postulación: Aceptada ✓' },
+      rechazada: { cls: 'bg-red-50 text-red-600 border border-red-200', icon: 'mdi:close-circle-outline', label: 'Tu postulación: No seleccionado' },
     };
     const postBadge = (!esAdmin && estadoPost && postBadgeConfig[estadoPost])
       ? `<div class="mx-5 mb-2 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 ${postBadgeConfig[estadoPost].cls}">
@@ -9647,10 +9497,10 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
       : '';
 
     return `
-      <div class="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col overflow-hidden border border-gray-100 min-h-[340px]">
+      <div class="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col overflow-hidden border border-gray-100">
         <!-- Cabecera con estado -->
         <div class="px-5 pt-5 pb-3 flex items-start justify-between">
-          <h3 class="font-bold text-gray-800 text-base leading-tight flex-1 mr-3 line-clamp-2">${titulo}</h3>
+          <h3 class="font-bold text-gray-800 text-base leading-tight flex-1 mr-3">${titulo}</h3>
           <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${est.color} shrink-0">
             <span class="w-1.5 h-1.5 rounded-full ${est.dot}"></span>
             ${est.label}
@@ -9669,7 +9519,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
           ${ubicacion ? `
           <div class="flex items-center gap-2">
             <span class="iconify text-gray-400" data-icon="mdi:map-marker-outline" style="font-size:16px;"></span>
-            <span class="line-clamp-2">${ubicacion}</span>
+            <span>${ubicacion}</span>
           </div>` : ''}
           <div class="flex items-center gap-2">
             <span class="iconify text-gray-400" data-icon="mdi:calendar-range" style="font-size:16px;"></span>
@@ -9691,7 +9541,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
         </div>
 
         <!-- Acciones -->
-        <div class="px-5 pb-4 pt-2 flex gap-2 border-t border-gray-50 mt-auto">
+        <div class="px-5 pb-4 pt-2 flex gap-2 border-t border-gray-50">
           <button onclick="verDetalleOrden(${o.id_orden || o.id})"
             class="flex-1 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-medium transition flex items-center justify-center gap-1">
             <span class="iconify" data-icon="mdi:eye-outline" style="font-size:14px;"></span> Ver
@@ -9714,86 +9564,13 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
       </div>`;
   }).join('');
 
-  // Renderizar paginación
-  if (paginationContainer) {
-    if (totalPages <= 1) {
-      paginationContainer.innerHTML = '';
-    } else {
-      let paginationHtml = '<div class="flex items-center justify-center gap-2">';
-      
-      // Botón anterior
-      paginationHtml += `
-        <button onclick="cambiarPaginaOrdenes(${_ordenesCurrentPage - 1})" 
-          ${_ordenesCurrentPage === 1 ? 'disabled' : ''} 
-          class="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 text-xs font-medium transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
-          <span class="iconify" data-icon="mdi:chevron-left"></span> Anterior
-        </button>`;
-
-      // Números de página (máximo 5)
-      let startPage = Math.max(1, _ordenesCurrentPage - 2);
-      let endPage = Math.min(totalPages, startPage + 4);
-      if (endPage - startPage < 4) {
-        startPage = Math.max(1, endPage - 4);
-      }
-
-      if (startPage > 1) {
-        paginationHtml += `
-          <button onclick="cambiarPaginaOrdenes(1)" 
-            class="px-3 py-1.5 rounded-lg text-xs font-medium transition border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
-            1
-          </button>`;
-        if (startPage > 2) {
-          paginationHtml += `<span class="text-gray-500 px-1">...</span>`;
-        }
-      }
-
-      for (let i = startPage; i <= endPage; i++) {
-        paginationHtml += `
-          <button onclick="cambiarPaginaOrdenes(${i})" 
-            class="px-3 py-1.5 rounded-lg text-xs font-medium transition ${i === _ordenesCurrentPage 
-              ? 'bg-blue-600 text-white' 
-              : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}">
-            ${i}
-          </button>`;
-      }
-
-      if (endPage < totalPages) {
-        if (endPage < totalPages - 1) {
-          paginationHtml += `<span class="text-gray-500 px-1">...</span>`;
-        }
-        paginationHtml += `
-          <button onclick="cambiarPaginaOrdenes(${totalPages})" 
-            class="px-3 py-1.5 rounded-lg text-xs font-medium transition border border-gray-200 bg-white text-gray-700 hover:bg-gray-50">
-            ${totalPages}
-          </button>`;
-      }
-
-      // Botón siguiente
-      paginationHtml += `
-        <button onclick="cambiarPaginaOrdenes(${_ordenesCurrentPage + 1})" 
-          ${_ordenesCurrentPage === totalPages ? 'disabled' : ''} 
-          class="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 text-xs font-medium transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
-          Siguiente <span class="iconify" data-icon="mdi:chevron-right"></span>
-        </button>`;
-
-      paginationHtml += '</div>';
-      paginationContainer.innerHTML = paginationHtml;
-    }
-  }
-
   // Reactivar iconify para los nuevos elementos
   if (window.Iconify) Iconify.scan();
-}
-
-function cambiarPaginaOrdenes(nuevaPagina) {
-  _ordenesCurrentPage = nuevaPagina;
-  renderizarOrdenes(_todasLasOrdenes, undefined, _misPostulacionesMap);
 }
 
 /** Filtra la lista local por estado */
 function filtrarOrdenes(filtro) {
   _filtroActualOrden = filtro;
-  _ordenesCurrentPage = 1;
 
   // Resaltar botón activo
   document.querySelectorAll('.filtro-orden-btn').forEach(btn => {
@@ -9817,52 +9594,14 @@ function filtrarOrdenes(filtro) {
   renderizarOrdenes(filtradas, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap);
 }
 
-/** Aplica filtro por mes/año a las órdenes */
-function aplicarFiltroMes() {
-  const inputMes = document.getElementById('filtroMesOrdenes');
-  _filtroMesOrdenes = inputMes.value || null;
-  _ordenesCurrentPage = 1;
-  renderizarOrdenes(_todasLasOrdenes, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap);
-}
-
-/** Limpia el filtro por mes/año */
-function limpiarFiltroMes() {
-  const inputMes = document.getElementById('filtroMesOrdenes');
-  inputMes.value = '';
-  _filtroMesOrdenes = null;
-  _ordenesCurrentPage = 1;
-  renderizarOrdenes(_todasLasOrdenes, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap);
-}
-
-/** Aplica búsqueda por texto a las órdenes */
-function aplicarBusquedaOrdenes() {
-  const inputBusqueda = document.getElementById('buscarOrdenes');
-  _busquedaOrdenes = inputBusqueda.value || '';
-  _ordenesCurrentPage = 1;
-  renderizarOrdenes(_todasLasOrdenes, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap);
-}
-
 /** Toggles the geographic filter for Admin orders view */
 async function toggleFiltroGeografico() {
-    // Limpiamos caché de OT para forzar recarga
-    sessionStorage.removeItem('cache_ot_data');
-    sessionStorage.removeItem('cache_ot_ts');
-    
-    // Recargamos órdenes aplicando el nuevo estado del toggle
-    await cargarOrdenesTrabajo();
-}
+  // Limpiamos caché de OT para forzar recarga
+  sessionStorage.removeItem('cache_ot_data');
+  sessionStorage.removeItem('cache_ot_ts');
 
-/** Función para bloquear scroll sin shift */
-function bloquearScroll() {
-  const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-  document.body.style.overflow = 'hidden';
-  document.body.style.paddingRight = `${scrollbarWidth}px`;
-}
-
-/** Función para desbloquear scroll */
-function desbloquearScroll() {
-  document.body.style.overflow = '';
-  document.body.style.paddingRight = '';
+  // Recargamos órdenes aplicando el nuevo estado del toggle
+  await cargarOrdenesTrabajo();
 }
 
 /** Abre el modal para crear una nueva orden */
@@ -9873,13 +9612,11 @@ function abrirModalCrearOrden() {
   // Resetear formulario
   document.getElementById('formOrdenTrabajo').reset();
   document.getElementById('ordenTrabajoId').value = '';
-  document.getElementById('modalOrdenTitulo').textContent = 'Crear nueva orden de trabajo';
-  document.getElementById('modalOrdenBtnText').textContent = 'Crear orden';
-  document.getElementById('modalOrdenSpinner').classList.add('hidden');
+  document.getElementById('modalOrdenTitulo').textContent = 'Crear Nueva Orden de Trabajo';
+  document.getElementById('btnGuardarOrden').textContent = 'Crear Orden';
 
   cargarEspecialidadesOrden();
-  modal.style.display = 'flex';
-  bloquearScroll();
+  modal.classList.remove('hidden');
 
   // SCRUM-25: Resetear y ocultar mapa al abrir
   if (window.MapaOT) MapaOT.reset();
@@ -9887,9 +9624,8 @@ function abrirModalCrearOrden() {
 
 /** Cierra el modal de crear/editar */
 function cerrarModalOrden(event) {
-  if (event && event.target !== document.getElementById('modalOrdenBackdrop') && event.target !== document.getElementById('modalOrdenTrabajo')) return;
-  document.getElementById('modalOrdenTrabajo').style.display = 'none';
-  desbloquearScroll();
+  if (event && event.target !== document.getElementById('modalOrdenTrabajo')) return;
+  document.getElementById('modalOrdenTrabajo').classList.add('hidden');
   // SCRUM-25: Resetear mapa al cerrar
   if (window.MapaOT) MapaOT.reset();
 }
@@ -9898,15 +9634,15 @@ function cerrarModalOrden(event) {
 async function guardarOrdenTrabajo(event) {
   event.preventDefault();
 
-  const id          = document.getElementById('ordenTrabajoId').value;
-  const titulo      = document.getElementById('ordenTitulo').value.trim();
+  const id = document.getElementById('ordenTrabajoId').value;
+  const titulo = document.getElementById('ordenTitulo').value.trim();
   const descripcion = document.getElementById('ordenDescripcion').value.trim();
-  const ubicacion   = document.getElementById('ordenUbicacion').value.trim();
+  const ubicacion = document.getElementById('ordenUbicacion').value.trim();
   const fechaInicio = document.getElementById('ordenFechaInicio').value;
-  const fechaFin    = document.getElementById('ordenFechaFin').value;
+  const fechaFin = document.getElementById('ordenFechaFin').value;
   const especialidad = document.getElementById('ordenEspecialidad').value;
-  const presupuesto      = document.getElementById('ordenPresupuesto').value;
-  const maxPostulantes    = document.getElementById('ordenMaxPostulantes').value || 1;
+  const presupuesto = document.getElementById('ordenPresupuesto').value;
+  const maxPostulantes = document.getElementById('ordenMaxPostulantes').value || 1;
 
   if (fechaFin < fechaInicio) {
     Toast.warning('Fechas inválidas', 'La fecha de fin no puede ser anterior a la fecha de inicio.');
@@ -9914,11 +9650,8 @@ async function guardarOrdenTrabajo(event) {
   }
 
   const btn = document.getElementById('btnGuardarOrden');
-  const btnText = document.getElementById('modalOrdenBtnText');
-  const spinner = document.getElementById('modalOrdenSpinner');
   btn.disabled = true;
-  btnText.textContent = 'Guardando...';
-  spinner.classList.remove('hidden');
+  btn.textContent = 'Guardando...';
 
   try {
     const usuarioId = localStorage.getItem('usuarioId');
@@ -9937,14 +9670,13 @@ async function guardarOrdenTrabajo(event) {
       restringir_por_ubicacion: restringirUbicacion
     });
 
-    const url    = id ? `${API_BASE}/ordenes-trabajo/${id}` : `${API_BASE}/ordenes-trabajo`;
+    const url = id ? `${API_BASE}/ordenes-trabajo/${id}` : `${API_BASE}/ordenes-trabajo`;
     const method = id ? 'PUT' : 'Post';
 
     const res = await fetch(url, { method, headers, body });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    document.getElementById('modalOrdenTrabajo').style.display = 'none';
-    desbloquearScroll();
+    document.getElementById('modalOrdenTrabajo').classList.add('hidden');
     Toast.success(id ? 'Orden actualizada' : 'Orden creada', id ? 'Los cambios fueron guardados correctamente.' : 'La orden fue creada exitosamente.');
     await cargarOrdenesTrabajo();
   } catch (err) {
@@ -9952,8 +9684,7 @@ async function guardarOrdenTrabajo(event) {
     Toast.error('Error al guardar', 'No se pudo guardar la orden. Por favor intenta de nuevo.');
   } finally {
     btn.disabled = false;
-    btnText.textContent = id ? 'Guardar cambios' : 'Crear orden';
-    spinner.classList.add('hidden');
+    btn.textContent = id ? 'Guardar Cambios' : 'Crear Orden';
   }
 }
 
@@ -9976,11 +9707,9 @@ async function editarOrden(id) {
   await cargarEspecialidadesOrden();
   document.getElementById('ordenEspecialidad').value = orden.especialidad || '';
 
-  document.getElementById('modalOrdenTitulo').textContent = 'Editar orden de trabajo';
-  document.getElementById('modalOrdenBtnText').textContent = 'Guardar cambios';
-  document.getElementById('modalOrdenSpinner').classList.add('hidden');
-  document.getElementById('modalOrdenTrabajo').style.display = 'flex';
-  bloquearScroll();
+  document.getElementById('modalOrdenTitulo').textContent = 'Editar Orden de Trabajo';
+  document.getElementById('btnGuardarOrden').textContent = 'Guardar Cambios';
+  document.getElementById('modalOrdenTrabajo').classList.remove('hidden');
 
   // SCRUM-25: Resetear mapa al editar para evitar estados anteriores
   if (window.MapaOT) MapaOT.reset();
@@ -10011,10 +9740,9 @@ async function cancelarOrden(id) {
       </div>`);
 
     const modal = document.getElementById(modalId);
-    const close = (val) => { modal.remove(); desbloquearScroll(); resolve(val); };
+    const close = (val) => { modal.remove(); resolve(val); };
     document.getElementById('ot-cancel-no').onclick = () => close(false);
     document.getElementById('ot-cancel-yes').onclick = () => close(true);
-    bloquearScroll();
   });
 
   if (!confirmado) return;
@@ -10049,7 +9777,7 @@ async function verDetalleOrden(id) {
     completada: 'Completada', cancelada: 'Cancelada'
   };
   const fechaInicio = orden.fecha_inicio ? new Date(orden.fecha_inicio).toLocaleDateString('es-HN') : '—';
-  const fechaFin    = orden.fecha_fin    ? new Date(orden.fecha_fin).toLocaleDateString('es-HN')    : '—';
+  const fechaFin = orden.fecha_fin ? new Date(orden.fecha_fin).toLocaleDateString('es-HN') : '—';
   const presupuesto = orden.presupuesto_estimado
     ? `L ${Number(orden.presupuesto_estimado).toLocaleString('es-HN', { minimumFractionDigits: 2 })}`
     : '—';
@@ -10094,8 +9822,7 @@ async function verDetalleOrden(id) {
       </div>` : ''}
     </div>`;
 
-  document.getElementById('modalDetalleOrden').style.display = 'flex';
-  bloquearScroll();
+  document.getElementById('modalDetalleOrden').classList.remove('hidden');
 
   // Cargar postulantes para admin (SCRUM-25)
   if (esAdmin) {
@@ -10123,23 +9850,23 @@ async function verDetalleOrden(id) {
       container.innerHTML = lista.map(p => {
         const estadoBadge = {
           pendiente: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-          aceptada:  'bg-green-50 text-green-700 border-green-200',
+          aceptada: 'bg-green-50 text-green-700 border-green-200',
           rechazada: 'bg-red-50 text-red-500 border-red-200'
         }[p.estado] || 'bg-gray-50 text-gray-600 border-gray-200';
 
         // ── Calcular puntuación global (promedio de las 4 métricas) ───────────
-        const punt   = Number(p.puntualidad      || 0);
-        const cal    = Number(p.calidad_trabajo  || 0);
-        const limp   = Number(p.limpieza         || 0);
-        const com    = Number(p.comunicacion     || 0);
-        const nCal   = Number(p.cantidad_calificaciones || 0);
+        const punt = Number(p.puntualidad || 0);
+        const cal = Number(p.calidad_trabajo || 0);
+        const limp = Number(p.limpieza || 0);
+        const com = Number(p.comunicacion || 0);
+        const nCal = Number(p.cantidad_calificaciones || 0);
         const promedio = nCal > 0 ? Math.round((punt + cal + limp + com) / 4) : 0;
         // Convertir promedio 0-100 → 0-5 estrellas
-        const estrellasNum  = promedio > 0 ? Math.round((promedio / 100) * 5 * 10) / 10 : 0;
+        const estrellasNum = promedio > 0 ? Math.round((promedio / 100) * 5 * 10) / 10 : 0;
         // Render de estrellas (enteras + media + vacías)
         function renderEstrellas(val) {
-          const full  = Math.floor(val);
-          const half  = val - full >= 0.3 && val - full < 0.8 ? 1 : 0;
+          const full = Math.floor(val);
+          const half = val - full >= 0.3 && val - full < 0.8 ? 1 : 0;
           const empty = 5 - full - half - (val - full >= 0.8 ? 1 : 0);
           const fullExtra = val - full >= 0.8 ? 1 : 0;
           let s = '';
@@ -10163,12 +9890,12 @@ async function verDetalleOrden(id) {
         }
 
         const tieneMetricas = nCal > 0;
-        const metricasHtml  = tieneMetricas ? `
+        const metricasHtml = tieneMetricas ? `
           <div class="mt-2 space-y-1">
             ${barra('Puntualidad', punt, 'bg-blue-400')}
-            ${barra('Calidad',     cal,  'bg-emerald-400')}
-            ${barra('Limpieza',    limp, 'bg-sky-400')}
-            ${barra('Comunic.',    com,  'bg-violet-400')}
+            ${barra('Calidad', cal, 'bg-emerald-400')}
+            ${barra('Limpieza', limp, 'bg-sky-400')}
+            ${barra('Comunic.', com, 'bg-violet-400')}
           </div>` : '';
 
         // ── Botón Ver Perfil (SCRUM-25) ─────────────────────────────────────────
@@ -10179,9 +9906,9 @@ async function verDetalleOrden(id) {
           <div class="py-3 border-b border-gray-100 last:border-0">
             <!-- Fila superior: foto + nombre + estado -->
             <div class="flex items-start gap-3">
-              <img src="${p.imagen_tecnico || 'https://api.dicebear.com/9.x/lorelei/svg?seed=' + encodeURIComponent(p.nombre_tecnico || 'User') + '&backgroundColor=f1f5f9'}"
+              <img src="${p.imagen_tecnico || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(p.nombre_tecnico || 'U') + '&size=40&background=e0e7ff&color=4f46e5&rounded=true'}"
                 class="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white shadow"
-                onerror="this.src='https://api.dicebear.com/9.x/lorelei/svg?seed=User&backgroundColor=f1f5f9'">
+                onerror="this.src='https://ui-avatars.com/api/?name=U&size=40&background=e0e7ff&color=4f46e5&rounded=true'">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-2 flex-wrap">
                   <p class="text-sm font-semibold text-gray-800 truncate">${escapeHtml(p.nombre_tecnico || 'Usuario')}</p>
@@ -10190,9 +9917,9 @@ async function verDetalleOrden(id) {
                 <!-- Estrellas -->
                 <div class="flex items-center gap-1 mt-0.5">
                   ${tieneMetricas
-                    ? `<div class="flex items-center gap-0.5">${renderEstrellas(estrellasNum)}</div>
+            ? `<div class="flex items-center gap-0.5">${renderEstrellas(estrellasNum)}</div>
                        <span class="text-[10px] text-gray-500">${estrellasNum.toFixed(1)} · ${nCal} reseña${nCal !== 1 ? 's' : ''}</span>`
-                    : `<span class="text-[10px] text-gray-400 italic">Sin calificaciones aún</span>`}
+            : `<span class="text-[10px] text-gray-400 italic">Sin calificaciones aún</span>`}
                 </div>
                 <!-- Mensaje de postulación -->
                 ${p.mensaje ? `<p class="text-xs text-gray-500 mt-1 line-clamp-2">${escapeHtml(p.mensaje)}</p>` : ''}
@@ -10203,12 +9930,12 @@ async function verDetalleOrden(id) {
             <!-- Línea de acciones: portafolio + ver perfil -->
             <div class="mt-2 flex flex-wrap items-center gap-2">
               ${p.portafolio_url
-                ? `<a href="${escapeHtml(p.portafolio_url)}" target="_blank" rel="noopener"
+            ? `<a href="${escapeHtml(p.portafolio_url)}" target="_blank" rel="noopener"
                      class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-700 text-[10px] font-medium rounded-lg border border-red-200 transition-colors">
                      <span class="iconify" data-icon="mdi:file-pdf-box" style="font-size:13px;"></span>
                      Portafolio PDF
                    </a>`
-                : `<span class="text-[10px] text-gray-400 italic">Sin portafolio</span>`}
+            : `<span class="text-[10px] text-gray-400 italic">Sin portafolio</span>`}
               ${btnPerfil}
             </div>
           </div>`;
@@ -10225,9 +9952,8 @@ async function verDetalleOrden(id) {
 
 /** Cierra el modal de detalle */
 function cerrarDetalleOrden(event) {
-  if (event && event.target !== document.getElementById('modalDetalleOrdenBackdrop') && event.target !== document.getElementById('modalDetalleOrden')) return;
-  document.getElementById('modalDetalleOrden').style.display = 'none';
-  desbloquearScroll();
+  if (event && event.target !== document.getElementById('modalDetalleOrden')) return;
+  document.getElementById('modalDetalleOrden').classList.add('hidden');
 }
 
 /** SCRUM-30: Genera y descarga un PDF con los detalles de la orden */
@@ -10243,12 +9969,12 @@ function descargarPDFOrden(id) {
     }
 
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const BLUE   = [30, 86, 160];
-    const GRAY   = [90, 90, 90];
-    const BLACK  = [30, 30, 30];
-    const LIGHT  = [245, 247, 250];
-    const pageW  = doc.internal.pageSize.getWidth();
-    let   y      = 0;
+    const BLUE = [30, 86, 160];
+    const GRAY = [90, 90, 90];
+    const BLACK = [30, 30, 30];
+    const LIGHT = [245, 247, 250];
+    const pageW = doc.internal.pageSize.getWidth();
+    let y = 0;
 
     // ── Encabezado ──────────────────────────────────────────────────
     doc.setFillColor(...BLUE);
@@ -10262,7 +9988,7 @@ function descargarPDFOrden(id) {
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.text('  SEMACKRO — Intercambio de Servicios y Habilidades', 14, 22);
-    doc.text(`Generado el ${new Date().toLocaleDateString('es-HN', { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}`, 14, 28);
+    doc.text(`Generado el ${new Date().toLocaleDateString('es-HN', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`, 14, 28);
 
     y = 44;
 
@@ -10290,8 +10016,8 @@ function descargarPDFOrden(id) {
     doc.text('Información General', 14, y);
     y += 8;
 
-    const estadoLabels = { pendiente:'Pendiente', en_progreso:'En Progreso', completada:'Completada', cancelada:'Cancelada' };
-    const presupuesto  = orden.presupuesto_estimado
+    const estadoLabels = { pendiente: 'Pendiente', en_progreso: 'En Progreso', completada: 'Completada', cancelada: 'Cancelada' };
+    const presupuesto = orden.presupuesto_estimado
       ? `L ${Number(orden.presupuesto_estimado).toLocaleString('es-HN', { minimumFractionDigits: 2 })}`
       : '—';
 
@@ -10359,7 +10085,7 @@ function descargarPDFOrden(id) {
     doc.setTextColor(200, 220, 255);
     doc.text('Documento generado automáticamente por   SEMACKRO.', 14, pageH - 5);
 
-    const nombreArchivo = `Orden_${id}_${(orden.titulo || 'detalle').replace(/[^a-zA-Z0-9]/g,'_').slice(0,30)}.pdf`;
+    const nombreArchivo = `Orden_${id}_${(orden.titulo || 'detalle').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30)}.pdf`;
     doc.save(nombreArchivo);
     Toast.success('PDF generado', `Archivo "${nombreArchivo}" descargado.`);
   } catch (err) {
@@ -10389,8 +10115,8 @@ async function postularseOrden(id) {
         const msg = est === 'aceptada'
           ? 'Tu postulación fue <strong>aceptada</strong>. Ya eres parte de este proyecto.'
           : est === 'rechazada'
-          ? 'Tu postulación fue <strong>rechazada</strong>. No puedes volver a postularte.'
-          : 'Ya enviaste una postulación a esta orden. Está <strong>pendiente</strong> de revisión.';
+            ? 'Tu postulación fue <strong>rechazada</strong>. No puedes volver a postularte.'
+            : 'Ya enviaste una postulación a esta orden. Está <strong>pendiente</strong> de revisión.';
         Toast.warning('Ya te postulaste', msg.replace(/<[^>]*>/g, ''));
         return;
       }
@@ -10445,7 +10171,7 @@ async function postularseOrden(id) {
     const modal = document.getElementById(modalId);
     const close = (val) => { modal.remove(); resolve(val); };
     // Mostrar nombre del archivo seleccionado
-    document.getElementById('ot-postular-portfolio').addEventListener('change', function() {
+    document.getElementById('ot-postular-portfolio').addEventListener('change', function () {
       const file = this.files[0];
       const nameEl = document.getElementById('ot-pdf-name');
       if (file) {
@@ -10541,16 +10267,16 @@ async function postularseOrden(id) {
 
 // SVG helpers para icono de tipo de alerta
 const _ALERTA_SVGS = {
-    alerta: `<svg viewBox="0 0 20 20" fill="#2563eb" style="width:18px;height:18px;flex-shrink:0;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>`,
-    exito:  `<svg viewBox="0 0 20 20" fill="#16a34a" style="width:18px;height:18px;flex-shrink:0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>`,
-    recordatorio: `<svg viewBox="0 0 20 20" fill="#d97706" style="width:18px;height:18px;flex-shrink:0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>`,
-    critico: `<svg viewBox="0 0 20 20" fill="#dc2626" style="width:18px;height:18px;flex-shrink:0;"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>`,
-    sinAlertas: `<svg viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" style="width:40px;height:40px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>`,
+  alerta: `<svg viewBox="0 0 20 20" fill="#2563eb" style="width:18px;height:18px;flex-shrink:0;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>`,
+  exito: `<svg viewBox="0 0 20 20" fill="#16a34a" style="width:18px;height:18px;flex-shrink:0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>`,
+  recordatorio: `<svg viewBox="0 0 20 20" fill="#d97706" style="width:18px;height:18px;flex-shrink:0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>`,
+  critico: `<svg viewBox="0 0 20 20" fill="#dc2626" style="width:18px;height:18px;flex-shrink:0;"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>`,
+  sinAlertas: `<svg viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" style="width:40px;height:40px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>`,
 };
 
 let _alertasContextuales = [];          // caché de alertas activas
 let _alertasLeidas = new Set(           // IDs de alertas ya leídas/descartadas (persiste en sessionStorage)
-    JSON.parse(sessionStorage.getItem('alertasLeidas') || '[]')
+  JSON.parse(sessionStorage.getItem('alertasLeidas') || '[]')
 );
 let _alertasAnteriorIds = new Set();    // IDs de la vez anterior (para detectar nuevas)
 let _alertaEmailCrossOriginWarned = false;
@@ -10558,111 +10284,111 @@ let _solicitudesPendientesCount = 0;    // Contador de solicitudes (para badge c
 
 /** Cambia entre las pestañas Solicitudes / Alertas del dropdown */
 function switchNotifTab(tab) {
-    const panelSol = document.getElementById('notifPanelSolicitudes');
-    const panelAlt = document.getElementById('notifPanelAlertas');
-    const tabSol   = document.getElementById('notifTabSolicitudes');
-    const tabAlt   = document.getElementById('notifTabAlertas');
-    if (!panelSol || !panelAlt) return;
+  const panelSol = document.getElementById('notifPanelSolicitudes');
+  const panelAlt = document.getElementById('notifPanelAlertas');
+  const tabSol = document.getElementById('notifTabSolicitudes');
+  const tabAlt = document.getElementById('notifTabAlertas');
+  if (!panelSol || !panelAlt) return;
 
-    if (tab === 'alertas') {
-        panelSol.classList.add('hidden');
-        panelAlt.classList.remove('hidden');
-        tabAlt.classList.add('border-indigo-600', 'text-indigo-600');
-        tabAlt.classList.remove('border-transparent', 'text-gray-500');
-        tabSol.classList.remove('border-indigo-600', 'text-indigo-600');
-        tabSol.classList.add('border-transparent', 'text-gray-500');
-        renderAlertasEnPanel();
-    } else {
-        panelAlt.classList.add('hidden');
-        panelSol.classList.remove('hidden');
-        tabSol.classList.add('border-indigo-600', 'text-indigo-600');
-        tabSol.classList.remove('border-transparent', 'text-gray-500');
-        tabAlt.classList.remove('border-indigo-600', 'text-indigo-600');
-        tabAlt.classList.add('border-transparent', 'text-gray-500');
-    }
+  if (tab === 'alertas') {
+    panelSol.classList.add('hidden');
+    panelAlt.classList.remove('hidden');
+    tabAlt.classList.add('border-indigo-600', 'text-indigo-600');
+    tabAlt.classList.remove('border-transparent', 'text-gray-500');
+    tabSol.classList.remove('border-indigo-600', 'text-indigo-600');
+    tabSol.classList.add('border-transparent', 'text-gray-500');
+    renderAlertasEnPanel();
+  } else {
+    panelAlt.classList.add('hidden');
+    panelSol.classList.remove('hidden');
+    tabSol.classList.add('border-indigo-600', 'text-indigo-600');
+    tabSol.classList.remove('border-transparent', 'text-gray-500');
+    tabAlt.classList.remove('border-indigo-600', 'text-indigo-600');
+    tabAlt.classList.add('border-transparent', 'text-gray-500');
+  }
 }
 
 /** Descarta una alerta individual y actualiza el badge */
 function descartarAlerta(alertaId) {
-    _alertasLeidas.add(alertaId);
-    sessionStorage.setItem('alertasLeidas', JSON.stringify([..._alertasLeidas]));
-    renderAlertasEnPanel();
-    _actualizarBadgeAlertas();
+  _alertasLeidas.add(alertaId);
+  sessionStorage.setItem('alertasLeidas', JSON.stringify([..._alertasLeidas]));
+  renderAlertasEnPanel();
+  _actualizarBadgeAlertas();
 }
 
 /** Confirma lectura de una instrucción crítica */
 function confirmarLecturaAlerta(alertaId) {
-    descartarAlerta(alertaId);
-    const btn = document.getElementById('confirmLecturaBtn_' + alertaId);
-    if (btn) { btn.textContent = '✓ Confirmado'; btn.disabled = true; btn.classList.add('opacity-50'); }
-    setTimeout(() => descartarAlerta(alertaId), 800);
+  descartarAlerta(alertaId);
+  const btn = document.getElementById('confirmLecturaBtn_' + alertaId);
+  if (btn) { btn.textContent = '✓ Confirmado'; btn.disabled = true; btn.classList.add('opacity-50'); }
+  setTimeout(() => descartarAlerta(alertaId), 800);
 }
 
 /** Actualiza el badge naranja sobre la pestaña Alertas Y el badge rojo de la campana (combinado) */
 function _actualizarBadgeAlertas() {
-    const pendientes = _alertasContextuales.filter(a => !_alertasLeidas.has(a.id));
-    const badge = document.getElementById('alertaBadge');
-    if (badge) {
-        if (pendientes.length > 0) {
-            badge.classList.remove('hidden');
-            badge.textContent = pendientes.length > 9 ? '9+' : pendientes.length;
-        } else {
-            badge.classList.add('hidden');
-        }
+  const pendientes = _alertasContextuales.filter(a => !_alertasLeidas.has(a.id));
+  const badge = document.getElementById('alertaBadge');
+  if (badge) {
+    if (pendientes.length > 0) {
+      badge.classList.remove('hidden');
+      badge.textContent = pendientes.length > 9 ? '9+' : pendientes.length;
+    } else {
+      badge.classList.add('hidden');
     }
-    // Actualizar campana principal: suma solicitudes + alertas no leídas
-    _syncCampanaBadge();
+  }
+  // Actualizar campana principal: suma solicitudes + alertas no leídas
+  _syncCampanaBadge();
 }
 
 /** Sincroniza el badge rojo de la campana con el total combinado */
 function _syncCampanaBadge() {
-    const pendientesAlertas = _alertasContextuales.filter(a => !_alertasLeidas.has(a.id)).length;
-    const total = _solicitudesPendientesCount + pendientesAlertas;
-    const campana = document.getElementById('notificationBadge');
-    if (!campana) return;
-    if (total > 0) {
-        campana.classList.remove('hidden');
-        campana.textContent = total > 99 ? '99+' : String(total);
-    } else {
-        campana.classList.add('hidden');
-        campana.textContent = '';
-    }
+  const pendientesAlertas = _alertasContextuales.filter(a => !_alertasLeidas.has(a.id)).length;
+  const total = _solicitudesPendientesCount + pendientesAlertas;
+  const campana = document.getElementById('notificationBadge');
+  if (!campana) return;
+  if (total > 0) {
+    campana.classList.remove('hidden');
+    campana.textContent = total > 99 ? '99+' : String(total);
+  } else {
+    campana.classList.add('hidden');
+    campana.textContent = '';
+  }
 }
 
 /** Renderiza las alertas dentro del panel */
 function renderAlertasEnPanel() {
-    const contenedor = document.getElementById('alertasList');
-    if (!contenedor) return;
+  const contenedor = document.getElementById('alertasList');
+  if (!contenedor) return;
 
-    const pendientes = _alertasContextuales.filter(a => !_alertasLeidas.has(a.id));
+  const pendientes = _alertasContextuales.filter(a => !_alertasLeidas.has(a.id));
 
-    if (pendientes.length === 0) {
-        contenedor.innerHTML = `
+  if (pendientes.length === 0) {
+    contenedor.innerHTML = `
         <div class="p-8 text-center flex flex-col items-center gap-2">
             ${_ALERTA_SVGS.sinAlertas}
             <p class="text-gray-400 text-sm">Sin alertas pendientes</p>
         </div>`;
-        return;
-    }
+    return;
+  }
 
-    const TIPO_STYLES = {
-        alerta:       { bg: 'bg-blue-50',   border: 'border-blue-200',   svgKey: 'alerta',       label: 'Alerta',              labelCls: 'text-blue-700 bg-blue-100' },
-        exito:        { bg: 'bg-green-50',  border: 'border-green-200',  svgKey: 'exito',        label: 'Completado',          labelCls: 'text-green-700 bg-green-100' },
-        recordatorio: { bg: 'bg-amber-50',  border: 'border-amber-200',  svgKey: 'recordatorio', label: 'Recordatorio',        labelCls: 'text-amber-700 bg-amber-100' },
-        critico:      { bg: 'bg-red-50',    border: 'border-red-200',    svgKey: 'critico',      label: 'Instrucción Crítica', labelCls: 'text-red-700 bg-red-100' },
-    };
+  const TIPO_STYLES = {
+    alerta: { bg: 'bg-blue-50', border: 'border-blue-200', svgKey: 'alerta', label: 'Alerta', labelCls: 'text-blue-700 bg-blue-100' },
+    exito: { bg: 'bg-green-50', border: 'border-green-200', svgKey: 'exito', label: 'Completado', labelCls: 'text-green-700 bg-green-100' },
+    recordatorio: { bg: 'bg-amber-50', border: 'border-amber-200', svgKey: 'recordatorio', label: 'Recordatorio', labelCls: 'text-amber-700 bg-amber-100' },
+    critico: { bg: 'bg-red-50', border: 'border-red-200', svgKey: 'critico', label: 'Instrucción Crítica', labelCls: 'text-red-700 bg-red-100' },
+  };
 
-    contenedor.innerHTML = pendientes.map(a => {
-        const s = TIPO_STYLES[a.tipo] || TIPO_STYLES.alerta;
-        const iconHtml = _ALERTA_SVGS[s.svgKey] || _ALERTA_SVGS.alerta;
-        const confirmBtn = a.tipo === 'critico'
-            ? `<button id="confirmLecturaBtn_${a.id}" onclick="confirmarLecturaAlerta('${a.id}')"
+  contenedor.innerHTML = pendientes.map(a => {
+    const s = TIPO_STYLES[a.tipo] || TIPO_STYLES.alerta;
+    const iconHtml = _ALERTA_SVGS[s.svgKey] || _ALERTA_SVGS.alerta;
+    const confirmBtn = a.tipo === 'critico'
+      ? `<button id="confirmLecturaBtn_${a.id}" onclick="confirmarLecturaAlerta('${a.id}')"
                    class="mt-2 w-full py-1.5 text-xs font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 transition flex items-center justify-center gap-1">
                    <svg viewBox="0 0 20 20" fill="currentColor" style="width:12px;height:12px;"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                    Confirmar lectura
                </button>`
-            : '';
-        return `
+      : '';
+    return `
         <div class="flex gap-3 p-3 rounded-xl border ${s.bg} ${s.border} mb-1.5">
             <span class="leading-none mt-0.5 shrink-0">${iconHtml}</span>
             <div class="flex-1 min-w-0">
@@ -10676,7 +10402,7 @@ function renderAlertasEnPanel() {
             </div>
             <button onclick="descartarAlerta('${a.id}')" class="text-gray-300 hover:text-gray-500 shrink-0 self-start leading-none" style="font-size:18px;line-height:1;">&#215;</button>
         </div>`;
-    }).join('');
+  }).join('');
 }
 
 /**
@@ -10687,248 +10413,248 @@ function renderAlertasEnPanel() {
  *  - Crítico: instrucciones críticas en grupos OT
  */
 async function cargarAlertasContextuales() {
-    try {
-        const usuarioId = localStorage.getItem('usuarioId');
-        if (!usuarioId) return;
+  try {
+    const usuarioId = localStorage.getItem('usuarioId');
+    if (!usuarioId) return;
 
-        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-        const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
 
-        const res = await fetch(`${API_BASE}/ordenes-trabajo`, { headers });
-        if (!res.ok) return;
-        const json = await res.json();
-        const ordenes = (json.data || json || []).filter(o => String(o.usuario_id) === String(usuarioId));
+    const res = await fetch(`${API_BASE}/ordenes-trabajo`, { headers });
+    if (!res.ok) return;
+    const json = await res.json();
+    const ordenes = (json.data || json || []).filter(o => String(o.usuario_id) === String(usuarioId));
 
-        const nuevasAlertas = [];
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-        const manana = new Date(hoy); manana.setDate(manana.getDate() + 1);
+    const nuevasAlertas = [];
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const manana = new Date(hoy); manana.setDate(manana.getDate() + 1);
 
-        for (const orden of ordenes) {
-            const tituloOrden = orden.titulo || `Orden #${orden.id_orden || orden.id}`;
-            const idBase = String(orden.id_orden || orden.id);
+    for (const orden of ordenes) {
+      const tituloOrden = orden.titulo || `Orden #${orden.id_orden || orden.id}`;
+      const idBase = String(orden.id_orden || orden.id);
 
-            // 1. Nuevas postulaciones pendientes
-            try {
-                const rp = await fetch(`${API_BASE}/ordenes-trabajo/${idBase}/postulaciones`, { headers });
-                if (rp.ok) {
-                    const jp = await rp.json();
-                    const pendientes = (jp.data || []).filter(p => p.estado === 'pendiente');
-                    if (pendientes.length > 0) {
-                        // ID incluye el conteo: cada nuevo postulante genera una alerta fresca
-                        // aunque el admin haya descartado la alerta anterior
-                        nuevasAlertas.push({
-                            id: `postulado_${idBase}_n${pendientes.length}`,
-                            tipo: 'alerta',
-                            titulo: `Nuevo técnico postulado`,
-                            detalle: `${pendientes.length} postulante${pendientes.length > 1 ? 's' : ''} esperando revisión`,
-                            orden: tituloOrden
-                        });
-                    }
-                }
-            } catch (e) { /* ignorar */ }
-
-            // 2. Obra finalizada
-            const estadoFin = (orden.estado || '').toLowerCase();
-            if (estadoFin === 'finalizada' || estadoFin === 'completada' || estadoFin === 'finalizado') {
-                nuevasAlertas.push({
-                    id: `finalizada_${idBase}`,
-                    tipo: 'exito',
-                    titulo: `Obra finalizada`,
-                    detalle: `La orden ha sido marcada como completada`,
-                    orden: tituloOrden
-                });
-            }
-
-            // 3. Mañana inicia obra
-            if (orden.fecha_inicio) {
-                const fInicio = new Date(orden.fecha_inicio);
-                fInicio.setHours(0, 0, 0, 0);
-                if (fInicio.getTime() === manana.getTime()) {
-                    nuevasAlertas.push({
-                        id: `manana_${idBase}`,
-                        tipo: 'recordatorio',
-                        titulo: `Mañana inicia obra`,
-                        detalle: `La orden comienza mañana`,
-                        orden: tituloOrden
-                    });
-                }
-            }
+      // 1. Nuevas postulaciones pendientes
+      try {
+        const rp = await fetch(`${API_BASE}/ordenes-trabajo/${idBase}/postulaciones`, { headers });
+        if (rp.ok) {
+          const jp = await rp.json();
+          const pendientes = (jp.data || []).filter(p => p.estado === 'pendiente');
+          if (pendientes.length > 0) {
+            // ID incluye el conteo: cada nuevo postulante genera una alerta fresca
+            // aunque el admin haya descartado la alerta anterior
+            nuevasAlertas.push({
+              id: `postulado_${idBase}_n${pendientes.length}`,
+              tipo: 'alerta',
+              titulo: `Nuevo técnico postulado`,
+              detalle: `${pendientes.length} postulante${pendientes.length > 1 ? 's' : ''} esperando revisión`,
+              orden: tituloOrden
+            });
+          }
         }
+      } catch (e) { /* ignorar */ }
 
-        // 4. Verificar mensajes críticos en conversaciones de grupos OT
-        const convs = window.conversacionesDashboard || [];
-        for (const conv of convs.filter(c => (c.nombre_contacto || '').startsWith('OT:'))) {
-            const ult = (conv.ultimo_mensaje || '').toUpperCase();
-            if (ult.includes('[CRÍTICO]') || ult.includes('[CRITICO]') || ult.includes('[URGENTE]')) {
-                nuevasAlertas.push({
-                    id: `critico_conv_${conv.id_conversacion}`,
-                    tipo: 'critico',
-                    titulo: 'Instrucción crítica sin confirmar',
-                    detalle: conv.ultimo_mensaje?.replace(/\[CRÍTICO\]|\[CRITICO\]|\[URGENTE\]/gi, '').trim(),
-                    orden: conv.nombre_contacto
-                });
-            }
+      // 2. Obra finalizada
+      const estadoFin = (orden.estado || '').toLowerCase();
+      if (estadoFin === 'finalizada' || estadoFin === 'completada' || estadoFin === 'finalizado') {
+        nuevasAlertas.push({
+          id: `finalizada_${idBase}`,
+          tipo: 'exito',
+          titulo: `Obra finalizada`,
+          detalle: `La orden ha sido marcada como completada`,
+          orden: tituloOrden
+        });
+      }
+
+      // 3. Mañana inicia obra
+      if (orden.fecha_inicio) {
+        const fInicio = new Date(orden.fecha_inicio);
+        fInicio.setHours(0, 0, 0, 0);
+        if (fInicio.getTime() === manana.getTime()) {
+          nuevasAlertas.push({
+            id: `manana_${idBase}`,
+            tipo: 'recordatorio',
+            titulo: `Mañana inicia obra`,
+            detalle: `La orden comienza mañana`,
+            orden: tituloOrden
+          });
         }
-
-        // 5. Estado de MIS propias postulaciones (aceptada / rechazada)
-        // NOTA: el endpoint devuelve 'estado_postulacion', no 'estado'
-        try {
-            const rMisPost = await fetch(`${API_BASE}/ordenes-trabajo/mis-postulaciones?usuario_id=${usuarioId}`, { headers });
-            if (rMisPost.ok) {
-                const jMisPost = await rMisPost.json();
-                for (const p of (jMisPost.data || [])) {
-                    const est = (p.estado_postulacion || p.estado || '').toLowerCase();
-                    if (est === 'aceptada') {
-                        nuevasAlertas.push({
-                            id: `mi_post_aceptada_${p.id_postulacion}`,
-                            tipo: 'exito',
-                            titulo: '¡Tu postulación fue aceptada!',
-                            detalle: `Has sido seleccionado para "${p.titulo || `Orden #${p.id_orden}`}". Revisa el grupo de mensajería.`,
-                            orden: p.titulo || ''
-                        });
-                    } else if (est === 'rechazada') {
-                        nuevasAlertas.push({
-                            id: `mi_post_rechazada_${p.id_postulacion}`,
-                            tipo: 'alerta',
-                            titulo: 'Tu postulación no fue seleccionada',
-                            detalle: `Para "${p.titulo || `Orden #${p.id_orden}`}". ¡Sigue intentándolo!`,
-                            orden: p.titulo || ''
-                        });
-                    }
-                }
-            }
-        } catch (e) { /* ignorar */ }
-
-        _alertasContextuales = nuevasAlertas;
-        _actualizarBadgeAlertas();
-
-        // Detectar alertas NUEVAS (no estaban en la carga anterior) y enviar correo
-        const nuevasIds = nuevasAlertas.map(a => a.id);
-        const realesNuevas = nuevasAlertas.filter(a => !_alertasAnteriorIds.has(a.id) && !_alertasLeidas.has(a.id));
-        _alertasAnteriorIds = new Set(nuevasIds);
-
-        if (realesNuevas.length > 0) {
-            const usuarioId = localStorage.getItem('usuarioId');
-            if (usuarioId) {
-            // En despliegues cross-origin (ej. Vercel -> Railway) este endpoint puede fallar por CORS/502.
-            // El disparo de correo debe vivir en backend (job/trigger server-side).
-            const esMismoOrigenApi = API_BASE.startsWith(`${window.location.origin}/api`);
-            if (esMismoOrigenApi) {
-              fetch(`${API_BASE}/ordenes-trabajo/enviar-alerta-email`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usuario_id: usuarioId, alertas: realesNuevas })
-              }).catch(e => console.debug('[H8 email]', e));
-            } else if (!_alertaEmailCrossOriginWarned) {
-              _alertaEmailCrossOriginWarned = true;
-              console.info('[H8 email] envio desde frontend omitido en cross-origin; mover a backend.');
-            }
-            }
-        }
-
-        // Si el panel de alertas está visible, re-render
-        const panelAlt = document.getElementById('notifPanelAlertas');
-        if (panelAlt && !panelAlt.classList.contains('hidden')) {
-            renderAlertasEnPanel();
-        }
-    } catch (err) {
-        console.debug('[H8] Error al cargar alertas contextuales:', err);
+      }
     }
+
+    // 4. Verificar mensajes críticos en conversaciones de grupos OT
+    const convs = window.conversacionesDashboard || [];
+    for (const conv of convs.filter(c => (c.nombre_contacto || '').startsWith('OT:'))) {
+      const ult = (conv.ultimo_mensaje || '').toUpperCase();
+      if (ult.includes('[CRÍTICO]') || ult.includes('[CRITICO]') || ult.includes('[URGENTE]')) {
+        nuevasAlertas.push({
+          id: `critico_conv_${conv.id_conversacion}`,
+          tipo: 'critico',
+          titulo: 'Instrucción crítica sin confirmar',
+          detalle: conv.ultimo_mensaje?.replace(/\[CRÍTICO\]|\[CRITICO\]|\[URGENTE\]/gi, '').trim(),
+          orden: conv.nombre_contacto
+        });
+      }
+    }
+
+    // 5. Estado de MIS propias postulaciones (aceptada / rechazada)
+    // NOTA: el endpoint devuelve 'estado_postulacion', no 'estado'
+    try {
+      const rMisPost = await fetch(`${API_BASE}/ordenes-trabajo/mis-postulaciones?usuario_id=${usuarioId}`, { headers });
+      if (rMisPost.ok) {
+        const jMisPost = await rMisPost.json();
+        for (const p of (jMisPost.data || [])) {
+          const est = (p.estado_postulacion || p.estado || '').toLowerCase();
+          if (est === 'aceptada') {
+            nuevasAlertas.push({
+              id: `mi_post_aceptada_${p.id_postulacion}`,
+              tipo: 'exito',
+              titulo: '¡Tu postulación fue aceptada!',
+              detalle: `Has sido seleccionado para "${p.titulo || `Orden #${p.id_orden}`}". Revisa el grupo de mensajería.`,
+              orden: p.titulo || ''
+            });
+          } else if (est === 'rechazada') {
+            nuevasAlertas.push({
+              id: `mi_post_rechazada_${p.id_postulacion}`,
+              tipo: 'alerta',
+              titulo: 'Tu postulación no fue seleccionada',
+              detalle: `Para "${p.titulo || `Orden #${p.id_orden}`}". ¡Sigue intentándolo!`,
+              orden: p.titulo || ''
+            });
+          }
+        }
+      }
+    } catch (e) { /* ignorar */ }
+
+    _alertasContextuales = nuevasAlertas;
+    _actualizarBadgeAlertas();
+
+    // Detectar alertas NUEVAS (no estaban en la carga anterior) y enviar correo
+    const nuevasIds = nuevasAlertas.map(a => a.id);
+    const realesNuevas = nuevasAlertas.filter(a => !_alertasAnteriorIds.has(a.id) && !_alertasLeidas.has(a.id));
+    _alertasAnteriorIds = new Set(nuevasIds);
+
+    if (realesNuevas.length > 0) {
+      const usuarioId = localStorage.getItem('usuarioId');
+      if (usuarioId) {
+        // En despliegues cross-origin (ej. Vercel -> Railway) este endpoint puede fallar por CORS/502.
+        // El disparo de correo debe vivir en backend (job/trigger server-side).
+        const esMismoOrigenApi = API_BASE.startsWith(`${window.location.origin}/api`);
+        if (esMismoOrigenApi) {
+          fetch(`${API_BASE}/ordenes-trabajo/enviar-alerta-email`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario_id: usuarioId, alertas: realesNuevas })
+          }).catch(e => console.debug('[H8 email]', e));
+        } else if (!_alertaEmailCrossOriginWarned) {
+          _alertaEmailCrossOriginWarned = true;
+          console.info('[H8 email] envio desde frontend omitido en cross-origin; mover a backend.');
+        }
+      }
+    }
+
+    // Si el panel de alertas está visible, re-render
+    const panelAlt = document.getElementById('notifPanelAlertas');
+    if (panelAlt && !panelAlt.classList.contains('hidden')) {
+      renderAlertasEnPanel();
+    }
+  } catch (err) {
+    console.debug('[H8] Error al cargar alertas contextuales:', err);
+  }
 }
 
 // Polling de alertas contextuales
 document.addEventListener('DOMContentLoaded', () => {
-    // 1ª carga a los 3 segundos
-    setTimeout(cargarAlertasContextuales, 3000);
-    // Polling completo cada 2 minutos
-    setInterval(cargarAlertasContextuales, 2 * 60 * 1000);
-    // Polling rápido solo de mis-postulaciones cada 30 segundos
-    setInterval(_checkMisPostulacionesRapido, 30 * 1000);
-    // Re-chequear inmediatamente cuando el usuario vuelve a la pestaña
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-            setTimeout(cargarAlertasContextuales, 500);
-        }
-    });
+  // 1ª carga a los 3 segundos
+  setTimeout(cargarAlertasContextuales, 3000);
+  // Polling completo cada 2 minutos
+  setInterval(cargarAlertasContextuales, 2 * 60 * 1000);
+  // Polling rápido solo de mis-postulaciones cada 30 segundos
+  setInterval(_checkMisPostulacionesRapido, 30 * 1000);
+  // Re-chequear inmediatamente cuando el usuario vuelve a la pestaña
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      setTimeout(cargarAlertasContextuales, 500);
+    }
+  });
 });
 
 /** Chequeo rápido solo del estado de mis postulaciones (liviano, cada 30s) */
 async function _checkMisPostulacionesRapido() {
-    try {
-        const usuarioId = localStorage.getItem('usuarioId');
-        if (!usuarioId) return;
-        const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-        const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+  try {
+    const usuarioId = localStorage.getItem('usuarioId');
+    if (!usuarioId) return;
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
 
-        // --- Para usuarios normales: estado de sus propias postulaciones ---
-        const r = await fetch(`${API_BASE}/ordenes-trabajo/mis-postulaciones?usuario_id=${usuarioId}`, { headers });
-        if (r.ok) {
-            const { data } = await r.json();
-            let cambio = false;
-            for (const p of (data || [])) {
-                const est = (p.estado_postulacion || p.estado || '').toLowerCase();
-                const idAcep = `mi_post_aceptada_${p.id_postulacion}`;
-                const idRech = `mi_post_rechazada_${p.id_postulacion}`;
-                const yaExiste = _alertasContextuales.some(a => a.id === idAcep || a.id === idRech);
-                if (!yaExiste) {
-                    if (est === 'aceptada') {
-                        _alertasContextuales.push({ id: idAcep, tipo: 'exito', titulo: '¡Tu postulación fue aceptada!', detalle: `Has sido seleccionado para "${p.titulo || `Orden #${p.id_orden}`}". Revisa el grupo de mensajería.`, orden: p.titulo || '' });
-                        cambio = true;
-                    } else if (est === 'rechazada') {
-                        _alertasContextuales.push({ id: idRech, tipo: 'alerta', titulo: 'Tu postulación no fue seleccionada', detalle: `Para "${p.titulo || `Orden #${p.id_orden}`}". ¡Sigue intentándolo!`, orden: p.titulo || '' });
-                        cambio = true;
-                    }
-                }
-            }
-            if (cambio) {
-                _actualizarBadgeAlertas();
-                const panelAlt = document.getElementById('notifPanelAlertas');
-                if (panelAlt && !panelAlt.classList.contains('hidden')) renderAlertasEnPanel();
-                return; // usuario normal: ya terminamos
-            }
+    // --- Para usuarios normales: estado de sus propias postulaciones ---
+    const r = await fetch(`${API_BASE}/ordenes-trabajo/mis-postulaciones?usuario_id=${usuarioId}`, { headers });
+    if (r.ok) {
+      const { data } = await r.json();
+      let cambio = false;
+      for (const p of (data || [])) {
+        const est = (p.estado_postulacion || p.estado || '').toLowerCase();
+        const idAcep = `mi_post_aceptada_${p.id_postulacion}`;
+        const idRech = `mi_post_rechazada_${p.id_postulacion}`;
+        const yaExiste = _alertasContextuales.some(a => a.id === idAcep || a.id === idRech);
+        if (!yaExiste) {
+          if (est === 'aceptada') {
+            _alertasContextuales.push({ id: idAcep, tipo: 'exito', titulo: '¡Tu postulación fue aceptada!', detalle: `Has sido seleccionado para "${p.titulo || `Orden #${p.id_orden}`}". Revisa el grupo de mensajería.`, orden: p.titulo || '' });
+            cambio = true;
+          } else if (est === 'rechazada') {
+            _alertasContextuales.push({ id: idRech, tipo: 'alerta', titulo: 'Tu postulación no fue seleccionada', detalle: `Para "${p.titulo || `Orden #${p.id_orden}`}". ¡Sigue intentándolo!`, orden: p.titulo || '' });
+            cambio = true;
+          }
         }
+      }
+      if (cambio) {
+        _actualizarBadgeAlertas();
+        const panelAlt = document.getElementById('notifPanelAlertas');
+        if (panelAlt && !panelAlt.classList.contains('hidden')) renderAlertasEnPanel();
+        return; // usuario normal: ya terminamos
+      }
+    }
 
-        // --- Para el admin: verificar si hay nuevos postulantes en sus órdenes ---
-        const esAdmin = localStorage.getItem('usuarioRolId') === '1';
-        if (!esAdmin) return;
-        const resOT = await fetch(`${API_BASE}/ordenes-trabajo`, { headers });
-        if (!resOT.ok) return;
-        const jsonOT = await resOT.json();
-        const misOrdenes = (jsonOT.data || jsonOT || []).filter(o => String(o.usuario_id) === String(usuarioId));
-        let cambioAdmin = false;
-        for (const orden of misOrdenes) {
-            const idBase = String(orden.id_orden || orden.id);
-            try {
-                const rp = await fetch(`${API_BASE}/ordenes-trabajo/${idBase}/postulaciones`, { headers });
-                if (!rp.ok) continue;
-                const jp = await rp.json();
-                const pendientes = (jp.data || []).filter(p => p.estado === 'pendiente');
-                if (pendientes.length === 0) continue;
-                const alertId = `postulado_${idBase}_n${pendientes.length}`;
-                const yaExiste = _alertasContextuales.some(a => a.id === alertId);
-                if (!yaExiste) {
-                    // Limpiar alertas anteriores de esta misma orden (conteos menores)
-                    const _filtradas = _alertasContextuales.filter(a => !a.id.startsWith(`postulado_${idBase}_n`));
-                    _alertasContextuales.length = 0;
-                    _filtradas.forEach(a => _alertasContextuales.push(a));
-                    _alertasContextuales.push({
-                        id: alertId,
-                        tipo: 'alerta',
-                        titulo: `Nuevo técnico postulado`,
-                        detalle: `${pendientes.length} postulante${pendientes.length > 1 ? 's' : ''} esperando revisión`,
-                        orden: orden.titulo || `Orden #${idBase}`
-                    });
-                    cambioAdmin = true;
-                }
-            } catch (e) { /* ignorar */ }
+    // --- Para el admin: verificar si hay nuevos postulantes en sus órdenes ---
+    const esAdmin = localStorage.getItem('usuarioRolId') === '1';
+    if (!esAdmin) return;
+    const resOT = await fetch(`${API_BASE}/ordenes-trabajo`, { headers });
+    if (!resOT.ok) return;
+    const jsonOT = await resOT.json();
+    const misOrdenes = (jsonOT.data || jsonOT || []).filter(o => String(o.usuario_id) === String(usuarioId));
+    let cambioAdmin = false;
+    for (const orden of misOrdenes) {
+      const idBase = String(orden.id_orden || orden.id);
+      try {
+        const rp = await fetch(`${API_BASE}/ordenes-trabajo/${idBase}/postulaciones`, { headers });
+        if (!rp.ok) continue;
+        const jp = await rp.json();
+        const pendientes = (jp.data || []).filter(p => p.estado === 'pendiente');
+        if (pendientes.length === 0) continue;
+        const alertId = `postulado_${idBase}_n${pendientes.length}`;
+        const yaExiste = _alertasContextuales.some(a => a.id === alertId);
+        if (!yaExiste) {
+          // Limpiar alertas anteriores de esta misma orden (conteos menores)
+          const _filtradas = _alertasContextuales.filter(a => !a.id.startsWith(`postulado_${idBase}_n`));
+          _alertasContextuales.length = 0;
+          _filtradas.forEach(a => _alertasContextuales.push(a));
+          _alertasContextuales.push({
+            id: alertId,
+            tipo: 'alerta',
+            titulo: `Nuevo técnico postulado`,
+            detalle: `${pendientes.length} postulante${pendientes.length > 1 ? 's' : ''} esperando revisión`,
+            orden: orden.titulo || `Orden #${idBase}`
+          });
+          cambioAdmin = true;
         }
-        if (cambioAdmin) {
-            _actualizarBadgeAlertas();
-            const panelAlt = document.getElementById('notifPanelAlertas');
-            if (panelAlt && !panelAlt.classList.contains('hidden')) renderAlertasEnPanel();
-        }
-    } catch (e) { /* silencioso */ }
+      } catch (e) { /* ignorar */ }
+    }
+    if (cambioAdmin) {
+      _actualizarBadgeAlertas();
+      const panelAlt = document.getElementById('notifPanelAlertas');
+      if (panelAlt && !panelAlt.classList.contains('hidden')) renderAlertasEnPanel();
+    }
+  } catch (e) { /* silencioso */ }
 }
 
 // =====================================================
@@ -10938,9 +10664,9 @@ const _OT_CACHE_TTL = 5 * 60 * 1000; // 5 minutos
 
 /** Fuerza recarga limpiando caché y girando icono */
 function refrescarOrdenesTrabajo() {
-    sessionStorage.removeItem('cache_ot_data');
-    sessionStorage.removeItem('cache_ot_ts');
-    const icon = document.getElementById('iconRefrescarOrdenes');
-    if (icon) { icon.style.transition = 'transform 0.6s'; icon.style.transform = 'rotate(360deg)'; setTimeout(() => { icon.style.transform = ''; }, 650); }
-    cargarOrdenesTrabajo();
+  sessionStorage.removeItem('cache_ot_data');
+  sessionStorage.removeItem('cache_ot_ts');
+  const icon = document.getElementById('iconRefrescarOrdenes');
+  if (icon) { icon.style.transition = 'transform 0.6s'; icon.style.transform = 'rotate(360deg)'; setTimeout(() => { icon.style.transform = ''; }, 650); }
+  cargarOrdenesTrabajo();
 }
