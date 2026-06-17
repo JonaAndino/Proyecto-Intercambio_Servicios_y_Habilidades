@@ -1782,6 +1782,7 @@ async function cargarUsuariosReales() {
           online: Math.random() > 0.5,
           avatar: persona.imagenUrl_Persona || null,
           avatarInitials: (persona.nombre_Persona || "U")[0].toUpperCase(),
+          urlFondoBanner: persona.url_fondo_banner || null,
           estadoVerificacion,
         };
       } catch (error) {
