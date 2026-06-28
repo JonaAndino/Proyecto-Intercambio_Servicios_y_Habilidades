@@ -392,8 +392,8 @@
                     <p class="text-xs text-gray-400" data-i18n="reports.performanceDesc">Promedios generales de
                         satisfacción.</p>
                 </div>
-                <div class="p-4 bg-gray-50 rounded-2xl border border-black/20">
-                    <canvas id="barChart" style="width:100%;height:280px"></canvas>
+                <div class="p-4 bg-gray-50 rounded-2xl border border-black/20 flex flex-col justify-center items-center" style="height: 450px;">
+                    <canvas id="barChart" style="width:100%;height:380px;"></canvas>
                 </div>
             </div>
 
@@ -1953,6 +1953,16 @@
 
                 const resultados = await Promise.all(promesas);
                 todosLosTecnicos = resultados.filter(t => t !== null);
+                
+                // Ordenar: Bloqueados y restringidos primero
+                todosLosTecnicos.sort((a, b) => {
+                    const isBlockedA = (a.activo === 0) || (a.bloqueado_hasta && new Date(a.bloqueado_hasta) > new Date());
+                    const isBlockedB = (b.activo === 0) || (b.bloqueado_hasta && new Date(b.bloqueado_hasta) > new Date());
+                    if (isBlockedA && !isBlockedB) return -1;
+                    if (!isBlockedA && isBlockedB) return 1;
+                    return 0;
+                });
+
                 todosLosTecnicosFiltrados = todosLosTecnicos;
                 paginaActualTecnicos = 1; // Resetear a la primera página al cargar nuevos datos
 
@@ -2128,6 +2138,15 @@
                 }
 
                 return matchNombre && matchEsp && matchUbi && matchEstadoCuenta;
+            });
+
+            // Ordenar: Bloqueados y restringidos primero
+            todosLosTecnicosFiltrados.sort((a, b) => {
+                const isBlockedA = (a.activo === 0) || (a.bloqueado_hasta && new Date(a.bloqueado_hasta) > new Date());
+                const isBlockedB = (b.activo === 0) || (b.bloqueado_hasta && new Date(b.bloqueado_hasta) > new Date());
+                if (isBlockedA && !isBlockedB) return -1;
+                if (!isBlockedA && isBlockedB) return 1;
+                return 0;
             });
 
             paginaActualTecnicos = 1; // Resetear a la primera página al filtrar

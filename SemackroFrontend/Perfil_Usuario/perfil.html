@@ -416,11 +416,8 @@
         /* Variante visual premium para modales con custom-modal-logout */
         .custom-modal-overlay:has(.custom-modal-logout),
         #logoutModal.custom-modal-overlay {
-            background:
-                radial-gradient(circle at 14% 18%, rgba(14, 165, 233, 0.2), transparent 42%),
-                radial-gradient(circle at 84% 86%, rgba(239, 68, 68, 0.24), transparent 40%),
-                rgba(10, 14, 26, 0.62);
-            backdrop-filter: blur(10px) saturate(120%);
+            background: transparent;
+            backdrop-filter: none;
         }
 
         .custom-modal.custom-modal-logout,
@@ -1897,7 +1894,7 @@
             <!-- Top Row -->
             <div class="top-row">
                 <!-- Personal Data -->
-                <div class="glass-card location-section">
+                <div class="glass-card personal-data-section">
                     <h2 class="section-title-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" class="icon-md" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd"
@@ -1922,7 +1919,7 @@
                                 <line x1="8" y1="2" x2="8" y2="6"></line>
                                 <line x1="3" y1="10" x2="21" y2="10"></line>
                             </svg>
-                            <span>Tarjeta de identidad</span>
+                            <span data-i18n="identityCard">Tarjeta de identidad</span>
                         </h3>
 
                         <div class="file-upload-area" id="idCardUploadArea"
@@ -1941,13 +1938,12 @@
                                             <line x1="12" y1="3" x2="12" y2="15"></line>
                                         </svg>
                                     </div>
-                                    <p style="font-weight: 500; color: #374151; margin-bottom: 4px;">Sube una foto
-                                        de tu dni</p>
+                                    <p style="font-weight: 500; color: #374151; margin-bottom: 4px;" data-i18n="uploadIdCard">Sube una foto de tu dni</p>
                                     <p style="font-size: 12px; color: #6b7280;">Png, jpg hasta 5mb</p>
                                 </div>
-                                <div id="idCardPreview" style="display: none; position: relative;">
-                                    <img id="idCardImage" src="" alt="Vista previa"
-                                        style="max-width: 100%; max-height: 200px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                                <div id="idCardPreview" style="display: none; position: relative; width: 100%;">
+                                    <img id="idCardImage" src="" alt="Vista previa" data-i18n-alt="preview"
+                                        style="width: 100%; height: auto; max-height: 240px; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); display: block;">
                                     <button type="button" id="removeIdCard"
                                         style="position: absolute; top: -10px; right: -10px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
@@ -1974,7 +1970,7 @@
                                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
                                 <polyline points="21 15 16 10 5 21"></polyline>
                             </svg>
-                            <span>Fondo del banner</span>
+                            <span data-i18n="bannerBackground">Fondo del banner</span>
                         </h3>
                         <div id="fondoBannerContainer" style="margin-top: 12px;">
                             <!-- Se renderizará aquí -->
@@ -2224,29 +2220,29 @@
                                 d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
                                 clip-rule="evenodd" />
                         </svg>
-                        Agregar Nueva Certificación
+                        <span data-i18n="addNewCertification">Agregar Nueva Certificación</span>
                     </h4>
 
                     <div style="display: grid; gap: 12px;">
                         <div>
-                            <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Título
+                            <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;" data-i18n="certTitle">Título
                                 de la certificación *</label>
                             <input type="text" id="tituloCertificacion"
-                                placeholder="Ej: electricista industrial certificado"
+                                placeholder="Ej: electricista industrial certificado" data-i18n-placeholder="certTitlePlaceholder"
                                 style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px;">
                         </div>
 
                         <div>
                             <label
-                                style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Institución</label>
+                                style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;" data-i18n="certInstitution">Institución</label>
                             <input type="text" id="institucionCertificacion"
-                                placeholder="Ej: sena, universidad nacional, etc."
+                                placeholder="Ej: sena, universidad nacional, etc." data-i18n-placeholder="certInstitutionPlaceholder"
                                 style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px;">
                         </div>
 
                         <div>
                             <label
-                                style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Documento
+                                style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;" data-i18n="certDocument">Documento
                                 (pdf o imagen)</label>
                             <input type="file" id="documentoCertificacion" accept=".pdf,image/jpeg,image/png,image/gif"
                                 style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 13px; background: white;">
@@ -2260,7 +2256,7 @@
                                     d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
                                     clip-rule="evenodd" />
                             </svg>
-                            Guardar Certificación
+                            <span data-i18n="saveCertification">Guardar Certificación</span>
                         </button>
                     </div>
 
@@ -2723,15 +2719,8 @@
                 removeBtn.addEventListener('click', handleFondoBannerRemove);
                 
                 const changeBtn = document.createElement('button');
-                changeBtn.type = 'button';
-                changeBtn.style.marginTop = '12px';
-                changeBtn.style.padding = '8px 16px';
-                changeBtn.style.backgroundColor = '#2563eb';
-                changeBtn.style.color = 'white';
-                changeBtn.style.border = 'none';
-                changeBtn.style.borderRadius = '10px';
-                changeBtn.style.cursor = 'pointer';
-                changeBtn.textContent = 'Cambiar imagen';
+                changeBtn.setAttribute('data-i18n', 'changeImage');
+                changeBtn.textContent = t('changeImage');
                 changeBtn.addEventListener('click', () => document.getElementById('fondoBannerUpload').click());
                 
                 previewDiv.appendChild(img);
@@ -3296,6 +3285,15 @@
                         !isSkillModalVisible()
                     ) {
                         showSkillModal('offered');
+                        window.requestAnimationFrame(() => {
+                            options.driver.moveNext();
+                        });
+                        return;
+                    }
+
+                    // Si el usuario pulsa "Siguiente" en el paso del modal sin llenarlo, cerrar el modal antes de avanzar.
+                    if (currentStep && currentStep.stepKey === 'offeredSkillsModal' && isSkillModalVisible()) {
+                        hideSkillModal();
                         window.requestAnimationFrame(() => {
                             options.driver.moveNext();
                         });
@@ -4737,14 +4735,14 @@
                     ]
                 },
                 {
-                    label: 'Tipo de Identificación', field: 'tipoIdentificacion_Usuario', value: usuario.tipoIdentificacion_Usuario, type: 'select', options: [
-                        { value: 'DNI', label: 'Identidad (DNI)' },
-                        { value: 'Pasaporte', label: 'Pasaporte' }
+                    label: t('idType'), field: 'tipoIdentificacion_Usuario', type: 'select', options: [
+                        { value: 'DNI', label: t('dni') },
+                        { value: 'Pasaporte', label: t('passport') }
                     ]
                 },
                 { label: t('idNumber'), field: 'identificacion_usuario', value: usuario.identificacion_usuario },
-                { label: 'Fecha de Nacimiento', field: 'fechaNacimiento', value: usuario.fechaNacimiento, type: 'date', displayValue: formatearFecha(usuario.fechaNacimiento) },
-                { label: 'Años de Experiencia', field: 'anios_experiencia', value: usuario.anios_experiencia || 0, type: 'number' }
+                { label: t('birthDate'), field: 'fechaNacimiento', value: usuario.fechaNacimiento, type: 'date', displayValue: formatearFecha(usuario.fechaNacimiento) },
+                { label: t('yearsOfExperience'), field: 'anios_experiencia', value: usuario.anios_experiencia || 0, type: 'number' }
             ];
 
             campos.forEach(campo => {
@@ -4822,6 +4820,16 @@
                 }
 
                 const input = element.querySelector(multiline ? 'textarea' : 'input');
+                if (input) {
+                    input.addEventListener('input', () => {
+                        if (['pais', 'departamento', 'ciudad'].includes(field)) {
+                            input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+                        } else if (field === 'codigoPostal' || field === 'anios_experiencia') {
+                            input.value = input.value.replace(/\D/g, '');
+                        }
+                    });
+                }
+
                 const focusEditableInput = () => {
                     try {
                         input.focus({ preventScroll: true });
@@ -4853,6 +4861,64 @@
                     guardado = true;
                     const newValue = input.value.trim();
 
+                    // VALIDACIÓN DE CONTENIDO REQUERIDO (NO DEJAR SALIR VACÍO)
+                    const camposObligatorios = ['nombre_Usuario', 'pais', 'departamento', 'ciudad', 'codigoPostal', 'identificacion_usuario', 'fechaNacimiento', 'anios_experiencia'];
+                    if (camposObligatorios.includes(field) && newValue === '') {
+                        const msg = 'Este campo es obligatorio y no puede quedar vacío.';
+                        if (window.Toast) Toast.error('Campo requerido', msg);
+                        else alert(msg);
+                        guardado = false;
+                        setTimeout(() => input.focus(), 10);
+                        return;
+                    }
+
+                    // VALIDACIONES ADICIONALES DE TIPO DE CARACTERES
+                    if (['pais', 'departamento', 'ciudad'].includes(field) && newValue !== '') {
+                        const regexLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+                        if (!regexLetras.test(newValue)) {
+                            const campoEs = field === 'pais' ? 'País' : field === 'departamento' ? 'Departamento' : 'Ciudad';
+                            const msg = `El campo ${campoEs} solo debe contener letras.`;
+                            if (window.Toast) Toast.error('Formato inválido', msg);
+                            else alert(msg);
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
+                            return;
+                        }
+                    } else if (field === 'codigoPostal' && newValue !== '') {
+                        const regexNumeros = /^\d+$/;
+                        if (!regexNumeros.test(newValue)) {
+                            const msg = 'El Código Postal solo debe contener números.';
+                            if (window.Toast) Toast.error('Formato inválido', msg);
+                            else alert(msg);
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
+                            return;
+                        }
+                    } else if (field === 'anios_experiencia' && newValue !== '') {
+                        const exp = parseInt(newValue);
+                        if (isNaN(exp) || exp < 0) {
+                            const msg = 'Los años de experiencia deben ser un número positivo.';
+                            if (window.Toast) Toast.error('Valor inválido', msg);
+                            else alert(msg);
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
+                            return;
+                        }
+                        let edad = 18;
+                        if (usuario.fechaNacimiento) {
+                            edad = calcularEdad(usuario.fechaNacimiento);
+                        }
+                        const maxExp = Math.max(0, edad - 14);
+                        if (exp > maxExp) {
+                            const msg = `Los años de experiencia (${exp}) no corresponden con tu edad (${edad} años). Máximo permitido: ${maxExp} años.`;
+                            if (window.Toast) Toast.warning('Incoherencia de datos', msg);
+                            else alert(msg);
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
+                            return;
+                        }
+                    }
+
                     // VALIDACIONES DE IDENTIDAD Y EDAD
                     if (field === 'identificacion_usuario' && newValue !== '') {
                         const tipo = usuario.tipoIdentificacion_Usuario;
@@ -4870,8 +4936,8 @@
                             } else {
                                 alert(valResult.mensaje);
                             }
-                            element.textContent = currentDisplayValue;
-                            element.classList.remove('editing');
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
                             return;
                         }
 
@@ -4886,8 +4952,8 @@
                                 } else {
                                     alert(`Error: ${errorMsg}`);
                                 }
-                                element.textContent = currentDisplayValue;
-                                element.classList.remove('editing');
+                                guardado = false;
+                                setTimeout(() => input.focus(), 10);
                                 return;
                             }
                         } catch (err) {
@@ -4903,8 +4969,8 @@
                             } else {
                                 alert(ageMsg);
                             }
-                            element.textContent = currentDisplayValue;
-                            element.classList.remove('editing');
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
                             return;
                         }
                         if (edad > 110) {
@@ -4914,8 +4980,8 @@
                             } else {
                                 alert(invMsg);
                             }
-                            element.textContent = currentDisplayValue;
-                            element.classList.remove('editing');
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
                             return;
                         }
                     }
@@ -6813,8 +6879,9 @@
                 maritalStatus: 'Estado Civil',
                 gender: 'Género',
                 idType: 'Tipo de Identificación',
-                idNumber: 'Numero Identificación',
+                idNumber: 'Número de Identificación',
                 birthDate: 'Fecha de Nacimiento',
+                yearsOfExperience: 'Años de Experiencia',
 
                 // Opciones de estado civil
                 single: 'Soltero',
@@ -6873,7 +6940,28 @@
                 verifying: 'Verificando...',
                 verifiedUser: 'Usuario Verificado',
                 verificationPending: 'Verificación pendiente',
-                verificationError: 'Error al verificar'
+                verificationError: 'Error al verificar',
+
+                // Especialidades técnicas
+                technicalSpecialties: 'Especialidades Técnicas',
+                technicalSpecialtiesDesc: 'Estas son las especialidades técnicas que domino.',
+
+                // Certificaciones
+                certifications: 'Certificaciones',
+                addNewCertification: 'Agregar Nueva Certificación',
+                certTitle: 'Título de la certificación *',
+                certTitlePlaceholder: 'Ej: electricista industrial certificado',
+                certInstitution: 'Institución',
+                certInstitutionPlaceholder: 'Ej: sena, universidad nacional, etc.',
+                certDocument: 'Documento (pdf o imagen)',
+                saveCertification: 'Guardar Certificación',
+
+                // Tarjeta de identidad y banner
+                identityCard: 'Tarjeta de identidad',
+                uploadIdCard: 'Sube una foto de tu dni',
+                preview: 'Vista previa',
+                bannerBackground: 'Fondo del banner',
+                changeImage: 'Cambiar imagen'
             },
             en: {
                 // Header and navigation
@@ -6926,6 +7014,7 @@
                 idType: 'ID Type',
                 idNumber: 'ID Number',
                 birthDate: 'Birth Date',
+                yearsOfExperience: 'Years of Experience',
 
                 // Marital status options
                 single: 'Single',
@@ -6984,7 +7073,28 @@
                 verifying: 'Verifying...',
                 verifiedUser: 'Verified User',
                 verificationPending: 'Verification pending',
-                verificationError: 'Verification error'
+                verificationError: 'Verification error',
+
+                // Technical specialties
+                technicalSpecialties: 'Technical Specialties',
+                technicalSpecialtiesDesc: 'These are the technical specialties I master.',
+
+                // Certifications
+                certifications: 'Certifications',
+                addNewCertification: 'Add New Certification',
+                certTitle: 'Certification title *',
+                certTitlePlaceholder: 'Ex: certified industrial electrician',
+                certInstitution: 'Institution',
+                certInstitutionPlaceholder: 'Ex: sena, national university, etc.',
+                certDocument: 'Document (pdf or image)',
+                saveCertification: 'Save Certification',
+
+                // Identity card and banner
+                identityCard: 'Identity Card',
+                uploadIdCard: 'Upload a photo of your DNI',
+                preview: 'Preview',
+                bannerBackground: 'Banner background',
+                changeImage: 'Change image'
             }
         };
 
@@ -7020,6 +7130,12 @@
                 const key = element.getAttribute('data-i18n-title');
                 element.title = t(key);
             });
+
+            // Traducir alts de imágenes
+            document.querySelectorAll('[data-i18n-alt]').forEach(element => {
+                const key = element.getAttribute('data-i18n-alt');
+                element.alt = t(key);
+            });
         }
 
         // Función para cambiar idioma (llamada desde mensaje del parent)
@@ -7037,6 +7153,11 @@
             // Re-renderizar datos personales con las nuevas traducciones
             if (typeof renderDatosPersonales === 'function' && usuario) {
                 renderDatosPersonales();
+            }
+
+            // Re-renderizar fondo del banner con las nuevas traducciones
+            if (typeof renderFondoBanner === 'function') {
+                renderFondoBanner();
             }
 
             // Re-traducir badge de verificación usando el estado almacenado

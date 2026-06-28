@@ -624,6 +624,12 @@ router.patch('/:id/postulaciones/:postId', async (req, res) => {
         // ── Al aceptar: crear/unirse al grupo de mensajería de la orden ──
         if (estado === 'aceptada') {
             try {
+                // Actualizar el estado de la orden de trabajo a 'en_progreso'
+                await db.query(
+                    `UPDATE OrdenesTrabajo SET estado = 'en_progreso' WHERE id_orden = ?`,
+                    [req.params.id]
+                );
+
                 // Obtener datos del postulante y de la orden
                 const [[post]] = await db.query(
                     `SELECT usuario_id FROM PostulacionesOrdenes WHERE id_postulacion = ?`,

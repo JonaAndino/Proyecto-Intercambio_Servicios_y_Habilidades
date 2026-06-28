@@ -5770,17 +5770,25 @@ function mostrarMensajesDashboard(mensajes, idConversacionRender = null) {
                                   <div class="bg-gradient-to-br from-indigo-600 via-indigo-600 to-purple-600 text-white p-2.5 px-3.5 rounded-2xl rounded-tr-none shadow-md message-item hover:shadow-lg w-fit relative"
                                     oncontextmenu="return abrirMenuMensajeDesdeInline(event, this)"
                                      data-message-id="${msg.id_mensaje}"
-                                     data-message-content="${contenidoMostrado.replace(/"/g, "&quot;")}"
+                                     data-message-content="${contenidoMostrado.replace(/"/g, '&quot;')}"
                                      data-puede-editar="${puedeEditar}"
                                     data-es-mio="true"
                                     data-puede-borrar-todos="${puedeBorrarParaTodos}"
                                     data-puede-borrar-mi="${puedeBorrarParaMi}">
-                                    <p class="leading-relaxed text-sm">${contenidoMostrado}</p>
+                                    <p class="leading-relaxed text-sm msg-text-content">${contenidoMostrado}</p>
                                     ${renderAdjuntosHTML(msg.adjuntos || [])}
                                     <div class="flex items-center justify-end gap-1.5 text-[10px] text-indigo-100 mt-1 opacity-90">
+                                        <button type="button"
+                                          onclick="traducirMensajeBurbuja(this)"
+                                          data-original-text="${contenidoMostrado.replace(/"/g, '&quot;')}"
+                                          data-translated="false"
+                                          class="btn-traducir-msg flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-white/10 hover:bg-white/25 text-indigo-100 hover:text-white transition-colors"
+                                          title="Traducir mensaje">
+                                          <span class="iconify" data-icon="mdi:translate" data-width="11"></span>
+                                        </button>
                                         <span class="whitespace-nowrap">${formatearHoraDashboard(msg.fecha_envio)}</span>
                                         ${badgeEdicion}
-                                        <span class="iconify" data-icon="${msg.leido ? "mdi:check-all" : "mdi:check"}" style="${msg.leido ? "color: #7dd3fc;" : ""}" data-width="19"></span>
+                                        <span class="iconify" data-icon="${msg.leido ? 'mdi:check-all' : 'mdi:check'}" style="${msg.leido ? 'color: #7dd3fc;' : ''}" data-width="19"></span>
                                       <button type="button" onclick="abrirAccionesMensajeDesdeBoton(event, this.closest('.message-item'))" class="btn-opciones-mensaje ml-1 text-indigo-200 hover:text-white transition-colors" title="Opciones de mensaje">
                                         <span class="iconify" data-icon="mdi:dots-vertical" data-width="14"></span>
                                       </button>
@@ -5801,14 +5809,22 @@ function mostrarMensajesDashboard(mensajes, idConversacionRender = null) {
                                   <div class="bg-white border border-slate-200 p-2.5 px-3.5 rounded-2xl rounded-tl-none shadow-sm message-item hover:shadow-md w-fit relative"
                                     oncontextmenu="return abrirMenuMensajeDesdeInline(event, this)"
                                      data-message-id="${msg.id_mensaje}"
-                                     data-message-content="${(contenidoMostrado || "").replace(/\"/g, "&quot;")}"
+                                     data-message-content="${(contenidoMostrado || '').replace(/\"/g, '&quot;')}"
                                      data-puede-editar="${puedeEditar}"
                                     data-es-mio="false"
                                     data-puede-borrar-todos="${puedeBorrarParaTodos}"
                                     data-puede-borrar-mi="${puedeBorrarParaMi}">
-                                    <p class="text-slate-800 leading-relaxed text-sm">${contenidoMostrado}</p>
+                                    <p class="text-slate-800 leading-relaxed text-sm msg-text-content">${contenidoMostrado}</p>
                                     ${renderAdjuntosHTML(msg.adjuntos || [])}
                                     <div class="flex items-center justify-start gap-1.5 text-[10px] text-slate-400 mt-1">
+                                        <button type="button"
+                                          onclick="traducirMensajeBurbuja(this)"
+                                          data-original-text="${(contenidoMostrado || '').replace(/"/g, '&quot;')}"
+                                          data-translated="false"
+                                          class="btn-traducir-msg flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 transition-colors"
+                                          title="Traducir mensaje">
+                                          <span class="iconify" data-icon="mdi:translate" data-width="11"></span>
+                                        </button>
                                         <span class="whitespace-nowrap">${formatearHoraDashboard(msg.fecha_envio)}</span>
                                         ${badgeEdicion}
                                       <button type="button" onclick="abrirAccionesMensajeDesdeBoton(event, this.closest('.message-item'))" class="btn-opciones-mensaje ml-1 text-slate-400 hover:text-slate-700 transition-colors" title="Opciones de mensaje">
@@ -5829,6 +5845,127 @@ function mostrarMensajesDashboard(mensajes, idConversacionRender = null) {
   }
 
   agregarLongPressListeners();
+}
+
+// ============================================================
+// MÓDULO: TRADUCCIÓN DE MENSAJES (DeepL vía backend)
+// ============================================================
+
+/**
+ * Detecta si un texto es predominantemente español o inglés usando
+ * caracteres latinos típicos y palabras comunes del español.
+ * Retorna 'ES' si parece español, 'EN' si parece inglés.
+ */
+function detectarIdiomaTexto(texto) {
+  // Caracteres exclusivos del español
+  const esCaracteres = /[áéíóúüñÁÉÍÓÚÜÑ¿¡]/;
+  // Palabras muy comunes en español (incluso sin tildes)
+  const esWords = /\b(hola|como|estas|bien|gracias|que|por|para|con|los|las|una|uno|soy|estoy|hacer|tengo|quiero|si|no|muy|mucho|pero|cuando|donde|quien|el|la|de|en|un|es|te|lo|me|ya|del|al|se|le|mas|esto|nada|todo|bienvenido)\b/i;
+  
+  return (esCaracteres.test(texto) || esWords.test(texto)) ? 'ES' : 'EN';
+}
+
+/**
+ * Traduce el mensaje de la burbuja al presionar el botón 🌐.
+ * - Primera pulsación: detecta idioma y traduce al opuesto.
+ * - Segunda pulsación: restaura el texto original.
+ * @param {HTMLButtonElement} btn - El botón que disparó el evento.
+ */
+async function traducirMensajeBurbuja(btn) {
+  // Evitar doble clic mientras carga
+  if (btn.dataset.loading === 'true') return;
+
+  const burbuja    = btn.closest('.message-item');
+  const parrafo    = burbuja ? burbuja.querySelector('.msg-text-content') : null;
+  if (!parrafo) return;
+
+  const yaTraducido = btn.dataset.translated === 'true';
+
+  // --- Restaurar original ---
+  if (yaTraducido) {
+    const original = btn.dataset.originalText || '';
+    parrafo.textContent = original;
+    btn.dataset.translated = 'false';
+    btn.title = 'Traducir mensaje';
+    btn.querySelector('.iconify')?.setAttribute('data-icon', 'mdi:translate');
+    // Quitar indicador de traducción si existe
+    const badge = burbuja.querySelector('.badge-traduccion');
+    if (badge) badge.remove();
+    return;
+  }
+
+  // --- Traducir ---
+  const textoOriginal = btn.dataset.originalText || parrafo.textContent || '';
+  if (!textoOriginal.trim()) return;
+
+  // Detectar idioma de origen y elegir destino opuesto
+  const idiomaOrigen = detectarIdiomaTexto(textoOriginal);
+  const targetLang   = idiomaOrigen === 'ES' ? 'EN' : 'ES';
+
+  // Mostrar spinner
+  btn.dataset.loading = 'true';
+  const iconSpan = btn.querySelector('.iconify');
+  if (iconSpan) iconSpan.setAttribute('data-icon', 'mdi:loading');
+  btn.style.animation = 'spin 0.8s linear infinite';
+
+  // Insertar CSS de spin si no existe
+  if (!document.getElementById('translate-spin-style')) {
+    const style = document.createElement('style');
+    style.id = 'translate-spin-style';
+    style.textContent = `
+      @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      .btn-traducir-msg .iconify { display: inline-block; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  try {
+    const baseUrl = window.APP_CONFIG?.BACKEND_URL || window.BACKEND_URL || '';
+    const res = await fetch(`${baseUrl}/api/translate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: textoOriginal, targetLang })
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    // La API puede devolver { translations: [{text:'...'}] } o { translatedText: '...' }
+    const textoTraducido =
+      data?.translations?.[0]?.text ||
+      data?.translatedText ||
+      data?.text ||
+      null;
+
+    if (!textoTraducido) throw new Error('Respuesta inesperada de la API');
+
+    // Mostrar texto traducido
+    parrafo.textContent = textoTraducido;
+    btn.dataset.translated = 'true';
+    btn.title = 'Ver original';
+
+    // Pequeña etiqueta indicando que está traducido
+    if (!burbuja.querySelector('.badge-traduccion')) {
+      const badge = document.createElement('span');
+      badge.className = 'badge-traduccion text-[9px] opacity-60 italic block mt-0.5';
+      badge.textContent = targetLang === 'ES' ? 'Traducido al español' : 'Translated to English';
+      parrafo.insertAdjacentElement('afterend', badge);
+    }
+
+  } catch (err) {
+    console.error('[Traducción] Error:', err.message);
+    // Toast de error si está disponible
+    if (typeof Toast !== 'undefined') {
+      Toast.error('Error de traducción', 'No se pudo traducir el mensaje. Intenta más tarde.');
+    }
+  } finally {
+    btn.dataset.loading = 'false';
+    btn.style.animation = '';
+    if (iconSpan) {
+      iconSpan.setAttribute('data-icon', btn.dataset.translated === 'true' ? 'mdi:translate-off' : 'mdi:translate');
+    }
+    if (window.Iconify) Iconify.scan(btn);
+  }
 }
 
 // Renderizar adjuntos: imágenes, videos y documentos
@@ -8997,14 +9134,33 @@ window.addEventListener("beforeunload", () => {
           // Deshabilitar características que requieren auth
           enableRecording: false,
           enableLiveStreaming: false,
+          disableDeepLinking: true,
         },
         interfaceConfigOverwrite: {
           // Ocultar elementos que distraen
+          SHOW_BRAND_WATERMARK: false,
           SHOW_JITSI_WATERMARK: false,
           SHOW_WATERMARK_FOR_GUESTS: false,
+          DEFAULT_LOGO_URL: '',
+          JITSI_WATERMARK_LINK: '',
+          HIDE_DEEP_LINKING_LOGO: true,
           TOOLBAR_ALWAYS_VISIBLE: true,
         },
       });
+
+      // Máscara visual para forzar la ocultación del logo de Jitsi (esquina superior izquierda)
+      container.style.position = "relative";
+      const watermarkMask = document.createElement("div");
+      watermarkMask.id = "jitsi-watermark-mask";
+      watermarkMask.style.position = "absolute";
+      watermarkMask.style.top = "0";
+      watermarkMask.style.left = "0";
+      watermarkMask.style.width = "220px";
+      watermarkMask.style.height = "85px";
+      watermarkMask.style.backgroundColor = "#111111"; // Ajustado para fusionarse con el fondo de Jitsi
+      watermarkMask.style.zIndex = "10";
+      watermarkMask.style.pointerEvents = "auto"; // Atrapa los clics para que no te lleve a Jitsi
+      container.appendChild(watermarkMask);
 
       // Eventos de Jitsi
       jitsiApi.on("videoConferenceJoined", () => {
@@ -9272,6 +9428,11 @@ let _todasLasOrdenes = [];
 let _filtroActualOrden = 'todas';
 let _misPostulacionesMap = {};
 let _ubicacionUsuarioActual = null; // ubicación en texto del usuario logueado (city/depto)
+let _currentOTPage = 1;         // página actual de órdenes de trabajo
+const _OT_PAGE_SIZE = 9;        // tarjetas por página
+let _ordenesFiltradas = [];     // última lista filtrada (para paginación)
+let _busquedaActualOT = '';     // término de búsqueda actual
+let _filtroMesOT = '';          // mes seleccionado (YYYY-MM)
 
 /**
  * Compara dos cadenas de ubicación de forma insensible a mayúsculas/minúsculas.
@@ -9426,44 +9587,61 @@ async function cargarEspecialidadesOrden() {
   }
 }
 
-/** Renderiza el array de órdenes como tarjetas en el grid */
-function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
+/** Renderiza el array de órdenes como tarjetas en el grid con paginación */
+function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
   if (esAdmin === undefined) esAdmin = localStorage.getItem('usuarioRolId') === '1';
   if (!misPostulacionesMap) misPostulacionesMap = {};
   const grid = document.getElementById('ordenesTrabajoGrid');
+  const paginationEl = document.getElementById('ordenes-trabajo-pagination');
   if (!grid) return;
 
+  // Si se pasa una nueva página explícita, actualizarla
+  if (page !== undefined) _currentOTPage = page;
+
   const estadoConfig = {
-    pendiente: { color: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-400', label: 'Pendiente' },
-    en_progreso: { color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500', label: 'En Progreso' },
-    completada: { color: 'bg-green-100 text-green-700', dot: 'bg-green-500', label: 'Completada' },
-    cancelada: { color: 'bg-red-100 text-red-700', dot: 'bg-red-400', label: 'Cancelada' },
+    pendiente:   { color: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-400',  label: () => t('workOrders.filterPending')   || 'Pendiente'   },
+    en_progreso: { color: 'bg-blue-100 text-blue-700',    dot: 'bg-blue-500',    label: () => t('workOrders.filterInProgress') || 'En Progreso' },
+    completada:  { color: 'bg-green-100 text-green-700',  dot: 'bg-green-500',   label: () => t('workOrders.filterCompleted')  || 'Completada'  },
+    cancelada:   { color: 'bg-red-100 text-red-700',      dot: 'bg-red-400',     label: () => t('workOrders.filterCancelled') || 'Cancelada'   },
   };
 
   // Para no-admins: filtrar órdenes con restricción de ubicación
-  let ordenesFiltradas = ordenes;
+  let resultado = ordenes;
   if (!esAdmin) {
-    ordenesFiltradas = ordenes.filter(o => {
-      if (!o.restringir_por_ubicacion) return true; // sin restricción → visible para todos
+    resultado = resultado.filter(o => {
+      if (!o.restringir_por_ubicacion) return true;
       const ubicOrden = o.ubicacion_obra || o.ubicacion || '';
-      if (!ubicOrden) return false; // restricción activa pero sin ubicación → nadie puede ver
+      if (!ubicOrden) return false;
       return _ubicacionCoincide(ubicOrden, _ubicacionUsuarioActual || '');
     });
   }
 
-  if (!ordenesFiltradas || ordenesFiltradas.length === 0) {
+  // Guardar la lista filtrada para que la paginación use la misma
+  _ordenesFiltradas = resultado;
+
+  if (!resultado || resultado.length === 0) {
     grid.innerHTML = `
       <div class="col-span-full flex items-center justify-center py-16">
         <div class="text-center">
           <span class="iconify text-gray-300 mx-auto mb-4" data-icon="mdi:clipboard-text-off-outline" style="font-size:64px;"></span>
-          <p class="text-gray-500 font-medium">No hay órdenes de trabajo disponibles${!esAdmin && _ubicacionUsuarioActual ? ` en tu zona (${_ubicacionUsuarioActual})` : ''}</p>
-          ${esAdmin ? '<p class="text-gray-400 text-sm mt-1">Haz clic en &ldquo;nueva orden&rdquo; para crear una</p>' : ''}
+          <p class="text-gray-500 font-medium">${t('workOrders.noOrders') || 'No hay órdenes de trabajo disponibles'}${!esAdmin && _ubicacionUsuarioActual ? ` en tu zona (${_ubicacionUsuarioActual})` : ''}</p>
+          ${esAdmin ? `<p class="text-gray-400 text-sm mt-1">${t('workOrders.createHint') || 'Haz clic en &ldquo;nueva orden&rdquo; para crear una'}</p>` : ''}
         </div>
       </div>`;
+    if (paginationEl) paginationEl.innerHTML = '';
     return;
   }
 
-  grid.innerHTML = ordenesFiltradas.map(o => {
+  // --- Paginación ---
+  const totalPages = Math.ceil(resultado.length / _OT_PAGE_SIZE);
+  if (_currentOTPage > totalPages) _currentOTPage = totalPages;
+  if (_currentOTPage < 1) _currentOTPage = 1;
+
+  const inicio = (_currentOTPage - 1) * _OT_PAGE_SIZE;
+  const fin = inicio + _OT_PAGE_SIZE;
+  const paginaActual = resultado.slice(inicio, fin);
+
+  grid.innerHTML = paginaActual.map(o => {
     const est = estadoConfig[o.estado] || estadoConfig['pendiente'];
     const fechaInicio = o.fecha_inicio ? new Date(o.fecha_inicio).toLocaleDateString('es-HN') : '—';
     const fechaFin = o.fecha_fin ? new Date(o.fecha_fin).toLocaleDateString('es-HN') : '—';
@@ -9475,7 +9653,6 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
     const ubicacion = escapeHtml(o.ubicacion || o.ubicacion_obra || '');
     const especialidad = escapeHtml(o.especialidad || o.nombre_categoria || '');
 
-    // Badge de restricción por ubicación (solo visible para admin)
     const idOrden = o.id_orden || o.id;
     const restriccionBadge = esAdmin && o.restringir_por_ubicacion
       ? `<div class="mx-5 mb-2 flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg px-2.5 py-1 text-[10px] font-semibold" title="Solo usuarios de: ${escapeHtml(o.ubicacion_obra || o.ubicacion || 'ubicación no definida')}">
@@ -9483,12 +9660,12 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
            Solo zona coincidente
          </div>`
       : '';
-    // Badge del estado de la postulación del usuario
+
     const estadoPost = misPostulacionesMap[idOrden];
     const postBadgeConfig = {
-      pendiente: { cls: 'bg-yellow-50 text-yellow-700 border border-yellow-200', icon: 'mdi:clock-outline', label: 'Tu postulación: En revisión' },
-      aceptada: { cls: 'bg-green-50 text-green-700 border border-green-200', icon: 'mdi:check-circle-outline', label: 'Tu postulación: Aceptada ✓' },
-      rechazada: { cls: 'bg-red-50 text-red-600 border border-red-200', icon: 'mdi:close-circle-outline', label: 'Tu postulación: No seleccionado' },
+      pendiente: { cls: 'bg-yellow-50 text-yellow-700 border border-yellow-200', icon: 'mdi:clock-outline',        label: t('workOrders.postPending')  || 'Tu postulación: En revisión'   },
+      aceptada:  { cls: 'bg-green-50 text-green-700 border border-green-200',    icon: 'mdi:check-circle-outline', label: t('workOrders.postAccepted') || 'Tu postulación: Aceptada ✓'    },
+      rechazada: { cls: 'bg-red-50 text-red-600 border border-red-200',          icon: 'mdi:close-circle-outline', label: t('workOrders.postRejected') || 'Tu postulación: No seleccionado' },
     };
     const postBadge = (!esAdmin && estadoPost && postBadgeConfig[estadoPost])
       ? `<div class="mx-5 mb-2 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 ${postBadgeConfig[estadoPost].cls}">
@@ -9504,7 +9681,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
           <h3 class="font-bold text-gray-800 text-base leading-tight flex-1 mr-3">${titulo}</h3>
           <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${est.color} shrink-0">
             <span class="w-1.5 h-1.5 rounded-full ${est.dot}"></span>
-            ${est.label}
+            ${est.label()}
           </span>
         </div>
         ${restriccionBadge}
@@ -9537,41 +9714,100 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap) {
           </div>
           <div class="flex items-center gap-2">
             <span class="iconify text-gray-400" data-icon="mdi:account-group-outline" style="font-size:16px;"></span>
-            <span class="text-xs">${o.total_postulaciones || 0}/${o.max_postulantes || 1} postulante(s)</span>
+            <span class="text-xs">${o.total_postulaciones || 0}/${o.max_postulantes || 1} ${t('workOrders.applicants') || 'postulante(s)'}</span>
           </div>
         </div>
 
         <!-- Acciones -->
         <div class="px-5 pb-4 pt-2 flex gap-2 border-t border-gray-50">
-          <button onclick="verDetalleOrden(${o.id_orden || o.id})"
+          <button onclick="verDetalleOrden(${idOrden})"
             class="flex-1 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-medium transition flex items-center justify-center gap-1">
-            <span class="iconify" data-icon="mdi:eye-outline" style="font-size:14px;"></span> Ver
+            <span class="iconify" data-icon="mdi:eye-outline" style="font-size:14px;"></span> ${t('workOrders.actionView') || 'Ver'}
           </button>
           ${esAdmin && o.estado !== 'cancelada' && o.estado !== 'completada' ? `
-          <button onclick="editarOrden(${o.id_orden || o.id})"
+          <button onclick="editarOrden(${idOrden})"
             class="flex-1 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium transition flex items-center justify-center gap-1">
-            <span class="iconify" data-icon="mdi:pencil-outline" style="font-size:14px;"></span> Editar
+            <span class="iconify" data-icon="mdi:pencil-outline" style="font-size:14px;"></span> ${t('workOrders.actionEdit') || 'Editar'}
           </button>
-          <button onclick="cancelarOrden(${o.id_orden || o.id})"
+          <button onclick="cancelarOrden(${idOrden})"
             class="flex-1 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 text-xs font-medium transition flex items-center justify-center gap-1">
-            <span class="iconify" data-icon="mdi:close-circle-outline" style="font-size:14px;"></span> Cancelar
+            <span class="iconify" data-icon="mdi:close-circle-outline" style="font-size:14px;"></span> ${t('workOrders.actionCancel') || 'Cancelar'}
           </button>` : (!esAdmin && !estadoPost && o.estado === 'pendiente' && (o.total_postulaciones || 0) < (o.max_postulantes || 1)) ? `
-          <button onclick="postularseOrden(${o.id_orden || o.id})"
+          <button onclick="postularseOrden(${idOrden})"
             class="flex-1 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-600 text-xs font-semibold transition flex items-center justify-center gap-1">
-            <span class="iconify" data-icon="mdi:account-plus-outline" style="font-size:14px;"></span> Postularme
+            <span class="iconify" data-icon="mdi:account-plus-outline" style="font-size:14px;"></span> ${t('workOrders.actionApply') || 'Postularme'}
           </button>` : (!esAdmin && !estadoPost && o.estado === 'pendiente') ? `
-          <span class="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-400 text-xs font-medium text-center">Cupo lleno</span>` : ''}
+          <span class="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-400 text-xs font-medium text-center">${t('workOrders.fullCapacity') || 'Cupo lleno'}</span>` : ''}
         </div>
       </div>`;
   }).join('');
+
+  // --- Render paginación ---
+  if (paginationEl) {
+    if (totalPages <= 1) {
+      paginationEl.innerHTML = '';
+    } else {
+      const btnBase = 'min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition flex items-center justify-center';
+      const btnActive = 'bg-blue-600 text-white shadow';
+      const btnInactive = 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50';
+      const btnDisabled = 'bg-gray-100 text-gray-400 cursor-not-allowed';
+
+      // Construir números de página con ellipsis
+      const pages = [];
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        if (_currentOTPage > 3) pages.push('...');
+        for (let i = Math.max(2, _currentOTPage - 1); i <= Math.min(totalPages - 1, _currentOTPage + 1); i++) pages.push(i);
+        if (_currentOTPage < totalPages - 2) pages.push('...');
+        pages.push(totalPages);
+      }
+
+      const pageButtons = pages.map(p => {
+        if (p === '...') return `<span class="${btnBase} text-gray-400 cursor-default">…</span>`;
+        const isActive = p === _currentOTPage;
+        return `<button onclick="irPaginaOT(${p})" class="${btnBase} ${isActive ? btnActive : btnInactive}">${p}</button>`;
+      }).join('');
+
+      const prevDisabled = _currentOTPage === 1;
+      const nextDisabled = _currentOTPage === totalPages;
+
+      paginationEl.innerHTML = `
+        <div class="flex items-center gap-1.5 flex-wrap justify-center">
+          <button onclick="irPaginaOT(${_currentOTPage - 1})" ${prevDisabled ? 'disabled' : ''}
+            class="${btnBase} ${prevDisabled ? btnDisabled : btnInactive}" aria-label="Anterior">
+            <span class="iconify" data-icon="mdi:chevron-left" style="font-size:18px;"></span>
+          </button>
+          ${pageButtons}
+          <button onclick="irPaginaOT(${_currentOTPage + 1})" ${nextDisabled ? 'disabled' : ''}
+            class="${btnBase} ${nextDisabled ? btnDisabled : btnInactive}" aria-label="Siguiente">
+            <span class="iconify" data-icon="mdi:chevron-right" style="font-size:18px;"></span>
+          </button>
+        </div>
+        <p class="text-xs text-gray-400 text-center mt-2">
+          ${inicio + 1}-${Math.min(fin, resultado.length)} ${t('workOrders.of') || 'de'} ${resultado.length} ${t('workOrders.orders') || 'órdenes'}
+        </p>`;
+    }
+  }
 
   // Reactivar iconify para los nuevos elementos
   if (window.Iconify) Iconify.scan();
 }
 
+/** Navega a una página específica de órdenes de trabajo */
+function irPaginaOT(page) {
+  const esAdmin = localStorage.getItem('usuarioRolId') === '1';
+  renderizarOrdenes(_ordenesFiltradas, esAdmin, _misPostulacionesMap, page);
+  // Scroll suave al tope de la sección
+  const wrapper = document.getElementById('ordenes-trabajo-wrapper');
+  if (wrapper) wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 /** Filtra la lista local por estado */
 function filtrarOrdenes(filtro) {
   _filtroActualOrden = filtro;
+  _currentOTPage = 1; // reiniciar página al filtrar
 
   // Resaltar botón activo
   document.querySelectorAll('.filtro-orden-btn').forEach(btn => {
@@ -9588,11 +9824,78 @@ function filtrarOrdenes(filtro) {
     btn.classList.toggle('border-gray-200', !esFiltro);
   });
 
-  const filtradas = filtro === 'todas'
-    ? _todasLasOrdenes
-    : _todasLasOrdenes.filter(o => o.estado === filtro);
+  const filtradas = _aplicarFiltrosCombinados();
+  renderizarOrdenes(filtradas, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap, 1);
+}
 
-  renderizarOrdenes(filtradas, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap);
+/** Aplica todos los filtros activos (estado + mes + búsqueda) sobre _todasLasOrdenes */
+function _aplicarFiltrosCombinados() {
+  let resultado = _todasLasOrdenes;
+
+  // Filtro por estado
+  if (_filtroActualOrden && _filtroActualOrden !== 'todas') {
+    resultado = resultado.filter(o => o.estado === _filtroActualOrden);
+  }
+
+  // Filtro por mes
+  if (_filtroMesOT) {
+    resultado = resultado.filter(o => {
+      const fi = (o.fecha_inicio || '').substring(0, 7);
+      const ff = (o.fecha_fin || '').substring(0, 7);
+      return fi === _filtroMesOT || ff === _filtroMesOT;
+    });
+  }
+
+  // Filtro por búsqueda de texto
+  if (_busquedaActualOT) {
+    const q = _busquedaActualOT.toLowerCase();
+    resultado = resultado.filter(o =>
+      (o.titulo || '').toLowerCase().includes(q) ||
+      (o.descripcion || '').toLowerCase().includes(q)
+    );
+  }
+
+  return resultado;
+}
+
+/** Aplica filtro por mes seleccionado */
+function aplicarFiltroMes() {
+  _filtroMesOT = document.getElementById('filtroMesOrdenes')?.value || '';
+  _currentOTPage = 1;
+  const filtradas = _aplicarFiltrosCombinados();
+  renderizarOrdenes(filtradas, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap, 1);
+}
+
+/** Limpia el filtro de mes */
+function limpiarFiltroMes() {
+  _filtroMesOT = '';
+  const inp = document.getElementById('filtroMesOrdenes');
+  if (inp) inp.value = '';
+  _currentOTPage = 1;
+  const filtradas = _aplicarFiltrosCombinados();
+  renderizarOrdenes(filtradas, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap, 1);
+}
+
+/** Búsqueda por título en tiempo real */
+function aplicarBusquedaOrdenes() {
+  _busquedaActualOT = (document.getElementById('buscarOrdenes')?.value || '').trim();
+  _currentOTPage = 1;
+  const filtradas = _aplicarFiltrosCombinados();
+  renderizarOrdenes(filtradas, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap, 1);
+}
+
+/** Refresca las órdenes limpiando la caché */
+async function refrescarOrdenesTrabajo() {
+  sessionStorage.removeItem('cache_ot_data');
+  sessionStorage.removeItem('cache_ot_ts');
+  _currentOTPage = 1;
+  _busquedaActualOT = '';
+  _filtroMesOT = '';
+  _filtroActualOrden = 'todas';
+  // Animar icono
+  const icon = document.getElementById('iconRefrescarOrdenes');
+  if (icon) { icon.style.transition = 'transform 0.6s'; icon.style.transform = 'rotate(360deg)'; setTimeout(() => { icon.style.transform = ''; }, 650); }
+  await cargarOrdenesTrabajo();
 }
 
 /** Toggles the geographic filter for Admin orders view */

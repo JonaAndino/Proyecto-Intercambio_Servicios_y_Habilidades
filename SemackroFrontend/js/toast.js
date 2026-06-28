@@ -19,10 +19,27 @@ const Toast = {
      * @param {string} type - 'success', 'error', 'info', 'warning'
      * @param {number} duration - Duración en ms (default 4000)
      */
+    // Control anti-spam: evita mostrar el mismo toast repetidamente en poco tiempo
+    _lastKey: null,
+    _lastTime: 0,
+
     show(title, message, type = 'info', duration = 4000) {
         this.init();
 
+        // Throttle: si es el mismo mensaje y pasaron menos de 600ms, ignorar
+        const key = `${type}|${title}|${message}`;
+        const now = Date.now();
+        if (key === this._lastKey && (now - this._lastTime) < 600) {
+            return;
+        }
+        this._lastKey = key;
+        this._lastTime = now;
+
         const container = document.getElementById('toast-container');
+        
+        // Limitar a máximo 1 toast activo: eliminar el anterior de inmediato
+        Array.from(container.children).forEach(child => child.remove());
+
         const toast = document.createElement('div');
         
         // Mapeo de iconos (usando Iconify que ya está en tu proyecto)
@@ -38,7 +55,6 @@ const Toast = {
         toast.className = `sc-toast sc-toast-${type}`;
         
         // Determinar si es diseño de una sola línea (sin mensaje secundario)
-        // Si no hay mensaje, alineamos el título verticalmente al centro del contenedor
         const singleLine = !message;
         
         toast.innerHTML = `
@@ -56,10 +72,6 @@ const Toast = {
             </button>
         `;
 
-        // Añadir al DOM
-        // Insertamos al principio para que los nuevos aparezcan arriba (o appendChild para abajo)
-        // Usaremos appendChild y flex-direction: column-reverse en CSS si queremos que stackeen hacia arriba
-        // Por ahora standard: appendChild
         container.appendChild(toast);
 
         // Forzar reflow para activar transición CSS
@@ -154,6 +166,7 @@ const Toast = {
     // Función para cerrar con animación
     close(element) {
         if (!element) return;
+        element.classList.add('removing'); // Asegurar que sea ignorado en conteos activos
         element.classList.remove('show'); // Inicia animación salida
         element.style.opacity = '0';
         element.style.transform = 'translateY(-10px) scale(0.95)';

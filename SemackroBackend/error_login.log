@@ -18,4 +18,14 @@
     at Layer.handleRequest (C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\node_modules\router\lib\layer.js:152:17)
     at C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\node_modules\router\index.js:295:15
     at processParams (C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\node_modules\router\index.js:582:12)
+    at next (C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\node_modules\router\index.js:291:5)\n\n2026-06-28T02:35:07.870Z\nError: read ECONNRESET
+    at PromisePool.execute (C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\node_modules\mysql2\lib\promise\pool.js:54:22)
+    at C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\routes\auth.js:345:35
+    at Layer.handleRequest (C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\node_modules\router\index.js:295:15
+    at processParams (C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\node_modules\router\index.js:582:12)
     at next (C:\Users\Dilmer\Desktop\Proyectos\Proyectos de HTML CSS JS\Proyecto-Intercambio_Servicios_y_Habilidades\SemackroBackend\node_modules\router\index.js:291:5)\n\n
