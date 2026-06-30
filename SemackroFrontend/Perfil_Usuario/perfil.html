@@ -1729,9 +1729,458 @@
             font-size: 13px;
             color: #6b7280;
         }
+
+        /* ==========================================================
+           Modo oscuro para perfil.html
+           Activado exclusivamente por html.dark, sin tocar clases HTML
+           ========================================================== */
+        html.dark,
+        html.dark body {
+            background: #111827 !important;
+            color: #f3f4f6 !important;
+            color-scheme: dark;
+            scrollbar-color: #4b5563 #111827;
+        }
+
+        html.dark .app-container,
+        html.dark #mainContent {
+            background: transparent !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark .glass-card,
+        html.dark .profile-header,
+        html.dark .personal-data-section,
+        html.dark .stats-section,
+        html.dark .skills-offered-section,
+        html.dark #certificacionesSection,
+        html.dark .modal-content,
+        html.dark .custom-modal,
+        html.dark .custom-modal.custom-modal-logout,
+        html.dark #logoutModal .custom-modal.custom-modal-logout {
+            background: #111827 !important;
+            border-color: #253244 !important;
+            color: #f3f4f6 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark .profile-name,
+        html.dark .section-title-primary,
+        html.dark .section-title-secondary,
+        html.dark .section-title-white,
+        html.dark .modal-title,
+        html.dark .skill-detail-title,
+        html.dark .review-name,
+        html.dark .perfil-stat-value,
+        html.dark .data-list .label,
+        html.dark h1,
+        html.dark h2,
+        html.dark h3 {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark .profile-username,
+        html.dark .profile-bio,
+        html.dark .section-description,
+        html.dark .modal-message,
+        html.dark .skill-detail-text,
+        html.dark .review-text,
+        html.dark .rating-text,
+        html.dark .stat-label,
+        html.dark .perfil-stat-label,
+        html.dark .pixel-chart-title,
+        html.dark .pixel-bar-label,
+        html.dark .review-date,
+        html.dark .data-list .editable,
+        html.dark .certificacion-item,
+        html.dark .upload-placeholder p {
+            color: #d1d5db !important;
+        }
+
+        html.dark .editable:hover {
+            background: #374151 !important;
+        }
+
+        html.dark .editable:hover::after {
+            background: #111827 !important;
+            color: #d1d5db !important;
+            border: 1px solid #374151 !important;
+        }
+
+        html.dark .editable.editing,
+        html.dark .modal-input,
+        html.dark .editable input,
+        html.dark .editable textarea,
+        html.dark .editable select,
+        html.dark textarea,
+        html.dark input[type="text"],
+        html.dark input[type="email"],
+        html.dark input[type="date"],
+        html.dark select {
+            background: #111827 !important;
+            color: #f3f4f6 !important;
+            border-color: #4b5563 !important;
+        }
+
+        html.dark .editable input::placeholder,
+        html.dark .editable textarea::placeholder,
+        html.dark .modal-input::placeholder,
+        html.dark textarea::placeholder,
+        html.dark input::placeholder {
+            color: #9ca3af !important;
+        }
+
+        html.dark .glass-card [style*="color: #374151"],
+        html.dark .glass-card [style*="color:#374151"],
+        html.dark .glass-card [style*="color: #4b5563"],
+        html.dark .glass-card [style*="color:#4b5563"] {
+            color: #d1d5db !important;
+        }
+
+        html.dark .glass-card [style*="background: #e5e7eb"],
+        html.dark .glass-card [style*="background:#e5e7eb"],
+        html.dark .glass-card [style*="background-color: #f9fafb"],
+        html.dark .glass-card [style*="background-color:#f9fafb"] {
+            background: #374151 !important;
+            background-color: #374151 !important;
+        }
+
+        html.dark .data-list li,
+        html.dark .stat,
+        html.dark .perfil-stat-card,
+        html.dark .pixel-chart,
+        html.dark .skill-detail-card,
+        html.dark .review-card,
+        html.dark .rating-summary,
+        html.dark .pet-button,
+        html.dark .file-upload-area,
+        html.dark #idCardUploadArea,
+        html.dark .certificacion-form,
+        html.dark .certificacion-item,
+        html.dark .review-reply,
+        html.dark .context-menu,
+        html.dark .tour-mascot-bubble {
+            background: #111827 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark .data-list li:hover,
+        html.dark .pet-button:hover,
+        html.dark .perfil-stat-card:hover,
+        html.dark .context-menu-item:hover,
+        html.dark .view-all-button button:hover {
+            background: #374151 !important;
+            border-color: #4b5563 !important;
+        }
+
+        html.dark .profile-pic {
+            border-color: #374151 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark .verified-badge,
+        html.dark .skill-tag-offered,
+        html.dark .add-skill-button-primary {
+            background: rgba(30, 58, 138, 0.3) !important;
+            border-color: rgba(96, 165, 250, 0.45) !important;
+            color: #93c5fd !important;
+        }
+
+        html.dark .skill-tag-required,
+        html.dark .add-skill-button-secondary,
+        html.dark .perfil-chip-available {
+            background: rgba(6, 78, 59, 0.35) !important;
+            border-color: rgba(52, 211, 153, 0.45) !important;
+            color: #6ee7b7 !important;
+        }
+
+        html.dark .perfil-chip-unavailable,
+        html.dark .pet-button.remove {
+            background: rgba(127, 29, 29, 0.35) !important;
+            border-color: rgba(248, 113, 113, 0.45) !important;
+            color: #fca5a5 !important;
+        }
+
+        html.dark .pet-button.active {
+            background: rgba(30, 58, 138, 0.45) !important;
+            border-color: #60a5fa !important;
+            color: #bfdbfe !important;
+        }
+
+        html.dark .gallery-upload {
+            background: rgba(31, 41, 55, 0.75) !important;
+            border-color: #4b5563 !important;
+        }
+
+        html.dark .gallery-upload:hover {
+            background: #374151 !important;
+            border-color: #60a5fa !important;
+        }
+
+        html.dark .gallery-item {
+            background: rgba(31, 41, 55, 0.75) !important;
+            border-color: #374151 !important;
+        }
+
+        html.dark input[type="file"] {
+            background: #111827 !important;
+            color: #d1d5db !important;
+            border: 1px solid #4b5563 !important;
+            border-radius: 10px !important;
+            padding: 8px !important;
+        }
+
+        html.dark input[type="file"]::file-selector-button {
+            background: #1f2937 !important;
+            color: #f3f4f6 !important;
+            border: 1px solid #4b5563 !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            margin-right: 12px !important;
+            cursor: pointer !important;
+        }
+
+        html.dark input[type="file"]::file-selector-button:hover {
+            background: #374151 !important;
+        }
+
+        html.dark .certificacion-form {
+            border-color: #253244 !important;
+            border-style: solid !important;
+        }
+
+        html.dark .certificacion-item {
+            background: #111827 !important;
+            border-color: #374151 !important;
+        }
+
+        html.dark .certificacion-item strong,
+        html.dark .certificacion-item b {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark .certificacion-item small,
+        html.dark .certificacion-item div {
+            color: #d1d5db !important;
+        }
+
+        html.dark #map {
+            border-color: #374151 !important;
+            box-shadow: none !important;
+            filter: brightness(0.86) saturate(0.9) contrast(1.05);
+        }
+
+        html.dark .pixel-chart-svg-container,
+        html.dark .pixel-chart-svg {
+            background: #111827 !important;
+        }
+
+        html.dark .pixel-chart-svg rect[fill="#f9fafb"],
+        html.dark .pixel-chart-svg rect[fill="#ffffff"],
+        html.dark .pixel-chart-svg rect[fill="white"] {
+            fill: #111827 !important;
+        }
+
+        html.dark .pixel-chart-svg rect[stroke="#e5e7eb"],
+        html.dark .pixel-chart-svg line[stroke="#e5e7eb"],
+        html.dark .pixel-chart-svg path[stroke="#e5e7eb"] {
+            stroke: #374151 !important;
+        }
+
+        html.dark .pixel-chart-svg text {
+            fill: #d1d5db !important;
+        }
+
+        html.dark .modal-overlay,
+        html.dark .custom-modal-overlay {
+            background: rgba(2, 6, 23, 0.72) !important;
+        }
+
+        html.dark .modal-btn-cancel,
+        html.dark .modal-button-cancel,
+        html.dark .view-all-button button {
+            background: #374151 !important;
+            color: #f3f4f6 !important;
+            border-color: #4b5563 !important;
+        }
+
+        html.dark .modal-btn-cancel:hover,
+        html.dark .modal-button-cancel:hover,
+        html.dark .view-all-button button:hover {
+            background: #4b5563 !important;
+        }
+
+        html.dark .custom-modal.custom-modal-logout .modal-message,
+        html.dark #logoutModal .modal-message {
+            background: #111827 !important;
+            border-color: #374151 !important;
+            color: #d1d5db !important;
+        }
+
+        html.dark #logoutModal .relative.bg-white,
+        html.dark #logoutModal .bg-white {
+            background-color: #1f2937 !important;
+            border-color: #374151 !important;
+        }
+
+        html.dark #logoutModal .bg-slate-50 {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+        }
+
+        html.dark #logoutModal .text-slate-800,
+        html.dark #logoutModal .text-slate-700 {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #logoutModal .text-slate-500 {
+            color: #d1d5db !important;
+        }
+
+        html.dark .context-menu-item {
+            color: #d1d5db !important;
+        }
+
+        html.dark .context-menu-item.danger {
+            color: #fca5a5 !important;
+        }
+
+        html.dark .context-menu-item.danger:hover {
+            background: rgba(127, 29, 29, 0.35) !important;
+        }
+
+        html.dark .star-empty {
+            color: #4b5563 !important;
+        }
+
+        html.dark .slider {
+            background-color: #4b5563 !important;
+        }
+
+        html.dark input:checked + .slider {
+            background-color: #10b981 !important;
+        }
+
+        html.dark .profile-tour-popover.driver-popover {
+            background: #1f2937 !important;
+            color: #f3f4f6 !important;
+            border: 1px solid #374151 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark .profile-tour-popover .driver-popover-title {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark .profile-tour-popover .driver-popover-description,
+        html.dark .profile-tour-popover .driver-popover-progress-text {
+            color: #d1d5db !important;
+        }
+
+        html.dark .profile-tour-popover .driver-popover-navigation-btns button {
+            background: #374151 !important;
+            color: #f3f4f6 !important;
+            border-color: #4b5563 !important;
+        }
+
+        html.dark .leaflet-control,
+        html.dark .leaflet-control a,
+        html.dark .leaflet-popup-content-wrapper,
+        html.dark .leaflet-popup-tip {
+            background: #1f2937 !important;
+            color: #f3f4f6 !important;
+            border-color: #374151 !important;
+        }
+
+        html.dark .loading-container {
+            background: #111827 !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark .saving-indicator {
+            box-shadow: none !important;
+        }
+
+        html.dark * {
+            scrollbar-color: #4b5563 #111827;
+        }
+
+        html.dark::-webkit-scrollbar,
+        html.dark body::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        html.dark::-webkit-scrollbar-track,
+        html.dark body::-webkit-scrollbar-track {
+            background: #111827 !important;
+        }
+
+        html.dark::-webkit-scrollbar-thumb,
+        html.dark body::-webkit-scrollbar-thumb {
+            background: #374151 !important;
+            border: 2px solid #111827 !important;
+            border-radius: 999px;
+        }
+
+        html.dark::-webkit-scrollbar-thumb:hover,
+        html.dark body::-webkit-scrollbar-thumb:hover {
+            background: #4b5563 !important;
+        }
+
+        html.dark *::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        html.dark *::-webkit-scrollbar-track {
+            background: #111827 !important;
+            border-radius: 999px;
+        }
+
+        html.dark *::-webkit-scrollbar-thumb {
+            background: #374151 !important;
+            border: 2px solid #111827 !important;
+            border-radius: 999px;
+        }
+
+        html.dark *::-webkit-scrollbar-thumb:hover {
+            background: #4b5563 !important;
+        }
+
+        html.dark *::-webkit-scrollbar-corner {
+            background: #111827 !important;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
+    <script>
+        (function () {
+            function applyProfileTheme(theme) {
+                const isDark = theme === 'dark';
+                document.documentElement.classList.toggle('dark', isDark);
+                if (typeof renderPixelChart === 'function') {
+                    renderPixelChart();
+                }
+            }
+
+            applyProfileTheme(localStorage.getItem('theme'));
+
+            window.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'toggle-theme') {
+                    applyProfileTheme(event.data.theme);
+                }
+            });
+
+            window.addEventListener('storage', (event) => {
+                if (event.key === 'theme') {
+                    applyProfileTheme(event.newValue);
+                }
+            });
+        })();
+    </script>
     <script>
         // SCRUM-25: Modo Minimalista para vista desde el Dashboard
         (function() {
@@ -6377,6 +6826,30 @@
             const width = 320;
             const height = 200;
             const maxValue = Math.max(...data.map(d => d.value), 5);
+            const isDarkChart = document.documentElement.classList.contains('dark');
+            const chartTheme = isDarkChart
+                ? {
+                    bgStart: '#111827',
+                    bgEnd: '#111827',
+                    frame: '#374151',
+                    grid: '#253244',
+                    axis: '#4b5563',
+                    label: '#9ca3af',
+                    shadow: 'transparent',
+                    barStroke: 'rgba(255,255,255,0.16)',
+                    shine: 'rgba(255,255,255,0.18)'
+                }
+                : {
+                    bgStart: '#f9fafb',
+                    bgEnd: '#e5e7eb',
+                    frame: '#d1d5db',
+                    grid: '#e5e7eb',
+                    axis: '#9ca3af',
+                    label: '#4b5563',
+                    shadow: 'rgba(0,0,0,0.1)',
+                    barStroke: 'rgba(255,255,255,0.2)',
+                    shine: 'rgba(255,255,255,0.3)'
+                };
 
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
@@ -6396,11 +6869,11 @@
 
             const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
             stop1.setAttribute('offset', '0%');
-            stop1.setAttribute('style', 'stop-color:#f9fafb;stop-opacity:1');
+            stop1.setAttribute('style', `stop-color:${chartTheme.bgStart};stop-opacity:1`);
 
             const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
             stop2.setAttribute('offset', '100%');
-            stop2.setAttribute('style', 'stop-color:#e5e7eb;stop-opacity:1');
+            stop2.setAttribute('style', `stop-color:${chartTheme.bgEnd};stop-opacity:1`);
 
             gradient.appendChild(stop1);
             gradient.appendChild(stop2);
@@ -6424,7 +6897,7 @@
             frameRect.setAttribute('width', width - 16);
             frameRect.setAttribute('height', height - 24);
             frameRect.setAttribute('fill', 'transparent');
-            frameRect.setAttribute('stroke', '#d1d5db');
+            frameRect.setAttribute('stroke', chartTheme.frame);
             frameRect.setAttribute('stroke-width', '1');
             frameRect.setAttribute('shape-rendering', 'crispEdges');
             svg.appendChild(frameRect);
@@ -6432,7 +6905,7 @@
             // Grid horizontal
             const gridYs = [152, 122, 92, 62, 32];
             const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            gridGroup.setAttribute('stroke', '#e5e7eb');
+            gridGroup.setAttribute('stroke', chartTheme.grid);
             gridGroup.setAttribute('stroke-width', '1');
             gridGroup.setAttribute('stroke-dasharray', '2,2');
             gridGroup.setAttribute('shape-rendering', 'crispEdges');
@@ -6453,7 +6926,7 @@
             xAxis.setAttribute('y1', '156');
             xAxis.setAttribute('x2', '304');
             xAxis.setAttribute('y2', '156');
-            xAxis.setAttribute('stroke', '#9ca3af');
+            xAxis.setAttribute('stroke', chartTheme.axis);
             xAxis.setAttribute('stroke-width', '2');
             xAxis.setAttribute('shape-rendering', 'crispEdges');
             svg.appendChild(xAxis);
@@ -6463,7 +6936,7 @@
             yAxis.setAttribute('y1', '20');
             yAxis.setAttribute('x2', '16');
             yAxis.setAttribute('y2', '156');
-            yAxis.setAttribute('stroke', '#9ca3af');
+            yAxis.setAttribute('stroke', chartTheme.axis);
             yAxis.setAttribute('stroke-width', '2');
             yAxis.setAttribute('shape-rendering', 'crispEdges');
             svg.appendChild(yAxis);
@@ -6489,7 +6962,7 @@
                 shadow.setAttribute('y', y + 2);
                 shadow.setAttribute('width', barW);
                 shadow.setAttribute('height', h);
-                shadow.setAttribute('fill', 'rgba(0,0,0,0.1)');
+                shadow.setAttribute('fill', chartTheme.shadow);
                 shadow.setAttribute('rx', '4');
                 barGroup.appendChild(shadow);
 
@@ -6500,7 +6973,7 @@
                 bar.setAttribute('width', barW);
                 bar.setAttribute('height', h);
                 bar.setAttribute('fill', d.fill);
-                bar.setAttribute('stroke', 'rgba(255,255,255,0.2)');
+                bar.setAttribute('stroke', chartTheme.barStroke);
                 bar.setAttribute('stroke-width', '1');
                 bar.setAttribute('rx', '4');
                 bar.setAttribute('ry', '4');
@@ -6530,7 +7003,7 @@
                 shine.setAttribute('y', y + 2);
                 shine.setAttribute('width', barW - 4);
                 shine.setAttribute('height', Math.max(h / 3, 10));
-                shine.setAttribute('fill', 'rgba(255,255,255,0.3)');
+                shine.setAttribute('fill', chartTheme.shine);
                 shine.setAttribute('rx', '3');
                 barGroup.appendChild(shine);
 
@@ -6549,7 +7022,7 @@
                 label.setAttribute('x', barW / 2);
                 label.setAttribute('y', '172');
                 label.setAttribute('text-anchor', 'middle');
-                label.setAttribute('fill', '#4b5563');
+                label.setAttribute('fill', chartTheme.label);
                 label.setAttribute('font-size', '12');
                 label.setAttribute('font-weight', '700');
                 label.textContent = d.label;

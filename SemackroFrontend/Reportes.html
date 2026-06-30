@@ -8,6 +8,89 @@
     <script src="config.js"></script>
     <!-- Incluye Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        };
+    </script>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+
+        function updateChartColors(isDark) {
+            if (typeof Chart === 'undefined') return;
+            const textColor  = isDark ? '#94a3b8' : '#475569';
+            const gridColor  = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+            const titleColor = isDark ? '#e2e8f0' : '#1e293b';
+
+            // Actualiza defaults globales
+            Chart.defaults.color       = textColor;
+            Chart.defaults.borderColor = gridColor;
+
+            // Helper para actualizar escala de un chart
+            function applyScaleColors(chart) {
+                ['x', 'y', 'r'].forEach(axis => {
+                    if (!chart.options.scales || !chart.options.scales[axis]) return;
+                    const sc = chart.options.scales[axis];
+                    if (!sc.grid)   sc.grid   = {};
+                    if (!sc.ticks)  sc.ticks  = {};
+                    sc.grid.color        = gridColor;
+                    sc.ticks.color       = textColor;
+                    if (sc.title) sc.title.color = titleColor;
+                });
+                if (chart.options.plugins) {
+                    if (chart.options.plugins.legend && chart.options.plugins.legend.labels)
+                        chart.options.plugins.legend.labels.color = textColor;
+                    if (chart.options.plugins.datalabels)
+                        chart.options.plugins.datalabels.color = isDark ? '#94a3b8' : '#475569';
+                }
+                chart.update('none');
+            }
+
+            // Actualiza el barChart registrado explícitamente
+            if (window._reportesBarChart) applyScaleColors(window._reportesBarChart);
+
+            // Recorre TODOS los charts activos de Chart.js (por si hay más)
+            if (Chart.instances) {
+                Object.values(Chart.instances).forEach(c => {
+                    if (c !== window._reportesBarChart) applyScaleColors(c);
+                });
+            }
+
+            // Actualiza fondo del contenedor del gráfico
+            const chartContainers = document.querySelectorAll('[id$="ChartContainer"], .chart-container, canvas#barChart');
+            chartContainers.forEach(el => {
+                const parent = el.closest?.('.p-4') || el.parentElement;
+                if (parent) {
+                    parent.style.backgroundColor = isDark ? '#1e293b' : '';
+                    parent.style.borderColor     = isDark ? 'rgba(255,255,255,0.08)' : '';
+                }
+            });
+        }
+
+
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'toggle-theme') {
+                const isDark = event.data.theme === 'dark';
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                updateChartColors(isDark);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateChartColors(document.documentElement.classList.contains('dark'));
+        });
+    </script>
     <!-- Iconify (SVG icons) -->
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <!-- SweetAlert2 para modales -->
@@ -297,10 +380,852 @@
             gap: 3px;
             flex-shrink: 0;
         }
+        /* ══════════════════════════════════════════════════
+           MODO OSCURO – Cobertura completa de Reportes.html
+           ══════════════════════════════════════════════════ */
+
+        /* — Body y workbook base — */
+        html.dark body {
+            background-color: #0b0f19;
+            color: #e2e8f0;
+        }
+        html.dark #workbook {
+            background-color: #0b0f19;
+        }
+
+        /* — Barra de pestañas Excel — */
+        html.dark #xlTabBar {
+            background: #111827;
+            border-bottom: 2px solid #1f2937;
+        }
+        html.dark .xl-tab:not(.active) {
+            background: #1f2937;
+            color: #94a3b8;
+            border-color: transparent;
+        }
+        html.dark .xl-tab:not(.active):hover {
+            background: #374151;
+            color: #cbd5e1;
+        }
+        html.dark .xl-tab.active {
+            background: #0f172a;
+            color: #38bdf8;
+            border-color: #374151 #374151 #0f172a;
+        }
+
+        /* — Tabla-wrapper (bordes y fondo general de tablas) — */
+        html.dark .table-wrapper {
+            background-color: #0f172a;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+        html.dark .table-wrapper table {
+            background-color: #0f172a;
+        }
+        html.dark .table-wrapper thead tr {
+            background-color: rgba(30, 41, 59, 0.8) !important;
+        }
+        html.dark .table-wrapper th {
+            color: #94a3b8 !important;
+            background-color: rgba(30, 41, 59, 0.8) !important;
+            border-bottom-color: rgba(255,255,255,0.08) !important;
+        }
+        html.dark .table-wrapper td {
+            color: #cbd5e1 !important;
+            border-color: rgba(255,255,255,0.05) !important;
+        }
+        html.dark .table-wrapper tbody tr:hover {
+            background-color: rgba(51, 65, 85, 0.4) !important;
+        }
+
+        /* — Paginación — */
+        html.dark .pagination-container {
+            background-color: #111827;
+            border-top-color: rgba(255,255,255,0.06);
+        }
+        html.dark .pagination-btn {
+            background-color: #1e293b;
+            border-color: #374151;
+            color: #cbd5e1;
+        }
+        html.dark .pagination-btn:hover:not(:disabled) {
+            background-color: #334155;
+            border-color: #475569;
+        }
+        html.dark .pagination-btn.active {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+        html.dark .pagination-info {
+            color: #64748b;
+        }
+
+        /* ══ HOJA 2 – Órdenes de Trabajo ══ */
+
+        /* Barra superior */
+        html.dark #sheetOrdenes > div:first-child {
+            background-color: #111827 !important;
+            border-bottom: 1px solid #1f2937;
+        }
+        html.dark #sheetOrdenes h2 {
+            color: #f1f5f9 !important;
+        }
+        html.dark #sheetOrdenes p,
+        html.dark #sheetOrdenes #otCountLabel {
+            color: #94a3b8 !important;
+        }
+
+        /* Barra de filtros */
+        html.dark #sheetOrdenes .bg-\[\#f8fafc\],
+        html.dark #sheetRecuperar .bg-\[\#f8fafc\] {
+            background-color: #1e293b !important;
+            border-color: #374151 !important;
+        }
+        html.dark .admin-filtro-btn:not([class*="bg-blue"]):not([class*="bg-indigo"]) {
+            color: #94a3b8 !important;
+        }
+        html.dark .admin-filtro-btn:not([class*="bg-blue"]):not([class*="bg-indigo"]):hover {
+            background-color: #374151 !important;
+            color: #e2e8f0 !important;
+        }
+        html.dark .admin-rec-filtro-btn:not([class*="bg-indigo"]) {
+            color: #94a3b8 !important;
+        }
+        html.dark .admin-rec-filtro-btn:not([class*="bg-indigo"]):hover {
+            background-color: #374151 !important;
+            color: #e2e8f0 !important;
+        }
+
+        /* Tabla Órdenes */
+        html.dark #adminOtTable,
+        html.dark #adminRecuperarTable {
+            background-color: #0f172a !important;
+        }
+        html.dark #adminOtTable thead tr,
+        html.dark #adminRecuperarTable thead tr {
+            background-color: #1e293b !important;
+            border-bottom-color: #374151 !important;
+        }
+        html.dark #adminOtTable th,
+        html.dark #adminRecuperarTable th {
+            color: #94a3b8 !important;
+            border-right-color: #374151 !important;
+        }
+        html.dark #adminOtTable td,
+        html.dark #adminRecuperarTable td {
+            color: #cbd5e1 !important;
+            border-right-color: rgba(255,255,255,0.05) !important;
+            border-bottom-color: rgba(255,255,255,0.04) !important;
+        }
+        html.dark #adminOtTable tbody tr:hover,
+        html.dark #adminRecuperarTable tbody tr:hover {
+            background-color: rgba(51, 65, 85, 0.5) !important;
+        }
+
+        /* Pie de tabla (footer label) */
+        html.dark #sheetOrdenes .bg-\[\#f8fafc\]:last-child,
+        html.dark #sheetRecuperar .bg-\[\#f8fafc\]:last-child {
+            background-color: #111827 !important;
+            border-top-color: #1f2937 !important;
+        }
+        html.dark #otFooterLabel,
+        html.dark #recuperarFooterLabel {
+            color: #64748b !important;
+        }
+
+        /* Inputs, selects de búsqueda en sheetOrdenes y sheetRecuperar */
+        html.dark #adminOtSearch,
+        html.dark #adminRecuperarSearch {
+            background-color: #1e293b !important;
+            border-color: #374151 !important;
+            color: #e2e8f0 !important;
+        }
+        html.dark #adminOtSearch::placeholder,
+        html.dark #adminRecuperarSearch::placeholder {
+            color: #64748b !important;
+        }
+
+        /* Botón "Nueva Orden" y botón "Recargar" en sheetOrdenes */
+        html.dark #sheetOrdenes .bg-gray-100,
+        html.dark #sheetRecuperar .bg-gray-100 {
+            background-color: #1e293b !important;
+            color: #94a3b8 !important;
+        }
+        html.dark #sheetOrdenes .bg-gray-100:hover,
+        html.dark #sheetRecuperar .bg-gray-100:hover {
+            background-color: #374151 !important;
+            color: #e2e8f0 !important;
+        }
+
+        /* ══ HOJA 3 – Recuperar Usuario ══ */
+        html.dark #sheetRecuperar > div:first-child {
+            background-color: #111827 !important;
+            border-bottom: 1px solid #1f2937;
+        }
+        html.dark #sheetRecuperar h2 {
+            color: #f1f5f9 !important;
+        }
+        html.dark #sheetRecuperar p,
+        html.dark #sheetRecuperar #recuperarCountLabel {
+            color: #94a3b8 !important;
+        }
+
+        /* ══ MODAL Crear/Editar Orden ══ */
+        html.dark #adminModalOrdenCard {
+            background-color: #0f172a !important;
+            border-color: #1e293b !important;
+        }
+        html.dark #adminModalOrdenTitulo {
+            color: #f1f5f9 !important;
+        }
+        html.dark #adminModalOrdenCard p {
+            color: #94a3b8 !important;
+        }
+        html.dark #adminModalOrdenCard label {
+            color: #94a3b8 !important;
+        }
+        html.dark #adminModalOrdenCard input,
+        html.dark #adminModalOrdenCard textarea,
+        html.dark #adminModalOrdenCard select {
+            background-color: #1e293b !important;
+            border-color: #374151 !important;
+            color: #e2e8f0 !important;
+        }
+        html.dark #adminModalOrdenCard input:focus,
+        html.dark #adminModalOrdenCard textarea:focus,
+        html.dark #adminModalOrdenCard select:focus {
+            border-color: #3b82f6 !important;
+        }
+        html.dark #adminModalOrdenCard input::placeholder,
+        html.dark #adminModalOrdenCard textarea::placeholder {
+            color: #475569 !important;
+        }
+        html.dark #adminModalOrdenCloseBtn {
+            color: #94a3b8 !important;
+        }
+
+        /* ══ Gráfico container ══ */
+        html.dark .bg-gray-850,
+        html.dark [class*="bg-gray-50"] {
+            background-color: #1e293b !important;
+        }
+
+        /* Bar y etiquetas del gráfico viejo (el canvas lo maneja JS) */
+        html.dark .bar-label { color: #94a3b8; }
+        html.dark .bar-value { color: #e2e8f0; }
+        html.dark .bar-chart-container {
+            border-left-color: #374151;
+            border-bottom-color: #374151;
+        }
+        html.dark .pie-center {
+            background-color: #1e293b;
+            color: #e2e8f0;
+        }
+
+        /* ══════════════════════════════════════════════════
+           FILAS DINÁMICAS – tablas generadas por JavaScript
+           ══════════════════════════════════════════════════ */
+
+        /* Hover de fila en modo oscuro (las filas usan hover:bg-gray-50 hardcodeado) */
+        html.dark #tablaTecnicosH3 tr:hover,
+        html.dark #verificationTbody tr:hover,
+        html.dark #reportCountsTbody tr:hover {
+            background-color: rgba(51, 65, 85, 0.45) !important;
+        }
+
+        /* ── Tabla: Directorio de Técnicos (#tablaTecnicosH3) ── */
+        /* Nombre del técnico */
+        html.dark #tablaTecnicosH3 .text-gray-700 { color: #f1f5f9 !important; }
+        /* ID (#22) */
+        html.dark #tablaTecnicosH3 .text-gray-400 { color: #64748b !important; }
+        /* Expertise / especialidades */
+        html.dark #tablaTecnicosH3 td.text-gray-500 { color: #94a3b8 !important; }
+        /* Ubicación */
+        html.dark #tablaTecnicosH3 td .text-gray-400 { color: #64748b !important; }
+
+        /* Badge DISPONIBLE (text-green-600 bg-green-50/50) */
+        html.dark #tablaTecnicosH3 .text-green-600 { color: #4ade80 !important; }
+        html.dark #tablaTecnicosH3 .bg-green-50\/50,
+        html.dark #tablaTecnicosH3 [class*="bg-green-50"] { background-color: rgba(21, 128, 61, 0.25) !important; }
+
+        /* Badge OCUPADO (text-orange-600 bg-orange-50/50) */
+        html.dark #tablaTecnicosH3 .text-orange-600 { color: #fb923c !important; }
+        html.dark #tablaTecnicosH3 [class*="bg-orange-50"] { background-color: rgba(154, 52, 18, 0.25) !important; }
+
+        /* Badge sin estado (text-gray-400 bg-gray-50) */
+        html.dark #tablaTecnicosH3 .text-gray-400 { color: #64748b !important; }
+        html.dark #tablaTecnicosH3 [class*="bg-gray-50"] { background-color: rgba(30, 41, 59, 0.8) !important; }
+
+        /* Intentos fallidos – normal */
+        html.dark #tablaTecnicosH3 .text-gray-700.bg-gray-50 { background-color: rgba(30,41,59,0.8) !important; color: #94a3b8 !important; }
+        /* Intentos fallidos – peligro */
+        html.dark #tablaTecnicosH3 .text-red-600.bg-red-50 { background-color: rgba(127,29,29,0.3) !important; color: #f87171 !important; }
+
+        /* Botón Restringido */
+        html.dark #tablaTecnicosH3 .bg-red-100 { background-color: rgba(127,29,29,0.3) !important; }
+        html.dark #tablaTecnicosH3 .text-red-700 { color: #f87171 !important; }
+        html.dark #tablaTecnicosH3 .hover\:bg-red-200:hover { background-color: rgba(127,29,29,0.5) !important; }
+        /* Botón Permitido */
+        html.dark #tablaTecnicosH3 .bg-green-100 { background-color: rgba(21,128,61,0.25) !important; }
+        html.dark #tablaTecnicosH3 .text-green-700 { color: #4ade80 !important; }
+        html.dark #tablaTecnicosH3 .hover\:bg-green-200:hover { background-color: rgba(21,128,61,0.4) !important; }
+        /* Botón Desbloquear */
+        html.dark #tablaTecnicosH3 .bg-yellow-100 { background-color: rgba(113,63,18,0.3) !important; }
+        html.dark #tablaTecnicosH3 .text-yellow-700 { color: #fbbf24 !important; }
+
+        /* Borde de la foto del avatar */
+        html.dark #tablaTecnicosH3 .border-gray-100 { border-color: #334155 !important; }
+
+        /* ── Tabla: Solicitudes de Verificación (#verificationTbody) ── */
+        html.dark #verificationTbody .text-gray-700 { color: #f1f5f9 !important; }
+        html.dark #verificationTbody .text-gray-500 { color: #94a3b8 !important; }
+        html.dark #verificationTbody .text-gray-400 { color: #64748b !important; }
+
+        /* Badge PENDIENTE (bg-yellow-100 text-yellow-700) */
+        html.dark #verificationTbody .bg-yellow-100 { background-color: rgba(113,63,18,0.3) !important; }
+        html.dark #verificationTbody .text-yellow-700 { color: #fbbf24 !important; }
+        /* Badge APROBADA (bg-green-100 text-green-700) */
+        html.dark #verificationTbody .bg-green-100 { background-color: rgba(21,128,61,0.25) !important; }
+        html.dark #verificationTbody .text-green-700 { color: #4ade80 !important; }
+        /* Badge RECHAZADA (bg-red-100 text-red-700) */
+        html.dark #verificationTbody .bg-red-100 { background-color: rgba(127,29,29,0.3) !important; }
+        html.dark #verificationTbody .text-red-700 { color: #f87171 !important; }
+
+        /* Botones Aprobar/Rechazar en acciones */
+        html.dark #verificationTbody .bg-green-50 { background-color: rgba(21,128,61,0.2) !important; }
+        html.dark #verificationTbody .text-green-600 { color: #4ade80 !important; }
+        html.dark #verificationTbody .border-green-200 { border-color: rgba(21,128,61,0.4) !important; }
+        html.dark #verificationTbody .bg-red-50 { background-color: rgba(127,29,29,0.2) !important; }
+        html.dark #verificationTbody .text-red-600 { color: #f87171 !important; }
+        html.dark #verificationTbody .border-red-200 { border-color: rgba(127,29,29,0.4) !important; }
+
+        /* ── Tabla: Usuarios Reportados (#reportCountsTbody) ── */
+        html.dark #reportCountsTbody .text-gray-700 { color: #f1f5f9 !important; }
+        html.dark #reportCountsTbody .text-gray-500 { color: #94a3b8 !important; }
+        html.dark #reportCountsTbody .text-gray-400 { color: #64748b !important; }
+        html.dark #reportCountsTbody .text-gray-800 { color: #e2e8f0 !important; }
+        html.dark #reportCountsTbody .text-gray-600 { color: #94a3b8 !important; }
+
+        /* Fuerza texto blanco en celdas td de las 3 tablas */
+        html.dark #tablaTecnicosH3 td,
+        html.dark #verificationTbody td,
+        html.dark #reportCountsTbody td {
+            color: #cbd5e1;
+        }
+        /* Borde entre filas */
+        html.dark #tablaTecnicosH3 tr,
+        html.dark #verificationTbody tr,
+        html.dark #reportCountsTbody tr {
+            border-bottom-color: rgba(255,255,255,0.05) !important;
+        }
+
+        /* ══════════════════════════════════════════════════
+           SCROLLBAR PERSONALIZADO – Modo oscuro
+           ══════════════════════════════════════════════════ */
+        html.dark ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        html.dark ::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 10px;
+        }
+        html.dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 10px;
+        }
+        html.dark ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        html.dark ::-webkit-scrollbar-corner {
+            background: #1e293b;
+        }
+        /* Firefox */
+        html.dark * {
+            scrollbar-width: thin;
+            scrollbar-color: #475569 #1e293b;
+        }
+
+        /* ══════════════════════════════════════════════════
+           MODAL CREAR / EDITAR ORDEN
+           ══════════════════════════════════════════════════ */
+
+        /* Card principal */
+        html.dark #adminModalOrdenCard {
+            background-color: #0f172a !important;
+            border-color: #1e293b !important;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important;
+        }
+        /* Header gradient */
+        html.dark #adminModalOrdenCard > div:first-child {
+            background: linear-gradient(to right, #1e3a5f, #1e2d5a) !important;
+        }
+        /* Botón X cerrar */
+        html.dark #adminModalOrdenCloseBtn {
+            color: #94a3b8 !important;
+        }
+        /* Título y subtítulo */
+        html.dark #adminModalOrdenTitulo {
+            color: #f1f5f9 !important;
+        }
+        html.dark #adminModalOrdenCard > div:nth-child(2) p {
+            color: #64748b !important;
+        }
+        /* Labels */
+        html.dark #adminModalOrdenCard label {
+            color: #94a3b8 !important;
+        }
+        /* Inputs, textareas, selects */
+        html.dark #adminModalOrdenCard input:not([type=hidden]),
+        html.dark #adminModalOrdenCard textarea,
+        html.dark #adminModalOrdenCard select {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+        html.dark #adminModalOrdenCard input:focus,
+        html.dark #adminModalOrdenCard textarea:focus,
+        html.dark #adminModalOrdenCard select:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.2) !important;
+        }
+        html.dark #adminModalOrdenCard input::placeholder,
+        html.dark #adminModalOrdenCard textarea::placeholder {
+            color: #475569 !important;
+        }
+        /* Opciones del select */
+        html.dark #adminModalOrdenCard option {
+            background-color: #1e293b;
+            color: #e2e8f0;
+        }
+        /* Botón Cancelar */
+        html.dark #adminModalOrdenCancelBtn {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #94a3b8 !important;
+        }
+        html.dark #adminModalOrdenCancelBtn:hover {
+            background-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+        /* Scroll interior del form */
+        html.dark #adminFormOrden {
+            scrollbar-width: thin;
+            scrollbar-color: #475569 #1e293b;
+        }
+        html.dark #adminFormOrden::-webkit-scrollbar {
+            width: 5px;
+        }
+        html.dark #adminFormOrden::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        html.dark #adminFormOrden::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        /* ══════════════════════════════════════════════════
+           MODAL VER POSTULANTES
+           ══════════════════════════════════════════════════ */
+        html.dark #adminModalPostulacionesCard {
+            background-color: #0f172a !important;
+            border-color: #1e293b !important;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important;
+        }
+        /* Header gradient */
+        html.dark #adminModalPostulacionesCard > div:first-child {
+            background: linear-gradient(to right, #1e3a5f, #1e2d5a) !important;
+        }
+        /* Botón X cerrar */
+        html.dark #adminModalPostulacionesCloseBtn {
+            color: #94a3b8 !important;
+        }
+        /* Título */
+        html.dark #adminPostulacionesTitulo {
+            color: #f1f5f9 !important;
+        }
+        /* Contenido scrollable */
+        html.dark #adminPostulacionesContent {
+            scrollbar-width: thin;
+            scrollbar-color: #475569 #1e293b;
+        }
+        html.dark #adminPostulacionesContent::-webkit-scrollbar {
+            width: 5px;
+        }
+        html.dark #adminPostulacionesContent::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        html.dark #adminPostulacionesContent::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        /* Footer del modal */
+        html.dark #adminModalPostulacionesCard > div:last-child {
+            background-color: #111827 !important;
+            border-top-color: #1e293b !important;
+        }
+        html.dark #adminModalPostulacionesCancelBtn {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #94a3b8 !important;
+        }
+        html.dark #adminModalPostulacionesCancelBtn:hover {
+            background-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+
+        /* ══════════════════════════════════════════════════
+           MODAL ELIMINAR SOLICITUD (generado por JS)
+           Se identifica por data-delete-card
+           ══════════════════════════════════════════════════ */
+        html.dark [data-delete-card] {
+            background-color: #0f172a !important;
+            border-color: #1e293b !important;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important;
+        }
+        html.dark [data-delete-card] > div:first-child {
+            background-image: linear-gradient(to right, rgba(127, 29, 29, 0.4), rgba(120, 53, 15, 0.4)) !important;
+        }
+        html.dark [data-delete-card] h3 {
+            color: #f1f5f9 !important;
+        }
+        html.dark [data-delete-card] .text-slate-600 {
+            color: #94a3b8 !important;
+        }
+        html.dark [data-delete-card] .text-slate-800 {
+            color: #f1f5f9 !important;
+        }
+        html.dark [data-delete-card] .bg-slate-50 {
+            background-color: #111827 !important;
+            border-top-color: #1e293b !important;
+        }
+        html.dark [data-delete-card] [data-delete-cancel] {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #94a3b8 !important;
+        }
+        html.dark [data-delete-card] [data-delete-cancel]:hover {
+            background-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+        html.dark [data-delete-card] [data-delete-close] {
+            color: #94a3b8 !important;
+        }
+
+        /* El backdrop ya tiene animación y estilos dark, no necesitamos forzar un background-color en el Root que sobreescribe la animación */
+
+        /* ══════════════════════════════════════════════════
+           MODALES DE CONFIRMACIÓN (Generados estáticamente en HTML con JS controller)
+           ══════════════════════════════════════════════════ */
+        
+        /* Modal Restringir Acceso */
+        html.dark #restrictAccessCard {
+            background-color: #0f172a !important;
+            border-color: #1e293b !important;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important;
+        }
+        html.dark #restrictAccessCard > div:first-child {
+            background-image: linear-gradient(to right, rgba(127, 29, 29, 0.4), rgba(180, 83, 9, 0.4)) !important;
+        }
+        html.dark #restrictAccessCard h3, 
+        html.dark #restrictAccessCard p, 
+        html.dark #restrictAccessCard span {
+            color: #f1f5f9 !important;
+        }
+        html.dark #restrictAccessCard #restrictAccessWarning {
+            color: #f87171 !important;
+        }
+        html.dark #restrictAccessCard > div:last-child {
+            background-color: #111827 !important;
+            border-top-color: #1e293b !important;
+        }
+        html.dark #restrictAccessCancelBtn {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #94a3b8 !important;
+        }
+        html.dark #restrictAccessCancelBtn:hover {
+            background-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+        html.dark #restrictAccessCloseBtn {
+            color: #94a3b8 !important;
+        }
+
+        /* Modal Enviar Correo */
+        html.dark #emailConfirmCard {
+            background-color: #0f172a !important;
+            border-color: #1e293b !important;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important;
+        }
+        html.dark #emailConfirmCard > div:first-child {
+            background-image: linear-gradient(to right, rgba(30, 58, 138, 0.4), rgba(49, 46, 129, 0.4)) !important;
+        }
+        html.dark #emailConfirmCard h3,
+        html.dark #emailConfirmCard p.text-slate-600 {
+            color: #f1f5f9 !important;
+        }
+        html.dark #emailConfirmCard > div:last-child {
+            background-color: #111827 !important;
+            border-top-color: #1e293b !important;
+        }
+        html.dark #emailConfirmCancelBtn {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #94a3b8 !important;
+        }
+        html.dark #emailConfirmCancelBtn:hover {
+            background-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+        html.dark #emailConfirmCloseBtn {
+            color: #94a3b8 !important;
+        }
+
+        /* Modal Confirmar Verificación */
+        html.dark #verificationConfirmCard {
+            background-color: #0f172a !important;
+            border-color: #1e293b !important;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important;
+        }
+        html.dark #verificationConfirmCard h3,
+        html.dark #verificationConfirmCard p.text-slate-600 {
+            color: #f1f5f9 !important;
+        }
+        html.dark #verificationConfirmHeader.from-green-50.to-emerald-50 {
+            background-image: linear-gradient(to right, rgba(20, 83, 45, 0.4), rgba(6, 78, 59, 0.4)) !important;
+        }
+        html.dark #verificationConfirmHeader.from-red-50.to-orange-50 {
+            background-image: linear-gradient(to right, rgba(127, 29, 29, 0.4), rgba(154, 52, 18, 0.4)) !important;
+        }
+        html.dark #verificationConfirmCard > div:last-child {
+            background-color: #111827 !important;
+            border-top-color: #1e293b !important;
+        }
+        html.dark #verificationConfirmCancelBtn {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #94a3b8 !important;
+        }
+        html.dark #verificationConfirmCancelBtn:hover {
+            background-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+        html.dark #verificationConfirmCloseBtn {
+            color: #94a3b8 !important;
+        }
+
+        /* ══════════════════════════════════════════════════
+           SWEETALERT2
+           ══════════════════════════════════════════════════ */
+        html.dark .swal2-popup {
+            background-color: #0f172a !important;
+            color: #f1f5f9 !important;
+            border: 1px solid #1e293b !important;
+        }
+        html.dark .swal2-title {
+            color: #f1f5f9 !important;
+        }
+        html.dark .swal2-html-container {
+            color: #cbd5e1 !important;
+        }
+        html.dark .swal2-confirm {
+            background-color: #3b82f6 !important;
+            color: #ffffff !important;
+        }
+        html.dark .swal2-cancel {
+            background-color: #475569 !important;
+            color: #ffffff !important;
+        }
+        /* Tablas dentro de SweetAlert (Reportes del usuario) */
+        html.dark .swal2-html-container table {
+            color: #cbd5e1 !important;
+        }
+        html.dark .swal2-html-container table th {
+            color: #f1f5f9 !important;
+            border-bottom: 1px solid #334155 !important;
+        }
+        html.dark .swal2-html-container table td {
+            border-bottom: 1px solid #1e293b !important;
+        }
+        html.dark .swal2-html-container table tr:hover {
+            background-color: rgba(51, 65, 85, 0.45) !important;
+        }
+        /* ══════════════════════════════════════════════════
+           TABLAS: ÓRDENES DE TRABAJO Y RECUPERACIÓN (Filas y celdas)
+           ══════════════════════════════════════════════════ */
+        html.dark #adminOtTable tbody tr,
+        html.dark #adminRecuperarTable tbody tr {
+            background-color: #0f172a !important; /* bg-slate-900 */
+        }
+        html.dark #adminOtTable tbody tr.bg-\[\#f8fafc\],
+        html.dark #adminRecuperarTable tbody tr.bg-\[\#f8fafc\] {
+            background-color: rgba(30, 41, 59, 0.4) !important; /* bg-slate-800/40 para alternar */
+        }
+        
+        /* Textos dentro de la tabla */
+        html.dark #adminOtTable tbody td .text-gray-800,
+        html.dark #adminRecuperarTable tbody td .text-gray-800,
+        html.dark #adminOtTable tbody td .text-gray-700,
+        html.dark #adminRecuperarTable tbody td .text-gray-700 {
+            color: #f1f5f9 !important; /* Títulos y textos principales */
+        }
+        html.dark #adminOtTable tbody td .text-gray-600,
+        html.dark #adminRecuperarTable tbody td .text-gray-600 {
+            color: #cbd5e1 !important; /* Textos secundarios */
+        }
+        html.dark #adminOtTable tbody td .text-gray-500,
+        html.dark #adminRecuperarTable tbody td .text-gray-500,
+        html.dark #adminOtTable tbody td .text-gray-400,
+        html.dark #adminRecuperarTable tbody td .text-gray-400 {
+            color: #94a3b8 !important; /* Descripciones y ubicaciones */
+        }
+        
+        /* Selects de estado dentro de la tabla */
+        html.dark #adminOtTable tbody select,
+        html.dark #adminRecuperarTable tbody select {
+            background-color: #1e293b !important;
+            color: #f1f5f9 !important;
+            border-color: #334155 !important;
+        }
+        html.dark #adminOtTable tbody select option,
+        html.dark #adminRecuperarTable tbody select option {
+            background-color: #1e293b !important;
+            color: #f1f5f9 !important;
+        }
+        
+        /* Botones de acción Edit/Delete */
+        html.dark #adminOtTable tbody .bg-blue-50,
+        html.dark #adminRecuperarTable tbody .bg-blue-50 {
+            background-color: rgba(59, 130, 246, 0.15) !important;
+        }
+        html.dark #adminOtTable tbody .bg-red-50,
+        html.dark #adminRecuperarTable tbody .bg-red-50 {
+            background-color: rgba(239, 68, 68, 0.15) !important;
+            color: #f87171 !important; /* red-400 */
+        }
+        
+        /* Botones específicos de Recuperar Usuario */
+        html.dark #adminRecuperarTable tbody .bg-indigo-50 {
+            background-color: rgba(99, 102, 241, 0.15) !important;
+            color: #818cf8 !important; /* indigo-400 */
+            border-color: rgba(99, 102, 241, 0.3) !important;
+        }
+        html.dark #adminRecuperarTable tbody .bg-indigo-50:hover {
+            background-color: rgba(99, 102, 241, 0.25) !important;
+            color: #a5b4fc !important; /* indigo-300 */
+        }
+        html.dark #adminRecuperarTable tbody .bg-gray-50 {
+            background-color: rgba(148, 163, 184, 0.1) !important;
+            color: #94a3b8 !important; /* slate-400 */
+            border-color: rgba(148, 163, 184, 0.2) !important;
+        }
+        
+        /* Badges de estado en Recuperar Usuario */
+        html.dark #adminRecuperarTable tbody .bg-green-100 {
+            background-color: rgba(21, 128, 61, 0.2) !important;
+            color: #4ade80 !important;
+            border-color: rgba(21, 128, 61, 0.4) !important;
+        }
+        html.dark #adminRecuperarTable tbody .bg-yellow-100 {
+            background-color: rgba(161, 98, 7, 0.2) !important;
+            color: #facc15 !important;
+            border-color: rgba(161, 98, 7, 0.4) !important;
+        }
+        html.dark #adminRecuperarTable tbody .bg-red-100 {
+            background-color: rgba(185, 28, 28, 0.2) !important;
+            color: #f87171 !important;
+            border-color: rgba(185, 28, 28, 0.4) !important;
+        }
+
+        /* Toggle restrict. */
+        html.dark #adminOtTable tbody .bg-gray-200 {
+            background-color: #334155 !important;
+        }
+        html.dark #adminOtTable tbody input:checked ~ div.bg-gray-200 {
+            background-color: #f59e0b !important;
+        }
+        html.dark #adminOtTable tbody .after\:bg-white::after {
+            background-color: #cbd5e1 !important;
+        }
+        /* ══════════════════════════════════════════════════
+           MODAL DE POSTULANTES (Tarjetas internas)
+           ══════════════════════════════════════════════════ */
+        html.dark #adminPostulacionesContent > div {
+            border-color: #1e293b !important; /* border-gray-100 */
+        }
+        html.dark #adminPostulacionesContent > div:hover {
+            background-color: rgba(30, 41, 59, 0.4) !important; /* hover:bg-gray-50 */
+        }
+        
+        /* Textos principales (Nombre) */
+        html.dark #adminPostulacionesContent .text-gray-800 {
+            color: #f1f5f9 !important;
+        }
+        /* Correo, fecha, mensaje, num reseñas */
+        html.dark #adminPostulacionesContent .text-gray-400,
+        html.dark #adminPostulacionesContent .text-gray-500 {
+            color: #94a3b8 !important;
+        }
+        /* Puntuación y porcentajes métricas */
+        html.dark #adminPostulacionesContent .text-gray-700,
+        html.dark #adminPostulacionesContent .text-gray-600 {
+            color: #cbd5e1 !important;
+        }
+        
+        /* Barra de progreso de métricas (fondo) */
+        html.dark #adminPostulacionesContent .bg-gray-100 {
+            background-color: #334155 !important;
+        }
+        
+        /* Botón Ver Perfil */
+        html.dark #adminPostulacionesContent .border-blue-500 {
+            border-color: #3b82f6 !important;
+            color: #60a5fa !important;
+        }
+        html.dark #adminPostulacionesContent .border-blue-500:hover {
+            background-color: rgba(59, 130, 246, 0.15) !important;
+        }
+        
+        /* Botones de Aceptar / Rechazar */
+        html.dark #adminPostulacionesContent .bg-green-100 {
+            background-color: rgba(16, 185, 129, 0.15) !important;
+            color: #34d399 !important;
+        }
+        html.dark #adminPostulacionesContent .bg-green-100:hover {
+            background-color: rgba(16, 185, 129, 0.25) !important;
+        }
+        html.dark #adminPostulacionesContent .bg-red-100 {
+            background-color: rgba(239, 68, 68, 0.15) !important;
+            color: #f87171 !important;
+        }
+        html.dark #adminPostulacionesContent .bg-red-100:hover {
+            background-color: rgba(239, 68, 68, 0.25) !important;
+        }
+        
+        /* Badges de estado (ACEPTADA, PENDIENTE, RECHAZADA) */
+        html.dark #adminPostulacionesContent .bg-green-50 {
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            color: #34d399 !important;
+            border-color: rgba(16, 185, 129, 0.2) !important;
+        }
+        html.dark #adminPostulacionesContent .bg-yellow-50 {
+            background-color: rgba(245, 158, 11, 0.1) !important;
+            color: #fbbf24 !important;
+            border-color: rgba(245, 158, 11, 0.2) !important;
+        }
+        html.dark #adminPostulacionesContent .bg-red-50 {
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            color: #f87171 !important;
+            border-color: rgba(239, 68, 68, 0.2) !important;
+        }
     </style>
+
+
+
 </head>
 
-<body>
+<body class="bg-white text-gray-900 transition-colors duration-300">
 
 <!-- ╔══════════════════════════════════════════════════════════════╗
      ║  LIBRO EXCEL  –  SEMACKROADMIN                                ║
@@ -332,11 +1257,11 @@
     <div id="xlBook">
 
     <!-- ════ HOJA 1 – Reportes ════ -->
-    <div id="sheetReportes" class="sheet-panel bg-white p-8 lg:p-12">
-        <div class="mb-10 pb-6 border-b border-black/20">
-            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight" data-i18n="reports.title">Panel de
+    <div id="sheetReportes" class="sheet-panel bg-white dark:bg-gray-900 p-8 lg:p-12 transition-colors duration-300">
+        <div class="mb-10 pb-6 border-b border-black/20 dark:border-white/10">
+            <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight" data-i18n="reports.title">Panel de
                 administración</h1>
-            <p class="text-gray-500 mt-2 text-lg" data-i18n="reports.subtitle">Reportes, métricas y gestión de técnicos
+            <p class="text-gray-500 dark:text-gray-400 mt-2 text-lg" data-i18n="reports.subtitle">Reportes, métricas y gestión de técnicos
                 en un solo lugar.</p>
         </div>
 
@@ -349,13 +1274,13 @@
             <div class="flex flex-col">
                 <div class="mb-4 flex justify-between items-end">
                     <div>
-                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                             <span class="iconify text-red-500" data-icon="mdi:alert-octagon"></span>
                             <span data-i18n="reports.reportedUsers">Usuarios reportados</span>
                         </h2>
-                        <p class="text-xs text-gray-400" data-i18n="reports.reportedUsersDesc">Usuarios con mayor índice de incidencias.</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500" data-i18n="reports.reportedUsersDesc">Usuarios con mayor índice de incidencias.</p>
                     </div>
-                    <button onclick="cargarEstadisticasReportes()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-black/20 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-semibold transition-all">
+                    <button onclick="cargarEstadisticasReportes()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-black/20 dark:border-white/10 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-semibold transition-all">
                         <span class="iconify" data-icon="mdi:refresh"></span>
                         Actualizar
                     </button>
@@ -364,7 +1289,7 @@
                     <table id="reportCountsTable" class="w-full table-auto border-collapse">
                         <thead>
                             <tr
-                                class="text-left text-[10px] font-bold text-black uppercase tracking-widest bg-gray-50/50 border-b border-black/20">
+                                class="text-left text-[10px] font-bold text-black dark:text-white uppercase tracking-widest bg-gray-50/50 dark:bg-gray-800/50 border-b border-black/20 dark:border-white/10">
                                 <th class="py-3 px-4" data-i18n="table.user">Usuario</th>
                                 <th class="py-3 px-4" data-i18n="table.email">Email</th>
                                 <th class="py-3 px-4 text-center" data-i18n="table.id">Id</th>
@@ -374,7 +1299,7 @@
                         </thead>
                         <tbody id="reportCountsTbody">
                             <tr>
-                                <td colspan="5" class="py-10 text-center text-gray-300 italic"
+                                <td colspan="5" class="py-10 text-center text-gray-300 dark:text-gray-600 italic"
                                     data-i18n="table.loading">Cargando datos...</td>
                             </tr>
                         </tbody>
@@ -385,14 +1310,14 @@
             <!-- Columna 2: Gráfico - Métricas -->
             <div class="flex flex-col">
                 <div class="mb-4 text-right lg:text-left">
-                    <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2 lg:justify-start justify-end">
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2 lg:justify-start justify-end">
                         <span class="iconify text-blue-500" data-icon="mdi:chart-bar"></span>
                         <span data-i18n="reports.globalPerformance">Desempeño global</span>
                     </h2>
-                    <p class="text-xs text-gray-400" data-i18n="reports.performanceDesc">Promedios generales de
+                    <p class="text-xs text-gray-400 dark:text-gray-500" data-i18n="reports.performanceDesc">Promedios generales de
                         satisfacción.</p>
                 </div>
-                <div class="p-4 bg-gray-50 rounded-2xl border border-black/20 flex flex-col justify-center items-center" style="height: 450px;">
+                <div class="p-4 bg-gray-50 dark:bg-gray-850 rounded-2xl border border-black/20 dark:border-white/10 flex flex-col justify-center items-center" style="height: 450px;">
                     <canvas id="barChart" style="width:100%;height:380px;"></canvas>
                 </div>
             </div>
@@ -400,18 +1325,18 @@
         </div>
 
         <!-- Sección: Solicitudes de Verificación -->
-        <div id="verificationSection" class="mt-16 pt-10 border-t border-black/20">
+        <div id="verificationSection" class="mt-16 pt-10 border-t border-black/20 dark:border-white/10">
             <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-3">
                         <span class="iconify text-yellow-500" data-icon="mdi:account-check-outline"></span>
                         <span data-i18n="reports.verificationRequests">Solicitudes de verificación</span>
                     </h2>
-                    <p class="text-sm text-gray-400" data-i18n="reports.verificationDesc">Cola de validadores para identidad
+                    <p class="text-sm text-gray-400 dark:text-gray-500" data-i18n="reports.verificationDesc">Cola de validadores para identidad
                         y certificaciones.</p>
                 </div>
                 <div class="flex gap-2 flex-wrap items-center">
-                    <button onclick="cargarSolicitudesVerificacion()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-black/20 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-semibold transition-all">
+                    <button onclick="cargarSolicitudesVerificacion()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-black/20 dark:border-white/10 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-semibold transition-all">
                         <span class="iconify" data-icon="mdi:refresh"></span>
                         Actualizar
                     </button>
@@ -419,10 +1344,10 @@
                         <span class="iconify absolute left-3 top-2.5 text-gray-400" data-icon="mdi:magnify"></span>
                         <input type="text" id="busquedaSolicitud" oninput="filtrarSolicitudes()" placeholder="Buscar técnico..."
                             data-i18n-placeholder="reports.search"
-                            class="pl-9 pr-3 py-2 text-xs border border-black/20 rounded-xl bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all w-48">
+                            class="pl-9 pr-3 py-2 text-xs border border-black/20 dark:border-white/10 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all w-48">
                     </div>
                     <select id="filtroEstadoSolicitud" onchange="filtrarSolicitudes()"
-                        class="border border-black/20 rounded-xl px-3 py-2 text-xs bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        class="border border-black/20 dark:border-white/10 rounded-xl px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Estado</option>
                         <option value="todos">Todos</option>
                         <option value="pendiente">Pendiente</option>
@@ -436,7 +1361,7 @@
                 <table id="verificationTable" class="w-full table-auto border-collapse">
                     <thead>
                         <tr
-                            class="text-left text-[10px] font-bold text-black uppercase tracking-widest bg-gray-50/50 border-b border-black/20">
+                            class="text-left text-[10px] font-bold text-black dark:text-white uppercase tracking-widest bg-gray-50/50 dark:bg-gray-800/50 border-b border-black/20 dark:border-white/10">
                             <th class="py-4 px-4 text-center w-16" data-i18n="table.id">Id</th>
                             <th class="py-4 px-4" data-i18n="table.technician">Técnico</th>
                             <th class="py-4 px-4" data-i18n="table.status">Estado</th>
@@ -446,7 +1371,7 @@
                     </thead>
                     <tbody id="verificationTbody">
                         <tr>
-                            <td colspan="5" class="py-12 text-center text-gray-300" data-i18n="table.loading">Cargando
+                            <td colspan="5" class="py-12 text-center text-gray-300 dark:text-gray-600" data-i18n="table.loading">Cargando
                                 solicitudes pendientes...</td>
                         </tr>
                     </tbody>
@@ -455,15 +1380,15 @@
         </div>
 
         <!-- Sección: Directorio de Técnicos -->
-        <div id="directorioSection" class="mt-16 pt-10 border-t border-black/20">
+        <div id="directorioSection" class="mt-16 pt-10 border-t border-black/20 dark:border-white/10">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
                 <div>
-                    <h3 class="text-2xl font-bold text-gray-800" data-i18n="reports.directory">Directorio general</h3>
-                    <p class="text-sm text-gray-400" data-i18n="reports.directoryDesc">Listado íntegro de profesionales
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-gray-100" data-i18n="reports.directory">Directorio general</h3>
+                    <p class="text-sm text-gray-400 dark:text-gray-500" data-i18n="reports.directoryDesc">Listado íntegro de profesionales
                         registrados.</p>
                 </div>
                 <div class="flex gap-2 flex-wrap items-center">
-                    <button onclick="cargarTecnicosDirectorio()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-black/20 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-semibold transition-all">
+                    <button onclick="cargarTecnicosDirectorio()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-black/20 dark:border-white/10 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-semibold transition-all">
                         <span class="iconify" data-icon="mdi:refresh"></span>
                         Actualizar
                     </button>
@@ -471,18 +1396,18 @@
                         <span class="iconify absolute left-3 top-2.5 text-gray-400" data-icon="mdi:magnify"></span>
                         <input type="text" id="busquedaNombre" oninput="filtrarTecnicos()" placeholder="Buscar..."
                             data-i18n-placeholder="reports.search"
-                            class="pl-9 pr-3 py-2 text-xs border border-black/20 rounded-xl bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all w-48">
+                            class="pl-9 pr-3 py-2 text-xs border border-black/20 dark:border-white/10 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all w-48">
                     </div>
                     <select id="filtroEspecialidad" onchange="filtrarTecnicos()"
-                        class="border border-black/20 rounded-xl px-3 py-2 text-xs bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        class="border border-black/20 dark:border-white/10 rounded-xl px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="" data-i18n="reports.specialty">Especialidad</option>
                     </select>
                     <select id="filtroUbicacion" onchange="filtrarTecnicos()"
-                        class="border border-black/20 rounded-xl px-3 py-2 text-xs bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        class="border border-black/20 dark:border-white/10 rounded-xl px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="" data-i18n="reports.location">Ubicación</option>
                     </select>
                     <select id="filtroEstadoCuenta" onchange="filtrarTecnicos()"
-                        class="border border-black/20 rounded-xl px-3 py-2 text-xs bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        class="border border-black/20 dark:border-white/10 rounded-xl px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Estado de cuenta</option>
                         <option value="todos">Todos</option>
                         <option value="restringido">Restringido</option>
@@ -496,7 +1421,7 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr
-                            class="text-[10px] font-bold text-black uppercase tracking-widest bg-gray-50/50 border-b border-black/20">
+                            class="text-[10px] font-bold text-black dark:text-white uppercase tracking-widest bg-gray-50/50 dark:bg-gray-800/50 border-b border-black/20 dark:border-white/10">
                             <th class="py-4 px-4 w-16" data-i18n="table.photo">Foto</th>
                             <th class="py-4 px-4" data-i18n="table.fullName">Nombre completo</th>
                             <th class="py-4 px-4" data-i18n="table.expertise">Expertise</th>
@@ -520,36 +1445,36 @@
     <div id="sheetOrdenes" class="sheet-panel hidden flex flex-col">
 
         <!-- Barra superior con fondo blanco -->
-        <div class="bg-white px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-shrink-0">
+        <div class="bg-white dark:bg-gray-900 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-shrink-0 border-b border-gray-100 dark:border-gray-800">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-blue-400/20 rounded-xl flex items-center justify-center">
                     <span class="iconify text-blue-600 text-xl" data-icon="mdi:table-large"></span>
                 </div>
                 <div>
-                    <h2 class="text-gray-800 font-bold text-lg leading-tight">Órdenes de trabajo</h2>
-                    <p class="text-gray-600 text-xs">Gestión completa · <span id="otCountLabel">0 Registros</span></p>
+                    <h2 class="text-gray-800 dark:text-gray-100 font-bold text-lg leading-tight">Órdenes de trabajo</h2>
+                    <p class="text-gray-600 dark:text-gray-400 text-xs">Gestión completa · <span id="otCountLabel">0 Registros</span></p>
                 </div>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
                 <div class="relative">
                     <span class="iconify absolute left-2.5 top-2 text-gray-400 text-sm" data-icon="mdi:magnify"></span>
                     <input type="text" id="adminOtSearch" oninput="adminBuscarOrdenes()" placeholder="Buscar..."
-                        class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-gray-300 bg-gray-50 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 w-44 transition">
+                        class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 w-44 transition">
                 </div>
                 <button onclick="adminAbrirModalCrear()"
                     class="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-400 text-white font-semibold px-4 py-1.5 rounded-lg text-xs shadow-lg shadow-blue-900/40 transition active:scale-95">
                     <span class="iconify text-base" data-icon="mdi:plus"></span> Nueva Orden
                 </button>
                 <button onclick="adminCargarOrdenes()" title="Recargar datos"
-                    class="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition">
+                    class="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition">
                     <span class="iconify text-base" data-icon="mdi:refresh"></span>
                 </button>
             </div>
         </div>
 
         <!-- Barra de filtros -->
-        <div class="bg-[#f8fafc] border-b border-gray-200 px-6 py-2 flex items-center gap-1 overflow-x-auto flex-shrink-0">
-            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-2">Filtrar:</span>
+        <div class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-2 flex items-center gap-1 overflow-x-auto flex-shrink-0">
+            <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mr-2">Filtrar:</span>
             <button onclick="adminFiltrarOrdenes('todas')" data-filtro="todas"
                 class="admin-filtro-btn inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-semibold bg-blue-600 text-white transition whitespace-nowrap">
                 <span class="iconify" data-icon="mdi:format-list-bulleted"></span> Todas
@@ -573,10 +1498,10 @@
         </div>
 
         <!-- Tabla Excel con scroll propio -->
-        <div class="overflow-auto flex-1">
-            <table class="w-full text-left border-collapse text-sm" id="adminOtTable">
+        <div class="overflow-auto flex-1 dark:bg-gray-950">
+            <table class="w-full text-left border-collapse text-sm dark:bg-gray-950" id="adminOtTable">
                 <thead class="sticky top-0 z-10">
-                    <tr class="bg-[#f1f5f9] border-b-2 border-gray-300 select-none">
+                    <tr class="bg-gray-100 dark:bg-gray-800 border-b-2 border-gray-300 dark:border-gray-700 select-none">
                         <th class="py-3 px-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-12 text-center">#</th>
                         <th class="py-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 min-w-[200px]">Título</th>
                         <th class="py-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200">Especialidad</th>
@@ -604,9 +1529,9 @@
         </div>
 
         <!-- Pie de tabla -->
-        <div class="bg-[#f8fafc] border-t border-gray-200 px-6 py-2.5 flex items-center justify-between flex-shrink-0">
-            <span id="otFooterLabel" class="text-[11px] text-gray-400">—</span>
-            <span class="text-[11px] text-gray-300">SEMACKRO · panel admin</span>
+        <div class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-2.5 flex items-center justify-between flex-shrink-0">
+            <span id="otFooterLabel" class="text-[11px] text-gray-400 dark:text-gray-500">—</span>
+            <span class="text-[11px] text-gray-300 dark:text-gray-600">SEMACKRO · panel admin</span>
         </div>
 
     </div> <!-- Fin sheetOrdenes -->
@@ -615,32 +1540,32 @@
     <div id="sheetRecuperar" class="sheet-panel hidden flex flex-col">
 
         <!-- Barra superior con fondo blanco -->
-        <div class="bg-white px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-shrink-0">
+        <div class="bg-white dark:bg-gray-900 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 flex-shrink-0 border-b border-gray-100 dark:border-gray-800">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                    <span class="iconify text-indigo-600 text-xl" data-icon="mdi:account-key-outline"></span>
+                <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl flex items-center justify-center">
+                    <span class="iconify text-indigo-600 dark:text-indigo-400 text-xl" data-icon="mdi:account-key-outline"></span>
                 </div>
                 <div>
-                    <h2 class="text-gray-800 font-bold text-lg leading-tight">Solicitudes de Recuperación de Usuario</h2>
-                    <p class="text-gray-600 text-xs">Gestión completa · <span id="recuperarCountLabel">0 Registros</span></p>
+                    <h2 class="text-gray-800 dark:text-gray-100 font-bold text-lg leading-tight">Solicitudes de Recuperación de Usuario</h2>
+                    <p class="text-gray-600 dark:text-gray-400 text-xs">Gestión completa · <span id="recuperarCountLabel">0 Registros</span></p>
                 </div>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
                 <div class="relative">
                     <span class="iconify absolute left-2.5 top-2 text-gray-400 text-sm" data-icon="mdi:magnify"></span>
                     <input type="text" id="adminRecuperarSearch" oninput="adminBuscarRecuperar()" placeholder="Buscar por DNI o Nombre..."
-                        class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-gray-300 bg-gray-50 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-56 transition">
+                        class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-56 transition">
                 </div>
                 <button onclick="adminCargarSolicitudesRecuperar()" title="Recargar datos"
-                    class="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition">
+                    class="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 transition">
                     <span class="iconify text-base" data-icon="mdi:refresh"></span>
                 </button>
             </div>
         </div>
 
         <!-- Barra de filtros -->
-        <div class="bg-[#f8fafc] border-b border-gray-200 px-6 py-2 flex items-center gap-1 overflow-x-auto flex-shrink-0">
-            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mr-2">Filtrar:</span>
+        <div class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-2 flex items-center gap-1 overflow-x-auto flex-shrink-0">
+            <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mr-2">Filtrar:</span>
             <button onclick="adminFiltrarRecuperar('todas')" data-rec-filtro="todas"
                 class="admin-rec-filtro-btn inline-flex items-center gap-1 px-3 py-1 rounded text-xs font-semibold bg-indigo-600 text-white transition whitespace-nowrap">
                 <span class="iconify" data-icon="mdi:format-list-bulleted"></span> Todas
@@ -656,10 +1581,10 @@
         </div>
 
         <!-- Tabla Excel con scroll propio -->
-        <div class="overflow-auto flex-1">
-            <table class="w-full text-left border-collapse text-sm bg-white" id="adminRecuperarTable">
+        <div class="overflow-auto flex-1 dark:bg-gray-950">
+            <table class="w-full text-left border-collapse text-sm dark:bg-gray-950" id="adminRecuperarTable">
                 <thead class="sticky top-0 z-10">
-                    <tr class="bg-[#f1f5f9] border-b-2 border-gray-300 select-none">
+                    <tr class="bg-gray-100 dark:bg-gray-800 border-b-2 border-gray-300 dark:border-gray-700 select-none">
                         <th class="py-3 px-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 w-12 text-center">#</th>
                         <th class="py-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200">Nombre Ingresado</th>
                         <th class="py-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200">Identidad Ingresada</th>
@@ -683,9 +1608,9 @@
         </div>
 
         <!-- Pie de tabla -->
-        <div class="bg-[#f8fafc] border-t border-gray-200 px-6 py-2.5 flex items-center justify-between flex-shrink-0">
-            <span id="recuperarFooterLabel" class="text-[11px] text-gray-400">—</span>
-            <span class="text-[11px] text-gray-300">SEMACKRO · panel admin</span>
+        <div class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-2.5 flex items-center justify-between flex-shrink-0">
+            <span id="recuperarFooterLabel" class="text-[11px] text-gray-400 dark:text-gray-500">—</span>
+            <span class="text-[11px] text-gray-300 dark:text-gray-600">SEMACKRO · panel admin</span>
         </div>
 
     </div> <!-- Fin sheetRecuperar -->
@@ -1691,6 +2616,9 @@
                                     }
                                 }
                             });
+                            if (typeof updateChartColors === 'function') {
+                                updateChartColors(document.documentElement.classList.contains('dark'));
+                            }
                         } else {
                             console.warn('[H3] Estructura de datos no válida o sin métricas:', m);
                             barCtx.parentElement.innerHTML = `<p class="text-red-500 text-center py-10">Error: Estructura de datos incompleta (${!m ? 'sin data' : 'sin métricas'})</p>`;

@@ -1024,21 +1024,25 @@
     justify-content: center;
     z-index: 9999;
     cursor: zoom-out;
-    padding: 48px;
+    padding: 72px 32px 48px;
 }
 
 .perfil-image-modal-content {
     position: relative;
-    max-width: 100%;
-    max-height: 100%;
+    width: min(72vw, 980px);
+    max-width: calc(100vw - 64px);
+    max-height: calc(100vh - 120px);
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    margin: auto;
 }
 
 .perfil-image-modal-content img {
+    width: auto;
     max-width: 100%;
-    max-height: 80vh;
+    max-height: min(62vh, 620px);
     object-fit: contain;
     border-radius: 8px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -1071,6 +1075,21 @@
 
 .perfil-image-modal-close:hover {
     background: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+    .perfil-image-modal {
+        padding: 72px 18px 32px;
+    }
+
+    .perfil-image-modal-content {
+        width: min(92vw, 680px);
+        max-width: calc(100vw - 36px);
+    }
+
+    .perfil-image-modal-content img {
+        max-height: 56vh;
+    }
 }
 
 /* ========================================
@@ -1138,4 +1157,273 @@
     .perfil-location-map-container {
         margin-top: 16px;
     }
+}
+
+/* ========================================
+   MODO OSCURO - NUEVO PERFIL DE USUARIO
+   Se activa globalmente con html.dark
+   ======================================== */
+html.dark body:has(#perfilSeccionView) {
+    background-color: #111827 !important;
+}
+
+html.dark #perfilSeccionView,
+html.dark #perfilSeccionContent,
+html.dark .nuevo-perfil-container {
+    background: #111827 !important;
+    background-image: none !important;
+    color: #f3f4f6 !important;
+}
+
+html.dark .nuevo-perfil-wrapper {
+    background: transparent !important;
+}
+
+html.dark .perfil-paper,
+html.dark .perfil-section,
+html.dark .perfil-stat-card,
+html.dark .perfil-location-map-container {
+    background: #111827 !important;
+    border: 1px solid #374151 !important;
+    color: #f3f4f6 !important;
+    box-shadow: none !important;
+}
+
+html.dark .perfil-paper:hover,
+html.dark .perfil-section:hover,
+html.dark .perfil-stat-card:hover {
+    box-shadow: none !important;
+}
+
+html.dark .perfil-header-banner {
+    background: #111827 !important;
+}
+
+html.dark .perfil-avatar {
+    border-color: #111827 !important;
+    box-shadow: none !important;
+}
+
+html.dark .perfil-header-nombre,
+html.dark .perfil-section-title h3,
+html.dark .perfil-stat-value,
+html.dark .perfil-info-value,
+html.dark .perfil-work-info h4,
+html.dark .perfil-work-project,
+html.dark .perfil-eval-rating-value,
+html.dark .perfil-reviews-title,
+html.dark .perfil-review-author {
+    color: #f3f4f6 !important;
+}
+
+html.dark .perfil-header-profesion,
+html.dark .perfil-header-descripcion,
+html.dark .perfil-header-ubicacion,
+html.dark .perfil-description,
+html.dark .perfil-specialty-detail p,
+html.dark .perfil-review-comment,
+html.dark .perfil-review-response-text,
+html.dark .perfil-criteria-name,
+html.dark .perfil-work-meta,
+html.dark .perfil-info-label,
+html.dark .perfil-stat-label,
+html.dark .perfil-stat-sublabel,
+html.dark .perfil-eval-label,
+html.dark .perfil-review-date,
+html.dark .perfil-section-count,
+html.dark .perfil-info-muted {
+    color: #d1d5db !important;
+}
+
+html.dark .perfil-info-muted,
+html.dark .perfil-work-list-scroll,
+html.dark .perfil-review-date {
+    color: #9ca3af !important;
+}
+
+html.dark .perfil-header-ubicacion svg,
+html.dark .perfil-section-title svg,
+html.dark .perfil-info-icon,
+html.dark .perfil-stat-icon {
+    color: #60a5fa !important;
+}
+
+html.dark .perfil-btn-outline {
+    background-color: #111827 !important;
+    border-color: #374151 !important;
+    color: #d1d5db !important;
+}
+
+html.dark .perfil-btn-outline:hover {
+    background-color: rgba(127, 29, 29, 0.28) !important;
+    border-color: rgba(248, 113, 113, 0.5) !important;
+    color: #fca5a5 !important;
+}
+
+html.dark .perfil-btn-primary,
+html.dark .perfil-back-btn {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+}
+
+html.dark .perfil-btn-primary:hover,
+html.dark .perfil-back-btn:hover {
+    background-color: #1d4ed8 !important;
+}
+
+html.dark .perfil-chip-available,
+html.dark .perfil-solicitud-mensaje.success {
+    background-color: rgba(20, 83, 45, 0.35) !important;
+    border-color: rgba(74, 222, 128, 0.45) !important;
+    color: #86efac !important;
+}
+
+html.dark .perfil-chip-working,
+html.dark .perfil-solicitud-mensaje.warning {
+    background-color: rgba(120, 53, 15, 0.35) !important;
+    border-color: rgba(251, 191, 36, 0.45) !important;
+    color: #fcd34d !important;
+}
+
+html.dark .perfil-chip-unavailable,
+html.dark .perfil-chip-not-verified {
+    background-color: rgba(127, 29, 29, 0.35) !important;
+    border-color: rgba(248, 113, 113, 0.45) !important;
+    color: #fca5a5 !important;
+}
+
+html.dark .perfil-chip-verified {
+    background-color: rgba(20, 83, 45, 0.35) !important;
+    color: #86efac !important;
+    border-color: rgba(74, 222, 128, 0.55) !important;
+}
+
+html.dark .perfil-chip-pending {
+    background-color: rgba(120, 53, 15, 0.35) !important;
+    color: #fcd34d !important;
+    border-color: rgba(251, 191, 36, 0.55) !important;
+}
+
+html.dark .perfil-solicitud-mensaje.info {
+    background-color: rgba(30, 58, 138, 0.35) !important;
+    border-color: rgba(96, 165, 250, 0.45) !important;
+    color: #93c5fd !important;
+}
+
+html.dark .perfil-solicitud-mensaje.purple {
+    background-color: rgba(88, 28, 135, 0.35) !important;
+    border-color: rgba(216, 180, 254, 0.45) !important;
+    color: #d8b4fe !important;
+}
+
+html.dark .perfil-specialty-chip {
+    background-color: rgba(30, 58, 138, 0.28) !important;
+    border: 1px solid rgba(96, 165, 250, 0.45) !important;
+    color: #bfdbfe !important;
+}
+
+html.dark .perfil-specialty-chip:hover {
+    background-color: rgba(30, 58, 138, 0.45) !important;
+}
+
+html.dark .perfil-specialty-chip.active {
+    background-color: #2563eb !important;
+    border-color: #3b82f6 !important;
+    color: #ffffff !important;
+}
+
+html.dark .perfil-specialty-detail,
+html.dark .perfil-work-item,
+html.dark .perfil-review-response {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+    color: #d1d5db !important;
+}
+
+html.dark .perfil-specialty-detail h4,
+html.dark .perfil-review-response-label {
+    color: #93c5fd !important;
+}
+
+html.dark .perfil-work-item:hover {
+    background-color: #243244 !important;
+}
+
+html.dark .perfil-divider,
+html.dark .perfil-section .border,
+html.dark .perfil-review-item,
+html.dark .perfil-location-map-header {
+    border-color: #374151 !important;
+}
+
+html.dark .perfil-location-map-header {
+    background: #1f2937 !important;
+    color: #d1d5db !important;
+}
+
+html.dark .perfil-progress-bar {
+    background-color: #374151 !important;
+}
+
+html.dark .perfil-eval-rating {
+    background: linear-gradient(135deg, rgba(120, 53, 15, 0.35), rgba(30, 41, 59, 0.9)) !important;
+    border: 1px solid rgba(251, 191, 36, 0.35) !important;
+}
+
+html.dark .perfil-review-item {
+    border-left-color: #60a5fa !important;
+}
+
+html.dark .perfil-portfolio-item {
+    border: 1px solid #374151 !important;
+    box-shadow: none !important;
+}
+
+html.dark .perfil-portfolio-item:hover {
+    box-shadow: none !important;
+    border-color: #4b5563 !important;
+}
+
+html.dark .perfil-work-list-scroll::-webkit-scrollbar-track {
+    background: #111827 !important;
+}
+
+html.dark .perfil-work-list-scroll::-webkit-scrollbar-thumb {
+    background: #4b5563 !important;
+}
+
+html.dark .perfil-work-list-scroll::-webkit-scrollbar-thumb:hover {
+    background: #6b7280 !important;
+}
+
+html.dark .perfil-cert-btn,
+html.dark .perfil-certification-btn {
+    background-color: #111827 !important;
+    border-color: #374151 !important;
+    color: #d1d5db !important;
+}
+
+html.dark .perfil-cert-btn:hover,
+html.dark .perfil-certification-btn:hover {
+    background-color: rgba(30, 58, 138, 0.35) !important;
+    border-color: rgba(96, 165, 250, 0.45) !important;
+    color: #93c5fd !important;
+}
+
+html.dark .perfil-skeleton {
+    background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%) !important;
+    background-size: 200% 100% !important;
+}
+
+html.dark .perfil-spinner {
+    border-color: #374151 !important;
+    border-top-color: #60a5fa !important;
+}
+
+html.dark .perfil-location-map .leaflet-popup-content-wrapper,
+html.dark .perfil-location-map .leaflet-popup-tip {
+    background: #111827 !important;
+    color: #f3f4f6 !important;
+    border: 1px solid #374151 !important;
 }

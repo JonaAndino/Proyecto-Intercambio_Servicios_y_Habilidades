@@ -2238,7 +2238,7 @@ function mostrarFavoritos(favoritos) {
                                 <div class="user-card-avatar-container">
                                     <div class="relative inline-block">
                                         ${imagenUrl
-            ? `<img src="${imagenUrl}"
+          ? `<img src="${imagenUrl}"
                                                    alt="${nombreCompleto}"
                                                    class="user-avatar object-cover"
                                                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -2249,10 +2249,10 @@ function mostrarFavoritos(favoritos) {
                                                <div class="user-avatar hidden">
                                                    <span class="text-white text-3xl font-bold">${initials}</span>
                                                </div>`
-            : `<img src="https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=f1f5f9" 
+          : `<img src="https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=f1f5f9" 
                                                     alt="${nombreCompleto}" 
                                                     class="user-avatar">`
-          }
+        }
                                     </div>
                                 </div>
 
@@ -5255,6 +5255,12 @@ function validarAdjuntosMensajeria(files) {
 window.conversacionActivaDashboard = null;
 window.mensajeriaGlobalInterval = null;
 
+// Variables globales para la grabación de voz
+let mediaRecorder = null;
+let audioChunks = [];
+let recordingInterval = null;
+let recordingSeconds = 0;
+
 // Inicializar mensajería cuando se abra la vista de mensajes
 document.addEventListener("DOMContentLoaded", () => {
   // El polling se maneja ahora en navigateTo('mensajes')
@@ -5264,6 +5270,16 @@ document.addEventListener("DOMContentLoaded", () => {
   if (formDashboard) {
     formDashboard.removeEventListener("submit", enviarMensajeDashboard);
     formDashboard.addEventListener("submit", enviarMensajeDashboard);
+  }
+
+  // Event listeners para grabación de notas de voz
+  const micBtn = document.getElementById("voice-mic-btn");
+  const cancelBtn = document.getElementById("voice-cancel-btn");
+  if (micBtn) {
+    micBtn.addEventListener("click", toggleVoiceRecording);
+  }
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", cancelVoiceRecording);
   }
 
   // Event delegation para el botón "Ver Perfil" en el chat del Dashboard
@@ -5278,6 +5294,199 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
+async function toggleVoiceRecording() {
+  const container = document.getElementById("voice-recording-container");
+  const textInput = document.getElementById("message-input-dashboard");
+  const micBtn = document.getElementById("voice-mic-btn");
+  const fileLabel = document.querySelector('label[for="file-input-dashboard"]');
+  const timerLabel = document.getElementById("voice-recording-timer");
+
+  if (!mediaRecorder || mediaRecorder.state === "inactive") {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+
+      let mimeType = "audio/webm";
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "audio/ogg";
+      }
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "";
+      }
+
+      mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(track => track.stop());
+
+        if (audioChunks.length > 0) {
+          const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+          if (audioBlob.size > 10) {
+            await enviarAudioNotaDeVoz(audioBlob);
+          }
+        }
+
+        container.classList.add("hidden");
+        textInput.classList.remove("hidden");
+        if (fileLabel) fileLabel.style.display = "inline-flex";
+        micBtn.classList.remove("text-red-500", "bg-red-100");
+        micBtn.title = "Grabar nota de voz";
+      };
+
+      container.classList.remove("hidden");
+      textInput.classList.add("hidden");
+      if (fileLabel) fileLabel.style.display = "none";
+      micBtn.classList.add("text-red-500", "bg-red-100");
+      micBtn.title = "Detener y enviar grabación";
+
+      recordingSeconds = 0;
+      timerLabel.textContent = "0:00";
+      clearInterval(recordingInterval);
+      recordingInterval = setInterval(() => {
+        recordingSeconds++;
+        const mins = Math.floor(recordingSeconds / 60);
+        const secs = recordingSeconds % 60;
+        timerLabel.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+        if (recordingSeconds >= 120) {
+          stopVoiceRecording();
+        }
+      }, 1000);
+
+      mediaRecorder.start();
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      Toast.error("Permiso denegado", "No se pudo acceder al micrófono para grabar audio.");
+    }
+  } else if (mediaRecorder && mediaRecorder.state === "recording") {
+    stopVoiceRecording();
+  }
+}
+
+function stopVoiceRecording() {
+  clearInterval(recordingInterval);
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    mediaRecorder.stop();
+  }
+}
+
+function cancelVoiceRecording() {
+  clearInterval(recordingInterval);
+  audioChunks = [];
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    mediaRecorder.stop();
+  }
+
+  const container = document.getElementById("voice-recording-container");
+  const textInput = document.getElementById("message-input-dashboard");
+  const micBtn = document.getElementById("voice-mic-btn");
+  const fileLabel = document.querySelector('label[for="file-input-dashboard"]');
+
+  if (container) container.classList.add("hidden");
+  if (textInput) textInput.classList.remove("hidden");
+  if (fileLabel) fileLabel.style.display = "inline-flex";
+  if (micBtn) {
+    micBtn.classList.remove("text-red-500", "bg-red-100");
+    micBtn.title = "Grabar nota de voz";
+  }
+}
+
+async function enviarAudioNotaDeVoz(audioBlob) {
+  if (!conversacionActivaDashboard) {
+    Toast.error("Sin conversación", "Selecciona una conversación primero.");
+    return;
+  }
+
+  const filename = `nota_de_voz_${Date.now()}.webm`;
+  const audioFile = new File([audioBlob], filename, { type: audioBlob.type });
+
+  const sendBtn = document.getElementById("send-message-btn-dashboard");
+  if (sendBtn) sendBtn.disabled = true;
+
+  const overall = document.getElementById("attachments-overall-progress");
+  const inner = document.getElementById("attachments-overall-progress-inner");
+  if (overall) {
+    overall.classList.remove("hidden");
+    if (inner) inner.style.width = "50%";
+  }
+
+  try {
+    const personaId = await obtenerPersonaIdActual();
+    const personaRecibeId =
+      conversacionActivaDashboard.id_contacto ||
+      conversacionActivaDashboard.id_persona_contacto ||
+      null;
+
+    const form = new FormData();
+    form.append("file", audioFile, filename);
+
+    const uploadResponse = await fetch(
+      `${window.APP_CONFIG.BACKEND_URL}/api/mensajeria/upload`,
+      {
+        method: "POST",
+        body: form
+      }
+    );
+
+    if (!uploadResponse.ok) {
+      throw new Error("Error al subir el archivo de audio");
+    }
+
+    const uploadResult = await uploadResponse.json();
+    const adjunto = {
+      url: uploadResult.url || uploadResult.ruta || uploadResult.url_publica,
+      mime: audioBlob.type,
+      nombre_original: filename,
+      tipo_adjunto: "audio"
+    };
+
+    if (inner) inner.style.width = "90%";
+
+    const payload = {
+      conversacionId: conversacionActivaDashboard.id_conversacion,
+      personaEnviaId: personaId,
+      contenido: "",
+      adjuntos: [adjunto]
+    };
+    if (personaRecibeId) payload.personaRecibeId = personaRecibeId;
+
+    const response = await fetch(
+      `${window.APP_CONFIG.BACKEND_URL}/api/mensajeria/enviar`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Error al enviar el mensaje de audio");
+    }
+
+    if (inner) inner.style.width = "100%";
+    setTimeout(() => {
+      if (overall) overall.classList.add("hidden");
+    }, 500);
+
+    await cargarMensajesDashboard(
+      conversacionActivaDashboard.id_conversacion,
+      true
+    );
+  } catch (error) {
+    console.error("Error al enviar nota de voz:", error);
+    Toast.error("Error", error.message || "No fue posible enviar la nota de voz");
+  } finally {
+    if (sendBtn) sendBtn.disabled = false;
+    if (overall) overall.classList.add("hidden");
+  }
+}
 
 // Cargar conversaciones
 async function cargarConversacionesDashboard() {
@@ -5861,7 +6070,7 @@ function detectarIdiomaTexto(texto) {
   const esCaracteres = /[áéíóúüñÁÉÍÓÚÜÑ¿¡]/;
   // Palabras muy comunes en español (incluso sin tildes)
   const esWords = /\b(hola|como|estas|bien|gracias|que|por|para|con|los|las|una|uno|soy|estoy|hacer|tengo|quiero|si|no|muy|mucho|pero|cuando|donde|quien|el|la|de|en|un|es|te|lo|me|ya|del|al|se|le|mas|esto|nada|todo|bienvenido)\b/i;
-  
+
   return (esCaracteres.test(texto) || esWords.test(texto)) ? 'ES' : 'EN';
 }
 
@@ -5875,8 +6084,8 @@ async function traducirMensajeBurbuja(btn) {
   // Evitar doble clic mientras carga
   if (btn.dataset.loading === 'true') return;
 
-  const burbuja    = btn.closest('.message-item');
-  const parrafo    = burbuja ? burbuja.querySelector('.msg-text-content') : null;
+  const burbuja = btn.closest('.message-item');
+  const parrafo = burbuja ? burbuja.querySelector('.msg-text-content') : null;
   if (!parrafo) return;
 
   const yaTraducido = btn.dataset.translated === 'true';
@@ -5900,7 +6109,7 @@ async function traducirMensajeBurbuja(btn) {
 
   // Detectar idioma de origen y elegir destino opuesto
   const idiomaOrigen = detectarIdiomaTexto(textoOriginal);
-  const targetLang   = idiomaOrigen === 'ES' ? 'EN' : 'ES';
+  const targetLang = idiomaOrigen === 'ES' ? 'EN' : 'ES';
 
   // Mostrar spinner
   btn.dataset.loading = 'true';
@@ -5968,12 +6177,13 @@ async function traducirMensajeBurbuja(btn) {
   }
 }
 
-// Renderizar adjuntos: imágenes, videos y documentos
+// Renderizar adjuntos: imágenes, videos, audios y documentos
 function renderAdjuntosHTML(adjuntos) {
   if (!adjuntos || !Array.isArray(adjuntos) || adjuntos.length === 0) return "";
 
   const images = [];
   const videos = [];
+  const audios = [];
   const docs = [];
 
   adjuntos.forEach((a) => {
@@ -5986,6 +6196,8 @@ function renderAdjuntosHTML(adjuntos) {
       videos.push({ ...a, url, mime, nombre, tipo });
     } else if (mime.startsWith("image/")) {
       images.push({ ...a, url, mime, nombre, tipo });
+    } else if (mime.startsWith("audio/")) {
+      audios.push({ ...a, url, mime, nombre, tipo });
     } else {
       // Documentos: PDF, Word, PPT, Excel, etc.
       docs.push({ ...a, url, mime, nombre, tipo });
@@ -6024,6 +6236,30 @@ function renderAdjuntosHTML(adjuntos) {
   for (const img of images) {
     if (usedThumbs.has(img.url)) continue;
     parts.push(`<div class="mt-2"><img src="${img.url}" alt="Adjunto" class="max-w-xs rounded cursor-pointer" onclick="openImageFullscreen('${img.url}')"></div>`);
+  }
+
+  // Notas de voz / Audios
+  for (const au of audios) {
+    const audioId = 'audio-' + Math.random().toString(36).substr(2, 9);
+    parts.push(`
+      <div class="mt-2 custom-audio-player inline-flex items-center gap-3 bg-gray-100/90 dark:bg-gray-800/90 text-gray-800 dark:text-gray-200 rounded-full px-4 py-2 shadow-sm border border-gray-200/50 dark:border-gray-700/50 min-w-[240px]">
+        <audio id="${audioId}" src="${au.url}" type="${au.mime}" 
+               ontimeupdate="window.updateAudioProgress('${audioId}')" 
+               onloadedmetadata="window.initAudioPlayer('${audioId}')" 
+               onended="window.resetAudioPlayer('${audioId}')"></audio>
+        
+        <button onclick="window.toggleAudioPlay('${audioId}')" class="flex-shrink-0 text-gray-800 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 focus:outline-none transition-colors">
+          <svg id="play-icon-${audioId}" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+          <svg id="pause-icon-${audioId}" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+        </button>
+
+        <span id="time-${audioId}" class="text-xs font-medium w-[4.5rem] text-center flex-shrink-0">0:00 / 0:00</span>
+
+        <div class="flex-1 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer relative" onclick="window.seekAudio(event, '${audioId}')">
+          <div id="progress-${audioId}" class="absolute top-0 left-0 h-full bg-indigo-500 rounded-full pointer-events-none" style="width: 0%; transition: width 0.1s linear;"></div>
+        </div>
+      </div>
+    `);
   }
 
   // Documentos: tarjeta de descarga con icono SVG según tipo
@@ -9599,10 +9835,10 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
   if (page !== undefined) _currentOTPage = page;
 
   const estadoConfig = {
-    pendiente:   { color: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-400',  label: () => t('workOrders.filterPending')   || 'Pendiente'   },
-    en_progreso: { color: 'bg-blue-100 text-blue-700',    dot: 'bg-blue-500',    label: () => t('workOrders.filterInProgress') || 'En Progreso' },
-    completada:  { color: 'bg-green-100 text-green-700',  dot: 'bg-green-500',   label: () => t('workOrders.filterCompleted')  || 'Completada'  },
-    cancelada:   { color: 'bg-red-100 text-red-700',      dot: 'bg-red-400',     label: () => t('workOrders.filterCancelled') || 'Cancelada'   },
+    pendiente: { color: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-400', label: () => t('workOrders.filterPending') || 'Pendiente' },
+    en_progreso: { color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500', label: () => t('workOrders.filterInProgress') || 'En Progreso' },
+    completada: { color: 'bg-green-100 text-green-700', dot: 'bg-green-500', label: () => t('workOrders.filterCompleted') || 'Completada' },
+    cancelada: { color: 'bg-red-100 text-red-700', dot: 'bg-red-400', label: () => t('workOrders.filterCancelled') || 'Cancelada' },
   };
 
   // Para no-admins: filtrar órdenes con restricción de ubicación
@@ -9663,9 +9899,9 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
 
     const estadoPost = misPostulacionesMap[idOrden];
     const postBadgeConfig = {
-      pendiente: { cls: 'bg-yellow-50 text-yellow-700 border border-yellow-200', icon: 'mdi:clock-outline',        label: t('workOrders.postPending')  || 'Tu postulación: En revisión'   },
-      aceptada:  { cls: 'bg-green-50 text-green-700 border border-green-200',    icon: 'mdi:check-circle-outline', label: t('workOrders.postAccepted') || 'Tu postulación: Aceptada ✓'    },
-      rechazada: { cls: 'bg-red-50 text-red-600 border border-red-200',          icon: 'mdi:close-circle-outline', label: t('workOrders.postRejected') || 'Tu postulación: No seleccionado' },
+      pendiente: { cls: 'bg-yellow-50 text-yellow-700 border border-yellow-200', icon: 'mdi:clock-outline', label: t('workOrders.postPending') || 'Tu postulación: En revisión' },
+      aceptada: { cls: 'bg-green-50 text-green-700 border border-green-200', icon: 'mdi:check-circle-outline', label: t('workOrders.postAccepted') || 'Tu postulación: Aceptada ✓' },
+      rechazada: { cls: 'bg-red-50 text-red-600 border border-red-200', icon: 'mdi:close-circle-outline', label: t('workOrders.postRejected') || 'Tu postulación: No seleccionado' },
     };
     const postBadge = (!esAdmin && estadoPost && postBadgeConfig[estadoPost])
       ? `<div class="mx-5 mb-2 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 ${postBadgeConfig[estadoPost].cls}">
@@ -10974,3 +11210,96 @@ function refrescarOrdenesTrabajo() {
   if (icon) { icon.style.transition = 'transform 0.6s'; icon.style.transform = 'rotate(360deg)'; setTimeout(() => { icon.style.transform = ''; }, 650); }
   cargarOrdenesTrabajo();
 }
+
+// =====================================================================
+// CUSTOM AUDIO PLAYER FOR VOICE NOTES
+// =====================================================================
+
+window.formatAudioTime = function(seconds) {
+  if (isNaN(seconds) || !isFinite(seconds)) return "0:00";
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return m + ":" + (s < 10 ? "0" : "") + s;
+};
+
+window.initAudioPlayer = function(id) {
+  const audio = document.getElementById(id);
+  const timeSpan = document.getElementById('time-' + id);
+  if (audio && timeSpan) {
+    // If duration is Infinity (which happens with some webm files until seekable),
+    // we just show 0:00 and wait for timeupdate or let the browser resolve it
+    if (audio.duration === Infinity) {
+        audio.currentTime = 1e101; 
+        audio.addEventListener('seeked', function() {
+            audio.currentTime = 0;
+            timeSpan.innerText = "0:00 / " + window.formatAudioTime(audio.duration);
+        }, {once: true});
+    } else {
+        timeSpan.innerText = "0:00 / " + window.formatAudioTime(audio.duration);
+    }
+  }
+};
+
+window.updateAudioProgress = function(id) {
+  const audio = document.getElementById(id);
+  const progress = document.getElementById('progress-' + id);
+  const timeSpan = document.getElementById('time-' + id);
+  if (audio && progress && timeSpan && audio.duration && isFinite(audio.duration)) {
+    const percent = (audio.currentTime / audio.duration) * 100;
+    progress.style.width = percent + "%";
+    timeSpan.innerText = window.formatAudioTime(audio.currentTime) + " / " + window.formatAudioTime(audio.duration);
+  }
+};
+
+window.toggleAudioPlay = function(id) {
+  // Pause any other playing audios
+  document.querySelectorAll('audio').forEach(a => {
+    if (a.id !== id && !a.paused) {
+      a.pause();
+      const otherId = a.id;
+      const playIcon = document.getElementById('play-icon-' + otherId);
+      const pauseIcon = document.getElementById('pause-icon-' + otherId);
+      if (playIcon) playIcon.classList.remove('hidden');
+      if (pauseIcon) pauseIcon.classList.add('hidden');
+    }
+  });
+
+  const audio = document.getElementById(id);
+  const playIcon = document.getElementById('play-icon-' + id);
+  const pauseIcon = document.getElementById('pause-icon-' + id);
+  
+  if (audio.paused) {
+    audio.play();
+    playIcon.classList.add('hidden');
+    pauseIcon.classList.remove('hidden');
+  } else {
+    audio.pause();
+    playIcon.classList.remove('hidden');
+    pauseIcon.classList.add('hidden');
+  }
+};
+
+window.resetAudioPlayer = function(id) {
+  const playIcon = document.getElementById('play-icon-' + id);
+  const pauseIcon = document.getElementById('pause-icon-' + id);
+  if (playIcon) playIcon.classList.remove('hidden');
+  if (pauseIcon) pauseIcon.classList.add('hidden');
+  
+  const progress = document.getElementById('progress-' + id);
+  if (progress) progress.style.width = "0%";
+  
+  const audio = document.getElementById(id);
+  const timeSpan = document.getElementById('time-' + id);
+  if (audio && timeSpan && isFinite(audio.duration)) {
+     timeSpan.innerText = "0:00 / " + window.formatAudioTime(audio.duration);
+  }
+};
+
+window.seekAudio = function(e, id) {
+  const audio = document.getElementById(id);
+  if (!audio || !isFinite(audio.duration)) return;
+  const bar = e.currentTarget;
+  const rect = bar.getBoundingClientRect();
+  const percent = (e.clientX - rect.left) / rect.width;
+  audio.currentTime = percent * audio.duration;
+};

@@ -12,6 +12,22 @@
     <!-- Configuración de entorno -->
     <script src="config.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        };
+    </script>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const isAdmin = localStorage.getItem('usuarioRolId') === '1';
+            if (savedTheme === 'dark' && isAdmin) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
     
     <!-- React + ReactDOM CDN (necesario para perfil-nuevo-react y sidebar-react) -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -227,8 +243,6 @@
             }
         }
     </script>
-    <!-- Incluir Tailwind CSS desde CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Iconify -->
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <!-- SweetAlert2 -->
@@ -262,7 +276,30 @@
     <script src="js/toast.js"></script>
     
     <!-- Estilos para scrollbar transparente del sidebar -->
+    <!-- Estilos para AnimatedThemeToggler (View Transitions API) -->
     <style>
+        /* View Transitions: desactiva las animaciones por defecto para usar las nuestras */
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation: none;
+            mix-blend-mode: normal;
+        }
+        /* Iconos del toggler: transición suave de rotación y escala */
+        #theme-sun-icon,
+        #theme-moon-icon {
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        /* Hover del botón: sutil escala */
+        #themeToggleBtn:hover {
+            transform: scale(1.08);
+        }
+        #themeToggleBtn:active {
+            transform: scale(0.95);
+        }
+    </style>
+
+    <style>
+
         #sidebar {
             /* Para navegadores webkit (Chrome, Safari, Edge) */
             scrollbar-width: none; /* Firefox */
@@ -281,6 +318,57 @@
         #sidebar::-webkit-scrollbar-track {
             background: transparent;
         }
+
+        html.dark,
+        html.dark body {
+            color-scheme: dark;
+            scrollbar-color: #4b5563 #111827;
+        }
+
+        html.dark::-webkit-scrollbar,
+        html.dark body::-webkit-scrollbar,
+        html.dark #perfilView::-webkit-scrollbar,
+        html.dark #perfilIframe::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        html.dark::-webkit-scrollbar-track,
+        html.dark body::-webkit-scrollbar-track,
+        html.dark #perfilView::-webkit-scrollbar-track,
+        html.dark #perfilIframe::-webkit-scrollbar-track {
+            background: #111827 !important;
+        }
+
+        html.dark::-webkit-scrollbar-thumb,
+        html.dark body::-webkit-scrollbar-thumb,
+        html.dark #perfilView::-webkit-scrollbar-thumb,
+        html.dark #perfilIframe::-webkit-scrollbar-thumb {
+            background: #374151 !important;
+            border: 2px solid #111827 !important;
+            border-radius: 999px;
+        }
+
+        html.dark::-webkit-scrollbar-thumb:hover,
+        html.dark body::-webkit-scrollbar-thumb:hover,
+        html.dark #perfilView::-webkit-scrollbar-thumb:hover,
+        html.dark #perfilIframe::-webkit-scrollbar-thumb:hover {
+            background: #4b5563 !important;
+        }
+
+        html.dark::-webkit-scrollbar-corner,
+        html.dark body::-webkit-scrollbar-corner,
+        html.dark #perfilView::-webkit-scrollbar-corner,
+        html.dark #perfilIframe::-webkit-scrollbar-corner {
+            background: #111827 !important;
+        }
+
+        html.dark #perfilView,
+        html.dark #perfilIframe {
+            background: #111827 !important;
+            color-scheme: dark;
+            scrollbar-color: #4b5563 #111827;
+        }
     </style>
 </head>
 
@@ -290,7 +378,7 @@
     <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
 
     <!-- Sidebar Desplegable -->
-    <aside id="sidebar" class="fixed top-0 left-0 w-80 h-full bg-white shadow-2xl z-50 overflow-y-auto">
+    <aside id="sidebar" class="fixed top-0 left-0 w-80 h-full bg-white shadow-2xl z-50 overflow-y-auto transition-colors duration-300">
         <div class="p-6">
             <!-- Encabezado del Sidebar -->
             <div class="flex items-center justify-between mb-8">
@@ -357,7 +445,7 @@
                 </a>
 
                 <!-- <a href="#" onclick="navigateTo('busqueda'); return false;" data-view="busqueda"
-                    class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
+                    class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -366,7 +454,7 @@
                 </a> -->
 
                 <!-- <a href="#" onclick="navigateTo('solicitud'); return false;" data-view="solicitud"
-                    class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
+                    class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
@@ -414,7 +502,7 @@
 
                 <div class="my-4 border-t border-gray-200"></div>
                 <!-- <a href="#" onclick="navigateTo('historia'); return false;" data-view="historia"
-                    class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700">
+                    class="sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                     <span class="iconify w-6 h-6 text-blue-600" data-icon="mdi:shield-check" style="font-size: 24px;"></span>
                     <span class="font-medium">Solicitud de verificación</span>
                 </a> -->
@@ -439,7 +527,7 @@
     <div id="mainContent">
 
         <!-- Barra de Navegación -->
-        <header class="bg-white shadow-md sticky top-0 z-30">
+        <header class="bg-white shadow-md sticky top-0 z-30 transition-colors duration-300">
             <div class="w-full px-6 lg:px-12 py-2 flex justify-between items-center">
                 <!-- Lado izquierdo: Hamburguesa + Logo -->
                 <div class="flex items-center space-x-4">
@@ -464,6 +552,22 @@
 
                 <!-- Lado derecho: Idioma y Notificaciones -->
                 <div class="flex items-center space-x-2">
+                    <!-- Botón Cambio de Tema AnimatedThemeToggler (solo visible para admin) -->
+                    <button id="themeToggleBtn"
+                        class="hidden relative items-center justify-center w-9 h-9 rounded-full border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 focus:outline-none overflow-hidden group dark:border-slate-600 dark:bg-slate-800"
+                        title="Cambiar tema"
+                        aria-label="Toggle theme">
+                        <!-- Sun rays SVG (modo oscuro → cambiar a claro) -->
+                        <svg id="theme-sun-icon" class="absolute w-5 h-5 text-amber-400 transition-all duration-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="4"/>
+                            <path stroke-linecap="round" d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                        </svg>
+                        <!-- Moon SVG (modo claro → cambiar a oscuro) -->
+                        <svg id="theme-moon-icon" class="absolute w-5 h-5 text-slate-600 transition-all duration-500" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </button>
+
                     <!-- Selector de idioma -->
                     <div class="relative">
                         <button id="languageBtn"
@@ -485,7 +589,7 @@
 
                         <div id="languageDropdown"
                             class="hidden absolute right-0 mt-2 bg-white rounded-2xl shadow-xl border-0 z-50 overflow-hidden"
-                            style="min-width: 180px;">
+                            style="width: 140px; transform-origin: top right;">
                             <button onclick="changeLanguage('es')"
                                 class="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition text-left rounded-t-2xl">
                                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -685,8 +789,118 @@
                             }
                         }
 
-                        document.addEventListener('DOMContentLoaded', renderReportItem);
-                        window.addEventListener('storage', renderReportItem);
+                        // ── AnimatedThemeToggler (MagicUI style) ──────────────────────
+                        // Usa View Transitions API con clip-path circular desde el botón
+                        function updateThemeIcons(isDark) {
+                            const sunIcon = document.getElementById('theme-sun-icon');
+                            const moonIcon = document.getElementById('theme-moon-icon');
+                            if (!sunIcon || !moonIcon) return;
+                            if (isDark) {
+                                // Modo oscuro activo → mostrar sol (para volver a claro)
+                                sunIcon.style.opacity = '1';
+                                sunIcon.style.transform = 'rotate(0deg) scale(1)';
+                                moonIcon.style.opacity = '0';
+                                moonIcon.style.transform = 'rotate(90deg) scale(0)';
+                            } else {
+                                // Modo claro activo → mostrar luna (para ir a oscuro)
+                                sunIcon.style.opacity = '0';
+                                sunIcon.style.transform = 'rotate(-90deg) scale(0)';
+                                moonIcon.style.opacity = '1';
+                                moonIcon.style.transform = 'rotate(0deg) scale(1)';
+                            }
+                        }
+
+                        function applyTheme(isDark, broadcastToIframe) {
+                            if (isDark) {
+                                document.documentElement.classList.add('dark');
+                                localStorage.setItem('theme', 'dark');
+                            } else {
+                                document.documentElement.classList.remove('dark');
+                                localStorage.setItem('theme', 'light');
+                            }
+                            updateThemeIcons(isDark);
+                            if (broadcastToIframe) {
+                                const profileIframe = document.getElementById('perfilIframe');
+                                if (profileIframe && profileIframe.contentWindow) {
+                                    profileIframe.contentWindow.postMessage({ type: 'toggle-theme', theme: isDark ? 'dark' : 'light' }, '*');
+                                }
+                                const reportsIframe = document.getElementById('reportesIframe');
+                                if (reportsIframe && reportsIframe.contentWindow) {
+                                    reportsIframe.contentWindow.postMessage({ type: 'toggle-theme', theme: isDark ? 'dark' : 'light' }, '*');
+                                }
+                            }
+                        }
+
+                        function initThemeToggler() {
+                            try {
+                                const isAdmin = localStorage.getItem('usuarioRolId') === '1';
+                                const themeBtn = document.getElementById('themeToggleBtn');
+                                if (!themeBtn) return;
+
+                                if (isAdmin) {
+                                    themeBtn.classList.remove('hidden');
+                                    themeBtn.classList.add('flex');
+
+                                    // Estado inicial de iconos
+                                    const isDark = document.documentElement.classList.contains('dark');
+                                    updateThemeIcons(isDark);
+
+                                    themeBtn.onclick = (event) => {
+                                        const willBeDark = !document.documentElement.classList.contains('dark');
+
+                                        // Ver si el navegador soporta View Transitions
+                                        if (!document.startViewTransition) {
+                                            // Sin soporte: cambio directo
+                                            applyTheme(willBeDark, true);
+                                            return;
+                                        }
+
+                                        // Coordenadas del click para el círculo animado
+                                        const rect = themeBtn.getBoundingClientRect();
+                                        const cx = Math.round(rect.left + rect.width / 2);
+                                        const cy = Math.round(rect.top + rect.height / 2);
+                                        const maxRadius = Math.hypot(
+                                            Math.max(cx, window.innerWidth - cx),
+                                            Math.max(cy, window.innerHeight - cy)
+                                        );
+
+                                        const transition = document.startViewTransition(() => {
+                                            applyTheme(willBeDark, true);
+                                        });
+
+                                        transition.ready.then(() => {
+                                            const clipFrom = `circle(0px at ${cx}px ${cy}px)`;
+                                            const clipTo   = `circle(${maxRadius}px at ${cx}px ${cy}px)`;
+                                            // Siempre animar la capa nueva (::view-transition-new)
+                                            // con el círculo expandiéndose — igual al original de MagicUI
+                                            document.documentElement.animate(
+                                                { clipPath: [clipFrom, clipTo] },
+                                                {
+                                                    duration: 500,
+                                                    easing: 'ease-in-out',
+                                                    pseudoElement: '::view-transition-new(root)'
+                                                }
+                                            );
+                                        });
+
+                                    };
+                                } else {
+                                    themeBtn.classList.add('hidden');
+                                    themeBtn.classList.remove('flex');
+                                }
+                            } catch (e) {
+                                console.warn('Error initThemeToggler:', e);
+                            }
+                        }
+
+                        document.addEventListener('DOMContentLoaded', () => {
+                            renderReportItem();
+                            initThemeToggler();
+                        });
+                        window.addEventListener('storage', () => {
+                            renderReportItem();
+                            initThemeToggler();
+                        });
                     })();
                 </script>
 
@@ -774,6 +988,27 @@
                                                     placeholder="Escribe un mensaje..."
                                                     class="flex-grow px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 chat-input-field"
                                                     data-i18n-placeholder="messages.writeMessage">
+
+                                                <!-- Contenedor de grabación de voz (oculto por defecto) -->
+                                                <div id="voice-recording-container" class="hidden flex-grow flex items-center justify-between px-4 py-2 bg-red-50 border border-red-200 rounded-full text-red-600">
+                                                    <div class="flex items-center space-x-2">
+                                                        <span class="iconify text-red-500 animate-pulse" data-icon="mdi:microphone" data-width="18"></span>
+                                                        <span id="voice-recording-timer" class="font-mono text-sm font-semibold">0:00</span>
+                                                    </div>
+                                                    <button type="button" id="voice-cancel-btn" class="text-gray-500 hover:text-red-600 transition" title="Cancelar grabación">
+                                                        <span class="iconify" data-icon="mdi:trash-can-outline" data-width="20"></span>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Botón para grabar audio -->
+                                                <button type="button" id="voice-mic-btn"
+                                                    class="chat-mic-btn cursor-pointer inline-flex items-center justify-center p-2 border border-gray-300 rounded-full hover:bg-gray-50 text-gray-500 hover:text-red-500 transition"
+                                                    title="Grabar nota de voz">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="fill-current">
+                                                        <path d="M0 0h24v24H0z" fill="none" />
+                                                        <path d="M17.3 11c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72m-8.2-6.1c0-.66.54-1.2 1.2-1.2s1.2.54 1.2 1.2l-.01 6.2c0 .66-.53 1.2-1.19 1.2s-1.2-.54-1.2-1.2M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3" />
+                                                    </svg>
+                                                </button>
 
                                                 <!-- Botón para seleccionar archivos -->
                                                 <label for="file-input-dashboard"

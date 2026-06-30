@@ -88,7 +88,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background-image: url('../113435-OOM6G9-66.jpg'); 
+            background-image: url('../113435-OOM6G9-66.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -1355,19 +1355,19 @@
             padding-bottom: 0;
             overflow: hidden;
         }
-        
+
         #mensajesView > div,
         #mensajesView > div > div,
         #mensajesView > div > div > div {
             min-height: 0;
             height: 100%;
         }
-        
+
         #chat-layout-dashboard {
             height: 100% !important;
             min-height: 0 !important;
         }
-        
+
         #conversacionesColumn,
         #chatColumn {
             min-height: 0;
@@ -2705,4 +2705,1520 @@
             body.mensajes-open #mensajesView #chat-layout-dashboard.mobile-show-chat #mensajes-container-dashboard {
                 padding-bottom: calc(96px + var(--chat-keyboard-offset, 0px)) !important;
             }
+        }
+
+        /* ══════════════════════════════════════════════════════════
+           MODO OSCURO – NavBar y SideBar de Descubrir.html
+           Solo se activan cuando <html> tiene la clase "dark"
+           ══════════════════════════════════════════════════════════ */
+
+        /* — Header / NavBar — */
+        html.dark header {
+            background-color: #111827 !important;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.5) !important;
+        }
+        html.dark header h1.text-blue-600 {
+            color: #60a5fa !important;
+        }
+        html.dark header svg.text-blue-600 {
+            color: #60a5fa !important;
+        }
+        html.dark .hamburger-line {
+            background-color: #d1d5db !important;
+        }
+        html.dark #hamburgerBtn:hover {
+            background-color: #1e293b !important;
+        }
+        /* ══════════════════════════════════════════════════════════
+           MODO OSCURO – Botón y Dropdown de Idioma
+           ══════════════════════════════════════════════════════════ */
+        html.dark #languageBtn {
+            background-color: #1f2937 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+        }
+        html.dark #languageBtn:hover {
+            background-color: #374151 !important;
+        }
+        html.dark #languageBtn svg {
+            color: #9ca3af !important;
+        }
+        html.dark #currentLang {
+            color: #f3f4f6 !important;
+        }
+        html.dark #languageDropdown {
+            background-color: #1f2937 !important;
+            border: 1px solid #374151 !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6) !important;
+        }
+        html.dark #languageDropdown button {
+            color: #f3f4f6 !important;
+            border-color: #374151 !important;
+        }
+        html.dark #languageDropdown button:hover {
+            background-color: #374151 !important;
+        }
+        html.dark #languageDropdown button svg {
+            color: #9ca3af !important;
+        }
+        html.dark #languageDropdown span.text-gray-600,
+        html.dark #languageDropdown span.text-gray-700 {
+            color: #f3f4f6 !important;
+        }
+
+        /* ══════════════════════════════════════════════════════════
+           MODO OSCURO – Botón y Dropdown de Notificaciones
+           ══════════════════════════════════════════════════════════ */
+        html.dark #notificationBtn:hover {
+            background-color: #374151 !important;
+        }
+        html.dark #notificationBtn svg {
+            color: #d1d5db !important;
+        }
+
+        html.dark #notificationDropdown {
+            background-color: #1f2937 !important;
+            border-color: #374151 !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6) !important;
+        }
+
+        /* Tabs en dropdown de notificaciones */
+        html.dark #notificationDropdown .bg-white {
+            background-color: #1f2937 !important;
+        }
+        html.dark #notificationDropdown .border-gray-200,
+        html.dark #notificationDropdown .border-b,
+        html.dark #notificationDropdown .divide-gray-100 > * {
+            border-color: #374151 !important;
+        }
+
+        html.dark #notifTabSolicitudes.text-indigo-600 {
+            color: #818cf8 !important;
+            border-bottom-color: #818cf8 !important;
+        }
+        html.dark #notifTabAlertas.text-indigo-600 {
+            color: #818cf8 !important;
+            border-bottom-color: #818cf8 !important;
+        }
+        html.dark #notificationDropdown .text-gray-500 {
+            color: #9ca3af !important;
+        }
+        html.dark #notificationDropdown .text-gray-400 {
+            color: #9ca3af !important;
+        }
+        html.dark #notificationDropdown .text-gray-700,
+        html.dark #notificationDropdown .text-gray-800,
+        html.dark #notificationDropdown .text-gray-900 {
+            color: #f3f4f6 !important;
+        }
+
+        /* Elementos de la lista de notificaciones (Hover) */
+        html.dark #notificationDropdown .hover\:bg-gray-50:hover,
+        html.dark #notificationDropdown .hover\:bg-gray-100:hover {
+            background-color: #374151 !important;
+        }
+        /* — SideBar — */
+        html.dark #sidebar {
+            background-color: #111827 !important;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.6) !important;
+        }
+        html.dark #sidebar h2 {
+            color: #f1f5f9 !important;
+        }
+        html.dark #closeSidebar {
+            color: #9ca3af !important;
+        }
+        html.dark #closeSidebar:hover {
+            background-color: #1e293b !important;
+        }
+        html.dark #closeSidebar svg {
+            color: #9ca3af !important;
+            stroke: #9ca3af !important;
+        }
+        html.dark #sidebarUserName {
+            color: #f1f5f9 !important;
+        }
+        html.dark #sidebar p {
+            color: #6b7280 !important;
+        }
+        html.dark .sidebar-item {
+            color: #cbd5e1 !important;
+        }
+        html.dark .sidebar-item:hover {
+            background-color: #1e293b !important;
+            color: #f1f5f9 !important;
+        }
+        html.dark .sidebar-item.active {
+            background-color: rgba(239, 68, 68, 0.18) !important;
+            color: #f87171 !important;
+        }
+        html.dark #sidebar nav .border-t,
+        html.dark #sidebar .border-t {
+            border-color: #1f2937 !important;
+        }
+        html.dark a[onclick*="logout"].sidebar-item:hover {
+            background-color: rgba(239,68,68,0.15) !important;
+        }
+
+        /* — Tarjeta de usuario en el sidebar — */
+        html.dark #sidebar .bg-gradient-to-r {
+            background: linear-gradient(to right, rgba(59,130,246,0.12), rgba(99,102,241,0.12)) !important;
+            border: 1px solid rgba(99,102,241,0.2) !important;
+        }
+        html.dark #sidebar .text-gray-500 {
+            color: #6b7280 !important;
+        }
+
+        /* ══════════════════════════════════════════════════════════
+           MODO OSCURO – Sección de Mensajería (Chat)
+           ══════════════════════════════════════════════════════════ */
+
+        /* Contenedores principales */
+        html.dark #mensajesView .bg-white {
+            background-color: #111827 !important;
+        }
+        html.dark #mensajesView .bg-gray-50,
+        html.dark #mensajesView .bg-slate-50\/50,
+        html.dark #chat-vacio-dashboard {
+            background-color: #1f2937 !important;
+        }
+
+        /* Bordes */
+        html.dark #chat-header-dashboard,
+        html.dark #chat-input-dashboard,
+        html.dark #sidebar-react-root .border-gray-100,
+        html.dark #sidebar-react-root .border-gray-50 {
+            border-color: #374151 !important;
+        }
+
+        /* Textos */
+        html.dark #mensajesView .text-gray-800,
+        html.dark #mensajesView .text-slate-800,
+        html.dark #mensajesView .text-gray-900 {
+            color: #f3f4f6 !important;
+        }
+        html.dark #mensajesView .text-gray-500,
+        html.dark #mensajesView .text-slate-400 {
+            color: #9ca3af !important;
+        }
+
+        /* Input de mensaje */
+        html.dark #message-input-dashboard {
+            background-color: #374151 !important;
+            border-color: #4b5563 !important;
+            color: #f3f4f6 !important;
+        }
+        html.dark #message-input-dashboard::placeholder {
+            color: #9ca3af !important;
+        }
+
+        /* Botones del chat (Microfono, adjuntar) */
+        html.dark .chat-mic-btn,
+        html.dark .chat-attach-btn {
+            border-color: #4b5563 !important;
+            color: #d1d5db !important;
+        }
+        html.dark .chat-mic-btn:hover,
+        html.dark .chat-attach-btn:hover {
+            background-color: #374151 !important;
+        }
+
+        /* Estado vacío del chat */
+        html.dark #chat-vacio-dashboard .bg-indigo-100 {
+            background-color: #3730a3 !important;
+        }
+        html.dark #chat-vacio-dashboard .text-indigo-500 {
+            color: #818cf8 !important;
+        }
+
+        /* Hover de la lista de conversaciones (React Sidebar) */
+        html.dark #sidebar-react-root .hover\:bg-slate-100:hover {
+            background-color: #374151 !important;
+        }
+        html.dark #sidebar-react-root .hover\:bg-slate-100:hover p.text-slate-800 {
+            color: #f3f4f6 !important;
+        }
+
+        /* Sombra del perfil seleccionado (React Sidebar) */
+        html.dark #sidebar-react-root .shadow-indigo-200 {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        /* ══════════════════════════════════════════════════════════
+           MODO OSCURO – Contenido de Solicitudes y Alertas
+           ══════════════════════════════════════════════════════════ */
+        /* Textos generales en notificaciones */
+        html.dark #notificationDropdown .text-gray-600,
+        html.dark #notificationDropdown .text-gray-700 {
+            color: #d1d5db !important;
+        }
+
+        /* Detalles de solicitudes (bg-blue-50) */
+        html.dark #notificationDropdown .bg-blue-50 {
+            background-color: rgba(30, 58, 138, 0.3) !important; /* bg-blue-900/30 */
+        }
+        html.dark #notificationDropdown .border-blue-100,
+        html.dark #notificationDropdown .border-blue-200 {
+            border-color: rgba(30, 58, 138, 0.6) !important;
+        }
+        html.dark #notificationDropdown .text-blue-700 {
+            color: #93c5fd !important; /* text-blue-300 */
+        }
+        html.dark #notificationDropdown .text-purple-700 {
+            color: #d8b4fe !important; /* text-purple-300 */
+        }
+
+        /* Estilos específicos de Alertas */
+        /* Alerta */
+        html.dark #notificationDropdown .bg-blue-100 {
+            background-color: rgba(30, 58, 138, 0.6) !important;
+        }
+
+        /* Exito */
+        html.dark #notificationDropdown .bg-green-50 {
+            background-color: rgba(20, 83, 45, 0.3) !important; /* bg-green-900/30 */
+        }
+        html.dark #notificationDropdown .border-green-200 {
+            border-color: rgba(20, 83, 45, 0.6) !important;
+        }
+        html.dark #notificationDropdown .bg-green-100 {
+            background-color: rgba(20, 83, 45, 0.6) !important;
+        }
+        html.dark #notificationDropdown .text-green-700 {
+            color: #86efac !important; /* text-green-300 */
+        }
+
+        /* Recordatorio */
+        html.dark #notificationDropdown .bg-amber-50 {
+            background-color: rgba(120, 53, 15, 0.3) !important; /* bg-amber-900/30 */
+        }
+        html.dark #notificationDropdown .border-amber-200 {
+            border-color: rgba(120, 53, 15, 0.6) !important;
+        }
+        html.dark #notificationDropdown .bg-amber-100 {
+            background-color: rgba(120, 53, 15, 0.6) !important;
+        }
+        html.dark #notificationDropdown .text-amber-700 {
+            color: #fcd34d !important; /* text-amber-300 */
+        }
+
+        /* Critico */
+        html.dark #notificationDropdown .bg-red-50 {
+            background-color: rgba(127, 29, 29, 0.3) !important; /* bg-red-900/30 */
+        }
+        html.dark #notificationDropdown .border-red-200 {
+            border-color: rgba(127, 29, 29, 0.6) !important;
+        }
+        html.dark #notificationDropdown .bg-red-100 {
+            background-color: rgba(127, 29, 29, 0.6) !important;
+        }
+        html.dark #notificationDropdown .text-red-700 {
+            color: #fca5a5 !important; /* text-red-300 */
+        }
+
+        /* Favoritos: ocultar fondo decorativo claro solo en modo oscuro */
+        html.dark body:has(#favoritosView.active) {
+            background-image: none !important;
+            background-color: #111827 !important;
+        }
+
+        html.dark body:has(#favoritosView.active)::before {
+            display: none !important;
+            background-image: none !important;
+        }
+
+        html.dark #favoritosView,
+        html.dark #favoritosView > .w-full {
+            background: #111827 !important;
+            background-image: none !important;
+        }
+
+        html.dark #favoritosView::before,
+        html.dark #favoritosView::after,
+        html.dark #favoritosView > .w-full::before,
+        html.dark #favoritosView > .w-full::after {
+            display: none !important;
+            background-image: none !important;
+        }
+
+        html.dark #favoritosView .max-w-6xl,
+        html.dark #favoritosGrid {
+            background: transparent !important;
+            background-image: none !important;
+        }
+
+        html.dark #favoritosView h1,
+        html.dark #favoritosView h2,
+        html.dark #favoritosView h3,
+        html.dark #favoritosView .text-gray-800,
+        html.dark #favoritosView .text-slate-800,
+        html.dark #favoritosView .text-gray-900,
+        html.dark #favoritosView .text-slate-900 {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #favoritosView p,
+        html.dark #favoritosGrid > .col-span-full span,
+        html.dark #favoritosView .text-gray-600,
+        html.dark #favoritosView .text-slate-600,
+        html.dark #favoritosView .text-gray-500,
+        html.dark #favoritosView .text-slate-500 {
+            color: #d1d5db !important;
+        }
+
+        html.dark #favoritosView .text-gray-400,
+        html.dark #favoritosView .text-slate-400,
+        html.dark #favoritosView .text-gray-300,
+        html.dark #favoritosView .text-slate-300 {
+            color: #9ca3af !important;
+        }
+
+        html.dark #favoritosView .iconify.text-gray-300,
+        html.dark #favoritosView [data-icon="ph:heart"] {
+            color: #d1d5db !important;
+        }
+
+        html.dark #favoritosView .user-card {
+            background: #111827 !important;
+            border-color: #374151 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #favoritosView .user-card:hover {
+            box-shadow: none !important;
+            border-color: #4b5563 !important;
+        }
+
+        html.dark #favoritosView .user-card-content {
+            background: #111827 !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #favoritosView .user-avatar {
+            background: #1f2937 !important;
+            border-color: #374151 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #favoritosView .user-card .text-gray-800,
+        html.dark #favoritosView .user-card .text-gray-700,
+        html.dark #favoritosView .user-card .font-bold,
+        html.dark #favoritosView .user-card .font-semibold {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #favoritosView .user-card .text-gray-600,
+        html.dark #favoritosView .user-card .text-gray-500 {
+            color: #d1d5db !important;
+        }
+
+        html.dark #favoritosView .user-card .text-gray-400,
+        html.dark #favoritosView .user-card .text-gray-300 {
+            color: #9ca3af !important;
+        }
+
+        html.dark #favoritosView .user-card .text-blue-600 {
+            color: #93c5fd !important;
+        }
+
+        html.dark #favoritosView .user-card .border-gray-200,
+        html.dark #favoritosView .user-card .border-gray-100 {
+            border-color: #374151 !important;
+        }
+
+        html.dark #favoritosView .skill-badge {
+            background: rgba(30, 58, 138, 0.28) !important;
+            border-color: rgba(96, 165, 250, 0.45) !important;
+            color: #bfdbfe !important;
+        }
+
+        html.dark #favoritosView .favorite-btn:not(.active) {
+            background: #1f2937 !important;
+            border-color: #4b5563 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #favoritosView .favorite-btn.active {
+            box-shadow: none !important;
+        }
+
+        html.dark #favoritosView .user-card button.border-blue-500 {
+            background: #111827 !important;
+            border-color: #3b82f6 !important;
+            color: #93c5fd !important;
+        }
+
+        html.dark #favoritosView .user-card button.border-blue-500:hover {
+            background: rgba(30, 58, 138, 0.35) !important;
+        }
+
+        html.dark #favoritosView .user-card .bg-white,
+        html.dark #favoritosView .user-card .bg-gray-50,
+        html.dark #favoritosView .user-card .bg-slate-50 {
+            background-color: #111827 !important;
+        }
+
+        /* Historial: ocultar fondo decorativo claro solo en modo oscuro */
+        html.dark body:has(#historialView.active) {
+            background-image: none !important;
+            background-color: #111827 !important;
+        }
+
+        html.dark body:has(#historialView.active)::before {
+            display: none !important;
+            background-image: none !important;
+        }
+
+        html.dark #historialView,
+        html.dark #historialView > .w-full {
+            background: #111827 !important;
+            background-image: none !important;
+        }
+
+        html.dark #historialView::before,
+        html.dark #historialView::after,
+        html.dark #historialView > .w-full::before,
+        html.dark #historialView > .w-full::after {
+            display: none !important;
+            background-image: none !important;
+        }
+
+        html.dark #historialView .max-w-6xl,
+        html.dark #historialView #historialContent,
+        html.dark #historialView .timeline {
+            background: transparent !important;
+            background-image: none !important;
+        }
+
+        html.dark #historialView h1,
+        html.dark #historialView h2,
+        html.dark #historialView h3,
+        html.dark #historialView .text-gray-800,
+        html.dark #historialView .text-gray-900,
+        html.dark #historialView .text-slate-800,
+        html.dark #historialView .text-slate-900 {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #historialView p,
+        html.dark #historialView .text-gray-600,
+        html.dark #historialView .text-gray-700,
+        html.dark #historialView .text-slate-600,
+        html.dark #historialView .text-slate-700 {
+            color: #d1d5db !important;
+        }
+
+        html.dark #historialView .text-gray-500,
+        html.dark #historialView .text-gray-400,
+        html.dark #historialView .text-slate-500,
+        html.dark #historialView .text-slate-400 {
+            color: #9ca3af !important;
+        }
+
+        html.dark #historialView .text-blue-700,
+        html.dark #historialView .text-blue-600 {
+            color: #93c5fd !important;
+        }
+
+        html.dark #historialView #btnRefrescarHistorial {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+            color: #d1d5db !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #historialView #btnRefrescarHistorial:hover {
+            background-color: #1f2937 !important;
+            border-color: #4b5563 !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #historialView .timeline::before {
+            background: #374151 !important;
+        }
+
+        html.dark #historialView .timeline-dot {
+            border: 2px solid #111827 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #historialView .bg-white.rounded-xl,
+        html.dark #historialView .timeline-item > .bg-white,
+        html.dark #historialView #historialContent > .bg-white {
+            background-color: #111827 !important;
+            border: 1px solid #374151 !important;
+            color: #f3f4f6 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #historialView .bg-white.rounded-xl:hover,
+        html.dark #historialView .timeline-item > .bg-white:hover {
+            border-color: #4b5563 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #historialView .shadow,
+        html.dark #historialView .shadow-md,
+        html.dark #historialView .shadow-lg,
+        html.dark #historialView .hover\:shadow-lg:hover {
+            box-shadow: none !important;
+        }
+
+        html.dark #historialView .border,
+        html.dark #historialView .border-gray-100,
+        html.dark #historialView .border-gray-200,
+        html.dark #historialView .border-slate-100,
+        html.dark #historialView .border-slate-200 {
+            border-color: #374151 !important;
+        }
+
+        html.dark #historialView .bg-gray-50,
+        html.dark #historialView .bg-slate-50 {
+            background-color: #1f2937 !important;
+        }
+
+        html.dark #historialView .border-blue-400 {
+            border-color: #60a5fa !important;
+        }
+
+        html.dark #historialView .bg-green-100 {
+            background-color: rgba(20, 83, 45, 0.35) !important;
+        }
+
+        html.dark #historialView .text-green-700 {
+            color: #86efac !important;
+        }
+
+        html.dark #historialView .bg-yellow-50,
+        html.dark #historialView .bg-yellow-100 {
+            background-color: rgba(120, 53, 15, 0.35) !important;
+        }
+
+        html.dark #historialView .text-yellow-700,
+        html.dark #historialView .text-yellow-500 {
+            color: #fcd34d !important;
+        }
+
+        html.dark #historialView .bg-red-50,
+        html.dark #historialView .bg-red-100 {
+            background-color: rgba(127, 29, 29, 0.35) !important;
+        }
+
+        html.dark #historialView .text-red-700,
+        html.dark #historialView .text-red-500 {
+            color: #fca5a5 !important;
+        }
+
+        html.dark #historialView img {
+            border-color: #374151 !important;
+            box-shadow: none !important;
+        }
+
+        /* Solicitudes enviadas: modo oscuro */
+        html.dark body:has(#solicitudesEnviadasView.active) {
+            background-image: none !important;
+            background-color: #111827 !important;
+        }
+
+        html.dark body:has(#solicitudesEnviadasView.active)::before {
+            display: none !important;
+            background-image: none !important;
+        }
+
+        html.dark #solicitudesEnviadasView,
+        html.dark #solicitudesEnviadasView > .w-full {
+            background: #111827 !important;
+            background-image: none !important;
+        }
+
+        html.dark #solicitudesEnviadasView::before,
+        html.dark #solicitudesEnviadasView::after,
+        html.dark #solicitudesEnviadasView > .w-full::before,
+        html.dark #solicitudesEnviadasView > .w-full::after {
+            display: none !important;
+            background-image: none !important;
+        }
+
+        html.dark #solicitudesEnviadasView .max-w-6xl,
+        html.dark #solicitudesEnviadasGrid {
+            background: transparent !important;
+            background-image: none !important;
+        }
+
+        html.dark #solicitudesEnviadasView h1,
+        html.dark #solicitudesEnviadasView h2,
+        html.dark #solicitudesEnviadasView h3,
+        html.dark #solicitudesEnviadasView .text-gray-800,
+        html.dark #solicitudesEnviadasView .text-gray-900,
+        html.dark #solicitudesEnviadasView .text-slate-800,
+        html.dark #solicitudesEnviadasView .text-slate-900 {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #solicitudesEnviadasView p,
+        html.dark #solicitudesEnviadasView .text-gray-600,
+        html.dark #solicitudesEnviadasView .text-gray-700,
+        html.dark #solicitudesEnviadasView .text-slate-600,
+        html.dark #solicitudesEnviadasView .text-slate-700 {
+            color: #d1d5db !important;
+        }
+
+        html.dark #solicitudesEnviadasView .text-gray-500,
+        html.dark #solicitudesEnviadasView .text-gray-400,
+        html.dark #solicitudesEnviadasView .text-gray-300,
+        html.dark #solicitudesEnviadasView .text-slate-500,
+        html.dark #solicitudesEnviadasView .text-slate-400,
+        html.dark #solicitudesEnviadasView .text-slate-300 {
+            color: #9ca3af !important;
+        }
+
+        html.dark #solicitudesEnviadasView svg.text-gray-300 {
+            color: #d1d5db !important;
+        }
+
+        html.dark #solicitudesEnviadasGrid > .bg-white,
+        html.dark #solicitudesEnviadasView .bg-white.rounded-xl {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #solicitudesEnviadasGrid > .bg-white:hover,
+        html.dark #solicitudesEnviadasView .bg-white.rounded-xl:hover {
+            border-color: #4b5563 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #solicitudesEnviadasView .shadow,
+        html.dark #solicitudesEnviadasView .shadow-md,
+        html.dark #solicitudesEnviadasView .shadow-xl,
+        html.dark #solicitudesEnviadasView .hover\:shadow-xl:hover {
+            box-shadow: none !important;
+        }
+
+        html.dark #solicitudesEnviadasView .border,
+        html.dark #solicitudesEnviadasView .border-gray-100,
+        html.dark #solicitudesEnviadasView .border-gray-200,
+        html.dark #solicitudesEnviadasView .border-slate-100,
+        html.dark #solicitudesEnviadasView .border-slate-200 {
+            border-color: #374151 !important;
+        }
+
+        html.dark #solicitudesEnviadasView img {
+            border-color: #3b82f6 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #solicitudesEnviadasView .text-yellow-600,
+        html.dark #solicitudesEnviadasView .text-yellow-500 {
+            color: #fcd34d !important;
+        }
+
+        html.dark #solicitudesEnviadasView .text-red-600,
+        html.dark #solicitudesEnviadasView .text-red-500 {
+            color: #fca5a5 !important;
+        }
+
+        html.dark #solicitudesEnviadasView button.text-red-600 {
+            background-color: rgba(127, 29, 29, 0.18) !important;
+            border: 1px solid rgba(248, 113, 113, 0.35) !important;
+            color: #fca5a5 !important;
+        }
+
+        html.dark #solicitudesEnviadasView button.text-red-600:hover,
+        html.dark #solicitudesEnviadasView .hover\:bg-red-50:hover {
+            background-color: rgba(127, 29, 29, 0.35) !important;
+            color: #fecaca !important;
+        }
+
+        /* Órdenes de trabajo: modo oscuro */
+        html.dark body:has(#ordenesTrabajoView.active) {
+            background-image: none !important;
+            background-color: #111827 !important;
+        }
+
+        html.dark body:has(#ordenesTrabajoView.active)::before {
+            display: none !important;
+            background-image: none !important;
+        }
+
+        html.dark #ordenesTrabajoView,
+        html.dark #ordenesTrabajoView > .w-full {
+            background: #111827 !important;
+            background-image: none !important;
+        }
+
+        html.dark #ordenesTrabajoView::before,
+        html.dark #ordenesTrabajoView::after,
+        html.dark #ordenesTrabajoView > .w-full::before,
+        html.dark #ordenesTrabajoView > .w-full::after {
+            display: none !important;
+            background-image: none !important;
+        }
+
+        html.dark #ordenesTrabajoView .max-w-6xl,
+        html.dark #ordenes-trabajo-wrapper,
+        html.dark #ordenesTrabajoGrid,
+        html.dark #ordenes-trabajo-pagination {
+            background: transparent !important;
+            background-image: none !important;
+        }
+
+        html.dark #ordenesTrabajoView h1,
+        html.dark #ordenesTrabajoView h2,
+        html.dark #ordenesTrabajoView h3,
+        html.dark #ordenesTrabajoView .text-gray-800,
+        html.dark #ordenesTrabajoView .text-gray-900,
+        html.dark #ordenesTrabajoView .text-slate-800,
+        html.dark #ordenesTrabajoView .text-slate-900 {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #ordenesTrabajoView p,
+        html.dark #ordenesTrabajoView label,
+        html.dark #ordenesTrabajoView .text-gray-600,
+        html.dark #ordenesTrabajoView .text-gray-700,
+        html.dark #ordenesTrabajoView .text-slate-600,
+        html.dark #ordenesTrabajoView .text-slate-700 {
+            color: #d1d5db !important;
+        }
+
+        html.dark #ordenesTrabajoView .text-gray-500,
+        html.dark #ordenesTrabajoView .text-gray-400,
+        html.dark #ordenesTrabajoView .text-gray-300,
+        html.dark #ordenesTrabajoView .text-slate-500,
+        html.dark #ordenesTrabajoView .text-slate-400,
+        html.dark #ordenesTrabajoView .text-slate-300 {
+            color: #9ca3af !important;
+        }
+
+        html.dark #ordenesTrabajoView .text-blue-700,
+        html.dark #ordenesTrabajoView .text-blue-600 {
+            color: #93c5fd !important;
+        }
+
+        html.dark #ordenesTrabajoView .text-green-700,
+        html.dark #ordenesTrabajoView .text-green-600 {
+            color: #86efac !important;
+        }
+
+        html.dark #ordenesTrabajoView .text-yellow-700,
+        html.dark #ordenesTrabajoView .text-yellow-600 {
+            color: #fcd34d !important;
+        }
+
+        html.dark #ordenesTrabajoView .text-red-700,
+        html.dark #ordenesTrabajoView .text-red-600,
+        html.dark #ordenesTrabajoView .text-red-500 {
+            color: #fca5a5 !important;
+        }
+
+        html.dark #ordenesTrabajoView .border,
+        html.dark #ordenesTrabajoView .border-gray-100,
+        html.dark #ordenesTrabajoView .border-gray-200,
+        html.dark #ordenesTrabajoView .border-gray-300,
+        html.dark #ordenesTrabajoView .border-slate-100,
+        html.dark #ordenesTrabajoView .border-slate-200 {
+            border-color: #374151 !important;
+        }
+
+        html.dark #ordenesTrabajoView .shadow,
+        html.dark #ordenesTrabajoView .shadow-md,
+        html.dark #ordenesTrabajoView .shadow-lg,
+        html.dark #ordenesTrabajoView .shadow-xl,
+        html.dark #ordenesTrabajoView .shadow-2xl,
+        html.dark #ordenesTrabajoView .hover\:shadow-lg:hover,
+        html.dark #ordenesTrabajoView .hover\:shadow-xl:hover {
+            box-shadow: none !important;
+        }
+
+        html.dark #ordenesTrabajoGrid > .bg-white,
+        html.dark #ordenesTrabajoView .bg-white.rounded-2xl {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #ordenesTrabajoGrid > .bg-white:hover,
+        html.dark #ordenesTrabajoView .bg-white.rounded-2xl:hover {
+            border-color: #4b5563 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #ordenesTrabajoView input,
+        html.dark #ordenesTrabajoView textarea,
+        html.dark #ordenesTrabajoView select {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+            color-scheme: dark !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #ordenesTrabajoView input::placeholder,
+        html.dark #ordenesTrabajoView textarea::placeholder {
+            color: #6b7280 !important;
+        }
+
+        html.dark #ordenesTrabajoView input:focus,
+        html.dark #ordenesTrabajoView textarea:focus,
+        html.dark #ordenesTrabajoView select:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+        }
+
+        html.dark #btnRefrescarOrdenes,
+        html.dark #ordenesTrabajoView .filtro-orden-btn.bg-white,
+        html.dark #ordenesTrabajoView button.bg-gray-100,
+        html.dark #ordenesTrabajoView #ordenes-trabajo-pagination .bg-white {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+            color: #d1d5db !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #btnRefrescarOrdenes:hover,
+        html.dark #ordenesTrabajoView .filtro-orden-btn.bg-white:hover,
+        html.dark #ordenesTrabajoView button.bg-gray-100:hover,
+        html.dark #ordenesTrabajoView #ordenes-trabajo-pagination .bg-white:hover {
+            background-color: #1f2937 !important;
+            border-color: #4b5563 !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #ordenesTrabajoView .filtro-orden-btn.bg-blue-600,
+        html.dark #ordenesTrabajoView #ordenes-trabajo-pagination .bg-blue-600 {
+            background-color: #2563eb !important;
+            border-color: #3b82f6 !important;
+            color: #ffffff !important;
+        }
+
+        html.dark #ordenesTrabajoView .bg-gray-50,
+        html.dark #ordenesTrabajoView .bg-gray-100,
+        html.dark #ordenesTrabajoView .bg-slate-50,
+        html.dark #ordenesTrabajoView .bg-slate-100 {
+            background-color: #1f2937 !important;
+        }
+
+        html.dark #ordenesTrabajoView .bg-blue-50,
+        html.dark #ordenesTrabajoView .bg-blue-100 {
+            background-color: rgba(30, 58, 138, 0.35) !important;
+            border-color: rgba(96, 165, 250, 0.45) !important;
+        }
+
+        html.dark #ordenesTrabajoView .bg-green-50,
+        html.dark #ordenesTrabajoView .bg-green-100 {
+            background-color: rgba(20, 83, 45, 0.35) !important;
+            border-color: rgba(74, 222, 128, 0.4) !important;
+        }
+
+        html.dark #ordenesTrabajoView .bg-yellow-50,
+        html.dark #ordenesTrabajoView .bg-yellow-100,
+        html.dark #ordenesTrabajoView .bg-amber-50,
+        html.dark #ordenesTrabajoView .bg-amber-100 {
+            background-color: rgba(120, 53, 15, 0.35) !important;
+            border-color: rgba(251, 191, 36, 0.4) !important;
+        }
+
+        html.dark #ordenesTrabajoView .bg-red-50,
+        html.dark #ordenesTrabajoView .bg-red-100 {
+            background-color: rgba(127, 29, 29, 0.35) !important;
+            border-color: rgba(248, 113, 113, 0.4) !important;
+        }
+
+        html.dark #ordenesTrabajoView .border-t,
+        html.dark #ordenesTrabajoView .border-b,
+        html.dark #ordenesTrabajoView .border-l {
+            border-color: #374151 !important;
+        }
+
+        html.dark #ordenesTrabajoView #ordenes-trabajo-pagination .bg-gray-100 {
+            background-color: #1f2937 !important;
+            color: #6b7280 !important;
+            border-color: #374151 !important;
+        }
+
+        html.dark #ordenesTrabajoView .iconify.text-gray-300,
+        html.dark #ordenesTrabajoView .iconify.text-gray-400 {
+            color: #9ca3af !important;
+        }
+
+        html.dark #modalOrdenCard,
+        html.dark #modalDetalleOrdenCard {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #modalOrdenCard > .bg-gradient-to-r,
+        html.dark #modalDetalleOrdenCard > .bg-gradient-to-r {
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.45), rgba(30, 41, 59, 0.65)) !important;
+            border-bottom: 1px solid #374151 !important;
+        }
+
+        html.dark #modalOrdenCard .bg-white,
+        html.dark #modalDetalleOrdenCard .bg-white {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+        }
+
+        html.dark #modalOrdenCloseBtn,
+        html.dark #modalDetalleOrdenCard button[aria-label="Cerrar modal"] {
+            color: #bfdbfe !important;
+        }
+
+        html.dark #modalOrdenCancelBtn {
+            background-color: #1f2937 !important;
+            border-color: #374151 !important;
+            color: #d1d5db !important;
+        }
+
+        html.dark #modalOrdenCancelBtn:hover {
+            background-color: #374151 !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #detalleOrdenContent .border-t,
+        html.dark #detalleOrdenContent .border-b {
+            border-color: #374151 !important;
+        }
+
+        html.dark #detalleOrdenContent img {
+            border-color: #374151 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #ot-postular-modal .bg-white {
+            background-color: #111827 !important;
+            border: 1px solid #374151 !important;
+            color: #f3f4f6 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #ot-postular-modal .bg-gray-50,
+        html.dark #ot-postular-modal .bg-gray-100 {
+            background-color: #1f2937 !important;
+        }
+
+        html.dark #ot-postular-modal .text-gray-900,
+        html.dark #ot-postular-modal .text-gray-800,
+        html.dark #ot-postular-modal .text-gray-700 {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #ot-postular-modal .text-gray-500,
+        html.dark #ot-postular-modal .text-gray-400 {
+            color: #9ca3af !important;
+        }
+
+        html.dark #ot-postular-modal textarea {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #ot-postular-modal textarea::placeholder {
+            color: #6b7280 !important;
+        }
+
+        html.dark #ot-postular-modal #ot-pdf-label {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+        }
+
+        html.dark #ot-postular-modal #ot-pdf-label:hover {
+            background-color: rgba(20, 83, 45, 0.25) !important;
+            border-color: rgba(74, 222, 128, 0.45) !important;
+        }
+
+        html.dark #ot-postular-modal #ot-postular-cancel {
+            background-color: #1f2937 !important;
+            color: #d1d5db !important;
+            border: 1px solid #374151 !important;
+        }
+
+        html.dark #ot-postular-modal #ot-postular-cancel:hover {
+            background-color: #374151 !important;
+            color: #f3f4f6 !important;
+        }
+
+        /* Modal cancelar orden: sin opacidad de fondo */
+        #ot-cancel-confirm-modal {
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+
+        /* Modal cancelar orden: modo oscuro */
+        html.dark #ot-cancel-confirm-modal .bg-white {
+            background-color: #111827 !important;
+            border: 1px solid #374151 !important;
+            color: #f3f4f6 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #ot-cancel-confirm-modal .bg-orange-100 {
+            background-color: rgba(154, 52, 18, 0.28) !important;
+        }
+
+        html.dark #ot-cancel-confirm-modal .text-orange-500 {
+            color: #fb923c !important;
+        }
+
+        html.dark #ot-cancel-confirm-modal .text-gray-900,
+        html.dark #ot-cancel-confirm-modal .text-gray-800,
+        html.dark #ot-cancel-confirm-modal .text-gray-700 {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #ot-cancel-confirm-modal .text-gray-500,
+        html.dark #ot-cancel-confirm-modal .text-gray-400 {
+            color: #d1d5db !important;
+        }
+
+        html.dark #ot-cancel-confirm-modal #ot-cancel-no {
+            background-color: #1f2937 !important;
+            border: 1px solid #374151 !important;
+            color: #d1d5db !important;
+        }
+
+        html.dark #ot-cancel-confirm-modal #ot-cancel-no:hover {
+            background-color: #374151 !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #ot-cancel-confirm-modal #ot-cancel-yes {
+            background-color: #f97316 !important;
+            color: #ffffff !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #ot-cancel-confirm-modal #ot-cancel-yes:hover {
+            background-color: #ea580c !important;
+        }
+
+        /* Descubrir: modo oscuro para hero, filtros, controles y cards */
+        html.dark body:has(#descubrirView.active) {
+            background-image: none !important;
+            background-color: #111827 !important;
+        }
+
+        html.dark body:has(#descubrirView.active)::before {
+            display: none !important;
+            background-image: none !important;
+        }
+
+        html.dark #descubrirView,
+        html.dark #descubrirView > .w-full {
+            background: #111827 !important;
+            background-image: none !important;
+        }
+
+        html.dark #descubrirView::before,
+        html.dark #descubrirView::after,
+        html.dark #descubrirView > .w-full::before,
+        html.dark #descubrirView > .w-full::after {
+            display: none !important;
+            background-image: none !important;
+        }
+
+        html.dark #descubrirView h1,
+        html.dark #descubrirView h2,
+        html.dark #descubrirView h3,
+        html.dark #descubrirView .text-gray-800,
+        html.dark #descubrirView .text-gray-900,
+        html.dark #descubrirView .text-slate-800,
+        html.dark #descubrirView .text-slate-900 {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #descubrirView p,
+        html.dark #descubrirView label,
+        html.dark #descubrirView .text-gray-600,
+        html.dark #descubrirView .text-gray-700,
+        html.dark #descubrirView .text-slate-600,
+        html.dark #descubrirView .text-slate-700 {
+            color: #d1d5db !important;
+        }
+
+        html.dark #descubrirView .text-gray-500,
+        html.dark #descubrirView .text-gray-400,
+        html.dark #descubrirView .text-gray-300,
+        html.dark #descubrirView .text-slate-500,
+        html.dark #descubrirView .text-slate-400,
+        html.dark #descubrirView .text-slate-300 {
+            color: #9ca3af !important;
+        }
+
+        html.dark #descubrirView .discover-hero-banner {
+            border: 1px solid #374151 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #descubrirView .discover-hero-banner h2,
+        html.dark #descubrirView .discover-hero-banner p {
+            color: #ffffff !important;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.65) !important;
+        }
+
+        html.dark #descubrirView .search-container {
+            background-color: rgba(17, 24, 39, 0.92) !important;
+            border: 1px solid #374151 !important;
+            box-shadow: none !important;
+            backdrop-filter: blur(10px) !important;
+        }
+
+        html.dark #descubrirView #searchInput {
+            background-color: transparent !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #descubrirView #searchInput::placeholder {
+            color: #9ca3af !important;
+        }
+
+        html.dark #descubrirView .search-container svg {
+            color: #9ca3af !important;
+        }
+
+        html.dark #descubrirView .filter-button:not(.filter-active) {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+            color: #d1d5db !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #descubrirView .filter-button:not(.filter-active):hover {
+            background-color: #1f2937 !important;
+            border-color: #4b5563 !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #descubrirView .filter-button.filter-active {
+            background: #2563eb !important;
+            border-color: #3b82f6 !important;
+            color: #ffffff !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #descubrirView #sortSelect,
+        html.dark #descubrirView #perPageSelect {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+            color-scheme: dark !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #descubrirView #sortSelect:focus,
+        html.dark #descubrirView #perPageSelect:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+        }
+
+        html.dark #descubrirView #usersGrid {
+            background: transparent !important;
+            background-image: none !important;
+        }
+
+        html.dark #descubrirView .user-card {
+            background: #111827 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #descubrirView .user-card:hover {
+            border-color: #4b5563 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #descubrirView .user-card-content {
+            background: #111827 !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #descubrirView .user-avatar {
+            background: #1f2937 !important;
+            border-color: #374151 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #descubrirView .user-card .text-gray-800,
+        html.dark #descubrirView .user-card .text-gray-700,
+        html.dark #descubrirView .user-card .font-bold,
+        html.dark #descubrirView .user-card .font-semibold {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #descubrirView .user-card .text-gray-600,
+        html.dark #descubrirView .user-card .text-gray-500 {
+            color: #d1d5db !important;
+        }
+
+        html.dark #descubrirView .user-card .text-gray-400,
+        html.dark #descubrirView .user-card .text-gray-300 {
+            color: #9ca3af !important;
+        }
+
+        html.dark #descubrirView .user-card .text-blue-600 {
+            color: #93c5fd !important;
+        }
+
+        html.dark #descubrirView .user-card .border-gray-200,
+        html.dark #descubrirView .user-card .border-gray-100 {
+            border-color: #374151 !important;
+        }
+
+        html.dark #descubrirView .skill-badge {
+            background: rgba(30, 58, 138, 0.28) !important;
+            border-color: rgba(96, 165, 250, 0.45) !important;
+            color: #bfdbfe !important;
+        }
+
+        html.dark #descubrirView .favorite-btn:not(.active) {
+            background: #1f2937 !important;
+            border-color: #4b5563 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #descubrirView .favorite-btn.active {
+            box-shadow: none !important;
+        }
+
+        html.dark #descubrirView .request-button {
+            box-shadow: none !important;
+        }
+
+        html.dark #descubrirView .user-card button.border-blue-500 {
+            background: #111827 !important;
+            border-color: #3b82f6 !important;
+            color: #93c5fd !important;
+        }
+
+        html.dark #descubrirView .user-card button.border-blue-500:hover {
+            background: rgba(30, 58, 138, 0.35) !important;
+        }
+
+        html.dark #descubrirView #paginationControls .bg-white,
+        html.dark #descubrirView #paginationControls button:not(.bg-blue-600) {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+            color: #d1d5db !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #descubrirView #paginationControls .bg-white:hover,
+        html.dark #descubrirView #paginationControls button:not(.bg-blue-600):hover {
+            background-color: #1f2937 !important;
+            border-color: #4b5563 !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark #descubrirView .skeleton-card {
+            background: #111827 !important;
+            border: 1px solid #374151 !important;
+            box-shadow: none !important;
+            animation: darkSkeletonPulse 1.6s ease-in-out infinite !important;
+        }
+
+        html.dark #descubrirView .skeleton-banner {
+            background: linear-gradient(90deg, #1e3a8a 25%, #2563eb 50%, #1e3a8a 75%) !important;
+            background-size: 200% 100% !important;
+            animation: loading 1.5s infinite !important;
+        }
+
+        html.dark #descubrirView .skeleton-avatar {
+            background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%) !important;
+            background-size: 200% 100% !important;
+            border-color: #111827 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark #descubrirView .skeleton-line,
+        html.dark #descubrirView .skeleton-badge {
+            background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%) !important;
+            background-size: 200% 100% !important;
+            border: 1px solid rgba(75, 85, 99, 0.35) !important;
+        }
+
+        @keyframes darkSkeletonPulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.78;
+            }
+        }
+
+        /* SweetAlert: solicitud de intercambio en modo oscuro */
+        html.dark .swal2-container .swal2-popup,
+        html.dark .swal2-container .swal2-popup.rounded-xl {
+            background-color: #111827 !important;
+            border: 1px solid #374151 !important;
+            color: #f3f4f6 !important;
+            box-shadow: none !important;
+        }
+
+        html.dark .swal2-container .swal2-title {
+            color: #f3f4f6 !important;
+            text-shadow: none !important;
+        }
+
+        html.dark .swal2-container .swal2-html-container {
+            color: #d1d5db !important;
+        }
+
+        html.dark .swal2-container .swal2-html-container p,
+        html.dark .swal2-container .swal2-html-container label {
+            color: #d1d5db !important;
+        }
+
+        html.dark .swal2-container .swal2-html-container div,
+        html.dark .swal2-container .swal2-html-container span {
+            color: #d1d5db !important;
+        }
+
+        html.dark .swal2-container .swal2-html-container strong {
+            color: #93c5fd !important;
+        }
+
+        html.dark .swal2-container #habilidadOfrecida,
+        html.dark .swal2-container #habilidadSolicitada,
+        html.dark .swal2-container #fechaPropuesta,
+        html.dark .swal2-container #horaPropuesta,
+        html.dark .swal2-container #duracionEstimada,
+        html.dark .swal2-container #modalidad,
+        html.dark .swal2-container #mensajeAdicional {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+            color-scheme: dark !important;
+            box-shadow: none !important;
+        }
+
+        html.dark .swal2-container #habilidadOfrecida:focus,
+        html.dark .swal2-container #habilidadSolicitada:focus,
+        html.dark .swal2-container #fechaPropuesta:focus,
+        html.dark .swal2-container #horaPropuesta:focus,
+        html.dark .swal2-container #duracionEstimada:focus,
+        html.dark .swal2-container #modalidad:focus,
+        html.dark .swal2-container #mensajeAdicional:focus {
+            border-color: #3b82f6 !important;
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+        }
+
+        html.dark .swal2-container #duracionEstimada::placeholder,
+        html.dark .swal2-container #mensajeAdicional::placeholder {
+            color: #9ca3af !important;
+        }
+
+        /* SweetAlert: reporte de usuario en modo oscuro */
+        html.dark .swal2-container #swal-motivo,
+        html.dark .swal2-container #swal-descripcion {
+            background-color: #111827 !important;
+            border-color: #374151 !important;
+            color: #f3f4f6 !important;
+            color-scheme: dark !important;
+            box-shadow: none !important;
+        }
+
+        html.dark .swal2-container #swal-motivo:focus,
+        html.dark .swal2-container #swal-descripcion:focus {
+            border-color: #f59e0b !important;
+            outline: none !important;
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25) !important;
+        }
+
+        html.dark .swal2-container #swal-descripcion::placeholder {
+            color: #9ca3af !important;
+        }
+
+        html.dark .swal2-container #swal-charcount {
+            color: #9ca3af !important;
+        }
+
+        html.dark .swal2-container .swal2-validation-message {
+            background-color: rgba(127, 29, 29, 0.35) !important;
+            color: #fecaca !important;
+            border: 1px solid rgba(248, 113, 113, 0.4) !important;
+        }
+
+        html.dark .swal2-container .swal2-confirm {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            box-shadow: none !important;
+        }
+
+        html.dark .swal2-container .swal2-confirm:hover {
+            background-color: #1d4ed8 !important;
+        }
+
+        html.dark .swal2-container .swal2-cancel {
+            background-color: #1f2937 !important;
+            border: 1px solid #374151 !important;
+            color: #d1d5db !important;
+            box-shadow: none !important;
+        }
+
+        html.dark .swal2-container .swal2-cancel:hover {
+            background-color: #374151 !important;
+            color: #f3f4f6 !important;
+        }
+
+        /* Fondo global oscuro estable: evita flash de imagen clara entre vistas */
+        html.dark body {
+            background-image: none !important;
+            background-color: #111827 !important;
+        }
+
+        html.dark body::before {
+            display: none !important;
+            content: none !important;
+            background-image: none !important;
+        }
+
+        html.dark .view-section {
+            background-color: #111827 !important;
+        }
+
+        /* ══════════════════════════════════════════════════════════
+           MODO OSCURO – Modal de Cerrar Sesión y Modales Genéricos
+           ══════════════════════════════════════════════════════════ */
+        html.dark #logoutModal .custom-modal {
+            background: #1f2937 !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+        }
+        
+        html.dark #logoutModal .modal-title {
+            color: #f3f4f6 !important;
+        }
+        
+        html.dark #logoutModal .modal-message {
+            background: rgba(55, 65, 81, 0.5) !important; /* bg-gray-700/50 */
+            color: #d1d5db !important; /* text-gray-300 */
+            border: 1px solid #374151 !important;
+        }
+        
+        html.dark #logoutModal .modal-btn-cancel {
+            background: #374151 !important; /* bg-gray-700 */
+            color: #f3f4f6 !important; /* text-gray-100 */
+            border: 1px solid #4b5563 !important; /* border-gray-600 */
+            box-shadow: none !important;
+        }
+        
+        html.dark #logoutModal .modal-btn-cancel:hover {
+            background: #4b5563 !important; /* hover:bg-gray-600 */
+        }
+        
+        /* Ajuste del ícono de advertencia para modo oscuro */
+        html.dark #logoutModal .modal-icon {
+            background: rgba(253, 224, 71, 0.15) !important; /* yellow-300 muy transparente */
+            color: #fde047 !important; /* yellow-300 */
         }

@@ -343,6 +343,8 @@ router.post('/upload', upload.single('file'), async (req, res) => {
             'image/jpeg','image/png','image/webp','image/gif',
             // Videos
             'video/mp4','video/webm','video/ogg',
+            // Audio (Notas de voz)
+            'audio/webm','audio/ogg','audio/mp4','audio/mpeg','audio/wav',
             // Documentos
             'application/pdf',
             'application/msword',                                                                          // .doc

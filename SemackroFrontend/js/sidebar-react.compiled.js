@@ -109,17 +109,7 @@ function initSidebar() {
       isHovered: showDetails,
       isActive: activeId === conv.id_conversacion,
       onClick: () => window.seleccionarConversacionDashboard?.(conv.id_conversacion)
-    }))), /*#__PURE__*/React.createElement("div", {
-      className: "h-[70px] border-t border-gray-50 p-4 flex items-center shrink-0 bg-slate-50/50"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm"
-    }, "Sc"), /*#__PURE__*/React.createElement("div", {
-      className: `ml-3 truncate transition-all duration-300 ${showDetails ? 'opacity-100' : 'opacity-0 w-0'}`
-    }, /*#__PURE__*/React.createElement("p", {
-      className: "text-xs font-bold text-slate-800"
-    }, "Semackro app"), /*#__PURE__*/React.createElement("p", {
-      className: "text-[10px] text-indigo-600 font-bold uppercase tracking-widest"
-    }, "Premium"))));
+    }))));
   };
   const ConversationItem = ({
     conv,

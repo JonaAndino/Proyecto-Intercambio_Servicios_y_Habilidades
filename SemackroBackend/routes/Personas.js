@@ -10,27 +10,27 @@ router.get('/by-usuario/:usuarioId', async (req, res) => {
         let [rows] = await db.execute(`
             SELECT *, IFNULL(anios_experiencia, 0) AS anios_experiencia 
             FROM Personas WHERE id_Usuario = ?`, [usuarioId]);
-        
+
         if (rows.length === 0) {
             // First check that the user exists in Usuarios
             const [userCheck] = await db.execute('SELECT correo FROM Usuarios WHERE id_usuario = ?', [usuarioId]);
             if (userCheck.length === 0) {
                 return res.status(404).json({ success: false, message: 'No se encontró el usuario' });
             }
-            
+
             // Create a basic Persona record
             const nombreDefault = userCheck[0].correo.split('@')[0];
             await db.execute(
                 'INSERT INTO Personas (id_Usuario, nombre_Persona) VALUES (?, ?)',
                 [usuarioId, nombreDefault]
             );
-            
+
             // Fetch the newly created record
             [rows] = await db.execute(`
                 SELECT *, IFNULL(anios_experiencia, 0) AS anios_experiencia 
                 FROM Personas WHERE id_Usuario = ?`, [usuarioId]);
         }
-        
+
         res.json({ success: true, data: rows[0] });
     } catch (error) {
         console.error('Error en /personas/by-usuario:', error);
@@ -146,16 +146,16 @@ router.get('/', async (req, res) => {
             FROM Personas p
             LEFT JOIN Usuarios u ON p.id_Usuario = u.id_usuario
         `);
-        
+
         res.json({
             success: true,
             count: personas.length,
             data: personas
         });
-        
+
     } catch (error) {
         console.error('Error al obtener todas las personas:', error.message);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             error: 'Error del servidor al obtener las personas'
         });
@@ -248,7 +248,7 @@ router.get('/perfil-usuario/:idPerfil', async (req, res) => {
 // ENDPOINT: Crear una nueva persona (POST /personas)
 // ----------------------------------------------------
 router.post('/', async (req, res) => {
-    const { 
+    const {
         id_Usuario,
         nombre_Persona,
         apellido_Persona,
@@ -266,12 +266,12 @@ router.post('/', async (req, res) => {
         url_Dni,
         anios_experiencia
     } = req.body;
-    
+
     // Validación de campos mínimos
     if (!id_Usuario || !nombre_Persona || !apellido_Persona || !identificacion_Persona) {
-        return res.status(400).json({ 
-            success: false, 
-            message: 'Faltan campos requeridos: id_Usuario, nombre, apellido e identificación' 
+        return res.status(400).json({
+            success: false,
+            message: 'Faltan campos requeridos: id_Usuario, nombre, apellido e identificación'
         });
     }
 
@@ -289,40 +289,40 @@ router.post('/', async (req, res) => {
     try {
         // Llamar al SP de REEMPLAZO (DELETE + INSERT)
         await db.execute(
-             `CALL SP_REEMPLAZAR_PERFIL_PERSONA(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-             [
-                 id_Usuario,
-                 nombre_Persona,
-                 apellido_Persona,
-                 fechaNac_Persona || null, // ✅ CORREGIDO
-                 genero_Persona || null,
-                 estadoCivil_Persona || null,
-                 tipoIdentificacion_Persona || null,
-                 identificacion_Persona,
-                 imagenUrl_Persona || null,
-                 imagen1Url_Persona || null,
-                 imagen2Url_Persona || null,
-                 imagen3Url_Persona || null,
-                 descripcionPerfil_Persona || null,
-                 disponibilidad || null,
-                 url_Dni || null,
-                 anios_experiencia || 0
-             ]
-         );
-        
+            `CALL SP_REEMPLAZAR_PERFIL_PERSONA(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                id_Usuario,
+                nombre_Persona,
+                apellido_Persona,
+                fechaNac_Persona || null, // ✅ CORREGIDO
+                genero_Persona || null,
+                estadoCivil_Persona || null,
+                tipoIdentificacion_Persona || null,
+                identificacion_Persona,
+                imagenUrl_Persona || null,
+                imagen1Url_Persona || null,
+                imagen2Url_Persona || null,
+                imagen3Url_Persona || null,
+                descripcionPerfil_Persona || null,
+                disponibilidad || null,
+                url_Dni || null,
+                anios_experiencia || 0
+            ]
+        );
+
         res.status(201).json({
             success: true,
             message: 'Persona creada/reemplazada exitosamente',
             data: { id_Usuario, nombre_Persona, apellido_Persona }
         });
-        
+
     } catch (error) {
         console.error('Error al crear/reemplazar persona:', error.message);
-        
+
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({ success: false, error: 'Ya existe una persona con esa identificación o el id_Usuario está duplicado (revisar unicidad).' });
         }
-        
+
         res.status(500).json({ success: false, error: 'Error del servidor al crear la persona' });
     }
 });
@@ -345,13 +345,13 @@ router.put('/:id', async (req, res) => {
         'descripcionPerfil_Persona', 'disponibilidad', 'anios_experiencia', 'url_Dni',
         'mascota', 'url_fondo_banner'
     ];
-    
+
     // Validar que mascota sea uno de los valores permitidos
     if ('mascota' in req.body && req.body.mascota !== null) {
         if (!TIPOS_MASCOTAS_VALIDOS.includes(req.body.mascota)) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Tipo de mascota no válido. Los valores permitidos son: CAT, DOG, SLIME, CRAB, FOX, FROG, DINO, GHOST' 
+            return res.status(400).json({
+                success: false,
+                message: 'Tipo de mascota no válido. Los valores permitidos son: CAT, DOG, SLIME, CRAB, FOX, FROG, DINO, GHOST'
             });
         }
     }
@@ -403,42 +403,42 @@ router.put('/:id', async (req, res) => {
 // ----------------------------------------------------
 router.delete('/:id', async (req, res) => {
     const id = parseInt(req.params.id);
-    
+
     if (isNaN(id)) {
         return res.status(400).json({ success: false, message: 'ID no válido' });
     }
-    
+
     try {
         // Ejecutar el DELETE directo para borrar el perfil de la persona
         const [result] = await db.execute(
-            'DELETE FROM Personas WHERE id_Usuario = ?', 
+            'DELETE FROM Personas WHERE id_Usuario = ?',
             [id]
         );
-        
+
         if (result.affectedRows === 0) {
-            return res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Perfil de Persona no encontrado para el ID de Usuario proporcionado.' 
+                message: 'Perfil de Persona no encontrado para el ID de Usuario proporcionado.'
             });
         }
-        
+
         res.json({
             success: true,
             message: `Perfil de Persona asociado al Usuario ${id} eliminado exitosamente`
         });
-        
+
     } catch (error) {
         console.error(`Error al eliminar perfil de persona con ID ${id}:`, error.message);
-        
+
         // Manejar restricciones de clave foránea
         if (error.code === 'ER_ROW_IS_REFERENCED_2') {
-            return res.status(409).json({ 
+            return res.status(409).json({
                 success: false,
                 error: 'No se puede eliminar el perfil porque tiene registros relacionados (habilidades, etc.).'
             });
         }
-        
-        res.status(500).json({ 
+
+        res.status(500).json({
             success: false,
             error: 'Error del servidor al eliminar el perfil.'
         });
@@ -461,21 +461,21 @@ router.get('/categoria/:idCategoria', async (req, res) => {
     try {
         // Llamar al procedimiento almacenado para obtener personas por categoría
         const query = 'CALL sp_Personas_ObtenerPorCategoria(?)';
-        
+
         const [results] = await db.execute(query, [idCategoria]);
-        
+
         // Los procedimientos almacenados devuelven un array de arrays
         const personas = results[0] || [];
-        
+
         res.json({
             success: true,
             count: personas.length,
             data: personas
         });
-        
+
     } catch (error) {
         console.error(`Error al obtener personas por categoría ${idCategoria}:`, error.message);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
             error: 'Error del servidor al filtrar personas por categoría',
             details: error.message
