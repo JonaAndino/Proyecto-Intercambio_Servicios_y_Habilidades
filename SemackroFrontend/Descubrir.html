@@ -552,9 +552,9 @@
 
                 <!-- Lado derecho: Idioma y Notificaciones -->
                 <div class="flex items-center space-x-2">
-                    <!-- Botón Cambio de Tema AnimatedThemeToggler (solo visible para admin) -->
+                    <!-- Botón Cambio de Tema AnimatedThemeToggler -->
                     <button id="themeToggleBtn"
-                        class="hidden relative items-center justify-center w-9 h-9 rounded-full border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 focus:outline-none overflow-hidden group dark:border-slate-600 dark:bg-slate-800"
+                        class="relative items-center justify-center w-9 h-9 rounded-full border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-300 focus:outline-none overflow-hidden group dark:border-slate-600 dark:bg-slate-800"
                         title="Cambiar tema"
                         aria-label="Toggle theme">
                         <!-- Sun rays SVG (modo oscuro → cambiar a claro) -->
@@ -833,19 +833,17 @@
 
                         function initThemeToggler() {
                             try {
-                                const isAdmin = localStorage.getItem('usuarioRolId') === '1';
                                 const themeBtn = document.getElementById('themeToggleBtn');
                                 if (!themeBtn) return;
 
-                                if (isAdmin) {
-                                    themeBtn.classList.remove('hidden');
-                                    themeBtn.classList.add('flex');
+                                themeBtn.classList.remove('hidden');
+                                themeBtn.classList.add('flex');
 
-                                    // Estado inicial de iconos
-                                    const isDark = document.documentElement.classList.contains('dark');
-                                    updateThemeIcons(isDark);
+                                // Estado inicial de iconos
+                                const isDark = document.documentElement.classList.contains('dark');
+                                updateThemeIcons(isDark);
 
-                                    themeBtn.onclick = (event) => {
+                                themeBtn.onclick = (event) => {
                                         const willBeDark = !document.documentElement.classList.contains('dark');
 
                                         // Ver si el navegador soporta View Transitions
@@ -884,10 +882,6 @@
                                         });
 
                                     };
-                                } else {
-                                    themeBtn.classList.add('hidden');
-                                    themeBtn.classList.remove('flex');
-                                }
                             } catch (e) {
                                 console.warn('Error initThemeToggler:', e);
                             }

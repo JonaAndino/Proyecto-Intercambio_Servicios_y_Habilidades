@@ -29,6 +29,11 @@ const SidebarReact = () => {
     const [activeId, setActiveId] = useState(null);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
+    const handleConversationClick = (conv) => {
+        setActiveId(conv.id_conversacion);
+        window.seleccionarConversacionDashboard?.(conv.id_conversacion);
+    };
+
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
@@ -115,7 +120,7 @@ const SidebarReact = () => {
                             conv={conv} 
                             isHovered={showDetails} 
                             isActive={activeId === conv.id_conversacion}
-                            onClick={() => window.seleccionarConversacionDashboard?.(conv.id_conversacion)}
+                            onClick={() => handleConversationClick(conv)}
                         />
                     ))
                 )}
@@ -131,15 +136,9 @@ const ConversationItem = ({ conv, isHovered, isActive, onClick }) => {
 
     // Paleta de colores para grupos (OT:) — distingue cada conversación visualmente
     const GROUP_COLORS = [
-        'bg-violet-500',   // morado
+        'bg-pink-500',   // rosa
         'bg-emerald-500',  // verde
-        'bg-orange-500',   // naranja
-        'bg-pink-500',     // rosa
         'bg-teal-500',     // teal
-        'bg-amber-500',    // ámbar
-        'bg-cyan-600',     // cyan
-        'bg-rose-500',     // rojo rosado
-        'bg-lime-600',     // lima
         'bg-fuchsia-500',  // fucsia
     ];
 
@@ -148,43 +147,50 @@ const ConversationItem = ({ conv, isHovered, isActive, onClick }) => {
     const colorIdx = conv.id_conversacion ? (Number(conv.id_conversacion) % GROUP_COLORS.length) : 0;
     const avatarBgClass = isGroup
         ? GROUP_COLORS[colorIdx]
-        : (isActive ? 'bg-white/20' : 'bg-indigo-500');
+        : 'bg-indigo-500';
 
     return (
         <div 
             onClick={onClick}
-            className={`mx-3 p-2.5 rounded-xl cursor-pointer transition-all duration-200 flex items-center relative group ${isActive ? 'bg-indigo-600 shadow-lg shadow-indigo-200' : 'hover:bg-slate-100'}`}
+            className={`mx-3 p-3 rounded-2xl cursor-pointer transition-all duration-200 flex items-center relative group mb-2 ${isActive ? 'bg-indigo-600' : 'bg-white hover:bg-gray-50'}`}
         >
             {/* Avatar */}
-            <div className="relative shrink-0 w-11 h-11 flex items-center justify-center">
+            <div className="relative shrink-0 w-12 h-12 flex items-center justify-center">
                 {conv.imagenUrl_contacto ? (
-                    <img src={conv.imagenUrl_contacto} className={`w-full h-full rounded-full object-cover border-2 shadow-sm ${isActive ? 'border-indigo-400' : 'border-white'}`} alt={nombre}/>
+                    <img src={conv.imagenUrl_contacto} className="w-full h-full rounded-full object-cover" alt={nombre}/>
                 ) : (
-                    <div className={`w-full h-full rounded-full flex items-center justify-center text-white font-bold shadow-sm ${avatarBgClass}`}>{initials}</div>
-                )}
-                
-                {/* Badge de notificación */}
-                {!isHovered && unread > 0 && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 border-2 border-white rounded-full shadow-md z-10" />
+                    <div className={`w-full h-full rounded-full flex items-center justify-center text-white font-bold ${avatarBgClass}`}>{initials}</div>
                 )}
             </div>
 
             {/* Panel de detalles */}
             <div className={`ml-3 flex-1 min-w-0 transition-all duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>
                 <div className="flex items-center justify-between gap-1">
-                    <p className={`text-sm font-bold truncate ${isActive ? 'text-white' : 'text-slate-800'}`}>{nombre}</p>
-                    {unread > 0 && (
-                        <span className={`text-[10px] font-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center ${isActive ? 'bg-white text-indigo-600' : 'bg-indigo-600 text-white'}`}>{unread}</span>
-                    )}
+                    <p className={`text-sm font-bold truncate ${isActive ? 'text-white' : 'text-gray-800'}`}>{nombre}</p>
                 </div>
-                <p className={`text-[11px] truncate mt-0.5 font-medium ${isActive ? 'text-indigo-100' : 'text-slate-400'}`}>
+                <p className={`text-xs truncate mt-0.5 font-medium ${isActive ? 'text-indigo-100' : 'text-gray-500'}`}>
                     {conv.ultimo_mensaje || "Empieza a chatear..."}
                 </p>
+                {/* STATUS ONLINE */}
+                {!isGroup && (
+                    <p className="text-xs mt-0.5" id={`status-user-${conv.id_contacto}`}>
+                        {conv.en_linea ? (
+                            <span className={`font-semibold flex items-center gap-1 ${isActive ? 'text-green-200' : 'text-green-600'}`}>
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
+                                Activo ahora
+                            </span>
+                        ) : (
+                            <span className={isActive ? 'text-indigo-200' : 'text-gray-400'}>
+                                Últ. vez {window.formatearFechaConexionDashboard ? window.formatearFechaConexionDashboard(conv.ultima_conexion) : 'desconocida'}
+                            </span>
+                        )}
+                    </p>
+                )}
             </div>
             
             {/* Tooltip */}
             {!isHovered && (
-                 <div className="absolute left-full ml-4 px-2 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100] shadow-2xl ring-1 ring-white/10">{nombre}</div>
+                 <div className="absolute left-full ml-4 px-2 py-1 bg-gray-800 text-white text-xs font-semibold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100]">{nombre}</div>
             )}
         </div>
     );
