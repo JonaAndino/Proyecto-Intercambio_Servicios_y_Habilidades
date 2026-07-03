@@ -7448,38 +7448,38 @@ async function finalizarIntercambioDashboard() {
 
   // Modal minimalista profesional (estilo Slack/Linear)
   const modalHtml = `
-                    <div id="finalizarIntercambioModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 10000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.15s ease-out;">
-                        <div style="background: white; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); max-width: 440px; width: 92%; animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);">
+                    <div id="finalizarIntercambioModal" class="fixed inset-0 bg-slate-900/70 z-[10000] flex items-center justify-center animate-fadeIn">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-[440px] w-[92%] animate-scaleIn">
 
                             <!-- Contenido -->
-                            <div style="padding: 24px 24px 20px;">
-                                <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
-                                    <div style="width: 40px; height: 40px; min-width: 40px; background: #fef3c7; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-top: 2px;">
+                            <div class="p-6 pb-5">
+                                <div class="flex items-start gap-3 mb-4">
+                                    <div class="w-10 h-10 min-w-[40px] bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center mt-0.5">
                                         <span class="iconify" data-icon="mdi:alert" style="font-size: 22px; color: #f59e0b;"></span>
                                     </div>
-                                    <div style="flex: 1; padding-top: 2px;">
-                                        <h3 style="margin: 0 0 6px; font-size: 18px; font-weight: 600; color: #0f172a; line-height: 1.3;">
+                                    <div class="flex-1 pt-0.5">
+                                        <h3 class="m-0 mb-1.5 text-lg font-semibold text-slate-900 dark:text-white leading-tight">
                                             Finalizar intercambio
                                         </h3>
-                                        <p style="margin: 0; font-size: 14px; color: #64748b; line-height: 1.5;">
-                                            Estás a punto de finalizar el intercambio con <strong style="color: #334155;">${nombreContacto}</strong>
+                                        <p class="m-0 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                            Estás a punto de finalizar el intercambio con <strong class="text-slate-700 dark:text-slate-300">${nombreContacto}</strong>
                                         </p>
                                     </div>
                                 </div>
 
-                                <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 14px; margin-top: 16px;">
-                                    <p style="margin: 0; font-size: 13px; color: #92400e; line-height: 1.5;">
+                                <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mt-4">
+                                    <p class="m-0 text-xs text-amber-800 dark:text-amber-200 leading-relaxed">
                                         La conversación será eliminada permanentemente
                                     </p>
                                 </div>
                             </div>
 
                             <!-- Footer con botones -->
-                            <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 24px; display: flex; gap: 10px; justify-content: flex-end; border-radius: 0 0 12px 12px;">
-                                <button id="btnCancelarFinalizar" style="padding: 9px 18px; background: white; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 500; font-size: 14px; cursor: pointer; transition: all 0.15s;">
+                            <div class="bg-slate-50 dark:bg-gray-700/50 border-t border-slate-200 dark:border-gray-600 p-4 flex gap-2.5 justify-end rounded-b-xl">
+                                <button id="btnCancelarFinalizar" class="px-4.5 py-2 bg-white dark:bg-gray-700 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-gray-600 rounded-lg font-medium text-sm cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-gray-600 active:scale-95">
                                     Cancelar
                                 </button>
-                                <button id="btnConfirmarFinalizar" style="padding: 9px 18px; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: 500; font-size: 14px; cursor: pointer; transition: all 0.15s; box-shadow: 0 1px 2px rgba(239, 68, 68, 0.2);">
+                                <button id="btnConfirmarFinalizar" class="px-4.5 py-2 bg-red-500 hover:bg-red-600 text-white border-none rounded-lg font-medium text-sm cursor-pointer transition-all shadow-sm shadow-red-500/20 active:scale-95">
                                     Sí, finalizar
                                 </button>
                             </div>
@@ -7488,10 +7488,8 @@ async function finalizarIntercambioDashboard() {
                     <style>
                         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
                         @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-                        #btnCancelarFinalizar:hover { background: #f1f5f9; border-color: #94a3b8; }
-                        #btnConfirmarFinalizar:hover { background: #dc2626; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3); }
-                        #btnCancelarFinalizar:active { transform: scale(0.98); }
-                        #btnConfirmarFinalizar:active { transform: scale(0.98); }
+                        .animate-fadeIn { animation: fadeIn 0.15s ease-out; }
+                        .animate-scaleIn { animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
                     </style>
                 `;
 
