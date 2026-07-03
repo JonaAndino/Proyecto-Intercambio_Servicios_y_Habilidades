@@ -1532,7 +1532,13 @@ function NuevoPerfilUsuario({ perfilId, onVolver, onSolicitar, onReportar }) {
     const handleReportar = () => {
         if (onReportar) {
             const nombreCompleto = persona ? `${persona.nombre_Persona || ''} ${persona.apellido_Persona || ''}`.trim() : '';
-            onReportar(perfilId, nombreCompleto);
+            // Pasar el id_Usuario (account ID) NO el perfilId (id_Perfil_Persona)
+            // reportUser() en descubrir.js espera el id_usuario para hacer el lookup correcto
+            const accountId = persona ? (persona.id_Usuario || persona.id_usuario || persona.idUsuario || null) : null;
+            if (!accountId) {
+                console.warn('[handleReportar] No se encontró id_Usuario en persona, usando perfilId como fallback:', perfilId);
+            }
+            onReportar(accountId || perfilId, nombreCompleto);
         }
     };
 

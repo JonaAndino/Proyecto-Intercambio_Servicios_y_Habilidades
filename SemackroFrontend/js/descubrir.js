@@ -5261,6 +5261,98 @@ let audioChunks = [];
 let recordingInterval = null;
 let recordingSeconds = 0;
 
+// ── Typing Indicator ────────────────────────────────────────────────────────
+// Inicializar socket de mensajería (reutiliza el socket.io ya cargado en el HTML)
+window._mensajeriaSocket = null;
+window._typingTimeout = null; // timeout para ocultar el indicador
+window._stopTypingTimeout = null; // debounce para dejar de emitir typing
+
+function inicializarSocketMensajeria() {
+  if (window._mensajeriaSocket && window._mensajeriaSocket.connected) return;
+  try {
+    const backendUrl = window.APP_CONFIG?.BACKEND_URL || 'http://localhost:3001';
+    window._mensajeriaSocket = io(backendUrl, { transports: ['websocket', 'polling'] });
+
+    window._mensajeriaSocket.on('connect', () => {
+      // Registrar el usuario en su room personal para recibir eventos directos
+      const userId = localStorage.getItem('id_usuario') || localStorage.getItem('usuarioId');
+      if (userId) {
+        window._mensajeriaSocket.emit('register', { userId: String(userId) });
+      }
+    });
+
+    // Escuchar cuando la otra persona empieza a escribir
+    window._mensajeriaSocket.on('typing', (data) => {
+      const conv = window.conversacionActivaDashboard;
+      if (!conv) return;
+      const roomId = `chat_${conv.id_conversacion}`;
+      if (data.roomId !== roomId) return;
+
+      const indicator = document.getElementById('typing-indicator-dashboard');
+      const nameEl = document.getElementById('typing-indicator-name');
+      if (!indicator) return;
+
+      if (nameEl) nameEl.textContent = data.senderName || 'Escribiendo';
+      indicator.classList.remove('hidden');
+
+      // Auto-ocultar después de 3 s si no llega otro evento
+      clearTimeout(window._typingTimeout);
+      window._typingTimeout = setTimeout(() => {
+        indicator.classList.add('hidden');
+      }, 3000);
+    });
+
+    // Escuchar cuando la otra persona deja de escribir
+    window._mensajeriaSocket.on('stop_typing', (data) => {
+      const conv = window.conversacionActivaDashboard;
+      if (!conv) return;
+      const roomId = `chat_${conv.id_conversacion}`;
+      if (data.roomId !== roomId) return;
+
+      const indicator = document.getElementById('typing-indicator-dashboard');
+      if (indicator) indicator.classList.add('hidden');
+      clearTimeout(window._typingTimeout);
+    });
+
+  } catch(e) {
+    console.warn('[TypingIndicator] Error inicializando socket:', e);
+  }
+}
+
+function configurarTypingIndicatorInput() {
+  const input = document.getElementById('message-input-dashboard');
+  if (!input || input._typingListenerAttached) return;
+  input._typingListenerAttached = true;
+
+  input.addEventListener('input', () => {
+    const conv = window.conversacionActivaDashboard;
+    if (!conv || !window._mensajeriaSocket) return;
+
+    const roomId = `chat_${conv.id_conversacion}`;
+    const myName = window.usuarioActualNombre || localStorage.getItem('nombrePersona') || localStorage.getItem('nombre') || 'Usuario';
+    // Obtener el id del otro participante para envío directo
+    const myId = String(localStorage.getItem('id_usuario') || localStorage.getItem('usuarioId') || '');
+    const targetUserId = conv.id_otro_usuario || conv.otro_persona_id || null;
+
+    // Emitir typing
+    window._mensajeriaSocket.emit('typing', {
+      roomId,
+      senderName: myName,
+      targetUserId: targetUserId ? String(targetUserId) : undefined
+    });
+
+    // Debounce: emitir stop_typing si el usuario deja de escribir por 1.5s
+    clearTimeout(window._stopTypingTimeout);
+    window._stopTypingTimeout = setTimeout(() => {
+      window._mensajeriaSocket.emit('stop_typing', {
+        roomId,
+        targetUserId: targetUserId ? String(targetUserId) : undefined
+      });
+    }, 1500);
+  });
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 // Inicializar mensajería cuando se abra la vista de mensajes
 document.addEventListener("DOMContentLoaded", () => {
   // El polling se maneja ahora en navigateTo('mensajes')
@@ -5293,6 +5385,10 @@ document.addEventListener("DOMContentLoaded", () => {
       verPerfilContactoDashboard();
     }
   });
+
+  // Inicializar socket para typing indicator y configurar el input
+  inicializarSocketMensajeria();
+  configurarTypingIndicatorInput();
 });
 
 async function toggleVoiceRecording() {
@@ -5683,6 +5779,15 @@ async function seleccionarConversacionDashboard(idConversacion) {
   mostrarConversacionesDashboard(conversacionesDashboard);
 
   // El polling se maneja globalmente en mensajeriaGlobalInterval
+
+  // Unirse al room de socket para typing indicator y ocultar cualquier indicador anterior
+  if (window._mensajeriaSocket) {
+    const roomId = `chat_${idConversacionNumerico}`;
+    window._mensajeriaSocket.emit('join', roomId);
+  }
+  const indicator = document.getElementById('typing-indicator-dashboard');
+  if (indicator) indicator.classList.add('hidden');
+  clearTimeout(window._typingTimeout);
 }
 
 // Volver a la lista de conversaciones en móvil

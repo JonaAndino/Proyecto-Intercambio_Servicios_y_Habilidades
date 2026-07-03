@@ -2448,11 +2448,16 @@
     </script>
 
     <script>
+        window._modalReportesRows = [];
+        window._modalReportesPage = 1;
+        window._modalReportesPerPage = 5;
+
         // Abrir modal con lista de reportes para un usuario reportado
         async function openReportDetails(reportedUserId) {
             try {
                 const API_BASE = `${window.APP_CONFIG.BACKEND_URL}`;
-                const res = await fetch(`${API_BASE}/api/reportes/user/${reportedUserId}`);
+                // Agregamos un timestamp para evitar cache del navegador
+                const res = await fetch(`${API_BASE}/api/reportes/user/${reportedUserId}?_t=${new Date().getTime()}`);
                 let rows = [];
                 if (res.ok) {
                     const j = await res.json();
@@ -2465,27 +2470,80 @@
                     return;
                 }
 
-                const html = `
-                    <div style="max-height:400px; overflow:auto; text-align:left;">
-                        <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                            <thead><tr><th style="text-align:left; padding:6px;">Fecha</th><th style="text-align:left; padding:6px;">Reportero</th><th style="text-align:left; padding:6px;">Motivo</th><th style="text-align:left; padding:6px;">Descripción</th></tr></thead>
-                            <tbody>
-                            ${rows.map(r => `
-                                <tr style="border-top:1px solid #eee;"><td style="padding:6px; vertical-align:top;">${escapeHtml(new Date(r.fecha_reporte || r.fecha || r.created_at || '').toLocaleString())}</td>
-                                    <td style="padding:6px; vertical-align:top;">${escapeHtml(r.reporter_correo || r.reporter || r.reporter_id || '-')}</td>
-                                    <td style="padding:6px; vertical-align:top;">${escapeHtml(r.motivo_descripcion || r.motivo || '-')}</td>
-                                    <td style="padding:6px; vertical-align:top;">${escapeHtml(r.descripcion || '')}</td></tr>
-                            `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
+                window._modalReportesRows = rows;
+                window._modalReportesPage = 1;
 
-                Swal.fire({ title: 'Reportes del usuario', html, width: 800, confirmButtonText: 'Cerrar' });
+                Swal.fire({ 
+                    title: 'Reportes del usuario', 
+                    html: '<div id="modalReportesContainer"></div>', 
+                    width: 800, 
+                    confirmButtonText: 'Cerrar',
+                    didOpen: () => {
+                        renderModalReportesUI();
+                    }
+                });
             } catch (err) {
                 console.error('openReportDetails error', err);
                 Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los detalles.' });
             }
+        }
+
+        function renderModalReportesUI() {
+            const container = document.getElementById('modalReportesContainer');
+            if (!container) return;
+            
+            const rows = window._modalReportesRows;
+            const perPage = window._modalReportesPerPage;
+            const page = window._modalReportesPage;
+            
+            const totalPages = Math.ceil(rows.length / perPage);
+            const start = (page - 1) * perPage;
+            const end = start + perPage;
+            const currentRows = rows.slice(start, end);
+            
+            let html = `
+                <div style="text-align:left;">
+                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th class="px-4 py-3">Fecha</th>
+                                <th class="px-4 py-3">Reportero</th>
+                                <th class="px-4 py-3">Motivo</th>
+                                <th class="px-4 py-3">Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            currentRows.forEach(r => {
+                html += `
+                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <td class="px-4 py-3 align-top">${escapeHtml(new Date(r.fecha_reporte || r.fecha || r.created_at || '').toLocaleString())}</td>
+                        <td class="px-4 py-3 align-top">${escapeHtml(r.reporter_correo || r.reporter || r.reporter_id || '-')}</td>
+                        <td class="px-4 py-3 align-top">${escapeHtml(r.motivo_descripcion || r.motivo || '-')}</td>
+                        <td class="px-4 py-3 align-top">${escapeHtml(r.descripcion || '')}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            // Controles de Paginación
+            if (totalPages > 1) {
+                html += `
+                    <div class="flex items-center justify-between mt-4 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                        <button onclick="window._modalReportesPage--; renderModalReportesUI()" ${page === 1 ? 'disabled' : ''} class="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:dark:bg-gray-600 disabled:cursor-not-allowed transition">Anterior</button>
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Página ${page} de ${totalPages}</span>
+                        <button onclick="window._modalReportesPage++; renderModalReportesUI()" ${page === totalPages ? 'disabled' : ''} class="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:dark:bg-gray-600 disabled:cursor-not-allowed transition">Siguiente</button>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
         }
     </script>
 
@@ -2650,7 +2708,8 @@
 
             const API_BASE = `${window.APP_CONFIG.BACKEND_URL}`;
             try {
-                const rv = await fetch(API_BASE + '/api/reportes/all');
+                // Agregar cache-busting para que cargue los nuevos reportes al instante
+                const rv = await fetch(API_BASE + '/api/reportes/all?_t=' + new Date().getTime());
                 let reporteList = [];
                 if (rv.ok) {
                     const jrv = await rv.json();
@@ -2693,7 +2752,20 @@
                 });
 
                 todosLosReportes = Object.entries(counts).sort((a, b) => b[1].count - a[1].count).map(([uid, obj]) => ({ ...obj, uid }));
-                paginaActualReportes = 1; // Resetear a la primera página al cargar nuevos datos
+                
+                // Mantener la página actual si es posible
+                if (typeof itemsPorPaginaReportes !== 'undefined') {
+                    const maxPaginas = Math.ceil(todosLosReportes.length / itemsPorPaginaReportes);
+                    if (paginaActualReportes > maxPaginas && maxPaginas > 0) {
+                        paginaActualReportes = maxPaginas;
+                    } else if (paginaActualReportes === 0 && maxPaginas > 0) {
+                        paginaActualReportes = 1;
+                    }
+                } else {
+                    // Fallback
+                    paginaActualReportes = 1; 
+                }
+
                 renderizarTablaReportes();
 
             } catch (e) {

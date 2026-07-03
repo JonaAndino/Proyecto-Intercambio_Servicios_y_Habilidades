@@ -345,6 +345,32 @@ io.on('connection', (socket) => {
         } catch(err) { console.warn('endCall handler error', err); }
     });
 
+    // ── Typing indicators ────────────────────────────────────────────────────
+    // Emitir a todos los demás en la sala (o directamente al destinatario)
+    socket.on('typing', (data) => {
+        try {
+            if (!data || !data.roomId) return;
+            // Si viene targetUserId, enviar directo a ese usuario
+            if (data.targetUserId) {
+                socket.to(`user_${String(data.targetUserId)}`).emit('typing', data);
+            } else {
+                socket.to(data.roomId).emit('typing', data);
+            }
+        } catch (e) { console.warn('typing handler error', e); }
+    });
+
+    socket.on('stop_typing', (data) => {
+        try {
+            if (!data || !data.roomId) return;
+            if (data.targetUserId) {
+                socket.to(`user_${String(data.targetUserId)}`).emit('stop_typing', data);
+            } else {
+                socket.to(data.roomId).emit('stop_typing', data);
+            }
+        } catch (e) { console.warn('stop_typing handler error', e); }
+    });
+    // ─────────────────────────────────────────────────────────────────────────
+
     socket.on('disconnect', () => {
         // console.log('Socket desconectado:', socket.id);
     });
