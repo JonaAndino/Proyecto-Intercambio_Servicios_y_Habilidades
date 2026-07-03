@@ -8117,22 +8117,22 @@ function mostrarModalCalificacionDashboard(
 
         // Modal de éxito minimalista (sustituyendo a Swal)
         const successModalHtml = `
-                                <div id="exitoCalificacionModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 10000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.15s ease-out;">
-                                    <div style="background: white; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); max-width: 400px; width: 90%; text-align: center; overflow: hidden; animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);">
-                                        <div style="padding: 32px 24px;">
-                                            <div style="width: 56px; height: 56px; background: #ecfdf5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                                <div id="exitoCalificacionModal" class="fixed inset-0 bg-slate-900/70 z-[10000] flex items-center justify-center animate-fadeIn">
+                                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-[400px] w-[90%] text-center overflow-hidden animate-scaleIn">
+                                        <div class="p-8">
+                                            <div class="w-14 h-14 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-5">
                                                 <span class="iconify" data-icon="mdi:check-circle" style="font-size: 32px; color: #10b981;"></span>
                                             </div>
-                                            <h3 style="margin: 0 0 8px; font-size: 20px; font-weight: 700; color: #0f172a;">¡Calificación enviada!</h3>
-                                            <p style="margin: 0 0 24px; font-size: 14px; color: #64748b; line-height: 1.5;">
-                                                Gracias por compartir tu experiencia con <strong style="color: #334155;">${nombrePersona}</strong>
+                                            <h3 class="m-0 mb-2 text-xl font-bold text-slate-900 dark:text-white">¡Calificación enviada!</h3>
+                                            <p class="m-0 mb-6 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                                Gracias por compartir tu experiencia con <strong class="text-slate-700 dark:text-slate-300">${nombrePersona}</strong>
                                             </p>
 
-                                            <div style="background: #f8fafc; border-radius: 12px; padding: 16px; margin-bottom: 24px; display: inline-flex; gap: 6px; justify-content: center;">
+                                            <div class="bg-slate-50 dark:bg-gray-700/50 rounded-xl p-4 mb-6 inline-flex gap-1.5 justify-center">
                                                 ${estrellasHTML}
                                             </div>
 
-                                            <button id="btnCerrarExito" style="width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);">
+                                            <button id="btnCerrarExito" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white border-none rounded-lg font-semibold text-sm cursor-pointer transition-all shadow-sm shadow-emerald-500/20 hover:shadow-md hover:shadow-emerald-500/30 hover:-translate-y-0.5">
                                                 Continuar
                                             </button>
                                         </div>
@@ -8141,10 +8141,10 @@ function mostrarModalCalificacionDashboard(
                                 <style>
                                     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
                                     @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-                                    #btnCerrarExito:hover { background: #059669; transform: translateY(-1px); box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3); }
-                                    #btnCerrarExito:active { transform: scale(0.98); }
+                                    .animate-fadeIn { animation: fadeIn 0.15s ease-out; }
+                                    .animate-scaleIn { animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
                                 </style>
-                            `;
+                                `;
 
         const successContainer = document.createElement("div");
         successContainer.innerHTML = successModalHtml;
