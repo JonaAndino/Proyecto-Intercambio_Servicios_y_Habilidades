@@ -63,7 +63,7 @@ function initSidebar() {
     const sidebarStyle = isMobile ? {
       width: '100%'
     } : {
-      width: isHovered ? '280px' : '88Px',
+      width: isHovered ? '280px' : '88px',
       transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
     };
 
@@ -81,7 +81,7 @@ function initSidebar() {
     }, /*#__PURE__*/React.createElement("h2", {
       className: "text-lg font-black text-slate-800 whitespace-nowrap"
     }, typeof t === 'function' ? t('messages.title') : 'Mensajes')), /*#__PURE__*/React.createElement("div", {
-      className: `transition-all duration-300 text-indigo-600 ${showDetails ? 'opacity-0 w-0 absolute' : 'opacity-100'}`
+      className: `transition-all duration-300 text-blue-600 ${showDetails ? 'opacity-0 w-0 absolute' : 'opacity-100'}`
     }, /*#__PURE__*/React.createElement("span", {
       className: "iconify",
       "data-icon": "mdi:chat-processing",
@@ -146,15 +146,15 @@ function initSidebar() {
     // Asignar color basado en el id_conversacion (siempre determinístico)
     const isGroup = nombre.startsWith('OT:') || conv.es_grupo;
     const colorIdx = conv.id_conversacion ? Number(conv.id_conversacion) % GROUP_COLORS.length : 0;
-    const avatarBgClass = isGroup ? GROUP_COLORS[colorIdx] : isActive ? 'bg-white/20' : 'bg-indigo-500';
+    const avatarBgClass = isGroup ? GROUP_COLORS[colorIdx] : isActive ? 'bg-white/20' : 'bg-blue-500';
     return /*#__PURE__*/React.createElement("div", {
       onClick: onClick,
-      className: `mx-3 p-2.5 rounded-xl cursor-pointer transition-all duration-200 flex items-center relative group ${isActive ? 'bg-indigo-600 shadow-lg shadow-indigo-200' : 'hover:bg-slate-100'}`
+      className: `mx-3 my-2 rounded-xl cursor-pointer transition-all duration-200 flex items-center relative group h-14 ${isActive ? 'bg-blue-600' : 'bg-white hover:bg-blue-100'}`
     }, /*#__PURE__*/React.createElement("div", {
       className: "relative shrink-0 w-11 h-11 flex items-center justify-center"
     }, conv.imagenUrl_contacto ? /*#__PURE__*/React.createElement("img", {
       src: conv.imagenUrl_contacto,
-      className: `w-full h-full rounded-full object-cover border-2 shadow-sm ${isActive ? 'border-indigo-400' : 'border-white'}`,
+      className: `w-full h-full rounded-full object-cover border-2 shadow-sm ${isActive ? 'border-blue-400' : 'border-white'}`,
       alt: nombre
     }) : /*#__PURE__*/React.createElement("div", {
       className: `w-full h-full rounded-full flex items-center justify-center text-white font-bold shadow-sm ${avatarBgClass}`
@@ -167,10 +167,19 @@ function initSidebar() {
     }, /*#__PURE__*/React.createElement("p", {
       className: `text-sm font-bold truncate ${isActive ? 'text-white' : 'text-slate-800'}`
     }, nombre), unread > 0 && /*#__PURE__*/React.createElement("span", {
-      className: `text-[10px] font-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center ${isActive ? 'bg-white text-indigo-600' : 'bg-indigo-600 text-white'}`
+      className: `text-[10px] font-black rounded-full px-1.5 py-0.5 min-w-[18px] text-center ${isActive ? 'bg-white text-blue-600' : 'bg-blue-600 text-white'}`
     }, unread)), /*#__PURE__*/React.createElement("p", {
-      className: `text-[11px] truncate mt-0.5 font-medium ${isActive ? 'text-indigo-100' : 'text-slate-400'}`
-    }, conv.ultimo_mensaje || "Empieza a chatear...")), !isHovered && /*#__PURE__*/React.createElement("div", {
+      className: `text-[11px] truncate mt-0.5 font-medium ${isActive ? 'text-blue-100' : 'text-slate-400'}`
+    }, conv.ultimo_mensaje || "Empieza a chatear..."), !isGroup && /*#__PURE__*/React.createElement("p", {
+      className: "text-[10px] mt-0.5",
+      id: `status-user-${conv.id_contacto}`
+    }, conv.en_linea ? /*#__PURE__*/React.createElement("span", {
+      className: "text-emerald-500 font-semibold flex items-center gap-1"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"
+    }), "Activo ahora") : /*#__PURE__*/React.createElement("span", {
+      className: isActive ? 'text-blue-200' : 'text-slate-400'
+    }, "\xDAlt. vez ", window.formatearFechaConexionDashboard ? window.formatearFechaConexionDashboard(conv.ultima_conexion) : 'desconocida'))), !isHovered && /*#__PURE__*/React.createElement("div", {
       className: "absolute left-full ml-4 px-2 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[100] shadow-2xl ring-1 ring-white/10"
     }, nombre));
   };
