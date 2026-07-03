@@ -108,13 +108,13 @@ function initSidebar() {
       placeholder: "Buscar...",
       value: searchTerm,
       onChange: e => setSearchTerm(e.target.value),
-      className: "mt-2 w-full px-2 py-1 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+      className: "mt-2 w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
     }), showDetails && /*#__PURE__*/React.createElement("div", {
       className: "flex gap-1 mt-2"
     }, ['all', 'online', 'unread', 'groups'].map(type => /*#__PURE__*/React.createElement("button", {
       key: type,
       onClick: () => setFilterType(type),
-      className: `flex-1 px-2 py-1 text-[10px] font-bold rounded-lg transition-all ${filterType === type ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
+      className: `flex-1 px-2 py-2 text-xs font-bold rounded-lg transition-all ${filterType === type ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
     }, type === 'all' ? 'Todos' : type === 'online' ? 'En línea' : type === 'unread' ? 'No leídos' : 'Grupos')))), /*#__PURE__*/React.createElement("div", {
       className: `transition-all duration-300 text-blue-600 ${showDetails ? 'opacity-0 w-0 absolute' : 'opacity-100'}`
     }, /*#__PURE__*/React.createElement("span", {
@@ -122,7 +122,7 @@ function initSidebar() {
       "data-icon": "mdi:chat-processing",
       "data-width": "32"
     }))), /*#__PURE__*/React.createElement("div", {
-      className: "flex-1 overflow-y-auto overflow-x-hidden py-4 space-y-1",
+      className: "flex-1 overflow-y-auto overflow-x-hidden py-2 space-y-1",
       style: {
         scrollbarWidth: 'none',
         /* Firefox */
