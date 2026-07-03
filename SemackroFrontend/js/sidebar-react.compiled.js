@@ -29,6 +29,8 @@ function initSidebar() {
     const [isHovered, setIsHovered] = useState(false);
     const [activeId, setActiveId] = useState(null);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('all');
     useEffect(() => {
       const handleResize = () => setIsMobile(window.innerWidth < 768);
       window.addEventListener('resize', handleResize);
@@ -69,18 +71,51 @@ function initSidebar() {
 
     // En móvil mostramos los detalles siempre
     const showDetails = isMobile || isHovered;
+
+    // Filtrar conversaciones
+    const filteredConversations = conversations.filter(conv => {
+      // Filtro por búsqueda de nombre
+      if (searchTerm) {
+        const nombre = (conv.nombre_contacto || '').toLowerCase();
+        if (!nombre.includes(searchTerm.toLowerCase())) return false;
+      }
+
+      // Filtro por tipo
+      if (filterType === 'groups') {
+        const isGroup = conv.nombre_contacto?.startsWith('OT:') || conv.es_grupo;
+        if (!isGroup) return false;
+      } else if (filterType === 'unread') {
+        if (!conv.mensajes_no_leidos || conv.mensajes_no_leidos === 0) return false;
+      } else if (filterType === 'online') {
+        if (!conv.en_linea || conv.en_linea === 0) return false;
+      }
+
+      return true;
+    });
     return /*#__PURE__*/React.createElement("div", {
       className: `h-full bg-white border-r border-gray-100 flex flex-col relative z-50 shadow-md overflow-hidden ${isMobile ? 'w-full' : ''}`,
       style: sidebarStyle,
       onMouseEnter: () => !isMobile && setIsHovered(true),
       onMouseLeave: () => !isMobile && setIsHovered(false)
     }, /*#__PURE__*/React.createElement("div", {
-      className: "h-[80px] border-b border-gray-50 flex items-center justify-center shrink-0 px-4"
+      className: "h-[140px] border-b border-gray-50 flex flex-col justify-center shrink-0 px-4"
     }, /*#__PURE__*/React.createElement("div", {
       className: `transition-all duration-300 ${showDetails ? 'opacity-100' : 'opacity-0 w-0'}`
     }, /*#__PURE__*/React.createElement("h2", {
       className: "text-lg font-black text-slate-800 whitespace-nowrap"
-    }, typeof t === 'function' ? t('messages.title') : 'Mensajes')), /*#__PURE__*/React.createElement("div", {
+    }, typeof t === 'function' ? t('messages.title') : 'Mensajes'), showDetails && /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      placeholder: "Buscar...",
+      value: searchTerm,
+      onChange: e => setSearchTerm(e.target.value),
+      className: "mt-2 w-full px-2 py-1 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+    }), showDetails && /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-1 mt-2"
+    }, ['all', 'online', 'unread', 'groups'].map(type => /*#__PURE__*/React.createElement("button", {
+      key: type,
+      onClick: () => setFilterType(type),
+      className: `flex-1 px-2 py-1 text-[10px] font-bold rounded-lg transition-all ${filterType === type ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
+    }, type === 'all' ? 'Todos' : type === 'online' ? 'En línea' : type === 'unread' ? 'No leídos' : 'Grupos')))), /*#__PURE__*/React.createElement("div", {
       className: `transition-all duration-300 text-blue-600 ${showDetails ? 'opacity-0 w-0 absolute' : 'opacity-100'}`
     }, /*#__PURE__*/React.createElement("span", {
       className: "iconify",
@@ -97,13 +132,13 @@ function initSidebar() {
                     .sidebar-scroll::-webkit-scrollbar {
                         display: none;
                     }
-                `), conversations.length === 0 ? /*#__PURE__*/React.createElement("div", {
+                `), filteredConversations.length === 0 ? /*#__PURE__*/React.createElement("div", {
       className: "p-8 text-center opacity-10"
     }, /*#__PURE__*/React.createElement("span", {
       className: "iconify mx-auto",
       "data-icon": "mdi:chat-outline",
       "data-width": "32"
-    })) : conversations.map(conv => /*#__PURE__*/React.createElement(ConversationItem, {
+    })) : filteredConversations.map(conv => /*#__PURE__*/React.createElement(ConversationItem, {
       key: conv.id_conversacion,
       conv: conv,
       isHovered: showDetails,
