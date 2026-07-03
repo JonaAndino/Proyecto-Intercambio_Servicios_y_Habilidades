@@ -2,18 +2,35 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { enviarCorreoUsuarioRecuperado } = require('../config/email');
+const { verificarCaptcha } = require('../utils/captcha');
 
 // ==========================================
 // RUTA: Solicitar recuperación de correo (Público)
 // POST /api/recuperar-email/solicitar
 // ==========================================
 router.post('/solicitar', async (req, res) => {
-    const { nombre, identidad } = req.body;
+    const { nombre, identidad, hcaptchaToken } = req.body;
 
     if (!nombre || !identidad) {
         return res.status(400).json({ 
             success: false, 
             error: 'El nombre completo y número de identidad son requeridos.' 
+        });
+    }
+
+    if (!hcaptchaToken) {
+        return res.status(400).json({
+            success: false,
+            error: 'Completa la verificación antes de continuar.'
+        });
+    }
+
+    const captchaResult = await verificarCaptcha(hcaptchaToken, req.ip);
+
+    if (!captchaResult.valid) {
+        return res.status(400).json({
+            success: false,
+            error: captchaResult.error
         });
     }
 

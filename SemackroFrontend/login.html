@@ -15,6 +15,7 @@
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='%232563EB' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13 10V3L4 14h7v7l9-11h-7z'/></svg>"
         type="image/svg+xml">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -695,11 +696,128 @@
 
             // Control del modal de "¿Olvidaste tu correo?"
             const forgotEmailBtn = document.getElementById("forgot-email-btn");
+            const recoverEmailGateModal = document.getElementById("recover-email-gate-modal");
             const forgotEmailModal = document.getElementById("forgot-email-modal");
             const closeEmailModalBtn = document.getElementById("close-email-modal-btn");
+            const closeRecoverGateBtn = document.getElementById("close-recover-gate-btn");
             const forgotEmailForm = document.getElementById("forgot-email-form");
             const modalFeedback = document.getElementById("modal-email-feedback");
             const identityError = document.getElementById("recover-identity-error");
+            const recoverCaptchaContainer = document.getElementById("recover-captcha-container");
+            const recoverCaptchaFeedback = document.getElementById("recover-captcha-feedback");
+            const continueRecoverGateBtn = document.getElementById("continue-recover-gate-btn");
+
+            let recoverCaptchaSiteKey = '';
+            let recoverCaptchaWidgetId = null;
+            let recoverCaptchaToken = '';
+            const HCAPTCHA_SITE_KEY = '6c6277da-64b6-425c-a696-95d8b8847502';
+
+            function limpiarFeedbackRecaptcha() {
+                if (!recoverCaptchaFeedback) return;
+                recoverCaptchaFeedback.textContent = '';
+                recoverCaptchaFeedback.classList.add('hidden');
+            }
+
+            function mostrarFeedbackRecaptcha(message) {
+                if (!recoverCaptchaFeedback) return;
+                recoverCaptchaFeedback.textContent = message;
+                recoverCaptchaFeedback.classList.remove('hidden');
+            }
+
+            function limpiarRecaptchaRecuperacion() {
+                recoverCaptchaToken = '';
+                limpiarFeedbackRecaptcha();
+                if (recoverCaptchaWidgetId !== null && window.hcaptcha?.reset) {
+                    try {
+                        window.hcaptcha.reset(recoverCaptchaWidgetId);
+                    } catch (error) {
+                        console.warn('No se pudo reiniciar hCaptcha:', error);
+                    }
+                }
+
+                recoverCaptchaWidgetId = null;
+                if (recoverCaptchaContainer) recoverCaptchaContainer.innerHTML = '';
+                if (continueRecoverGateBtn) continueRecoverGateBtn.disabled = true;
+            }
+
+            async function obtenerSiteKeyCaptchaRecuperacion() {
+                if (recoverCaptchaSiteKey) return recoverCaptchaSiteKey;
+
+                recoverCaptchaSiteKey = HCAPTCHA_SITE_KEY;
+                return recoverCaptchaSiteKey;
+            }
+
+            async function cargarRecaptchaRecuperacion() {
+                if (!recoverEmailGateModal || !recoverCaptchaContainer) return false;
+
+                limpiarRecaptchaRecuperacion();
+
+                if (!recoverCaptchaSiteKey) {
+                    recoverCaptchaSiteKey = await obtenerSiteKeyCaptchaRecuperacion();
+                }
+
+                const siteKey = await obtenerSiteKeyCaptchaRecuperacion();
+
+                if (!window.hcaptcha?.render) {
+                    mostrarFeedbackRecaptcha('El captcha todavía no terminó de cargar. Intenta de nuevo en unos segundos.');
+                    return false;
+                }
+
+                recoverCaptchaWidgetId = window.hcaptcha.render(recoverCaptchaContainer, {
+                    sitekey: siteKey,
+                    callback: (token) => {
+                        recoverCaptchaToken = token;
+                        limpiarFeedbackRecaptcha();
+                        if (continueRecoverGateBtn) continueRecoverGateBtn.disabled = false;
+                    },
+                    'expired-callback': () => {
+                        recoverCaptchaToken = '';
+                        if (continueRecoverGateBtn) continueRecoverGateBtn.disabled = true;
+                    },
+                    'error-callback': () => {
+                        mostrarFeedbackRecaptcha('No se pudo completar la verificación. Vuelve a intentarlo.');
+                    }
+                });
+
+                if (continueRecoverGateBtn) continueRecoverGateBtn.disabled = true;
+                return true;
+            }
+
+            function mostrarModalRecuperacion() {
+                if (!forgotEmailModal) return;
+                forgotEmailModal.classList.remove("hidden");
+                setTimeout(() => {
+                    forgotEmailModal.firstElementChild.classList.remove("scale-95");
+                    forgotEmailModal.firstElementChild.classList.add("scale-100");
+                }, 10);
+            }
+
+            function cerrarModalRecuperacion() {
+                if (!forgotEmailModal) return;
+                forgotEmailModal.firstElementChild.classList.remove("scale-100");
+                forgotEmailModal.firstElementChild.classList.add("scale-95");
+                setTimeout(() => {
+                    forgotEmailModal.classList.add("hidden");
+                }, 150);
+            }
+
+            function abrirGateRecuperacion() {
+                if (!recoverEmailGateModal) return;
+                recoverEmailGateModal.classList.remove("hidden");
+                setTimeout(() => {
+                    recoverEmailGateModal.firstElementChild.classList.remove("scale-95");
+                    recoverEmailGateModal.firstElementChild.classList.add("scale-100");
+                }, 10);
+            }
+
+            function cerrarGateRecuperacion() {
+                if (!recoverEmailGateModal) return;
+                recoverEmailGateModal.firstElementChild.classList.remove("scale-100");
+                recoverEmailGateModal.firstElementChild.classList.add("scale-95");
+                setTimeout(() => {
+                    recoverEmailGateModal.classList.add("hidden");
+                }, 150);
+            }
 
             function validarIdentidadHonduras(numeroIdentidad) {
                 const num = numeroIdentidad.trim();
@@ -745,7 +863,7 @@
             }
 
             if (forgotEmailBtn && forgotEmailModal) {
-                forgotEmailBtn.addEventListener("click", () => {
+                forgotEmailBtn.addEventListener("click", async () => {
                     // Resetear formulario y feedbacks al abrir
                     if (forgotEmailForm) forgotEmailForm.reset();
                     if (modalFeedback) {
@@ -757,24 +875,38 @@
                         identityError.textContent = "";
                     }
 
-                    forgotEmailModal.classList.remove("hidden");
-                    setTimeout(() => {
-                        forgotEmailModal.firstElementChild.classList.remove("scale-95");
-                        forgotEmailModal.firstElementChild.classList.add("scale-100");
-                    }, 10);
+                    abrirGateRecuperacion();
+                    cargarRecaptchaRecuperacion();
                 });
 
-                const closeModal = () => {
-                    forgotEmailModal.firstElementChild.classList.remove("scale-100");
-                    forgotEmailModal.firstElementChild.classList.add("scale-95");
-                    setTimeout(() => {
-                        forgotEmailModal.classList.add("hidden");
-                    }, 150);
-                };
+                const closeModal = cerrarModalRecuperacion;
 
                 closeEmailModalBtn?.addEventListener("click", closeModal);
                 forgotEmailModal.addEventListener("click", (e) => {
                     if (e.target === forgotEmailModal) closeModal();
+                });
+
+                closeRecoverGateBtn?.addEventListener("click", () => {
+                    limpiarRecaptchaRecuperacion();
+                    cerrarGateRecuperacion();
+                });
+
+                recoverEmailGateModal?.addEventListener("click", (e) => {
+                    if (e.target === recoverEmailGateModal) {
+                        limpiarRecaptchaRecuperacion();
+                        cerrarGateRecuperacion();
+                    }
+                });
+
+                continueRecoverGateBtn?.addEventListener('click', () => {
+                    if (!recoverCaptchaToken) {
+                        mostrarFeedbackRecaptcha('Completa la verificación antes de continuar.');
+                        return;
+                    }
+
+                    cerrarGateRecuperacion();
+                    limpiarFeedbackRecaptcha();
+                    mostrarModalRecuperacion();
                 });
 
                 // Auto-formatear identidad solo si son dígitos (DNI); los pasaportes no se tocan
@@ -822,10 +954,16 @@
                     
                     const nombre = document.getElementById("recover-name").value.trim();
                     const identidadRaw = document.getElementById("recover-identity").value.trim();
+                    const hcaptchaToken = recoverCaptchaToken;
                     
                     if (modalFeedback) {
                         modalFeedback.classList.add("hidden");
                         modalFeedback.textContent = "";
+                    }
+
+                    if (!hcaptchaToken) {
+                        mostrarFeedbackRecaptcha('Completa la verificación antes de continuar.');
+                        return;
                     }
 
                     // Validar identidad antes de enviar
@@ -849,7 +987,7 @@
                         const response = await fetch(`${BACKEND_HOST}/api/recuperar-email/solicitar`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ nombre, identidad: identidadRaw })
+                            body: JSON.stringify({ nombre, identidad: identidadRaw, hcaptchaToken })
                         });
 
                         const data = await response.json();
@@ -861,16 +999,23 @@
                             
                             // Resetear formulario
                             forgotEmailForm.reset();
+                            limpiarRecaptchaRecuperacion();
                             
                             // Cerrar modal después de unos segundos
                             setTimeout(closeModal, 3000);
                         } else {
+                            limpiarRecaptchaRecuperacion();
+                            abrirGateRecuperacion();
+                            await cargarRecaptchaRecuperacion();
                             modalFeedback.textContent = "Error: " + (data.error || (currentLanguage === 'es' ? "No se pudo enviar la solicitud." : "Could not send request."));
                             modalFeedback.className = "p-3 text-sm font-medium rounded-lg mb-4 text-center bg-red-100 text-red-700";
                             modalFeedback.classList.remove("hidden");
                         }
                     } catch (err) {
                         console.error("Error al solicitar recuperación de correo:", err);
+                        limpiarRecaptchaRecuperacion();
+                        abrirGateRecuperacion();
+                        await cargarRecaptchaRecuperacion();
                         modalFeedback.textContent = currentLanguage === 'es' ? "Error de conexión al enviar la solicitud." : "Connection error when sending request.";
                         modalFeedback.className = "p-3 text-sm font-medium rounded-lg mb-4 text-center bg-yellow-100 text-yellow-700";
                         modalFeedback.classList.remove("hidden");
@@ -899,6 +1044,9 @@
                 'login.passwordPlaceholder': '••••••••',
                 'login.showPassword': 'Mostrar',
                 'login.hidePassword': 'Ocultar',
+                'login.captchaLabel': 'Verificación anti-bots',
+                'login.captchaPlaceholder': 'Escribe la respuesta',
+                'login.captchaRefresh': 'Cambiar reto',
                 'login.forgotPassword': '¿Olvidaste tu contraseña?',
                 'login.forgotEmail': '¿Olvidaste tu correo?',
                 'login.modalEmailTitle': '¿Olvidaste tu correo?',
@@ -907,6 +1055,9 @@
                 'login.modalEmailNamePlaceholder': 'Juan Pérez',
                 'login.modalEmailIdentityLabel': 'Número de identidad (DNI)',
                 'login.modalEmailIdentityPlaceholder': 'Ej: 0501-1995-12345 o E123456',
+                'login.modalCaptchaLabel': 'Verificación anti-bots',
+                'login.modalCaptchaPlaceholder': 'Escribe la respuesta',
+                'login.modalCaptchaRefresh': 'Cambiar reto',
                 'login.modalSubmit': 'Enviar Solicitud',
                 'login.submit': 'Iniciar sesión',
                 'login.orContinue': 'O continuar con',
@@ -933,6 +1084,9 @@
                 'login.passwordPlaceholder': '••••••••',
                 'login.showPassword': 'Show',
                 'login.hidePassword': 'Hide',
+                'login.captchaLabel': 'Anti-bot verification',
+                'login.captchaPlaceholder': 'Type the answer',
+                'login.captchaRefresh': 'Refresh challenge',
                 'login.forgotPassword': 'Forgot your password?',
                 'login.forgotEmail': 'Forgot your email?',
                 'login.modalEmailTitle': 'Forgot your email?',
@@ -941,6 +1095,9 @@
                 'login.modalEmailNamePlaceholder': 'John Doe',
                 'login.modalEmailIdentityLabel': 'Identity Card Number (DNI)',
                 'login.modalEmailIdentityPlaceholder': 'E.g. 0501-1995-12345 or E123456',
+                'login.modalCaptchaLabel': 'Anti-bot verification',
+                'login.modalCaptchaPlaceholder': 'Type the answer',
+                'login.modalCaptchaRefresh': 'Refresh challenge',
                 'login.modalSubmit': 'Send Request',
                 'login.submit': 'Login',
                 'login.orContinue': 'Or continue with',
@@ -1061,6 +1218,37 @@
 
                     <button type="submit" id="submit-email-modal-btn" class="mt-2 w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-150 active:scale-95 shadow-sm" data-i18n="login.modalSubmit">Enviar Solicitud</button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE VERIFICACIÓN ANTI-BOTS PARA RECUPERACIÓN -->
+    <div id="recover-email-gate-modal" class="fixed inset-0 z-[60] flex items-center justify-center hidden bg-black bg-opacity-50 backdrop-blur-sm transition-all duration-300">
+        <div class="bg-white/95 border border-white/20 rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full mx-4 relative transform scale-95 transition-transform duration-300">
+            <button type="button" id="close-recover-gate-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition duration-150">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-1.657 1.79-3 4-3s4 1.343 4 3-1.79 3-4 3-4-1.343-4-3z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19a8 8 0 0116 0" />
+                    </svg>
+                </div>
+
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Verificación de seguridad</h3>
+                <p class="text-sm text-gray-600 mb-4">Completa el captcha para continuar con la recuperación de correo.</p>
+
+                <div id="recover-captcha-container" class="flex justify-center"></div>
+                <div id="recover-captcha-feedback" class="mt-4 text-sm text-blue-700 hidden"></div>
+
+                <button type="button" id="continue-recover-gate-btn" disabled
+                    class="mt-5 w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition duration-150 active:scale-95 shadow-sm">
+                    Continuar
+                </button>
             </div>
         </div>
     </div>
