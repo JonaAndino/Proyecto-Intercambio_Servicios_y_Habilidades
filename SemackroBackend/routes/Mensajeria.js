@@ -135,6 +135,52 @@ router.get('/conversaciones/:idPersona', async (req, res) => {
             console.warn('Error ajustando preview de conversaciones:', err.message);
         }
 
+        // ── Obtener estado en_linea y ultima_conexion de los contactos ──
+        try {
+            const contactIds = conversaciones.map(c => c.id_contacto).filter(id => id != null);
+            if (contactIds.length > 0) {
+                const [statusRows] = await pool.query(
+                    `SELECT p.id_Perfil_Persona, u.en_linea, u.ultima_conexion 
+                     FROM Personas p 
+                     JOIN Usuarios u ON p.id_Usuario = u.id_usuario 
+                     WHERE p.id_Perfil_Persona IN (?)`,
+                    [contactIds]
+                );
+                
+                console.log('DEBUG: Status rows from DB:', statusRows);
+                
+                // Crear un mapa para búsqueda rápida
+                const statusMap = {};
+                for (const row of statusRows) {
+                    statusMap[row.id_Perfil_Persona] = {
+                        en_linea: row.en_linea,
+                        ultima_conexion: row.ultima_conexion
+                    };
+                }
+                
+                console.log('DEBUG: Status map:', statusMap);
+                
+                // Mezclar con las conversaciones
+                for (const conv of conversaciones) {
+                    if (conv.id_contacto && statusMap[conv.id_contacto]) {
+                        conv.en_linea = statusMap[conv.id_contacto].en_linea;
+                        conv.ultima_conexion = statusMap[conv.id_contacto].ultima_conexion;
+                    } else {
+                        conv.en_linea = 0;
+                        conv.ultima_conexion = null;
+                    }
+                }
+                
+                console.log('DEBUG: Conversaciones after status merge:', conversaciones.map(c => ({
+                    id_contacto: c.id_contacto,
+                    en_linea: c.en_linea,
+                    ultima_conexion: c.ultima_conexion
+                })));
+            }
+        } catch (err) {
+            console.warn('Error obteniendo estado en linea de los contactos:', err.message);
+        }
+
         // ── Agregar conversaciones de GRUPO (mensajería OT) ──────────────────
         try {
             const [grupos] = await pool.query(`
