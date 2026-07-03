@@ -66,7 +66,7 @@ function initSidebar() {
     const sidebarStyle = isMobile ? {
       width: '100%'
     } : {
-      width: isHovered ? '280px' : '88px',
+      width: (isHovered || isInputFocused) ? '280px' : '88px',
       transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
     };
 
@@ -97,7 +97,7 @@ function initSidebar() {
       className: `h-full bg-white border-r border-gray-100 flex flex-col relative z-50 shadow-md overflow-hidden ${isMobile ? 'w-full' : ''}`,
       style: sidebarStyle,
       onMouseEnter: () => !isMobile && setIsHovered(true),
-      onMouseLeave: () => !isMobile && setIsHovered(false)
+      onMouseLeave: () => !isMobile && !isInputFocused && setIsHovered(false)
     }, /*#__PURE__*/React.createElement("div", {
       className: "h-[140px] border-b border-gray-50 flex flex-col justify-center shrink-0 px-4"
     }, /*#__PURE__*/React.createElement("div", {
