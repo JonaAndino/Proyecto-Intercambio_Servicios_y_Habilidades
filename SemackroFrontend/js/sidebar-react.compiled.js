@@ -187,7 +187,7 @@ function initSidebar() {
     const avatarBgClass = isGroup ? GROUP_COLORS[colorIdx] : isActive ? 'bg-white/20' : 'bg-blue-500';
     return /*#__PURE__*/React.createElement("div", {
       onClick: onClick,
-      className: `mx-3 my-2 rounded-xl cursor-pointer transition-all duration-200 flex items-center relative group h-14 ${isActive ? 'bg-blue-600' : 'bg-white hover:bg-blue-100 dark:bg-gray-700 dark:hover:bg-gray-600'}`
+      className: `mx-3 my-2 rounded-xl cursor-pointer transition-all duration-200 flex items-center relative group h-14 ${isActive ? 'bg-blue-600' : 'bg-white hover:bg-blue-100 dark:bg-gray-700 dark:group-hover:bg-gray-600'}`
     }, /*#__PURE__*/React.createElement("div", {
       className: "relative shrink-0 w-11 h-11 flex items-center justify-center"
     }, conv.imagenUrl_contacto ? /*#__PURE__*/React.createElement("img", {
