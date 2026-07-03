@@ -94,16 +94,16 @@ function initSidebar() {
       return true;
     });
     return /*#__PURE__*/React.createElement("div", {
-      className: `h-full bg-white border-r border-gray-100 flex flex-col relative z-50 shadow-md overflow-hidden ${isMobile ? 'w-full' : ''}`,
+      className: `h-full bg-white border-r border-gray-100 flex flex-col relative z-50 shadow-md overflow-hidden dark:bg-gray-800 dark:border-gray-700 ${isMobile ? 'w-full' : ''}`,
       style: sidebarStyle,
       onMouseEnter: () => !isMobile && setIsHovered(true),
       onMouseLeave: () => !isMobile && !isInputFocused && setIsHovered(false)
     }, /*#__PURE__*/React.createElement("div", {
-      className: "h-[140px] border-b border-gray-50 flex flex-col justify-center shrink-0 px-4"
+      className: "h-[140px] border-b border-gray-50 flex flex-col justify-center shrink-0 px-4 dark:border-gray-700"
     }, /*#__PURE__*/React.createElement("div", {
       className: `transition-all duration-300 ${showDetails ? 'opacity-100' : 'opacity-0 w-0'}`
     }, /*#__PURE__*/React.createElement("h2", {
-      className: "text-lg font-black text-slate-800 whitespace-nowrap"
+      className: "text-lg font-black text-slate-800 dark:text-white whitespace-nowrap"
     }, typeof t === 'function' ? t('messages.title') : 'Mensajes'), showDetails && /*#__PURE__*/React.createElement("input", {
       type: "text",
       placeholder: "Buscar...",
@@ -111,13 +111,13 @@ function initSidebar() {
       onChange: e => setSearchTerm(e.target.value),
       onFocus: () => setIsInputFocused(true),
       onBlur: () => setIsInputFocused(false),
-      className: "mt-2 w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+      className: "mt-2 w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
     }), showDetails && /*#__PURE__*/React.createElement("div", {
       className: "flex gap-1 mt-2"
     }, ['all', 'online', 'unread', 'groups'].map(type => /*#__PURE__*/React.createElement("button", {
       key: type,
       onClick: () => setFilterType(type),
-      className: `flex-1 px-2 py-2 text-xs font-bold rounded-lg transition-all ${filterType === type ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
+      className: `flex-1 px-2 py-2 text-xs font-bold rounded-lg transition-all ${filterType === type ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`
     }, type === 'all' ? 'Todos' : type === 'online' ? 'En línea' : type === 'unread' ? 'No leídos' : 'Grupos')))), /*#__PURE__*/React.createElement("div", {
       className: `transition-all duration-300 text-blue-600 ${showDetails ? 'opacity-0 w-0 absolute' : 'opacity-100'}`
     }, /*#__PURE__*/React.createElement("span", {
