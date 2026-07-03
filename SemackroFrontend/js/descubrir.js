@@ -21,6 +21,56 @@ let cleanupMobileChatViewportHandlers = null;
 let chatMessagesAbortController = null;
 let chatMessagesRequestNonce = 0;
 
+// Helper para formatear la fecha de última conexión
+window.formatearFechaConexionDashboard = function(fechaStr) {
+    if (!fechaStr) return 'desconocida';
+    
+    let date;
+    
+    // Si es un objeto Date ya
+    if (fechaStr instanceof Date) {
+        date = fechaStr;
+    } else if (typeof fechaStr === 'string') {
+        // Si es un string sin 'T' (como "2026-07-02 09:47:00")
+        if (!fechaStr.includes('T')) {
+            const parts = fechaStr.split(/[- :]/);
+            date = new Date(
+                parseInt(parts[0], 10),  // año
+                parseInt(parts[1], 10) - 1,  // mes (0-index)
+                parseInt(parts[2], 10),  // día
+                parseInt(parts[3] || 0, 10),  // hora
+                parseInt(parts[4] || 0, 10),  // minutos
+                parseInt(parts[5] || 0, 10)   // segundos
+            );
+        } else {
+            // Si tiene 'T', usar Date normalmente
+            date = new Date(fechaStr);
+        }
+    } else {
+        // Si es un número (timestamp), convertir
+        date = new Date(fechaStr);
+    }
+    
+    const now = new Date();
+    const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    
+    // Convertir a formato 12 horas
+    let hours = date.getHours();
+    const ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // la hora 0 se convierte en 12
+    const hoursStr = hours.toString().padStart(2, '0');
+    const mins = date.getMinutes().toString().padStart(2, '0');
+    
+    if (isToday) {
+        return `hoy a las ${hoursStr}:${mins} ${ampm}`;
+    } else {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        return `el ${day}/${month} a las ${hoursStr}:${mins} ${ampm}`;
+    }
+};
+
 function syncAppHeaderHeight() {
   const header = document.querySelector("#mainContent > header");
   document.documentElement.style.setProperty("--app-vh", `${window.innerHeight}px`);
@@ -5292,7 +5342,7 @@ function inicializarSocketMensajeria() {
       const nameEl = document.getElementById('typing-indicator-name');
       if (!indicator) return;
 
-      if (nameEl) nameEl.textContent = data.senderName || 'Escribiendo';
+      if (nameEl) nameEl.textContent = data.senderName || 'escribiendo...';
       indicator.classList.remove('hidden');
 
       // Auto-ocultar después de 3 s si no llega otro evento
@@ -5312,6 +5362,21 @@ function inicializarSocketMensajeria() {
       const indicator = document.getElementById('typing-indicator-dashboard');
       if (indicator) indicator.classList.add('hidden');
       clearTimeout(window._typingTimeout);
+    });
+
+    // Escuchar cambios de estado online/offline
+    window._mensajeriaSocket.on('user_status', (data) => {
+        if (data && data.id_usuario) {
+            const statusEl = document.getElementById('status-user-' + data.id_usuario);
+            if (statusEl) {
+                if (data.en_linea) {
+                    statusEl.innerHTML = '<span class="text-green-500 font-semibold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>Activo ahora</span>';
+                } else {
+                    const dateStr = data.ultima_conexion ? window.formatearFechaConexionDashboard(data.ultima_conexion) : 'desconocida';
+                    statusEl.innerHTML = '<span class="text-gray-400">Últ. vez ' + dateStr + '</span>';
+                }
+            }
+        }
     });
 
   } catch(e) {
@@ -5679,6 +5744,13 @@ function mostrarConversacionesDashboard(conversaciones) {
                             <p class="text-xs ${isActive ? "text-indigo-600" : "text-gray-500"} truncate font-medium">
                                 ${conv.ultimo_mensaje || "Sin mensajes aún"}
                             </p>
+                            ${!esGrupo ? `
+                            <p class="text-[10px] mt-0.5" id="status-user-${conv.id_contacto}">
+                                ${conv.en_linea 
+                                    ? '<span class="text-green-500 font-semibold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>Activo ahora</span>' 
+                                    : `<span class="text-gray-400">Últ. vez ${window.formatearFechaConexionDashboard(conv.ultima_conexion)}</span>`}
+                            </p>
+                            ` : ''}
                         </div>
                         ${mensajesNoLeidos > 0
           ? `
