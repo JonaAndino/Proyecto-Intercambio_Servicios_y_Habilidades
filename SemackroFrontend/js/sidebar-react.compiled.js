@@ -31,6 +31,7 @@ function initSidebar() {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('all');
+    const [isInputFocused, setIsInputFocused] = useState(false);
     useEffect(() => {
       const handleResize = () => setIsMobile(window.innerWidth < 768);
       window.addEventListener('resize', handleResize);
@@ -70,7 +71,7 @@ function initSidebar() {
     };
 
     // En móvil mostramos los detalles siempre
-    const showDetails = isMobile || isHovered;
+    const showDetails = isMobile || isHovered || isInputFocused;
 
     // Filtrar conversaciones
     const filteredConversations = conversations.filter(conv => {
@@ -108,6 +109,8 @@ function initSidebar() {
       placeholder: "Buscar...",
       value: searchTerm,
       onChange: e => setSearchTerm(e.target.value),
+      onFocus: () => setIsInputFocused(true),
+      onBlur: () => setIsInputFocused(false),
       className: "mt-2 w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
     }), showDetails && /*#__PURE__*/React.createElement("div", {
       className: "flex gap-1 mt-2"
