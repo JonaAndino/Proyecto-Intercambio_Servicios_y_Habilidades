@@ -199,6 +199,17 @@ const { Server } = require('socket.io');
 // Importar el pool de conexiones (pool.promise() desde db.js)
 const pool = require('./db');
 
+function formatLocalDateTime(date) {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 const server = http.createServer(app);
 
 // Configuración básica de CORS para Socket.io (ajusta orígenes en producción)
@@ -212,6 +223,9 @@ const io = new Server(server, {
 // Registrar la instancia de io en el singleton para que las rutas puedan usarla
 require('./socketInstance').setIo(io);
 
+// Track user connections
+const userSockets = new Map(); // Map<userId, Set<socketId>>
+
 io.on('connection', (socket) => {
     console.log('Socket conectado:', socket.id);
     // map userId -> socket.id
@@ -224,7 +238,7 @@ io.on('connection', (socket) => {
     });
 
     // Registrar un userId asociado a este socket (opcional pero recomendado)
-    socket.on('register', (payload) => {
+    socket.on('register', async (payload) => {
         try{
             const uid = (payload && payload.userId) ? String(payload.userId) : null;
             if(uid){
@@ -232,6 +246,22 @@ io.on('connection', (socket) => {
                 // almacenar en un room privado por userId para facilitar targeting
                 try{ socket.join(`user_${uid}`); }catch(e){}
                 console.log('Registered socket', socket.id, 'for user', uid);
+                
+                // Actualizar tracking en memoria y DB
+                if (!userSockets.has(uid)) {
+                    userSockets.set(uid, new Set());
+                    // Es la primera conexión de este usuario, actualizar DB a en_linea = 1
+                    try {
+                        const nowLocal = new Date();
+                        const formattedNow = formatLocalDateTime(nowLocal);
+                        await pool.query('UPDATE Usuarios SET en_linea = 1, ultima_conexion = ? WHERE id_usuario = ?', [formattedNow, uid]);
+                        // Avisar a todos que el usuario se conectó
+                        io.emit('user_status', { id_usuario: uid, en_linea: 1, ultima_conexion: formattedNow });
+                    } catch (dbErr) {
+                        console.error('Error al marcar en_linea en DB:', dbErr);
+                    }
+                }
+                userSockets.get(uid).add(socket.id);
             }
         }catch(e){ console.warn('register payload error', e); }
     });
@@ -371,8 +401,29 @@ io.on('connection', (socket) => {
     });
     // ─────────────────────────────────────────────────────────────────────────
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
         // console.log('Socket desconectado:', socket.id);
+        const uid = socket.data.userId;
+        if (uid && userSockets.has(uid)) {
+            const sockets = userSockets.get(uid);
+            sockets.delete(socket.id);
+            if (sockets.size === 0) {
+                userSockets.delete(uid);
+                // Es la última conexión, marcar como desconectado
+                try {
+                    const nowLocal = new Date();
+                    const formattedNow = formatLocalDateTime(nowLocal);
+                    await pool.query('UPDATE Usuarios SET en_linea = 0, ultima_conexion = ? WHERE id_usuario = ?', [formattedNow, uid]);
+                    // Obtener la última hora insertada (aprox NOW()) para mandarla
+                    const [rows] = await pool.query('SELECT ultima_conexion FROM Usuarios WHERE id_usuario = ?', [uid]);
+                    const ultima_conexion = (rows && rows[0] && rows[0].ultima_conexion) ? rows[0].ultima_conexion : new Date().toISOString();
+                    
+                    io.emit('user_status', { id_usuario: uid, en_linea: 0, ultima_conexion });
+                } catch (dbErr) {
+                    console.error('Error al marcar offline en DB:', dbErr);
+                }
+            }
+        }
     });
 });
 
