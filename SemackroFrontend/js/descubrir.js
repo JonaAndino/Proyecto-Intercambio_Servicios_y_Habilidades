@@ -5342,7 +5342,7 @@ function inicializarSocketMensajeria() {
       const nameEl = document.getElementById('typing-indicator-name');
       if (!indicator) return;
 
-      if (nameEl) nameEl.textContent = data.senderName || 'escribiendo...';
+      if (nameEl) nameEl.textContent = 'escribiendo...';
       indicator.classList.remove('hidden');
 
       // Auto-ocultar después de 3 s si no llega otro evento
