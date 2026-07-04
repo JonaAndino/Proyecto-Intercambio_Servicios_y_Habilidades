@@ -30,9 +30,19 @@ const PUBLIC_URL = process.env.R2_PUBLIC_URL;
  */
 async function uploadToR2(fileBuffer, fileName, contentType) {
     try {
+        console.log('DEBUG: uploadToR2 called with:', {
+            fileName,
+            contentType,
+            bufferSize: fileBuffer.length,
+            bucketName: BUCKET_NAME,
+            publicUrlBase: PUBLIC_URL,
+            endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
+        });
+
         // Generar nombre único con timestamp
         const timestamp = Date.now();
         const uniqueFileName = `${timestamp}-${fileName}`;
+        console.log('DEBUG: Generated unique filename:', uniqueFileName);
 
         // Comando para subir el archivo
         const command = new PutObjectCommand({
@@ -42,16 +52,25 @@ async function uploadToR2(fileBuffer, fileName, contentType) {
             ContentType: contentType,
         });
 
+        console.log('DEBUG: Sending PutObjectCommand to R2...');
         // Subir a R2
-        await r2Client.send(command);
+        const uploadResult = await r2Client.send(command);
+        console.log('DEBUG: Upload result from R2:', uploadResult);
 
         // Construir URL pública
         const publicUrl = `${PUBLIC_URL}/${uniqueFileName}`;
+        console.log('DEBUG: Returning public URL:', publicUrl);
 
         return publicUrl;
 
     } catch (error) {
-        console.error('Error al subir archivo a R2:', error);
+        console.error('Error al subir archivo a R2:', {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+            code: error.code,
+            $metadata: error.$metadata
+        });
         throw error;
     }
 }

@@ -382,7 +382,39 @@ router.get('/conversacion/:idConversacion/mensajes', async (req, res) => {
 // =========================================================
 router.post('/upload', upload.single('file'), async (req, res) => {
     try {
-        if (!req.file) return res.status(400).json({ success: false, message: 'No se recibió archivo' });
+        // Verificar variables de entorno de R2
+        const r2Vars = {
+            R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
+            R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID || process.env.R2_ACCESS_KEY,
+            R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY || process.env.R2_SECRET_KEY,
+            R2_BUCKET_NAME: process.env.R2_BUCKET_NAME,
+            R2_PUBLIC_URL: process.env.R2_PUBLIC_URL
+        };
+        console.log('DEBUG: R2 environment vars check:', {
+            hasAccountId: !!r2Vars.R2_ACCOUNT_ID,
+            hasAccessKey: !!r2Vars.R2_ACCESS_KEY_ID,
+            hasSecretKey: !!r2Vars.R2_SECRET_ACCESS_KEY,
+            hasBucketName: !!r2Vars.R2_BUCKET_NAME,
+            hasPublicUrl: !!r2Vars.R2_PUBLIC_URL
+        });
+
+        if (!r2Vars.R2_ACCOUNT_ID || !r2Vars.R2_ACCESS_KEY_ID || !r2Vars.R2_SECRET_ACCESS_KEY || !r2Vars.R2_BUCKET_NAME || !r2Vars.R2_PUBLIC_URL) {
+            console.error('Faltan variables de entorno de Cloudflare R2');
+            return res.status(500).json({ success: false, message: 'Configuración de Cloudflare R2 incompleta' });
+        }
+
+        if (!req.file) {
+            console.error('No se recibió archivo en la solicitud');
+            return res.status(400).json({ success: false, message: 'No se recibió archivo' });
+        }
+
+        console.log('DEBUG: Archivo recibido:', {
+            fieldname: req.file.fieldname,
+            originalname: req.file.originalname,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+            encoding: req.file.encoding
+        });
 
         const allowed = [
             // Imágenes
@@ -401,16 +433,22 @@ router.post('/upload', upload.single('file'), async (req, res) => {
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',                          // .xlsx
         ];
         if (!allowed.includes(req.file.mimetype)) {
+            console.error('Tipo de archivo no permitido:', req.file.mimetype);
             return res.status(400).json({ success: false, message: `Tipo de archivo no permitido: ${req.file.mimetype}` });
         }
 
         const isVideo = req.file.mimetype.startsWith('video/');
         const isDoc   = !req.file.mimetype.startsWith('image/') && !isVideo;
         const maxBytes = isVideo ? 50 * 1024 * 1024 : isDoc ? 20 * 1024 * 1024 : 10 * 1024 * 1024;
-        if (req.file.size > maxBytes) return res.status(413).json({ success: false, message: 'Archivo demasiado grande' });
+        if (req.file.size > maxBytes) {
+            console.error('Archivo demasiado grande:', req.file.size, 'bytes (max:', maxBytes, 'bytes)');
+            return res.status(413).json({ success: false, message: 'Archivo demasiado grande' });
+        }
 
         // Subir a R2
+        console.log('DEBUG: Iniciando subida a R2...');
         const publicUrl = await uploadToR2(req.file.buffer, req.file.originalname, req.file.mimetype);
+        console.log('DEBUG: Subida exitosa, URL:', publicUrl);
 
         return res.json({
             success: true,
@@ -421,7 +459,12 @@ router.post('/upload', upload.single('file'), async (req, res) => {
         });
 
     } catch (err) {
-        console.error('Error al subir archivo:', err);
+        console.error('Error al subir archivo:', {
+            message: err.message,
+            stack: err.stack,
+            code: err.code,
+            name: err.name
+        });
         return res.status(500).json({ success: false, message: 'Error al subir archivo', error: err.message });
     }
 });
