@@ -20,7 +20,8 @@ INSERT IGNORE INTO Permisos (id_permiso, clave_permiso, nombre_permiso) VALUES
 (6, 'VER_DIRECTORIO', 'Ver listado y tabla del directorio general'),
 (7, 'CREAR_CUENTAS', 'Crear y enrolar nuevas cuentas de usuario'),
 (8, 'EDITAR_USUARIOS', 'Editar perfiles y datos de usuarios'),
-(9, 'ASIGNAR_ROLES_PERMISOS', 'Asignar roles y dar permisos a los usuarios');
+(9, 'ASIGNAR_ROLES_PERMISOS', 'Asignar roles y dar permisos a los usuarios'),
+(10, 'VER_SOLICITUDES_VERIFICACION', 'Cola de validadores para identidad y certificaciones');
 
 -- 3. Tabla de Relación de Roles y Permisos (Muchos a Muchos)
 CREATE TABLE IF NOT EXISTS Roles_Permisos (

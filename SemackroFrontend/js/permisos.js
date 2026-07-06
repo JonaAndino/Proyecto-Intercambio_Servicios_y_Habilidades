@@ -93,7 +93,8 @@ window.Permisos = {
         return permisos.includes('VER_METRICAS')
             || permisos.includes('MODERAR_USUARIOS')
             || permisos.includes('GESTIONAR_CONFIGURACION')
-            || permisos.includes('VER_DIRECTORIO');
+            || permisos.includes('VER_DIRECTORIO')
+            || permisos.includes('VER_SOLICITUDES_VERIFICACION');
     },
 
     /** ¿Puede crear nuevas cuentas de usuario? */
@@ -115,5 +116,12 @@ window.Permisos = {
         const permisos = this._obtenerPermisos();
         if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
         return permisos.includes('ASIGNAR_ROLES_PERMISOS');
+    },
+
+    /** ¿Puede ver solicitudes de verificación (cola de identidad y certificaciones)? */
+    puedeVerSolicitudesVerificacion() {
+        const permisos = this._obtenerPermisos();
+        if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
+        return permisos.includes('VER_SOLICITUDES_VERIFICACION');
     }
 };
