@@ -94,5 +94,26 @@ window.Permisos = {
             || permisos.includes('MODERAR_USUARIOS')
             || permisos.includes('GESTIONAR_CONFIGURACION')
             || permisos.includes('VER_DIRECTORIO');
+    },
+
+    /** ¿Puede crear nuevas cuentas de usuario? */
+    puedeCrearCuentas() {
+        const permisos = this._obtenerPermisos();
+        if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
+        return permisos.includes('CREAR_CUENTAS');
+    },
+
+    /** ¿Puede editar perfiles de usuarios? */
+    puedeEditarUsuarios() {
+        const permisos = this._obtenerPermisos();
+        if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
+        return permisos.includes('EDITAR_USUARIOS');
+    },
+
+    /** ¿Puede asignar roles o cambiar permisos de usuarios? */
+    puedeAsignarRolesPermisos() {
+        const permisos = this._obtenerPermisos();
+        if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
+        return permisos.includes('ASIGNAR_ROLES_PERMISOS');
     }
 };

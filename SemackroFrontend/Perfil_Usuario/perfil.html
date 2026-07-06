@@ -2971,6 +2971,7 @@
         let requiredSkills = [];
         let categorias = [];
         let galeriaImagenes = [];
+        let limiteImagenesPermitidas = 3;
         let geolocalizacion = {
             latitud: 14.0650,
             longitud: -87.1715,
@@ -3819,8 +3820,25 @@
                 return;
             }
 
-            // Cargar datos y luego iniciar tour de primer ingreso
-            cargarUsuario().finally(() => {
+            async function cargarLimiteImagenes() {
+                try {
+                    const res = await fetch(`${API_BASE}/configuraciones`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.success && data.data && data.data.limite_imagenes_galeria) {
+                            limiteImagenesPermitidas = parseInt(data.data.limite_imagenes_galeria.valor, 10) || 3;
+                            console.log('Límite de imágenes cargado:', limiteImagenesPermitidas);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Error al cargar límite de imágenes:', e);
+                }
+            }
+
+            // Cargar límite, luego datos y luego iniciar tour de primer ingreso
+            cargarLimiteImagenes().then(() => {
+                return cargarUsuario();
+            }).finally(() => {
                 startProfileTourIfNeeded({ readOnlyMode });
             });
 
@@ -6385,6 +6403,7 @@
             });
 
             // Agregar placeholder de subida si hay espacio disponible
+            if (galeriaImagenes.length < limiteImagenesPermitidas) {
             if (galeriaImagenes.length < 3) {
                 const uploadItem = document.createElement('div');
                 uploadItem.className = 'gallery-item gallery-upload';
@@ -6406,7 +6425,7 @@
 
         async function handleGalleryImageUpload(event) {
             const file = event.target.files[0];
-            if (file && galeriaImagenes.length < 3) {
+            if (file && galeriaImagenes.length < limiteImagenesPermitidas) {
                 try {
                     setGuardando(true);
 
@@ -6600,7 +6619,7 @@
                 }
 
                 // Normalizar: mantener solo objetos con url y hasta 3 elementos
-                galeriaImagenes = galeriaImagenes.filter(img => img && img.url).slice(0, 3);
+                galeriaImagenes = galeriaImagenes.filter(img => img && img.url).slice(0, limiteImagenesPermitidas);
 
                 // Guardar los cambios en la base de datos y refrescar UI
                 await guardarImagenesGaleria();

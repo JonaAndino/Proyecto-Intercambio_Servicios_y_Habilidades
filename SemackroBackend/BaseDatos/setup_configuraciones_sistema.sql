@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS Modalidades_Intercambio (
 INSERT IGNORE INTO Configuraciones_Sistema (clave, valor, tipo, descripcion) VALUES 
 ('jwt_reset_password_duration', '3600', 'number', 'Duración en segundos del token JWT para restablecer contraseña'),
 ('driver_perfil_activado', '1', 'boolean', 'Activar/desactivar el driver en el perfil de usuario'),
-('driver_descubrir_activado', '1', 'boolean', 'Activar/desactivar el driver en la página de descubrir');
+('driver_descubrir_activado', '1', 'boolean', 'Activar/desactivar el driver en la página de descubrir'),
+('limite_imagenes_galeria', '3', 'number', 'Límite de imágenes que se pueden ver y subir en el perfil de usuario');
 
 INSERT IGNORE INTO Modalidades_Intercambio (nombre, activo) VALUES 
 ('Virtual', 1),
