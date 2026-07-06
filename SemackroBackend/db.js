@@ -23,7 +23,7 @@ const poolConfig = {
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
-    enableKeepAlive: true,
+    enableKeepAlive: false,
     keepAliveInitialDelay: 0
 };
 

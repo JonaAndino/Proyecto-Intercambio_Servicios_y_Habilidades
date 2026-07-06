@@ -37,7 +37,8 @@ router.get('/google/callback',
       if (user.activo === 0) {
         console.log('⚠️ Intento de acceso denegado para usuario de Google restringido:', user.correo);
         const frontendUrl = process.env.FRONTEND_URL || 'https://semackro.vercel.app';
-        return res.redirect(`${getFrontendLoginUrl(frontendUrl)}?error=inactive`);
+        const motivoParam = user.motivo_bloqueo ? `&motivo=${encodeURIComponent(user.motivo_bloqueo)}` : '';
+        return res.redirect(`${getFrontendLoginUrl(frontendUrl)}?error=inactive${motivoParam}`);
       }
       
       // Generar token JWT

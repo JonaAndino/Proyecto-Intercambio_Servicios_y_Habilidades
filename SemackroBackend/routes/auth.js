@@ -5,6 +5,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt'); // Necesario para el Hashing de Contraseñas
 const jwt = require('jsonwebtoken'); // Para generar tokens JWT
 const pool = require('../db'); // Importa la conexión a la base de datos (DB)
+const { enviarCorreoBloqueo } = require('../config/email');
 
 // El número de "rondas de sal" para bcrypt. Más alto es más seguro pero más lento.
 const saltRounds = 10;
@@ -19,7 +20,7 @@ const JWT_EXPIRES_IN = '7d'; // Token válido por 7 días
 
 router.post('/registro', async (req, res) => {
     // 1. OBTENER DATOS (Paso F del Diagrama: Backend recibe datos)
-    const { nombre, tipoIdentificacion, numeroIdentificacion, correo, contrasena } = req.body;
+    const { nombre, tipoIdentificacion, numeroIdentificacion, correo, contrasena, id_rol } = req.body;
 
     // 1.1 Validación básica de campos no vacíos (una vez que el frontend falle en validarlo)
     if (!nombre || !tipoIdentificacion || !numeroIdentificacion || !correo || !contrasena) {
@@ -86,9 +87,12 @@ router.post('/registro', async (req, res) => {
         const contrasena_hash = await bcrypt.hash(contrasena, saltRounds);
 
         // 5. GUARDAR NUEVO USUARIO EN DB (Paso K del Diagrama)
+        const finalRolId = (id_rol === 1 || id_rol === 2) ? id_rol : 2;
+        const finalRolNombre = finalRolId === 1 ? 'Administrador' : 'Usuario Estandar';
+
         const [result] = await pool.execute(
-            'INSERT INTO Usuarios (correo, contrasena_hash) VALUES (?, ?)',
-            [correo, contrasena_hash]
+            'INSERT INTO Usuarios (correo, contrasena_hash, id_rol, rol) VALUES (?, ?, ?, ?)',
+            [correo, contrasena_hash, finalRolId, finalRolNombre]
         );
 
         const nuevoUsuarioId = result.insertId;
@@ -233,7 +237,7 @@ router.post('/login', async (req, res) => {
     try {
         // 2. BUSCAR USUARIO EN LA BASE DE DATOS POR CORREO
         const [rows] = await pool.execute(
-            'SELECT id_usuario, correo, contrasena_hash, activo, intentos_fallidos, bloqueado_hasta FROM Usuarios WHERE correo = ?',
+            'SELECT id_usuario, correo, contrasena_hash, activo, intentos_fallidos, bloqueado_hasta, motivo_bloqueo FROM Usuarios WHERE correo = ?',
             [correo]
         );
 
@@ -261,7 +265,10 @@ router.post('/login', async (req, res) => {
 
         // Verificar si el acceso está restringido
         if (usuario.activo === 0) {
-            return res.status(403).json({ error: 'Tu cuenta ha sido restringida por el administrador. Ponte en contacto con el soporte técnico.' });
+            const mensajeError = usuario.motivo_bloqueo 
+                ? `Tu cuenta ha sido bloqueada por el administrador. Motivo: ${usuario.motivo_bloqueo}`
+                : 'Tu cuenta ha sido restringida por el administrador. Ponte en contacto con el soporte técnico.';
+            return res.status(403).json({ error: mensajeError, motivo: usuario.motivo_bloqueo });
         }
 
         // 3. VERIFICAR CONTRASEÑA CON BCRYPT
@@ -343,7 +350,7 @@ router.post('/login-jwt', async (req, res) => {
     try {
         // 1. BUSCAR USUARIO
         const [rows] = await pool.execute(
-            'SELECT id_usuario, correo, contrasena_hash, activo, intentos_fallidos, bloqueado_hasta FROM Usuarios WHERE correo = ?',
+            'SELECT id_usuario, correo, contrasena_hash, activo, intentos_fallidos, bloqueado_hasta, motivo_bloqueo FROM Usuarios WHERE correo = ?',
             [correo]
         );
 
@@ -371,7 +378,10 @@ router.post('/login-jwt', async (req, res) => {
 
         // Verificar si el acceso está restringido
         if (usuario.activo === 0) {
-            return res.status(403).json({ error: 'Tu cuenta ha sido restringida por el administrador. Ponte en contacto con el soporte técnico.' });
+            const mensajeError = usuario.motivo_bloqueo 
+                ? `Tu cuenta ha sido bloqueada por el administrador. Motivo: ${usuario.motivo_bloqueo}`
+                : 'Tu cuenta ha sido restringida por el administrador. Ponte en contacto con el soporte técnico.';
+            return res.status(403).json({ error: mensajeError, motivo: usuario.motivo_bloqueo });
         }
 
         // 2. VERIFICAR CONTRASEÑA
@@ -491,7 +501,7 @@ router.get('/verificar-sesion', verificarToken, (req, res) => {
 // **********************************************
 router.put('/usuarios/:id_usuario/activo', async (req, res) => {
     const id_usuario = parseInt(req.params.id_usuario);
-    const { activo } = req.body; // 0 o 1
+    const { activo, motivo } = req.body; // 0 o 1, y motivo opcional
 
     if (isNaN(id_usuario)) {
         return res.status(400).json({ success: false, error: 'ID de usuario no válido.' });
@@ -503,20 +513,57 @@ router.put('/usuarios/:id_usuario/activo', async (req, res) => {
 
     try {
         let query, params;
+        const motivoTexto = motivo && motivo.trim() !== '' ? motivo.trim() : 'Incumplimiento de las normas de la comunidad o términos de servicio.';
+        
         if (activo === 1) {
-            // Si activamos el usuario, también reseteamos intentos fallidos y bloqueo
-            query = 'UPDATE Usuarios SET activo = ?, intentos_fallidos = 0, bloqueado_hasta = NULL WHERE id_usuario = ?';
+            // Si activamos el usuario, también reseteamos intentos fallidos, bloqueo y motivo
+            query = 'UPDATE Usuarios SET activo = ?, intentos_fallidos = 0, bloqueado_hasta = NULL, motivo_bloqueo = NULL WHERE id_usuario = ?';
             params = [activo, id_usuario];
         } else {
-            // Si desactivamos, solo actualizamos activo
-            query = 'UPDATE Usuarios SET activo = ? WHERE id_usuario = ?';
-            params = [activo, id_usuario];
+            // Si desactivamos, guardamos el motivo del bloqueo
+            query = 'UPDATE Usuarios SET activo = ?, motivo_bloqueo = ? WHERE id_usuario = ?';
+            params = [activo, motivoTexto, id_usuario];
         }
         
         const [result] = await pool.execute(query, params);
         if (result.affectedRows === 0) {
             return res.status(404).json({ success: false, error: 'Usuario no encontrado.' });
         }
+
+        // Si se inactiva el usuario, enviamos el correo electrónico
+        if (activo === 0) {
+            try {
+                // Obtener datos del usuario para el correo
+                const [userRows] = await pool.execute(
+                    `SELECT u.correo, p.nombre_Persona, p.apellido_Persona 
+                     FROM Usuarios u 
+                     LEFT JOIN Personas p ON u.id_usuario = p.id_Usuario 
+                     WHERE u.id_usuario = ?`,
+                    [id_usuario]
+                );
+
+                if (userRows.length > 0) {
+                    const user = userRows[0];
+                    const nombreCompleto = `${user.nombre_Persona || ''} ${user.apellido_Persona || ''}`.trim() || 'Usuario de SEMACKRO';
+                    
+                    // Ejecutar en segundo plano para no demorar la respuesta HTTP
+                    enviarCorreoBloqueo(user.correo, nombreCompleto, motivoTexto)
+                        .then(mailResult => {
+                            if (mailResult.success) {
+                                console.log(`[Bloqueo] Correo enviado exitosamente a ${user.correo}`);
+                            } else {
+                                console.warn(`[Bloqueo] Error al enviar correo a ${user.correo}:`, mailResult.error);
+                            }
+                        })
+                        .catch(err => {
+                            console.error('[Bloqueo] Excepción al enviar correo de bloqueo:', err);
+                        });
+                }
+            } catch (dbErr) {
+                console.error('[Bloqueo] Error al buscar datos de usuario para envío de correo:', dbErr);
+            }
+        }
+
         res.status(200).json({ success: true, mensaje: 'Acceso de usuario actualizado con éxito.' });
     } catch (error) {
         console.error('Error al actualizar estado del usuario:', error);
@@ -546,6 +593,42 @@ router.put('/usuarios/:id_usuario/desbloquear', async (req, res) => {
     } catch (error) {
         console.error('Error al desbloquear usuario:', error);
         res.status(500).json({ success: false, error: 'Error del servidor al intentar desbloquear la cuenta.' });
+    }
+});
+
+// **********************************************
+// PUT /api/usuarios/:id_usuario/rol (Modificar rol de usuario)
+// **********************************************
+router.put('/usuarios/:id_usuario/rol', async (req, res) => {
+    const id_usuario = parseInt(req.params.id_usuario);
+    const id_rol = parseInt(req.body.id_rol);
+
+    if (isNaN(id_usuario)) {
+        return res.status(400).json({ success: false, error: 'ID de usuario no válido.' });
+    }
+    if (isNaN(id_rol) || id_rol < 1) {
+        return res.status(400).json({ success: false, error: 'ID de rol no válido.' });
+    }
+
+    try {
+        // Obtener el nombre del rol desde la tabla Roles
+        const [roles] = await pool.execute('SELECT nombre_rol FROM Roles WHERE id_rol = ?', [id_rol]);
+        if (roles.length === 0) {
+            return res.status(404).json({ success: false, error: 'Rol no encontrado.' });
+        }
+        const rolNombre = roles[0].nombre_rol;
+
+        const [result] = await pool.execute(
+            'UPDATE Usuarios SET id_rol = ?, rol = ? WHERE id_usuario = ?',
+            [id_rol, rolNombre, id_usuario]
+        );
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado.' });
+        }
+        res.status(200).json({ success: true, mensaje: 'Rol de usuario actualizado con éxito.' });
+    } catch (error) {
+        console.error('Error al actualizar rol del usuario:', error);
+        res.status(500).json({ success: false, error: 'Error del servidor al intentar actualizar el rol.' });
     }
 });
 

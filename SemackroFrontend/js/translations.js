@@ -53,10 +53,10 @@ const translations = {
                     'sidebar.welcome': 'Bienvenido de nuevo',
                     'sidebar.discover': 'Descubrir',
                     'sidebar.favorites': 'Mis favoritos',
-                    'sidebar.messages': 'Solicitudes y mensajes',
-                    'sidebar.sentRequests': 'Solicitudes enviadas',
+                    'sidebar.messages': 'Mensajes',
+                    'sidebar.sentRequests': 'Solicitudes de trabajo',
                     'sidebar.workOrders': 'Órdenes de trabajo',
-                    'sidebar.history': 'Historial de intercambios',
+                    'sidebar.history': 'Historial de trabajos personales',
                     'sidebar.profile': 'Mi perfil',
                     'sidebar.reports': 'Reportes',
                     'sidebar.logout': 'Cerrar sesión',
@@ -116,7 +116,7 @@ const translations = {
                     'sentRequests.cancel': 'Cancelar',
 
                     // Historial
-                    'history.title': 'Historial de intercambios',
+                    'history.title': 'Historial de trabajos personales',
                     'history.subtitle': 'Registro visual de tus intercambios pasados y estado actual.',
                     'history.empty': 'No hay intercambios o calificaciones registradas',
                     'history.loading': 'Cargando historial...',
@@ -201,7 +201,7 @@ const translations = {
                     'reports.verificationRequests': 'Solicitudes de verificación',
                     'reports.verificationDesc': 'Cola de validadores para identidad y certificaciones.',
                     'reports.directory': 'Directorio general',
-                    'reports.directoryDesc': 'Listado íntegro de profesionales registrados.',
+                    'reports.directoryDesc': 'Listado de profesionales registrados.',
                     'reports.search': 'Buscar...',
                     'reports.specialty': 'Especialidad',
                     'reports.location': 'Ubicación',
@@ -329,7 +329,26 @@ const translations = {
                     'workOrders.fieldBudget': 'Presupuesto (L)',
                     'workOrders.fieldMaxApplicants': 'Máx. Postulantes',
                     'workOrders.createOrder': 'Crear orden',
-                    'workOrders.orderDetail': 'Detalle de orden'
+                    'workOrders.orderDetail': 'Detalle de orden',
+
+                    // Configuraciones del sistema
+                    'config.tabTitle': 'Configuraciones',
+                    'config.title': 'Configuraciones del Sistema',
+                    'config.subtitle': 'Gestiona las opciones globales de la plataforma',
+                    'config.generalSettings': 'Configuraciones Generales',
+                    'config.jwtDuration': 'Duración del token de recuperación',
+                    'config.driverPerfil': 'Habilitar driver en perfil de usuario',
+                    'config.driverDescubrir': 'Habilitar driver en página de descubrir',
+                    'config.modalities': 'Modalidades de Intercambio',
+                    'config.modalityName': 'Nombre de la modalidad',
+                    'config.modalityActive': 'Activa',
+                    'config.addModality': 'Agregar Modalidad',
+                    'config.saveSettings': 'Guardar Cambios',
+                    'config.settingsSaved': 'Configuraciones guardadas correctamente',
+                    'config.categories': 'Categorías de Habilidades',
+                    'config.addCategory': 'Agregar Categoría',
+                    'config.categoryName': 'Nombre de la Categoría',
+                    'config.globalSkills': 'Habilidades Globales'
                 },
                 en: {
                     // Hero section
@@ -384,8 +403,8 @@ const translations = {
                     'sidebar.welcome': 'Welcome back',
                     'sidebar.discover': 'Discover',
                     'sidebar.favorites': 'My favorites',
-                    'sidebar.messages': 'Requests & messages',
-                    'sidebar.sentRequests': 'Sent requests',
+                    'sidebar.messages': 'Messages',
+                    'sidebar.sentRequests': 'Work requests',
                     'sidebar.workOrders': 'Work orders',
                     'sidebar.history': 'Exchange history',
                     'sidebar.profile': 'My profile',
@@ -660,7 +679,26 @@ const translations = {
                     'workOrders.fieldBudget': 'Budget (L)',
                     'workOrders.fieldMaxApplicants': 'Max. Applicants',
                     'workOrders.createOrder': 'Create order',
-                    'workOrders.orderDetail': 'Order detail'
+                    'workOrders.orderDetail': 'Order detail',
+
+                    // System Configurations
+                    'config.tabTitle': 'Configurations',
+                    'config.title': 'System Configurations',
+                    'config.subtitle': 'Manage the global options of the platform',
+                    'config.generalSettings': 'General Settings',
+                    'config.jwtDuration': 'Recovery token duration',
+                    'config.driverPerfil': 'Enable driver on user profile',
+                    'config.driverDescubrir': 'Enable driver on discover page',
+                    'config.modalities': 'Exchange Modalities',
+                    'config.modalityName': 'Modality name',
+                    'config.modalityActive': 'Active',
+                    'config.addModality': 'Add Modality',
+                    'config.saveSettings': 'Save Changes',
+                    'config.settingsSaved': 'Settings saved successfully',
+                    'config.categories': 'Skill Categories',
+                    'config.addCategory': 'Add Category',
+                    'config.categoryName': 'Category Name',
+                    'config.globalSkills': 'Global Skills'
                 }
             };
 

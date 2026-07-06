@@ -38,6 +38,7 @@ const perfilCompletoRoutes = require('./routes/PerfilCompleto');
 const ordenesTrabajoRoutes = require('./routes/ordenesTrabajo');
 const onboardingDriversRoutes = require('./routes/onboardingDrivers');
 const translateRoutes = require('./routes/translate');
+const configuracionesRoutes = require('./routes/ConfiguracionesSistema');
 
 // 2. Crear instancia de Express
 const app = express();
@@ -131,6 +132,7 @@ app.use('/api/perfil-completo', perfilCompletoRoutes); // Rutas de perfil comple
 app.use('/api/ordenes-trabajo', ordenesTrabajoRoutes); // Rutas de órdenes de trabajo
 app.use('/api/onboarding-drivers', onboardingDriversRoutes); // Estado de drivers/onboarding por persona
 app.use('/api/translate', translateRoutes); // Rutas de traducción de DeepL
+app.use('/api/configuraciones', configuracionesRoutes); // Rutas de configuraciones del sistema
 
 // 8. Prueba básica de que el servidor Express funciona
 app.get('/', (req, res) => {

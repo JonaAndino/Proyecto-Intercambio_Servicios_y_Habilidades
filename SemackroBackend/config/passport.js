@@ -19,7 +19,7 @@ passport.use(new GoogleStrategy({
       
       // 1. Buscar si el usuario ya existe en la base de datos
       const [existingUsers] = await pool.execute(
-        'SELECT id_usuario, correo, activo FROM Usuarios WHERE correo = ?',
+        'SELECT id_usuario, correo, activo, motivo_bloqueo FROM Usuarios WHERE correo = ?',
         [email]
       );
       
@@ -30,6 +30,7 @@ passport.use(new GoogleStrategy({
           id_usuario: existingUsers[0].id_usuario,
           correo: existingUsers[0].correo,
           activo: existingUsers[0].activo,
+          motivo_bloqueo: existingUsers[0].motivo_bloqueo,
           isNew: false
         });
       }

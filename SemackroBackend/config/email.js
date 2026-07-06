@@ -346,6 +346,20 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
     const fromName = String(options.emailFromName || EMAIL_FROM_NAME || 'SEMACKRO').trim().slice(0, 80) || 'SEMACKRO';
     const enlaceRecuperacion = `${frontendUrl}/restablecer-password.html?token=${token}`;
     console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Enlace de recuperación generado con frontend=${frontendUrl}`);
+
+    const formatDuration = (seconds) => {
+        if (!seconds) return "24 horas (1 día)";
+        const secs = Number(seconds);
+        if (secs < 60) return `${secs} segundos`;
+        if (secs < 3600) return `${Math.round(secs / 60)} minutos`;
+        const hours = Math.round(secs / 3600);
+        if (hours === 1) return "1 hora";
+        if (hours < 24) return `${hours} horas`;
+        const days = Math.round(hours / 24);
+        if (days === 1) return "24 horas (1 día)";
+        return `${hours} horas (${days} días)`;
+    };
+    const duracionTexto = formatDuration(options.tokenDuration);
     
     const mailOptions = {
         from: `"${fromName}" <${EMAIL_FROM_ADDRESS}>`,
@@ -426,7 +440,7 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
                     <p style="word-break: break-all; color: #4f46e5;">${enlaceRecuperacion}</p>
                     
                     <div class="warning">
-                        <strong>Importante:</strong> Este enlace expirará en <strong>24 horas (1 día)</strong> por razones de seguridad.
+                        <strong>Importante:</strong> Este enlace expirará en <strong>${duracionTexto}</strong> por razones de seguridad.
                     </div>
                     
                     <p>Si no solicitaste restablecer tu contraseña, puedes ignorar este correo de forma segura.</p>
@@ -839,4 +853,147 @@ const enviarCorreoUsuarioRecuperado = async (destinatario, nombrePersona, correo
     }
 };
 
-module.exports = { enviarCorreoRecuperacion, enviarNotificacionContextual, enviarCorreoUsuarioRecuperado };
+const enviarCorreoBloqueo = async (destinatario, nombrePersona, motivoBloqueo, options = {}) => {
+    const cleanDestinatario = String(destinatario || '').trim();
+    const traceId = options.traceId || 'sin-trace';
+    const destinatarioMask = maskEmail(cleanDestinatario);
+
+    console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Preparando correo de bloqueo de usuario para ${destinatarioMask}`);
+
+    const configError = getEmailConfigError();
+    if (configError) {
+        console.error(`[email:${EMAIL_PROVIDER}][${traceId}] Configuración inválida: ${configError}`);
+        return { success: false, error: configError };
+    }
+
+    const frontendUrl =
+        normalizeFrontendUrl(options.frontendUrl) ||
+        normalizeFrontendUrl(process.env.FRONTEND_URL) ||
+        'https://semackro.vercel.app';
+
+    const fromName = String(options.emailFromName || EMAIL_FROM_NAME || 'SEMACKRO').trim().slice(0, 80) || 'SEMACKRO';
+    
+    const mailOptions = {
+        from: `"${fromName}" <${EMAIL_FROM_ADDRESS}>`,
+        to: cleanDestinatario,
+        subject: 'Tu cuenta ha sido bloqueada - SEMACKRO',
+        html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        line-height: 1.6;
+                        color: #333;
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }
+                    .container {
+                        background-color: #f9f9f9;
+                        border-radius: 10px;
+                        padding: 30px;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                    }
+                    .header {
+                        text-align: center;
+                        color: #dc2626;
+                        margin-bottom: 30px;
+                    }
+                    .info-box {
+                        background-color: #fef2f2;
+                        border-left: 4px solid #ef4444;
+                        padding: 20px;
+                        margin: 20px 0;
+                        border-radius: 8px;
+                    }
+                    .footer {
+                        margin-top: 30px;
+                        padding-top: 20px;
+                        border-top: 1px solid #ddd;
+                        font-size: 12px;
+                        color: #666;
+                        text-align: center;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>SEMACKRO</h1>
+                        <h2>Notificación de Cuenta Bloqueada</h2>
+                    </div>
+                    
+                    <p>Hola <strong>${nombrePersona}</strong>,</p>
+                    
+                    <p>Te informamos que tu cuenta en SEMACKRO ha sido restringida/bloqueada por el administrador del sistema.</p>
+                    
+                    <div class="info-box">
+                        <p style="margin: 0 0 10px 0; font-size: 16px;"><strong>Motivo del bloqueo:</strong></p>
+                        <p style="margin: 0; font-size: 18px; font-weight: bold; color: #dc2626; word-break: break-word;">${motivoBloqueo}</p>
+                    </div>
+                    
+                    <p>Si crees que esto se trata de un error o deseas apelar la decisión, ponte en contacto con nuestro equipo de soporte respondiendo directamente a este correo.</p>
+                    
+                    <div class="footer">
+                        <p>Este es un correo automático, por favor no respondas a este mensaje si no es necesario.</p>
+                        <p>&copy; 2025 SEMACKRO. Todos los derechos reservados.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `
+    };
+
+    if (EMAIL_PROVIDER === 'brevo-api') {
+        try {
+            const apiInfo = await sendMailViaBrevoApi(mailOptions, {
+                traceId,
+                destination: destinatarioMask
+            });
+            return { success: true, messageId: apiInfo.messageId, channel: 'brevo-api' };
+        } catch (apiError) {
+            console.error(`[email:brevo-api][${traceId}] Error al enviar correo de bloqueo de usuario para ${destinatarioMask}:`, apiError);
+            return { success: false, error: apiError.message };
+        }
+    }
+
+    try {
+        const info = await sendMailWithTimeout(mailOptions, EMAIL_TIMEOUT_MS, {
+            traceId,
+            destination: destinatarioMask
+        });
+        console.log(`[email:${EMAIL_PROVIDER}][${traceId}] Correo de bloqueo de usuario enviado para ${destinatarioMask} messageId=${info.messageId || 'n/a'}`);
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        console.error(`[email:${EMAIL_PROVIDER}][${traceId}] Error al enviar correo de bloqueo de usuario para ${destinatarioMask}:`, error);
+
+        if (isConnectionTimeoutError(error)) {
+            if (EMAIL_PROVIDER === 'gmail') {
+                try {
+                    const fallbackConfig = {
+                        host: 'smtp.gmail.com',
+                        port: 587,
+                        secure: false,
+                        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD },
+                        connectionTimeout: EMAIL_TIMEOUT_MS,
+                        greetingTimeout: EMAIL_TIMEOUT_MS,
+                        socketTimeout: EMAIL_TIMEOUT_MS
+                    };
+                    const fallbackInfo = await sendMailWithTransportConfig(mailOptions, fallbackConfig, EMAIL_TIMEOUT_MS, {
+                        traceId: `${traceId}-p587`,
+                        destination: destinatarioMask
+                    });
+                    return { success: true, messageId: fallbackInfo.messageId, fallbackPort: 587 };
+                } catch (fallbackError) {
+                    console.error(`[email:gmail][${traceId}] Fallback 587 también falló para ${destinatarioMask}`);
+                }
+            }
+        }
+
+        return { success: false, error: error.message };
+    }
+};
+
+module.exports = { enviarCorreoRecuperacion, enviarNotificacionContextual, enviarCorreoUsuarioRecuperado, enviarCorreoBloqueo };

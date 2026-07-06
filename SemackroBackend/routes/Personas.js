@@ -117,11 +117,10 @@ router.get('/verificar-identificacion/:identificacion', async (req, res) => {
 // ----------------------------------------------------
 router.get('/', async (req, res) => {
     try {
-        // Consulta directa para incluir todos los campos necesarios incluyendo disponibilidad, años de experiencia, mascota y fondo del banner
         const [personas] = await db.execute(`
             SELECT 
                 p.id_Perfil_Persona,
-                p.nombre_Persona,
+                COALESCE(p.nombre_Persona, u.nombre) AS nombre_Persona,
                 p.apellido_Persona,
                 p.fechaNac_Persona,
                 p.genero_Persona,
@@ -136,15 +135,19 @@ router.get('/', async (req, res) => {
                 p.disponibilidad,
                 p.url_Dni,
                 IFNULL(p.anios_experiencia, 0) AS anios_experiencia,
-                p.id_Usuario,
+                u.id_usuario AS id_Usuario,
                 p.mascota,
                 p.url_fondo_banner,
+                p.telefono_Persona,
                 u.activo,
                 u.correo,
                 u.intentos_fallidos,
-                u.bloqueado_hasta
-            FROM Personas p
-            LEFT JOIN Usuarios u ON p.id_Usuario = u.id_usuario
+                u.bloqueado_hasta,
+                u.id_rol,
+                u.rol,
+                u.motivo_bloqueo
+            FROM Usuarios u
+            LEFT JOIN Personas p ON p.id_Usuario = u.id_usuario
         `);
 
         res.json({
@@ -197,6 +200,7 @@ router.get('/:id', async (req, res) => {
                 p.id_Usuario,
                 p.mascota,
                 p.url_fondo_banner,
+                p.telefono_Persona,
                 u.correo,
                 u.nombre AS nombre_usuario_cuenta,
                 u.activo
@@ -343,7 +347,7 @@ router.put('/:id', async (req, res) => {
         'estadoCivil_Persona', 'tipoIdentificacion_Persona', 'identificacion_Persona',
         'imagenUrl_Persona', 'imagen1Url_Persona', 'imagen2Url_Persona', 'imagen3Url_Persona',
         'descripcionPerfil_Persona', 'disponibilidad', 'anios_experiencia', 'url_Dni',
-        'mascota', 'url_fondo_banner'
+        'mascota', 'url_fondo_banner', 'telefono_Persona'
     ];
 
     // Validar que mascota sea uno de los valores permitidos

@@ -634,6 +634,24 @@ async function mostrarOnboardingPostLogin() {
   onboardingPostLoginEnCurso = true;
 
   try {
+    // Verificar si el driver de descubrir está habilitado en las configuraciones del sistema
+    try {
+      const resConfig = await fetch(`${API_BASE}/configuraciones`);
+      const jsonConfig = await resConfig.json();
+      if (resConfig.ok && jsonConfig.success && jsonConfig.data) {
+        const driverActivo = jsonConfig.data['driver_descubrir_activado']?.valor;
+        if (driverActivo === false) {
+          console.log('[Onboarding] El driver de descubrir está desactivado globalmente por el administrador.');
+          marcarOnboardingMostradoUsuarioActual();
+          limpiarOnboardingPostLoginPendiente();
+          limpiarQueryOnboarding();
+          return;
+        }
+      }
+    } catch (errConfig) {
+      console.error('Error al validar driver_descubrir_activado:', errConfig);
+    }
+
     const onboardingVistoEnServidor = await obtenerEstadoOnboardingServidor();
     if (onboardingVistoEnServidor) {
       marcarOnboardingMostradoUsuarioActual();
@@ -4347,15 +4365,22 @@ async function mostrarFormularioSolicitudDetallada(
           .join("")
         : `<option value="">${t("requestModal.noSkillsToOffer")}</option>`;
 
-    const opcionesBuscadas =
-      habilidadesBuscadas.length > 0
-        ? habilidadesBuscadas
+    // Cargar categorías del backend para sustituir a las habilidades que interesan
+    let opcionesCategorias = `<option value="">${t("requestModal.selectSkill")}</option>`;
+    try {
+      const resCat = await fetch(`${API_BASE}/categorias`);
+      const jsonCat = await resCat.json();
+      if (resCat.ok && jsonCat.success && jsonCat.data) {
+        opcionesCategorias = jsonCat.data
           .map(
-            (h) =>
-              `<option value="${h.id_Habilidad}">${h.nombre_Habilidad}</option>`,
+            (cat) =>
+              `<option value="${cat.id_categoria_Habilidad_Servicio}">${cat.nombre_categoria_Habilidad}</option>`,
           )
-          .join("")
-        : `<option value="">${t("requestModal.noSkillsRequested")}</option>`;
+          .join("");
+      }
+    } catch (err) {
+      console.error("Error al cargar categorías para el modal:", err);
+    }
 
     // Obtener fecha mínima (hoy)
     const hoy = new Date().toISOString().split("T")[0];
@@ -4380,14 +4405,14 @@ async function mostrarFormularioSolicitudDetallada(
                                 </select>
                             </div>
 
-                            <!-- Habilidad que solicitas -->
+                            <!-- Categoría de Habilidad de Interés (Sustituye a Habilidad que te interesa) -->
                             <div style="margin-bottom: 16px;">
                                 <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
                                     ${t("requestModal.skillInterested")}
                                 </label>
                                 <select id="habilidadSolicitada" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; background-color: white;">
                                     <option value="">${t("requestModal.selectSkill")}</option>
-                                    ${opcionesBuscadas}
+                                    ${opcionesCategorias}
                                 </select>
                             </div>
 
@@ -4446,6 +4471,26 @@ async function mostrarFormularioSolicitudDetallada(
         popup: "rounded-xl",
         confirmButton: "px-6 py-3 rounded-lg font-semibold",
         cancelButton: "px-6 py-3 rounded-lg font-semibold",
+      },
+      didOpen: async () => {
+        const select = document.getElementById("modalidad");
+        if (select) {
+          try {
+            const res = await fetch(`${API_BASE}/configuraciones/modalidades`);
+            const json = await res.json();
+            if (res.ok && json.success && json.data) {
+              const activas = json.data.filter(m => m.activo === 1 || m.activo === true);
+              if (activas.length > 0) {
+                select.innerHTML = `<option value="">${t("requestModal.selectModality")}</option>`;
+                activas.forEach(m => {
+                  select.innerHTML += `<option value="${escapeHtml(m.nombre)}">${escapeHtml(m.nombre)}</option>`;
+                });
+              }
+            }
+          } catch (err) {
+            console.error("Error al cargar modalidades dinámicas:", err);
+          }
+        }
       },
       preConfirm: () => {
         return {
@@ -6160,7 +6205,9 @@ function mostrarMensajesDashboard(mensajes, idConversacionRender = null) {
                                      data-puede-editar="${puedeEditar}"
                                     data-es-mio="true"
                                     data-puede-borrar-todos="${puedeBorrarParaTodos}"
-                                    data-puede-borrar-mi="${puedeBorrarParaMi}">
+                                    data-puede-borrar-mi="${puedeBorrarParaMi}"
+                                    data-fecha-envio="${msg.fecha_envio || ''}"
+                                    data-leido="${msg.leido ? 'true' : 'false'}">
                                     <p class="leading-relaxed text-sm msg-text-content">${contenidoMostrado}</p>
                                     ${renderAdjuntosHTML(msg.adjuntos || [])}
                                     <div class="flex items-center justify-end gap-1.5 text-[10px] text-indigo-100 mt-1 opacity-90">
@@ -6199,7 +6246,9 @@ function mostrarMensajesDashboard(mensajes, idConversacionRender = null) {
                                      data-puede-editar="${puedeEditar}"
                                     data-es-mio="false"
                                     data-puede-borrar-todos="${puedeBorrarParaTodos}"
-                                    data-puede-borrar-mi="${puedeBorrarParaMi}">
+                                    data-puede-borrar-mi="${puedeBorrarParaMi}"
+                                    data-fecha-envio="${msg.fecha_envio || ''}"
+                                    data-leido="${msg.leido ? 'true' : 'false'}">
                                     <p class="text-slate-800 leading-relaxed text-sm msg-text-content">${contenidoMostrado}</p>
                                     ${renderAdjuntosHTML(msg.adjuntos || [])}
                                     <div class="flex items-center justify-start gap-1.5 text-[10px] text-slate-400 mt-1">
@@ -8294,6 +8343,9 @@ function obtenerDatosMenuDesdeElemento(element) {
       false,
     ),
     puedeBorrarMi: asBool(element.getAttribute("data-puede-borrar-mi"), true),
+    fechaEnvio: element.getAttribute("data-fecha-envio") || "",
+    esMio: element.getAttribute("data-es-mio") === "true",
+    leido: element.getAttribute("data-leido") === "true",
   };
 }
 
@@ -8341,6 +8393,122 @@ function cerrarPanelAccionesMensaje() {
     window.removeEventListener("scroll", onScroll, true);
     handlersPanelAccionesMensaje = null;
   }
+}
+
+/**
+ * Muestra un modal con la información completa del mensaje:
+ * fecha/hora de envío, estado de lectura, y origen.
+ */
+function mostrarInfoMensaje(datos) {
+  const { fechaEnvio, esMio, leido, messageContent } = datos;
+
+  // Formatear la fecha completa
+  let fechaCompleta = '—';
+  let horaCompleta = '—';
+  if (fechaEnvio) {
+    try {
+      const d = new Date(fechaEnvio);
+      fechaCompleta = d.toLocaleDateString('es-HN', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+      // Capitalizar primera letra
+      fechaCompleta = fechaCompleta.charAt(0).toUpperCase() + fechaCompleta.slice(1);
+      horaCompleta = d.toLocaleTimeString('es-HN', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+    } catch (e) { /* sin fecha */ }
+  }
+
+  const estadoIcono = leido
+    ? '<span class="iconify inline-block" data-icon="mdi:check-all" style="color:#7dd3fc;" data-width="18"></span> <span style="color:#3b82f6;">Leído</span>'
+    : '<span class="iconify inline-block" data-icon="mdi:check" data-width="18" style="color:#94a3b8;"></span> <span style="color:#64748b;">Enviado</span>';
+
+  const origenTexto = esMio ? 'Tú enviaste este mensaje' : 'Mensaje recibido';
+
+  // Eliminar modal previo si existe
+  const prev = document.getElementById('__infoMsgModal__');
+  if (prev) prev.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = '__infoMsgModal__';
+  overlay.style.cssText = `
+    position: fixed; inset: 0; z-index: 20000;
+    background: rgba(15,23,42,0.55); backdrop-filter: blur(3px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+  `;
+
+  overlay.innerHTML = `
+    <div style="
+      background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; padding: 24px 28px; max-width: 360px; width: 100%;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5); color: #f1f5f9;
+      font-family: 'Inter', sans-serif;
+    ">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
+        <span class="iconify" data-icon="mdi:information" data-width="22" style="color:#6366f1;flex-shrink:0;"></span>
+        <h3 style="margin:0; font-size:16px; font-weight:700; color:#f1f5f9;">Información del mensaje</h3>
+        <button id="__closeInfoMsg__" style="
+          margin-left:auto; background:rgba(255,255,255,0.08); border:none; border-radius:50%;
+          width:28px; height:28px; cursor:pointer; display:flex; align-items:center;
+          justify-content:center; color:#94a3b8; transition: background 0.2s;
+        " onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+          <span class="iconify" data-icon="mdi:close" data-width="16"></span>
+        </button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+          <span class="iconify" data-icon="mdi:calendar" data-width="18" style="color:#818cf8; margin-top:2px; flex-shrink:0;"></span>
+          <div>
+            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px;">Fecha de envío</div>
+            <div style="font-size:14px; font-weight:600; color:#e2e8f0;">${fechaCompleta}</div>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+          <span class="iconify" data-icon="mdi:clock-outline" data-width="18" style="color:#818cf8; margin-top:2px; flex-shrink:0;"></span>
+          <div>
+            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px;">Hora</div>
+            <div style="font-size:14px; font-weight:600; color:#e2e8f0;">${horaCompleta}</div>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+          <span class="iconify" data-icon="mdi:message-check-outline" data-width="18" style="color:#818cf8; margin-top:2px; flex-shrink:0;"></span>
+          <div>
+            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px;">Estado</div>
+            <div style="font-size:14px; font-weight:600; display:flex; align-items:center; gap:4px;">${estadoIcono}</div>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+          <span class="iconify" data-icon="mdi:account-outline" data-width="18" style="color:#818cf8; margin-top:2px; flex-shrink:0;"></span>
+          <div>
+            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px;">Origen</div>
+            <div style="font-size:14px; font-weight:600; color:#e2e8f0;">${origenTexto}</div>
+          </div>
+        </div>
+      </div>
+
+      <button id="__closeInfoMsgBtn__" style="
+        margin-top:22px; width:100%; padding:10px; border:none; border-radius:12px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff; font-size:14px; font-weight:600; cursor:pointer;
+        transition: opacity 0.2s;
+      " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+        Cerrar
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  if (window.Iconify) Iconify.scan(overlay);
+
+  const cerrar = () => overlay.remove();
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) cerrar(); });
+  overlay.querySelector('#__closeInfoMsg__')?.addEventListener('click', cerrar);
+  overlay.querySelector('#__closeInfoMsgBtn__')?.addEventListener('click', cerrar);
 }
 
 function posicionarPanelAccionesMensaje(element, panel) {
@@ -8393,6 +8561,16 @@ function abrirPanelAccionesMensaje(element, datos) {
     "fixed z-[10090] min-w-[190px] bg-white border border-slate-200 rounded-xl shadow-2xl p-2";
 
   const botones = [];
+
+  // Siempre disponible: Ver información del mensaje
+  botones.push(`
+    <button data-accion-msg="info" class="w-full px-3 py-2 rounded-lg text-left hover:bg-indigo-50 text-indigo-700 text-sm font-medium flex items-center gap-2">
+      <span class="iconify" data-icon="mdi:information-outline" data-width="16"></span>
+      Información del mensaje
+    </button>
+    <div class="my-1 border-t border-slate-100"></div>
+  `);
+
   if (allowEditar) {
     botones.push(`
       <button data-accion-msg="editar" class="w-full px-3 py-2 rounded-lg text-left hover:bg-slate-50 text-slate-700 text-sm font-medium flex items-center gap-2">
@@ -8430,6 +8608,10 @@ function abrirPanelAccionesMensaje(element, datos) {
     const accion = btn.getAttribute("data-accion-msg");
     cerrarPanelAccionesMensaje();
 
+    if (accion === "info") {
+      mostrarInfoMensaje(datos);
+      return;
+    }
     if (accion === "editar") {
       iniciarEdicionMensaje(mensajeSeleccionadoId, mensajeSeleccionadoContenido);
       return;
@@ -9902,6 +10084,11 @@ async function cargarOrdenesTrabajo() {
   if (!grid) return;
 
   const esAdmin = localStorage.getItem('usuarioRolId') === '1';
+
+  // Cargar órdenes administrativas en paralelo si es administrador
+  if (esAdmin && typeof window.adminCargarOrdenes === 'function') {
+    window.adminCargarOrdenes();
+  }
 
   // Mostrar u ocultar botón "Nueva Orden" y control geo-filtro según rol
   const btnNuevaOrden = document.getElementById('btnNuevaOrden');

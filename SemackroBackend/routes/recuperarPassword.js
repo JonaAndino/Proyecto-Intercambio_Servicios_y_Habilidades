@@ -6,6 +6,21 @@ const db = require('../db');
 const { enviarCorreoRecuperacion } = require('../config/email');
 const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_super_segura_2025_SEMACKRO';
 
+// Función para obtener configuración del sistema
+async function getConfigValue(clave) {
+    try {
+        const [configs] = await db.execute('SELECT id_configuracion, clave, valor, tipo, descripcion FROM Configuraciones_Sistema');
+        const config = configs.find(c => c.clave === clave);
+        if (!config) return null;
+        if (config.tipo === 'number') return Number(config.valor);
+        if (config.tipo === 'boolean') return config.valor === '1' || config.valor === 'true';
+        return config.valor;
+    } catch (error) {
+        console.error('Error al obtener configuración:', error);
+        return null;
+    }
+}
+
 // Mapa para limitar usos exitosos de tokens de recuperación de contraseña (máximo 2 usos)
 const tokenUsageMap = new Map();
 
@@ -95,7 +110,11 @@ router.post('/solicitar-recuperacion', async (req, res) => {
 
         const usuario = usuarios[0];
 
-        // Generar token JWT que expira en 1 día (24 horas)
+        // Obtener duración del token desde configuraciones (en segundos)
+        const tokenDuration = await getConfigValue('jwt_reset_password_duration');
+        const expiresIn = tokenDuration ? `${tokenDuration}s` : '1d'; // Default to 1 day if config not found
+        
+        // Generar token JWT
         const token = jwt.sign(
             { 
                 id_usuario: usuario.id_usuario, 
@@ -103,7 +122,7 @@ router.post('/solicitar-recuperacion', async (req, res) => {
                 tipo: 'recuperacion_password'
             },
             JWT_SECRET,
-            { expiresIn: '1d' }
+            { expiresIn }
         );
         console.log(`[password-recovery][${traceId}] Token de recuperación generado para usuario ${usuario.id_usuario}`);
 
@@ -122,7 +141,8 @@ router.post('/solicitar-recuperacion', async (req, res) => {
                 const resultado = await enviarCorreoRecuperacion(cleanCorreo, token, {
                     frontendUrl: FRONTEND_URL,
                     emailFromName: EMAIL_FROM_NAME,
-                    traceId
+                    traceId,
+                    tokenDuration: tokenDuration
                 });
                 if (resultado.success) {
                     console.log(`[password-recovery][${traceId}] Correo enviado correctamente (${maskedCorreo}) messageId=${resultado.messageId || 'n/a'} en ${Date.now() - mailStartedAt}ms`);

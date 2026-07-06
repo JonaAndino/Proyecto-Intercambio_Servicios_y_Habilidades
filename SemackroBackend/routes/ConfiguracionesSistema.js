@@ -1,0 +1,456 @@
+const express = require('express');
+const router = express.Router();
+
+const db = require('../db');
+
+// ----------------------------------------------------
+// ENDPOINT: Obtener todas las configuraciones (GET /configuraciones)
+// ----------------------------------------------------
+router.get('/', async (req, res) => {
+    try {
+        const [configuraciones] = await db.execute('SELECT id_configuracion, clave, valor, tipo, descripcion FROM Configuraciones_Sistema');
+        
+        // Convertir valores al tipo correcto
+        const configsParsed = {};
+        configuraciones.forEach(cfg => {
+            let valor = cfg.valor;
+            if (cfg.tipo === 'number') {
+                valor = Number(valor);
+            } else if (cfg.tipo === 'boolean') {
+                valor = valor === '1' || valor === 'true';
+            } else if (cfg.tipo === 'json') {
+                try {
+                    valor = JSON.parse(valor);
+                } catch (e) {
+                    // keep as string if invalid JSON
+                }
+            }
+            configsParsed[cfg.clave] = { valor, tipo: cfg.tipo, descripcion: cfg.descripcion };
+        });
+        
+        res.json({
+            success: true,
+            data: configsParsed
+        });
+    } catch (error) {
+        console.error('Error al obtener configuraciones:', error.message);
+        res.status(500).json({ 
+            success: false,
+            error: 'Error del servidor al obtener las configuraciones'
+        });
+    }
+});
+
+// ----------------------------------------------------
+// ENDPOINT: Actualizar una configuración (PUT /configuraciones)
+// ----------------------------------------------------
+router.put('/', async (req, res) => {
+    const { clave, valor } = req.body;
+    
+    if (!clave) {
+        return res.status(400).json({ 
+            success: false,
+            message: 'La clave de configuración es requerida' 
+        });
+    }
+
+    try {
+        await db.execute('UPDATE Configuraciones_Sistema SET valor = ? WHERE clave = ?', [String(valor), clave]);
+        
+        res.json({
+            success: true,
+            message: 'Configuración actualizada correctamente'
+        });
+    } catch (error) {
+        console.error('Error al actualizar configuración:', error.message);
+        res.status(500).json({ 
+            success: false,
+            error: 'Error del servidor al actualizar la configuración'
+        });
+    }
+});
+
+// ----------------------------------------------------
+// ENDPOINT: Obtener todas las modalidades (GET /configuraciones/modalidades)
+// ----------------------------------------------------
+router.get('/modalidades', async (req, res) => {
+    try {
+        const [resultado] = await db.execute('SELECT id_modalidad, nombre, activo FROM Modalidades_Intercambio');
+        
+        res.json({
+            success: true,
+            data: resultado
+        });
+    } catch (error) {
+        console.error('Error al obtener modalidades:', error.message);
+        res.status(500).json({ 
+            success: false,
+            error: 'Error del servidor al obtener las modalidades'
+        });
+    }
+});
+
+// ----------------------------------------------------
+// ENDPOINT: Agregar una modalidad (POST /configuraciones/modalidades)
+// ----------------------------------------------------
+router.post('/modalidades', async (req, res) => {
+    const { nombre } = req.body;
+    
+    if (!nombre) {
+        return res.status(400).json({ 
+            success: false,
+            message: 'El nombre de la modalidad es requerido' 
+        });
+    }
+
+    try {
+        await db.execute('INSERT INTO Modalidades_Intercambio (nombre, activo) VALUES (?, 1)', [nombre.trim()]);
+        
+        res.json({
+            success: true,
+            message: 'Modalidad agregada correctamente'
+        });
+    } catch (error) {
+        console.error('Error al agregar modalidad:', error.message);
+        res.status(500).json({ 
+            success: false,
+            error: 'Error del servidor al agregar la modalidad'
+        });
+    }
+});
+
+// ----------------------------------------------------
+// ENDPOINT: Actualizar una modalidad (PUT /configuraciones/modalidades/:id)
+// ----------------------------------------------------
+router.put('/modalidades/:id', async (req, res) => {
+    const id = parseInt(req.params.id);
+    const { nombre, activo } = req.body;
+    
+    if (isNaN(id)) {
+        return res.status(400).json({ 
+            success: false,
+            message: 'ID no válido' 
+        });
+    }
+
+    if (!nombre) {
+        return res.status(400).json({ 
+            success: false,
+            message: 'El nombre de la modalidad es requerido' 
+        });
+    }
+
+    try {
+        await db.execute('UPDATE Modalidades_Intercambio SET nombre = ?, activo = ? WHERE id_modalidad = ?', [nombre.trim(), activo ? 1 : 0, id]);
+        
+        res.json({
+            success: true,
+            message: 'Modalidad actualizada correctamente'
+        });
+    } catch (error) {
+        console.error('Error al actualizar modalidad:', error.message);
+        res.status(500).json({ 
+            success: false,
+            error: 'Error del servidor al actualizar la modalidad'
+        });
+    }
+});
+
+// ----------------------------------------------------
+// ENDPOINT: Eliminar una modalidad (DELETE /configuraciones/modalidades/:id)
+// ----------------------------------------------------
+router.delete('/modalidades/:id', async (req, res) => {
+    const id = parseInt(req.params.id);
+    
+    if (isNaN(id)) {
+        return res.status(400).json({ 
+            success: false,
+            message: 'ID no válido' 
+        });
+    }
+
+    try {
+        await db.execute('DELETE FROM Modalidades_Intercambio WHERE id_modalidad = ?', [id]);
+        
+        res.json({
+            success: true,
+            message: 'Modalidad eliminada correctamente'
+        });
+    } catch (error) {
+        console.error('Error al eliminar modalidad:', error.message);
+        res.status(500).json({ 
+            success: false,
+            error: 'Error del servidor al eliminar la modalidad'
+        });
+    }
+});
+
+// ====================================================
+// MOTIVOS DE BLOQUEO PREDEFINIDOS
+// ====================================================
+
+// Obtener motivos (GET /configuraciones/motivos-bloqueo)
+router.get('/motivos-bloqueo', async (req, res) => {
+    try {
+        const [rows] = await db.execute('SELECT id_motivo, motivo FROM Motivos_Bloqueo_Predefinidos ORDER BY id_motivo ASC');
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('Error al obtener motivos de bloqueo:', error.message);
+        res.status(500).json({ success: false, error: 'Error del servidor al obtener motivos de bloqueo' });
+    }
+});
+
+// Agregar motivo (POST /configuraciones/motivos-bloqueo)
+router.post('/motivos-bloqueo', async (req, res) => {
+    const { motivo } = req.body;
+    if (!motivo) {
+        return res.status(400).json({ success: false, message: 'El motivo es requerido' });
+    }
+    try {
+        await db.execute('INSERT INTO Motivos_Bloqueo_Predefinidos (motivo) VALUES (?)', [motivo]);
+        res.json({ success: true, message: 'Motivo agregado correctamente' });
+    } catch (error) {
+        console.error('Error al agregar motivo de bloqueo:', error.message);
+        res.status(500).json({ success: false, error: 'Error del servidor al agregar motivo de bloqueo' });
+    }
+});
+
+// Editar motivo (PUT /configuraciones/motivos-bloqueo/:id)
+router.put('/motivos-bloqueo/:id', async (req, res) => {
+    const id = parseInt(req.params.id);
+    const { motivo } = req.body;
+    if (isNaN(id)) return res.status(400).json({ success: false, message: 'ID inválido' });
+    if (!motivo || !motivo.trim()) return res.status(400).json({ success: false, message: 'El motivo es requerido' });
+    try {
+        await db.execute('UPDATE Motivos_Bloqueo_Predefinidos SET motivo = ? WHERE id_motivo = ?', [motivo.trim(), id]);
+        res.json({ success: true, message: 'Motivo actualizado correctamente' });
+    } catch (error) {
+        console.error('Error al editar motivo de bloqueo:', error.message);
+        res.status(500).json({ success: false, error: 'Error del servidor al editar motivo de bloqueo' });
+    }
+});
+
+// Eliminar motivo (DELETE /configuraciones/motivos-bloqueo)
+router.delete('/motivos-bloqueo', async (req, res) => {
+    const { motivo } = req.body;
+    if (!motivo) {
+        return res.status(400).json({ success: false, message: 'El motivo a eliminar es requerido' });
+    }
+    try {
+        await db.execute('DELETE FROM Motivos_Bloqueo_Predefinidos WHERE motivo = ?', [motivo]);
+        res.json({ success: true, message: 'Motivo eliminado correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar motivo de bloqueo:', error.message);
+        res.status(500).json({ success: false, error: 'Error del servidor al eliminar motivo de bloqueo' });
+    }
+});
+
+// ====================================================
+// ROLES Y PERMISOS
+// ====================================================
+
+// Obtener permisos disponibles en el sistema (GET /configuraciones/permisos)
+router.get('/permisos', async (req, res) => {
+    try {
+        const [rows] = await db.execute('SELECT clave_permiso as clave, nombre_permiso as nombre FROM Permisos');
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('Error al obtener permisos:', error.message);
+        res.status(500).json({ success: false, error: 'Error al obtener permisos' });
+    }
+});
+
+// Obtener todos los roles con sus permisos (GET /configuraciones/roles)
+router.get('/roles', async (req, res) => {
+    try {
+        const [rows] = await db.execute(`
+            SELECT r.id_rol, r.nombre_rol, r.descripcion_rol, r.es_default,
+                   GROUP_CONCAT(p.clave_permiso) as permisos_lista
+            FROM Roles r
+            LEFT JOIN Roles_Permisos rp ON r.id_rol = rp.id_rol
+            LEFT JOIN Permisos p ON rp.id_permiso = p.id_permiso
+            GROUP BY r.id_rol
+        `);
+        
+        const roles = rows.map(r => ({
+            id_rol: r.id_rol,
+            nombre_rol: r.nombre_rol,
+            descripcion_rol: r.descripcion_rol,
+            es_default: r.es_default === 1,
+            permisos: r.permisos_lista ? r.permisos_lista.split(',') : []
+        }));
+
+        res.json({ success: true, data: roles });
+    } catch (error) {
+        console.error('Error al obtener roles:', error.message);
+        res.status(500).json({ success: false, error: 'Error del servidor al obtener roles y permisos' });
+    }
+});
+
+// Crear un nuevo rol personalizado (POST /configuraciones/roles)
+router.post('/roles', async (req, res) => {
+    const { nombre_rol, descripcion_rol } = req.body;
+    if (!nombre_rol) {
+        return res.status(400).json({ success: false, message: 'El nombre del rol es requerido' });
+    }
+    try {
+        const [result] = await db.execute(
+            'INSERT INTO Roles (nombre_rol, descripcion_rol, es_default) VALUES (?, ?, 0)',
+            [nombre_rol, descripcion_rol || '']
+        );
+        const nuevoId = result.insertId;
+        
+        // Asignar el permiso básico predeterminado: VER_HISTORIAL_PERSONAL (id_permiso = 5)
+        await db.execute('INSERT INTO Roles_Permisos (id_rol, id_permiso) VALUES (?, 5)', [nuevoId]);
+        
+        res.json({ success: true, message: 'Rol creado correctamente', id_rol: nuevoId });
+    } catch (error) {
+        console.error('Error al crear rol:', error.message);
+        res.status(500).json({ success: false, error: 'Error al crear el rol' });
+    }
+});
+
+// Actualizar nombre y descripción de un rol (PUT /configuraciones/roles/:id)
+router.put('/roles/:id', async (req, res) => {
+    const id = parseInt(req.params.id);
+    const { nombre_rol, descripcion_rol } = req.body;
+    
+    if (isNaN(id)) {
+        return res.status(400).json({ success: false, message: 'ID de rol no válido' });
+    }
+    if (!nombre_rol) {
+        return res.status(400).json({ success: false, message: 'El nombre del rol es requerido' });
+    }
+
+    try {
+        await db.execute(
+            'UPDATE Roles SET nombre_rol = ?, descripcion_rol = ? WHERE id_rol = ?',
+            [nombre_rol, descripcion_rol || '', id]
+        );
+        res.json({ success: true, message: 'Rol actualizado correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar rol:', error.message);
+        res.status(500).json({ success: false, error: 'Error al actualizar el rol' });
+    }
+});
+
+// Eliminar un rol (DELETE /configuraciones/roles/:id)
+router.delete('/roles/:id', async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+        return res.status(400).json({ success: false, message: 'ID de rol no válido' });
+    }
+
+    try {
+        // Verificar si es un rol por defecto
+        const [rows] = await db.execute('SELECT es_default FROM Roles WHERE id_rol = ?', [id]);
+        if (rows.length > 0 && rows[0].es_default === 1) {
+            return res.status(400).json({ success: false, error: 'No se puede eliminar un rol por defecto del sistema' });
+        }
+
+        await db.execute('DELETE FROM Roles WHERE id_rol = ?', [id]);
+        res.json({ success: true, message: 'Rol eliminado correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar rol:', error.message);
+        res.status(500).json({ success: false, error: 'Error al eliminar el rol' });
+    }
+});
+
+// Guardar permisos asignados a un rol (PUT /configuraciones/roles/:id/permisos)
+router.put('/roles/:id/permisos', async (req, res) => {
+    const id = parseInt(req.params.id);
+    const { permisos } = req.body;
+
+    if (isNaN(id)) {
+        return res.status(400).json({ success: false, message: 'ID de rol no válido' });
+    }
+    if (!Array.isArray(permisos)) {
+        return res.status(400).json({ success: false, message: 'Los permisos deben enviarse como un array' });
+    }
+
+    try {
+        // Obtener IDs de los permisos correspondientes
+        const [permisosDB] = await db.execute('SELECT id_permiso, clave_permiso FROM Permisos');
+        
+        // Empezar actualización de permisos
+        await db.execute('DELETE FROM Roles_Permisos WHERE id_rol = ?', [id]);
+
+        for (let clave of permisos) {
+            const p = permisosDB.find(pdb => pdb.clave_permiso === clave);
+            if (p) {
+                await db.execute('INSERT INTO Roles_Permisos (id_rol, id_permiso) VALUES (?, ?)', [id, p.id_permiso]);
+            }
+        }
+
+        res.json({ success: true, message: 'Permisos actualizados correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar permisos del rol:', error.message);
+        res.status(500).json({ success: false, error: 'Error al guardar los permisos' });
+    }
+});
+
+// ====================================================
+// ENDPOINTS PARA GESTIÓN DE VARIABLES DE ENTORNO
+// ====================================================
+
+// Obtener todas las variables de entorno
+router.get('/variables', async (req, res) => {
+    try {
+        const [rows] = await db.execute("SELECT clave, valor FROM Configuraciones_Sistema WHERE tipo = 'variable_entorno'");
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('Error al obtener variables de entorno:', error.message);
+        res.status(500).json({ success: false, error: 'Error del servidor al obtener variables' });
+    }
+});
+
+// Guardar nueva variable de entorno
+router.post('/variables', async (req, res) => {
+    const { clave, valor } = req.body;
+    if (!clave || !valor) {
+        return res.status(400).json({ success: false, message: 'La clave y el valor son requeridos' });
+    }
+    try {
+        await db.execute(
+            "INSERT INTO Configuraciones_Sistema (clave, valor, tipo, descripcion) VALUES (?, ?, 'variable_entorno', 'Variable de entorno del sistema')",
+            [clave, String(valor)]
+        );
+        res.json({ success: true, message: 'Variable de entorno agregada con éxito' });
+    } catch (error) {
+        console.error('Error al agregar variable de entorno:', error.message);
+        res.status(500).json({ success: false, error: 'Error al agregar la variable en la base de datos' });
+    }
+});
+
+// Actualizar variable de entorno
+router.put('/variables/:clave', async (req, res) => {
+    const { clave } = req.params;
+    const { valor } = req.body;
+    if (!valor) {
+        return res.status(400).json({ success: false, message: 'El valor es requerido' });
+    }
+    try {
+        await db.execute(
+            "UPDATE Configuraciones_Sistema SET valor = ? WHERE clave = ? AND tipo = 'variable_entorno'",
+            [String(valor), clave]
+        );
+        res.json({ success: true, message: 'Variable de entorno actualizada con éxito' });
+    } catch (error) {
+        console.error('Error al actualizar variable de entorno:', error.message);
+        res.status(500).json({ success: false, error: 'Error al actualizar la variable' });
+    }
+});
+
+// Eliminar variable de entorno
+router.delete('/variables/:clave', async (req, res) => {
+    const { clave } = req.params;
+    try {
+        await db.execute("DELETE FROM Configuraciones_Sistema WHERE clave = ? AND tipo = 'variable_entorno'", [clave]);
+        res.json({ success: true, message: 'Variable de entorno eliminada con éxito' });
+    } catch (error) {
+        console.error('Error al eliminar variable de entorno:', error.message);
+        res.status(500).json({ success: false, error: 'Error al eliminar la variable' });
+    }
+});
+
+module.exports = router;

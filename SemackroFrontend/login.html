@@ -372,7 +372,7 @@
             if (messageBox) {
                 messageBox.classList.remove('hidden');
                 messageBox.className = `p-3 text-sm font-medium rounded-lg mb-6 text-center ${classes}`;
-                messageBox.textContent = text;
+                messageBox.innerHTML = text;
             }
         }
 
@@ -521,7 +521,11 @@
             const urlParams = new URLSearchParams(window.location.search);
             const errorParam = urlParams.get('error');
             if (errorParam === 'inactive') {
-                showMessage("Tu cuenta ha sido restringida por el administrador. Ponte en contacto con el soporte técnico.", "bg-red-100 text-red-700");
+                const motivo = urlParams.get('motivo');
+                const mensajeError = motivo 
+                    ? `Tu cuenta ha sido bloqueada por el administrador.<br>Motivo: <span class="text-red-900 font-extrabold">"${motivo}"</span>`
+                    : "Tu cuenta ha sido restringida por el administrador. Ponte en contacto con el soporte técnico.";
+                showMessage(mensajeError, "bg-red-100 text-red-700");
             } else if (errorParam === 'auth_failed') {
                 showMessage("Error en la autenticación con Google.", "bg-red-100 text-red-700");
             }
@@ -672,7 +676,10 @@
 
                         } else {
                             if (res.status === 403) {
-                                showMessage(data.error || "Tu cuenta ha sido restringida por el administrador. Ponte en contacto con el soporte técnico.", "bg-red-100 text-red-700");
+                                const mensajeError = data.motivo 
+                                    ? `Tu cuenta ha sido bloqueada por el administrador.<br>Motivo: <span class="text-red-900 font-extrabold">"${data.motivo}"</span>`
+                                    : (data.error || "Tu cuenta ha sido restringida por el administrador. Ponte en contacto con el soporte técnico.");
+                                showMessage(mensajeError, "bg-red-100 text-red-700");
                             } else {
                                 showMessage(data.error || "Error de sesión", "bg-red-100 text-red-700");
                             }

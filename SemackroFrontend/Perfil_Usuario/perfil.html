@@ -3538,6 +3538,21 @@
             if (profileTourHasStarted) return;
             if (readOnlyMode && !force) return;
 
+            // Verificar si el driver de perfil está habilitado en las configuraciones del sistema
+            try {
+                const resConfig = await fetch(`${API_BASE}/configuraciones`);
+                const jsonConfig = await resConfig.json();
+                if (resConfig.ok && jsonConfig.success && jsonConfig.data) {
+                    const driverActivo = jsonConfig.data['driver_perfil_activado']?.valor;
+                    if (driverActivo === false && !force) {
+                        console.log('[Tour Perfil] El driver de perfil está desactivado globalmente.');
+                        return;
+                    }
+                }
+            } catch (errConfig) {
+                console.error('Error al validar driver_perfil_activado:', errConfig);
+            }
+
             const searchParams = new URLSearchParams(window.location.search);
             const forceByQuery = searchParams.get('tour') === 'onboarding';
             const wasSeenLocal = localStorage.getItem(PROFILE_TOUR_STORAGE_KEY) === '1';
@@ -3814,6 +3829,50 @@
 
             // Configurar actualización automática de estadísticas
             configurarActualizacionAutomatica();
+
+            // ── Botón "Volver al Panel" (solo cuando es acceso admin con ?usuario_id=) ──
+            if (paramUserId) {
+                const btn = document.createElement('button');
+                btn.id = 'btnVolverAdmin';
+                btn.title = 'Volver al Panel de Administración';
+                btn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0;">
+                        <path d="M19 12H5M12 5l-7 7 7 7"/>
+                    </svg>
+                    <span>Volver al Panel</span>
+                `;
+                Object.assign(btn.style, {
+                    position: 'fixed',
+                    top: '16px',
+                    left: '16px',
+                    zIndex: '99999',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    background: '#1a2a4b',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '999px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    fontFamily: 'Inter, sans-serif',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 16px rgba(26,42,75,0.35)',
+                    transition: 'background 0.18s, transform 0.18s',
+                    letterSpacing: '0.01em'
+                });
+                btn.onmouseenter = () => { btn.style.background = '#2563EB'; btn.style.transform = 'scale(1.04)'; };
+                btn.onmouseleave = () => { btn.style.background = '#1a2a4b'; btn.style.transform = 'scale(1)'; };
+                btn.onclick = () => {
+                    if (document.referrer && document.referrer.includes('Reportes.html')) {
+                        history.back();
+                    } else {
+                        window.location.href = '../Reportes.html';
+                    }
+                };
+                document.body.appendChild(btn);
+            }
         });
 
         // ======================
@@ -3997,6 +4056,7 @@
                     fechaNacimiento: personaDB.fechaNac_Persona || '',
                     anios_experiencia: personaDB.anios_experiencia || 0,
                     url_Dni: personaDB.url_Dni || '',
+                    telefono_Usuario: personaDB.telefono_Persona || '',
                     disponibilidad_Usuario: personaDB.disponibilidad_Persona || personaDB.disponibilidad || 'Disponible'
                 };
 
@@ -5168,6 +5228,7 @@
                 { label: t('department'), field: 'departamento', value: usuario.departamento },
                 { label: t('city'), field: 'ciudad', value: usuario.ciudad },
                 { label: t('postalCode'), field: 'codigoPostal', value: usuario.codigoPostal },
+                { label: t('phone'), field: 'telefono_Usuario', value: usuario.telefono_Usuario },
                 {
                     label: t('maritalStatus'), field: 'estadoCivil_Usuario', value: usuario.estadoCivil_Usuario, type: 'select', options: [
                         { value: 'Soltero', label: t('single') },
@@ -5575,6 +5636,7 @@
                     'estadoCivil_Usuario': 'estadoCivil_Persona',
                     'genero_Usuario': 'genero_Persona',
                     'tipoIdentificacion_Usuario': 'tipoIdentificacion_Persona',
+                    'telefono_Usuario': 'telefono_Persona',
                     'identificacion_usuario': 'identificacion_Persona',
                     'fechaNacimiento': 'fechaNac_Persona',
                     'anios_experiencia': 'anios_experiencia',
@@ -7355,6 +7417,7 @@
                 idNumber: 'Número de Identificación',
                 birthDate: 'Fecha de Nacimiento',
                 yearsOfExperience: 'Años de Experiencia',
+                phone: 'Teléfono',
 
                 // Opciones de estado civil
                 single: 'Soltero',
@@ -7488,6 +7551,7 @@
                 idNumber: 'ID Number',
                 birthDate: 'Birth Date',
                 yearsOfExperience: 'Years of Experience',
+                phone: 'Phone',
 
                 // Marital status options
                 single: 'Single',
