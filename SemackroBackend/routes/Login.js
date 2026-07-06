@@ -149,7 +149,7 @@ router.get('/login/rol/:id_usuario', async (req, res) => {
     }
 });
 
-// GET endpoint: Obtener id_usuario por correo y luego su rol completo
+// GET endpoint: Obtener id_usuario por correo y luego su rol completo + permisos
 // Ruta: GET /login/rol/correo/:correo
 router.get('/login/rol/correo/:correo', async (req, res) => {
     const { correo } = req.params;
@@ -179,11 +179,29 @@ router.get('/login/rol/correo/:correo', async (req, res) => {
             return res.status(404).json({ error: 'No se encontró rol para el usuario.' });
         }
 
+        const id_rol = rolResult[0].id_rol;
+
+        // Obtener los permisos asociados al rol del usuario
+        let permisos = [];
+        try {
+            const [permisosRows] = await pool.execute(
+                `SELECT p.clave_permiso 
+                 FROM Roles_Permisos rp 
+                 JOIN Permisos p ON rp.id_permiso = p.id_permiso 
+                 WHERE rp.id_rol = ?`,
+                [id_rol]
+            );
+            permisos = permisosRows.map(p => p.clave_permiso);
+        } catch (permErr) {
+            console.warn('No se pudieron obtener permisos del rol:', permErr.message);
+        }
+
         res.status(200).json({
             id_usuario: Number(id_usuario),
             correo,
             rol: rolResult[0].rol,
-            id_rol: rolResult[0].id_rol,
+            id_rol: id_rol,
+            permisos: permisos,
             raw: { idResult, rolResult }
         });
 

@@ -97,6 +97,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Chart.js para gráficos dinámicos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/permisos.js"></script>
+    <script src="js/session-security.js"></script>
     <script src="js/translations.js"></script>
     <link rel="stylesheet" href="css/toast.css">
     <!-- Plugin Chart.js: datalabels para mostrar valores encima de las barras -->
@@ -2075,7 +2077,7 @@
                     console.warn('No se pudo cargar mapa de personas, se usará info de la solicitud:', e);
                 }
 
-                const isAdmin = localStorage.getItem('usuarioRolId') === '1';
+                const isAdmin = window.Permisos ? window.Permisos.puedeModerar() : false;
 
                 // Procesar todas las filas y guardarlas en la variable global
                 todasLasSolicitudesVerificacion = rows.map(r => {
@@ -2423,21 +2425,62 @@
         // Cargar solicitudes al abrir la página (si es admin mostrarlas)
         document.addEventListener('DOMContentLoaded', () => {
             try {
-                const isAdmin = localStorage.getItem('usuarioRolId') === '1';
-                if (!isAdmin) {
-                    const sec = document.getElementById('verificationSection');
-                    if (sec) sec.style.display = 'none';
-                    return;
+                const tieneAccesoReportes = window.Permisos ? window.Permisos.puedeVerReportes() : false;
+                const tieneAccesoVerificacion = window.Permisos ? window.Permisos.puedeModerar() : false;
+                const tieneAccesoDirectorio = window.Permisos ? window.Permisos.puedeVerDirectorio() : false;
+                const tieneAccesoConfiguracion = window.Permisos ? window.Permisos.puedeConfigurar() : false;
+
+                // 1. Mostrar/Ocultar sección de verificaciones
+                const secVerif = document.getElementById('verificationSection');
+                if (secVerif) {
+                    if (!tieneAccesoVerificacion) {
+                        secVerif.style.display = 'none';
+                    } else {
+                        secVerif.style.display = '';
+                        cargarSolicitudesVerificacion();
+                    }
                 }
-                // Carga inicial
-                cargarSolicitudesVerificacion();
-                cargarEstadisticasReportes();
-                cargarTecnicosDirectorio();
 
-                // Iniciar polling automático (solo para estadísticas)
-                iniciarPollingEstadisticas();
+                // 2. Mostrar/Ocultar sección del directorio general
+                const secDirectorio = document.getElementById('directorioSection');
+                if (secDirectorio) {
+                    if (!tieneAccesoDirectorio) {
+                        secDirectorio.style.display = 'none';
+                    } else {
+                        secDirectorio.style.display = '';
+                        cargarTecnicosDirectorio();
+                    }
+                }
 
-                console.log('[REPORTES] Sistema de actualización automática iniciado');
+                // 3. Mostrar/Ocultar pestañas superiores en el TabBar
+                const btnTabReportes = document.getElementById('tabReportes');
+                const btnTabConfig = document.getElementById('tabConfiguraciones');
+                
+                const tieneCualquierAccesoReportes = tieneAccesoReportes || tieneAccesoVerificacion || tieneAccesoDirectorio;
+
+                if (btnTabReportes && !tieneCualquierAccesoReportes) {
+                    btnTabReportes.style.display = 'none';
+                }
+                if (btnTabConfig && !tieneAccesoConfiguracion) {
+                    btnTabConfig.style.display = 'none';
+                }
+
+                // 4. Mostrar/Ocultar sección general de reportes (si aplica)
+                if (tieneAccesoReportes) {
+                    cargarEstadisticasReportes();
+                    iniciarPollingEstadisticas();
+                    console.log('[REPORTES] Sistema de actualización automática iniciado');
+                } else {
+                    const secReportes = document.getElementById('sheetReportes');
+                    if (secReportes && !tieneCualquierAccesoReportes) {
+                        secReportes.innerHTML = `<div class="p-8 text-center text-red-500 font-semibold">No tienes permisos para acceder a esta sección.</div>`;
+                    }
+                }
+
+                // 5. Autoselección de hoja si no tiene acceso a reportes pero sí a configuraciones
+                if (!tieneCualquierAccesoReportes && tieneAccesoConfiguracion) {
+                    switchSheet('configuraciones');
+                }
             } catch (e) {
                 console.warn('Inicialización verificación error', e);
             }
@@ -2452,7 +2495,7 @@
                 console.log('[POLLING] Página oculta, continuando en segundo plano');
             } else {
                 console.log('[POLLING] Página visible, actualizando datos...');
-                const isAdmin = localStorage.getItem('usuarioRolId') === '1';
+                const isAdmin = window.Permisos ? window.Permisos.puedeVerReportes() : false;
                 if (isAdmin) {
                     cargarEstadisticasReportes();
                 }
@@ -3100,6 +3143,14 @@
                 }
             }
 
+            // Si falló o está vacío, poblar con el fallback mínimo para que nunca se muestre vacío
+            if (!_rolesDirectorio || _rolesDirectorio.length === 0) {
+                _rolesDirectorio = [
+                    { id_rol: 2, nombre_rol: 'Usuario Estandar' },
+                    { id_rol: 1, nombre_rol: 'Administrador' }
+                ];
+            }
+
             try {
                 // 1. Obtener lista base de personas
                 const resPersonas = await fetch(`${API_BASE}/personas`);
@@ -3568,7 +3619,7 @@
                 }
             });
 
-            const isAdmin = localStorage.getItem('usuarioRolId') === '1';
+            const isAdmin = window.Permisos ? window.Permisos.puedeVerDirectorio() : false;
             cargarEstadisticasReportes();
             cargarSolicitudesVerificacion();
             if (isAdmin) {

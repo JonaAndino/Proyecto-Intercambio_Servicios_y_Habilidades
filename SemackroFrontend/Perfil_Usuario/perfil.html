@@ -3802,8 +3802,8 @@
             const urlParams = new URLSearchParams(window.location.search);
             const paramUserId = urlParams.get('usuario_id');
 
-            // Obtener usuario ID desde localStorage
-            const usuarioIdFromStorage = localStorage.getItem('usuarioId');
+            // Obtener usuario ID desde sessionStorage o localStorage
+            const usuarioIdFromStorage = sessionStorage.getItem('usuarioId') || localStorage.getItem('usuarioId');
             const usuarioIdPropio = usuarioIdFromStorage ? parseInt(usuarioIdFromStorage, 10) : null;
             usuarioId = usuarioIdPropio;
             const readOnlyMode = !!(paramUserId && parseInt(paramUserId, 10) !== usuarioIdPropio);
@@ -3999,7 +3999,7 @@
                 }
 
                 // 3. Mapear datos con defaults inteligentes, usando datos de Google si están disponibles
-                const correoUsuario = localStorage.getItem('correoUsuario') || '';
+                const correoUsuario = sessionStorage.getItem('correoUsuario') || localStorage.getItem('correoUsuario') || '';
                 const nombreDelCorreo = correoUsuario.split('@')[0] || 'Usuario';
                 
                 // Capitalizar primera letra

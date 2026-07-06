@@ -286,18 +286,19 @@ function setupMobileChatViewportFixes() {
 window.addEventListener("resize", syncAppHeaderHeight);
 window.addEventListener("load", syncAppHeaderHeight);
 
-// Comprobación de sesión: si no hay usuario o token en localStorage, redirigir al login
+// Comprobación de sesión: si no hay usuario o token en localStorage/sessionStorage, redirigir al login
 try {
-  const hasUser = localStorage.getItem("usuarioId");
+  const hasUser = sessionStorage.getItem("usuarioId") || localStorage.getItem("usuarioId");
   const hasToken =
+    sessionStorage.getItem("token") || sessionStorage.getItem("authToken") || 
     localStorage.getItem("token") || localStorage.getItem("authToken");
   if (!hasUser || !hasToken) {
     // Si no hay sesión activa, llevar al login
     window.location.href = "login.html";
   }
 } catch (e) {
-  console.warn("No se pudo verificar la sesión en localStorage:", e);
-  // En caso de error en localStorage, redirigir al login por seguridad
+  console.warn("No se pudo verificar la sesión:", e);
+  // En caso de error, redirigir al login por seguridad
   window.location.href = "login.html";
 }
 
@@ -993,10 +994,15 @@ function closeLogoutModal(event) {
 }
 
 function confirmLogout() {
-  // Limpiar localStorage (igual que en perfil.html)
-  localStorage.removeItem("usuarioId");
-  localStorage.removeItem("token");
-  localStorage.removeItem("usuario");
+  // Limpiar localStorage y sessionStorage
+  const clavesSesion = [
+      'authToken', 'token', 'usuarioId', 'correoUsuario', 
+      'usuarioRolId', 'usuarioRol', 'usuarioPermisos', 'firebaseUser'
+  ];
+  clavesSesion.forEach(clave => {
+      sessionStorage.removeItem(clave);
+      localStorage.removeItem(clave);
+  });
 
   // Redirigir al login
   window.location.href = "login.html";
@@ -6279,6 +6285,43 @@ function mostrarMensajesDashboard(mensajes, idConversacionRender = null) {
     fueReRenderizado = true;
   }
 
+  // Actualizar la fecha y hora del último mensaje en el input
+  const timestampContainer = document.getElementById("last-message-timestamp");
+  const timeText = document.getElementById("last-message-time-text");
+  
+  if (timestampContainer && timeText) {
+      if (mensajes && mensajes.length > 0) {
+          const ultimoMsg = mensajes[mensajes.length - 1];
+          let fechaUltimo = null;
+          
+          if (ultimoMsg.fecha_envio) {
+              fechaUltimo = new Date(ultimoMsg.fecha_envio);
+          } else if (ultimoMsg.fechaEnvio) {
+              fechaUltimo = new Date(ultimoMsg.fechaEnvio);
+          } else if (ultimoMsg.fecha) {
+              fechaUltimo = new Date(ultimoMsg.fecha);
+          }
+          
+          if (fechaUltimo && !isNaN(fechaUltimo.getTime())) {
+              const ahora = new Date();
+              let formattedTime = "";
+              
+              if (fechaUltimo.toDateString() === ahora.toDateString()) {
+                  formattedTime = `Hoy a las ${fechaUltimo.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+              } else {
+                  formattedTime = `${fechaUltimo.toLocaleDateString()} a las ${fechaUltimo.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+              }
+              
+              timeText.textContent = formattedTime;
+              timestampContainer.classList.remove("hidden");
+          } else {
+              timestampContainer.classList.add("hidden");
+          }
+      } else {
+          timestampContainer.classList.add("hidden");
+      }
+  }
+
   agregarLongPressListeners();
 }
 
@@ -10083,7 +10126,7 @@ async function cargarOrdenesTrabajo() {
   const grid = document.getElementById('ordenesTrabajoGrid');
   if (!grid) return;
 
-  const esAdmin = localStorage.getItem('usuarioRolId') === '1';
+  const esAdmin = window.Permisos ? window.Permisos.esAdmin() : false;
 
   // Cargar órdenes administrativas en paralelo si es administrador
   if (esAdmin && typeof window.adminCargarOrdenes === 'function') {
@@ -10187,7 +10230,7 @@ async function cargarEspecialidadesOrden() {
 
 /** Renderiza el array de órdenes como tarjetas en el grid con paginación */
 function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
-  if (esAdmin === undefined) esAdmin = localStorage.getItem('usuarioRolId') === '1';
+  if (esAdmin === undefined) esAdmin = window.Permisos ? window.Permisos.esAdmin() : false;
   if (!misPostulacionesMap) misPostulacionesMap = {};
   const grid = document.getElementById('ordenesTrabajoGrid');
   const paginationEl = document.getElementById('ordenes-trabajo-pagination');
@@ -10395,7 +10438,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
 
 /** Navega a una página específica de órdenes de trabajo */
 function irPaginaOT(page) {
-  const esAdmin = localStorage.getItem('usuarioRolId') === '1';
+  const esAdmin = window.Permisos ? window.Permisos.esAdmin() : false;
   renderizarOrdenes(_ordenesFiltradas, esAdmin, _misPostulacionesMap, page);
   // Scroll suave al tope de la sección
   const wrapper = document.getElementById('ordenes-trabajo-wrapper');
@@ -10423,7 +10466,7 @@ function filtrarOrdenes(filtro) {
   });
 
   const filtradas = _aplicarFiltrosCombinados();
-  renderizarOrdenes(filtradas, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap, 1);
+  renderizarOrdenes(filtradas, window.Permisos ? window.Permisos.esAdmin() : false, _misPostulacionesMap, 1);
 }
 
 /** Aplica todos los filtros activos (estado + mes + búsqueda) sobre _todasLasOrdenes */
@@ -10461,7 +10504,7 @@ function aplicarFiltroMes() {
   _filtroMesOT = document.getElementById('filtroMesOrdenes')?.value || '';
   _currentOTPage = 1;
   const filtradas = _aplicarFiltrosCombinados();
-  renderizarOrdenes(filtradas, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap, 1);
+  renderizarOrdenes(filtradas, window.Permisos ? window.Permisos.esAdmin() : false, _misPostulacionesMap, 1);
 }
 
 /** Limpia el filtro de mes */
@@ -10471,7 +10514,7 @@ function limpiarFiltroMes() {
   if (inp) inp.value = '';
   _currentOTPage = 1;
   const filtradas = _aplicarFiltrosCombinados();
-  renderizarOrdenes(filtradas, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap, 1);
+  renderizarOrdenes(filtradas, window.Permisos ? window.Permisos.esAdmin() : false, _misPostulacionesMap, 1);
 }
 
 /** Búsqueda por título en tiempo real */
@@ -10479,7 +10522,7 @@ function aplicarBusquedaOrdenes() {
   _busquedaActualOT = (document.getElementById('buscarOrdenes')?.value || '').trim();
   _currentOTPage = 1;
   const filtradas = _aplicarFiltrosCombinados();
-  renderizarOrdenes(filtradas, localStorage.getItem('usuarioRolId') === '1', _misPostulacionesMap, 1);
+  renderizarOrdenes(filtradas, window.Permisos ? window.Permisos.esAdmin() : false, _misPostulacionesMap, 1);
 }
 
 /** Refresca las órdenes limpiando la caché */
@@ -10684,7 +10727,7 @@ async function verDetalleOrden(id) {
     ? `L ${Number(orden.presupuesto_estimado).toLocaleString('es-HN', { minimumFractionDigits: 2 })}`
     : '—';
 
-  const esAdmin = localStorage.getItem('usuarioRolId') === '1';
+  const esAdmin = window.Permisos ? window.Permisos.esAdmin() : false;
 
   document.getElementById('detalleOrdenContent').innerHTML = `
     <div class="space-y-3">
@@ -11518,7 +11561,7 @@ async function _checkMisPostulacionesRapido() {
     }
 
     // --- Para el admin: verificar si hay nuevos postulantes en sus órdenes ---
-    const esAdmin = localStorage.getItem('usuarioRolId') === '1';
+    const esAdmin = window.Permisos ? window.Permisos.esAdmin() : false;
     if (!esAdmin) return;
     const resOT = await fetch(`${API_BASE}/ordenes-trabajo`, { headers });
     if (!resOT.ok) return;
