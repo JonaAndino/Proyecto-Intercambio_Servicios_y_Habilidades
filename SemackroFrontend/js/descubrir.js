@@ -8463,8 +8463,8 @@ function mostrarInfoMensaje(datos) {
   }
 
   const estadoIcono = leido
-    ? '<span class="iconify inline-block" data-icon="mdi:check-all" style="color:#7dd3fc;" data-width="18"></span> <span style="color:#3b82f6;">Leído</span>'
-    : '<span class="iconify inline-block" data-icon="mdi:check" data-width="18" style="color:#94a3b8;"></span> <span style="color:#64748b;">Enviado</span>';
+    ? '<span class="iconify inline-block text-blue-500 dark:text-sky-400" data-icon="mdi:check-all" data-width="18"></span> <span class="text-blue-600 dark:text-sky-400 font-semibold">Leído</span>'
+    : '<span class="iconify inline-block text-slate-400 dark:text-slate-500" data-icon="mdi:check" data-width="18"></span> <span class="text-slate-500 dark:text-slate-400 font-semibold">Enviado</span>';
 
   const origenTexto = esMio ? 'Tú enviaste este mensaje' : 'Mensaje recibido';
 
@@ -8476,70 +8476,56 @@ function mostrarInfoMensaje(datos) {
   overlay.id = '__infoMsgModal__';
   overlay.style.cssText = `
     position: fixed; inset: 0; z-index: 20000;
-    background: rgba(15,23,42,0.55); backdrop-filter: blur(3px);
+    background: rgba(15,23,42,0.45); backdrop-filter: blur(4px);
     display: flex; align-items: center; justify-content: center;
     padding: 16px;
   `;
 
   overlay.innerHTML = `
-    <div style="
-      background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px; padding: 24px 28px; max-width: 360px; width: 100%;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.5); color: #f1f5f9;
-      font-family: 'Inter', sans-serif;
-    ">
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
-        <span class="iconify" data-icon="mdi:information" data-width="22" style="color:#6366f1;flex-shrink:0;"></span>
-        <h3 style="margin:0; font-size:16px; font-weight:700; color:#f1f5f9;">Información del mensaje</h3>
-        <button id="__closeInfoMsg__" style="
-          margin-left:auto; background:rgba(255,255,255,0.08); border:none; border-radius:50%;
-          width:28px; height:28px; cursor:pointer; display:flex; align-items:center;
-          justify-content:center; color:#94a3b8; transition: background 0.2s;
-        " onmouseover="this.style.background='rgba(255,255,255,0.16)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+    <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700/80 rounded-2xl p-6 sm:p-7 max-w-[360px] w-full shadow-2xl text-gray-800 dark:text-slate-200 font-sans transition-all duration-200">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="iconify text-indigo-500 dark:text-indigo-400" data-icon="mdi:information" data-width="22" style="flex-shrink:0;"></span>
+        <h3 class="m-0 text-base font-bold text-gray-900 dark:text-white">Información del mensaje</h3>
+        <button id="__closeInfoMsg__" class="ml-auto bg-gray-100 hover:bg-gray-200 active:bg-gray-300 dark:bg-white/8 dark:hover:bg-white/16 border-none rounded-full w-7 h-7 cursor-pointer flex items-center justify-center text-gray-500 dark:text-slate-400 transition-colors">
           <span class="iconify" data-icon="mdi:close" data-width="16"></span>
         </button>
       </div>
 
-      <div style="display:flex; flex-direction:column; gap:14px;">
-        <div style="display:flex; align-items:flex-start; gap:12px;">
-          <span class="iconify" data-icon="mdi:calendar" data-width="18" style="color:#818cf8; margin-top:2px; flex-shrink:0;"></span>
+      <div class="flex flex-col gap-4">
+        <div class="flex items-start gap-3">
+          <span class="iconify text-indigo-500 dark:text-indigo-400 mt-0.5 flex-shrink-0" data-icon="mdi:calendar" data-width="18"></span>
           <div>
-            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px;">Fecha de envío</div>
-            <div style="font-size:14px; font-weight:600; color:#e2e8f0;">${fechaCompleta}</div>
+            <div class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-wider font-bold mb-0.5">Fecha de envío</div>
+            <div class="text-sm font-semibold text-gray-700 dark:text-slate-200">${fechaCompleta}</div>
           </div>
         </div>
 
-        <div style="display:flex; align-items:flex-start; gap:12px;">
-          <span class="iconify" data-icon="mdi:clock-outline" data-width="18" style="color:#818cf8; margin-top:2px; flex-shrink:0;"></span>
+        <div class="flex items-start gap-3">
+          <span class="iconify text-indigo-500 dark:text-indigo-400 mt-0.5 flex-shrink-0" data-icon="mdi:clock-outline" data-width="18"></span>
           <div>
-            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px;">Hora</div>
-            <div style="font-size:14px; font-weight:600; color:#e2e8f0;">${horaCompleta}</div>
+            <div class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-wider font-bold mb-0.5">Hora</div>
+            <div class="text-sm font-semibold text-gray-700 dark:text-slate-200">${horaCompleta}</div>
           </div>
         </div>
 
-        <div style="display:flex; align-items:flex-start; gap:12px;">
-          <span class="iconify" data-icon="mdi:message-check-outline" data-width="18" style="color:#818cf8; margin-top:2px; flex-shrink:0;"></span>
+        <div class="flex items-start gap-3">
+          <span class="iconify text-indigo-500 dark:text-indigo-400 mt-0.5 flex-shrink-0" data-icon="mdi:message-check-outline" data-width="18"></span>
           <div>
-            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px;">Estado</div>
-            <div style="font-size:14px; font-weight:600; display:flex; align-items:center; gap:4px;">${estadoIcono}</div>
+            <div class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-wider font-bold mb-0.5">Estado</div>
+            <div class="text-sm font-semibold flex items-center gap-1">${estadoIcono}</div>
           </div>
         </div>
 
-        <div style="display:flex; align-items:flex-start; gap:12px;">
-          <span class="iconify" data-icon="mdi:account-outline" data-width="18" style="color:#818cf8; margin-top:2px; flex-shrink:0;"></span>
+        <div class="flex items-start gap-3">
+          <span class="iconify text-indigo-500 dark:text-indigo-400 mt-0.5 flex-shrink-0" data-icon="mdi:account-outline" data-width="18"></span>
           <div>
-            <div style="font-size:11px; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px;">Origen</div>
-            <div style="font-size:14px; font-weight:600; color:#e2e8f0;">${origenTexto}</div>
+            <div class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-wider font-bold mb-0.5">Origen</div>
+            <div class="text-sm font-semibold text-gray-700 dark:text-slate-200">${origenTexto}</div>
           </div>
         </div>
       </div>
 
-      <button id="__closeInfoMsgBtn__" style="
-        margin-top:22px; width:100%; padding:10px; border:none; border-radius:12px;
-        background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        color: #fff; font-size:14px; font-weight:600; cursor:pointer;
-        transition: opacity 0.2s;
-      " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+      <button id="__closeInfoMsgBtn__" class="mt-5 w-full py-2.5 border-none rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:opacity-90 active:opacity-100 text-white text-sm font-semibold cursor-pointer shadow-md transition-all">
         Cerrar
       </button>
     </div>
