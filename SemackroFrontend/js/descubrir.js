@@ -10182,6 +10182,18 @@ async function cargarOrdenesTrabajo() {
     sessionStorage.setItem('cache_ot_data', JSON.stringify({ ordenes: _todasLasOrdenes, postulaciones: misPostulacionesMap }));
     sessionStorage.setItem('cache_ot_ts', String(Date.now()));
 
+    // Poblar dropdown de especialidades para la vista de usuario
+    const _espSel = document.getElementById('filtroEspecialidadOrdenes');
+    if (_espSel) {
+      const _espSet = [...new Set(_todasLasOrdenes.map(o => (o.especialidad || '').trim()).filter(e => e))].sort();
+      while (_espSel.options.length > 1) _espSel.remove(1);
+      _espSet.forEach(esp => {
+        const opt = document.createElement('option');
+        opt.value = esp; opt.textContent = esp;
+        _espSel.appendChild(opt);
+      });
+    }
+
     renderizarOrdenes(_todasLasOrdenes, esAdmin, misPostulacionesMap);
   } catch (err) {
     console.warn('[OT] No se pudo conectar al endpoint:', err.message);
@@ -10482,6 +10494,27 @@ function _aplicarFiltrosCombinados() {
     );
   }
 
+  // Filtro por especialidad
+  const espFiltro = (document.getElementById('filtroEspecialidadOrdenes')?.value || '').trim();
+  if (espFiltro) {
+    resultado = resultado.filter(o =>
+      (o.especialidad || '').toLowerCase() === espFiltro.toLowerCase()
+    );
+  }
+
+  // Filtro por presupuesto mínimo
+  const presupFiltroVal = document.getElementById('filtroPresupuestoOrdenes')?.value || '';
+  if (presupFiltroVal !== '') {
+    const presupFiltro = parseFloat(presupFiltroVal);
+    if (!isNaN(presupFiltro)) {
+      resultado = resultado.filter(o =>
+        o.presupuesto_estimado !== null &&
+        o.presupuesto_estimado !== undefined &&
+        parseFloat(o.presupuesto_estimado) >= presupFiltro
+      );
+    }
+  }
+
   return resultado;
 }
 
@@ -10519,6 +10552,10 @@ async function refrescarOrdenesTrabajo() {
   _busquedaActualOT = '';
   _filtroMesOT = '';
   _filtroActualOrden = 'todas';
+  const _feEl = document.getElementById('filtroEspecialidadOrdenes');
+  if (_feEl) _feEl.value = '';
+  const _fpEl = document.getElementById('filtroPresupuestoOrdenes');
+  if (_fpEl) _fpEl.value = '';
   // Animar icono
   const icon = document.getElementById('iconRefrescarOrdenes');
   if (icon) { icon.style.transition = 'transform 0.6s'; icon.style.transform = 'rotate(360deg)'; setTimeout(() => { icon.style.transform = ''; }, 650); }
@@ -11082,15 +11119,22 @@ async function postularseOrden(id) {
               placeholder="Describe tu experiencia o disponibilidad..."></textarea>
             <label class="text-sm font-medium text-gray-700 mt-3 mb-1.5 flex items-center gap-1">
               <span class="iconify text-red-500" data-icon="mdi:file-pdf-box" style="font-size:15px"></span>
-              Portafolio en PDF <span class="text-gray-400 font-normal">(Opcional)</span>
+              Suba aquí su CV <span class="text-gray-400 font-normal">(Opcional)</span>
             </label>
             <label id="ot-pdf-label"
               class="flex items-center gap-2 w-full border-2 border-dashed border-gray-200 rounded-xl px-3 py-2.5 cursor-pointer hover:border-green-400 hover:bg-green-50 transition-colors bg-gray-50">
               <span class="iconify text-red-400" data-icon="mdi:file-pdf-box" style="font-size:20px"></span>
-              <span id="ot-pdf-name" class="text-xs text-gray-500 truncate flex-1">Haz clic para seleccionar un pdf...</span>
+              <span id="ot-pdf-name" class="text-xs text-gray-500 truncate flex-1">Haz clic para seleccionar su CV...</span>
               <input type="file" id="ot-postular-portfolio" accept=".pdf,application/pdf" class="hidden" />
             </label>
             <p class="text-xs text-gray-400 mt-1">Máximo 10 mb. el administrador podrá verlo en la lista de postulantes.</p>
+            <label class="text-sm font-medium text-gray-700 mt-3 mb-1.5 flex items-center gap-1">
+              <span class="iconify text-[#0a66c2]" data-icon="mdi:linkedin" style="font-size:15px"></span>
+              Perfil de LinkedIn <span class="text-gray-400 font-normal">(Opcional)</span>
+            </label>
+            <input type="url" id="ot-postular-linkedin"
+              class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 bg-gray-50"
+              placeholder="https://www.linkedin.com/in/tu-perfil">
             <div class="flex gap-3 mt-4">
               <button id="ot-postular-cancel" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors">Cancelar</button>
               <button id="ot-postular-confirm" class="flex-1 px-4 py-2.5 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 shadow-lg shadow-green-200 transition-all">Postularme</button>
@@ -11115,12 +11159,12 @@ async function postularseOrden(id) {
           nameEl.classList.add('text-red-500');
           this.value = '';
         } else {
-          nameEl.textContent = '✅ ' + file.name;
+          nameEl.textContent = '✅ CV seleccionado: ' + file.name;
           nameEl.classList.remove('text-red-500');
           nameEl.classList.add('text-green-700');
         }
       } else {
-        nameEl.textContent = 'Haz clic para seleccionar un PDF...';
+        nameEl.textContent = 'Haz clic para seleccionar su CV...';
         nameEl.classList.remove('text-green-700', 'text-red-500');
       }
     });
@@ -11130,7 +11174,8 @@ async function postularseOrden(id) {
       const fileInput = document.getElementById('ot-postular-portfolio');
       close({
         mensaje: document.getElementById('ot-postular-msg').value.trim(),
-        pdfFile: fileInput.files[0] || null
+        pdfFile: fileInput.files[0] || null,
+        linkedinUrl: (document.getElementById('ot-postular-linkedin')?.value || '').trim()
       });
     };
   });
@@ -11146,7 +11191,7 @@ async function postularseOrden(id) {
       const token = localStorage.getItem('token') || localStorage.getItem('authToken');
       const uploadBtn = document.querySelector('#ot-postular-confirm');
       // Mostrar feedback de subida en el Toast
-      Toast.info('Subiendo portafolio...', 'Por favor espera mientras se sube tu PDF.');
+      Toast.info('Subiendo CV...', 'Por favor espera mientras se sube tu PDF.');
       const uploadRes = await fetch(`${API_BASE}/upload/document`, {
         method: 'POST',
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -11154,7 +11199,7 @@ async function postularseOrden(id) {
       });
       const uploadData = await uploadRes.json();
       if (!uploadRes.ok || !uploadData.url) {
-        Toast.error('Error al subir PDF', uploadData.error || 'No se pudo subir el portafolio.');
+        Toast.error('Error al subir PDF', uploadData.error || 'No se pudo subir el CV.');
         return;
       }
       portafolio_url = uploadData.url;
@@ -11176,7 +11221,8 @@ async function postularseOrden(id) {
       body: JSON.stringify({
         usuario_id: usuarioId,
         mensaje: postulacionData.mensaje,
-        portafolio_url: portafolio_url
+        portafolio_url: portafolio_url,
+        linkedin_url: postulacionData.linkedinUrl || null
       })
     });
     const data = await res.json();

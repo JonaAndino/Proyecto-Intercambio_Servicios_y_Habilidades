@@ -73,6 +73,13 @@ function normalizarEstadoOT(valor) {
             console.log('✅ Columna portafolio_url agregada a PostulacionesOrdenes.');
         }
 
+        // Agregar linkedin_url si no existe
+        const [colsLinkedin] = await db.query(`SHOW COLUMNS FROM PostulacionesOrdenes LIKE 'linkedin_url'`);
+        if (colsLinkedin.length === 0) {
+            await db.query(`ALTER TABLE PostulacionesOrdenes ADD COLUMN linkedin_url VARCHAR(512) DEFAULT NULL`);
+            console.log('✅ Columna linkedin_url agregada a PostulacionesOrdenes.');
+        }
+
         // Agregar restringir_por_ubicacion si no existe (filtro de visibilidad por ubicación)
         const [colsRestr] = await db.query(`SHOW COLUMNS FROM OrdenesTrabajo LIKE 'restringir_por_ubicacion'`);
         if (colsRestr.length === 0) {
@@ -597,9 +604,10 @@ router.post('/:id/postular', async (req, res) => {
         }
 
         const portafolio_url = req.body.portafolio_url || null;
+        const linkedin_url = req.body.linkedin_url || null;
         const [result] = await db.query(
-            `INSERT INTO PostulacionesOrdenes (id_orden, usuario_id, mensaje, portafolio_url) VALUES (?, ?, ?, ?)`,
-            [req.params.id, usuario_id, mensaje || null, portafolio_url]
+            `INSERT INTO PostulacionesOrdenes (id_orden, usuario_id, mensaje, portafolio_url, linkedin_url) VALUES (?, ?, ?, ?, ?)`,
+            [req.params.id, usuario_id, mensaje || null, portafolio_url, linkedin_url]
         );
         res.status(201).json({ success: true, mensaje: 'Postulación enviada correctamente.', id_postulacion: result.insertId });
     } catch (err) {

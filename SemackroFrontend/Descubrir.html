@@ -1222,7 +1222,7 @@
                             </button>
                             <button onclick="switchOtViewTab('admin')" id="btnOtTab-admin" class="py-3 px-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-semibold text-sm transition-all focus:outline-none flex items-center gap-2">
                                 <span class="iconify text-lg" data-icon="mdi:shield-outline"></span>
-                                Administrar Órdenes (Global)
+                                Postulaciones
                             </button>
                         </nav>
                     </div>
@@ -1251,6 +1251,22 @@
                                     class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                             </label>
                             <button onclick="limpiarFiltroMes()" class="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition" data-i18n="workOrders.clear">Limpiar</button>
+                            
+                            <div class="border-l border-gray-300 h-6 mx-2"></div>
+
+                            <label class="flex items-center gap-2 text-sm text-gray-600">
+                                <span>Especialidad:</span>
+                                <select id="filtroEspecialidadOrdenes" onchange="aplicarBusquedaOrdenes()"
+                                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-44">
+                                    <option value="">Todas</option>
+                                </select>
+                            </label>
+                            
+                            <label class="flex items-center gap-2 text-sm text-gray-600">
+                                <span>Presupuesto Mín:</span>
+                                <input type="number" id="filtroPresupuestoOrdenes" oninput="aplicarBusquedaOrdenes()" placeholder="Mínimo L..."
+                                    class="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-28">
+                            </label>
                             
                             <div class="border-l border-gray-300 h-6 mx-2"></div>
                             
@@ -1286,7 +1302,7 @@
                     </div>
                     </div>
 
-                    <!-- Panel 2: Administrar Órdenes (Vista Admin Global) -->
+                    <!-- Panel 2: Postulaciones (Vista Admin Global) -->
                     <div id="otPanel-admin" class="hidden space-y-6">
                         <!-- Barra superior de la tabla del admin con sus botones -->
                         <div class="bg-white dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1295,11 +1311,21 @@
                                     <span class="iconify text-xl" data-icon="mdi:table-large"></span>
                                 </div>
                                 <div>
-                                    <h3 class="text-gray-800 dark:text-gray-150 font-bold text-base leading-tight">Administración Global de Órdenes</h3>
+                                    <h3 class="text-gray-800 dark:text-gray-150 font-bold text-base leading-tight">Administración Global de Postulaciones</h3>
                                     <p class="text-gray-500 dark:text-gray-400 text-xs">Acceso a todas las órdenes · <span id="adminOtCountLabel">0 Registros</span></p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 flex-wrap">
+                                <div class="relative">
+                                    <select id="adminOtEspecialidadInput" onchange="adminBuscarOrdenes()"
+                                        class="px-3 py-1.5 text-xs rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-205 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-44 transition">
+                                        <option value="">Todas las especialidades</option>
+                                    </select>
+                                </div>
+                                <div class="relative">
+                                    <input type="number" id="adminOtPresupuestoInput" oninput="adminBuscarOrdenes()" placeholder="Presupuesto Mín L..."
+                                        class="px-3 py-1.5 text-xs rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-205 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-32 transition">
+                                </div>
                                 <div class="relative">
                                     <span class="iconify absolute left-3 top-2.5 text-gray-400 text-sm" data-icon="mdi:magnify"></span>
                                     <input type="text" id="adminOtSearchInput" oninput="adminBuscarOrdenes()" placeholder="Buscar por título..."
@@ -2281,6 +2307,32 @@
             }
         }
 
+        // Pobla los selects de especialidad con valores únicos de las órdenes cargadas
+        function _poblarDropdownEspecialidades(ordenes) {
+            const especialidades = [...new Set(
+                ordenes.map(o => (o.especialidad || '').trim()).filter(e => e)
+            )].sort();
+
+            // IDs de los selects a poblar
+            ['adminOtEspecialidadInput', 'filtroEspecialidadOrdenes'].forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                const selected = sel.value; // mantener selección actual
+                // Limpiar opciones excepto la primera ("Todas")
+                while (sel.options.length > 1) sel.remove(1);
+                especialidades.forEach(esp => {
+                    const opt = document.createElement('option');
+                    opt.value = esp;
+                    opt.textContent = esp;
+                    sel.appendChild(opt);
+                });
+                // Restaurar selección si aún existe
+                if (selected && [...sel.options].some(o => o.value === selected)) {
+                    sel.value = selected;
+                }
+            });
+        }
+
         async function adminCargarOrdenes(force = false) {
             const tbody = document.getElementById('adminOrdenesTbody');
             if (!tbody) return;
@@ -2298,6 +2350,8 @@
                 const json = await res.json();
                 _adminTodasOrdenes = Array.isArray(json.data) ? json.data : [];
                 _adminPaginaActual = 1;
+                // Poblar dropdowns de especialidades (admin y usuario)
+                _poblarDropdownEspecialidades(_adminTodasOrdenes);
                 adminAplicarFiltroEstado();
             } catch (err) {
                 console.error('[AdminOT]', err);
@@ -2311,11 +2365,32 @@
                 ? _adminTodasOrdenes
                 : _adminTodasOrdenes.filter(o => o.estado === _adminFiltro);
             const q = (document.getElementById('adminOtSearchInput')?.value || '').toLowerCase().trim();
-            const resultado = q ? filtradas.filter(o =>
+            let resultado = q ? filtradas.filter(o =>
                 (o.titulo || '').toLowerCase().includes(q) ||
                 (o.especialidad || '').toLowerCase().includes(q) ||
                 (o.ubicacion_obra || '').toLowerCase().includes(q)
             ) : filtradas;
+
+            // Filtro por especialidad
+            const espAdmin = (document.getElementById('adminOtEspecialidadInput')?.value || '').trim();
+            if (espAdmin) {
+                resultado = resultado.filter(o =>
+                    (o.especialidad || '').toLowerCase() === espAdmin.toLowerCase()
+                );
+            }
+
+            // Filtro por presupuesto mínimo
+            const presupAdminVal = document.getElementById('adminOtPresupuestoInput')?.value || '';
+            if (presupAdminVal !== '') {
+                const presupAdmin = parseFloat(presupAdminVal);
+                if (!isNaN(presupAdmin)) {
+                    resultado = resultado.filter(o =>
+                        o.presupuesto_estimado !== null &&
+                        o.presupuesto_estimado !== undefined &&
+                        parseFloat(o.presupuesto_estimado) >= presupAdmin
+                    );
+                }
+            }
 
             // Calcular paginación
             const totalRows = resultado.length;
@@ -2756,11 +2831,11 @@
 
                     const perfilId = p.id_perfil_tecnico;
                     const btnVerPerfil = perfilId
-                        ? `<button onclick="adminModalPostulacionesClose(); abrirModalPerfilPostulante(${p.usuario_id});"
+                        ? `<a href="Perfil_Usuario/perfil.html?usuario_id=${p.usuario_id}&desde_orden=${idOrden}"
                                class="inline-flex items-center gap-1 mt-2 px-3 py-1 border-2 border-blue-500 text-blue-600 rounded-lg text-[10px] font-semibold hover:bg-blue-50 transition">
                                <span class="iconify" data-icon="mdi:account-arrow-right-outline" style="font-size:12px;"></span>
                                Ver perfil
-                           </button>`
+                           </a>`
                         : `<span class="inline-flex items-center gap-1 mt-2 text-[10px] text-gray-300 italic">
                                <span class="iconify" data-icon="mdi:account-off-outline" style="font-size:12px;"></span>
                                Sin perfil público
@@ -2804,7 +2879,36 @@
                             ${p.correo_tecnico ? `<p class="text-[11px] text-gray-400">${escapeHtml(p.correo_tecnico)}</p>` : ''}
                             ${calHtml}
                             ${metHtml}
-                            ${p.mensaje ? `<p class="text-xs text-gray-500 mt-1.5 italic">&ldquo;${escapeHtml(p.mensaje)}&rdquo;</p>` : ''}
+                            <div class="mt-2.5 p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-100 dark:border-slate-800 text-xs text-gray-600 dark:text-gray-300 space-y-1.5">
+                                <div>
+                                    <span class="font-semibold text-gray-700 dark:text-gray-200">Mensaje de aplicación:</span>
+                                    <p class="mt-0.5 text-gray-500 dark:text-gray-400 italic">
+                                        ${p.mensaje ? `&ldquo;${escapeHtml(p.mensaje)}&rdquo;` : 'Sin descripción proporcionada'}
+                                    </p>
+                                </div>
+                                <div class="flex items-center gap-4 flex-wrap">
+                                    <div>
+                                        <span class="font-semibold text-gray-700 dark:text-gray-200">CV:</span>
+                                        ${p.portafolio_url 
+                                            ? `<a href="${escapeHtml(p.portafolio_url)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline ml-1">
+                                                 <span class="iconify text-red-500" data-icon="mdi:file-pdf-box" style="font-size:14px;"></span>
+                                                 Ver CV (PDF)
+                                               </a>`
+                                            : `<span class="text-gray-400 dark:text-gray-500 italic ml-1">No proporcionado</span>`
+                                        }
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold text-gray-700 dark:text-gray-200">LinkedIn:</span>
+                                        ${p.linkedin_url 
+                                            ? `<a href="${escapeHtml(p.linkedin_url)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline ml-1">
+                                                 <span class="iconify text-[#0a66c2]" data-icon="mdi:linkedin" style="font-size:14px;"></span>
+                                                 Ver LinkedIn
+                                               </a>`
+                                            : `<span class="text-gray-400 dark:text-gray-500 italic ml-1">No proporcionado</span>`
+                                        }
+                                    </div>
+                                </div>
+                            </div>
                             <p class="text-[10px] text-gray-400 mt-1">${fecha}</p>
                             ${btnVerPerfil}
                         </div>
@@ -2955,6 +3059,21 @@
             if (postCloseBtn) postCloseBtn.onclick = adminModalPostulacionesClose;
             if (postCancelBtn) postCancelBtn.onclick = adminModalPostulacionesClose;
             if (postBackdrop) postBackdrop.onclick = adminModalPostulacionesClose;
+
+            // Reabrir modal de postulaciones si venimos de ver el perfil
+            const reopenId = sessionStorage.getItem('reopenPostulacionesOrderId');
+            if (reopenId) {
+                sessionStorage.removeItem('reopenPostulacionesOrderId');
+                if (typeof navigateTo === 'function') {
+                    navigateTo('ordenesTrabajo');
+                }
+                switchOtViewTab('admin');
+                // Esperar a que adminCargarOrdenes traiga los datos para abrir el modal
+                setTimeout(async () => {
+                    await adminCargarOrdenes(true);
+                    adminVerPostulaciones(reopenId);
+                }, 400);
+            }
         });
 
         window.cerrarModalPerfil = function() {
