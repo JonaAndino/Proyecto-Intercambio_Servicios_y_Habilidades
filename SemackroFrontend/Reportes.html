@@ -1354,6 +1354,7 @@
                         <thead>
                             <tr
                                 class="text-left text-[10px] font-bold text-black dark:text-white uppercase tracking-widest bg-gray-50/50 dark:bg-gray-800/50 border-b border-black/20 dark:border-white/10">
+                                <th class="py-3 px-4">Foto</th>
                                 <th class="py-3 px-4" data-i18n="table.user">Usuario</th>
                                 <th class="py-3 px-4" data-i18n="table.email">Email</th>
                                 <th class="py-3 px-4 text-center" data-i18n="table.id">Id</th>
@@ -1363,7 +1364,7 @@
                         </thead>
                         <tbody id="reportCountsTbody">
                             <tr>
-                                <td colspan="5" class="py-10 text-center text-gray-300 dark:text-gray-600 italic"
+                                <td colspan="6" class="py-10 text-center text-gray-300 dark:text-gray-600 italic"
                                     data-i18n="table.loading">Cargando datos...</td>
                             </tr>
                         </tbody>
@@ -2980,7 +2981,7 @@
 
             // Solo poner "Cargando..." si está vacío o tiene mensaje de error, para no parpadear en polling
             if (!rcTbody.hasChildNodes() || rcTbody.textContent.includes('Error') || rcTbody.textContent.includes('Cargando') || rcTbody.textContent.includes('Loading')) {
-                rcTbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-gray-500">${t('table.loading')}</td></tr>`;
+                rcTbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-gray-500">${t('table.loading')}</td></tr>`;
             }
 
             const API_BASE = `${window.APP_CONFIG.BACKEND_URL}`;
@@ -3003,6 +3004,7 @@
                         name: null,
                         email: r.reported_correo || null,
                         perfilId: r.id_perfil_persona || r.id_Perfil_Persona || null,
+                        imagen: r.reported_imagen || null,
                         count: 0,
                         lastDate: null,
                         lastMotivo: null,
@@ -3047,7 +3049,7 @@
 
             } catch (e) {
                 console.warn('Error cargando tabla reportes:', e);
-                rcTbody.innerHTML = '<tr><td colspan="5" class="py-10 text-center text-red-600">Error al cargar tabla de reportes</td></tr>';
+                rcTbody.innerHTML = '<tr><td colspan="6" class="py-10 text-center text-red-600">Error al cargar tabla de reportes</td></tr>';
             }
         }
 
@@ -3064,18 +3066,31 @@
 
             // Renderizar filas de la tabla
             if (datosPagina.length === 0) {
-                rcTbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-gray-300 italic">${t('table.noRecords')}</td></tr>`;
+                rcTbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-gray-300 italic">${t('table.noRecords')}</td></tr>`;
             } else {
                 rcTbody.innerHTML = datosPagina.map(obj => {
+                    const avatarUrl = obj.imagen || '';
+                    const initials = (obj.name || obj.uid || '?').charAt(0).toUpperCase();
+                    const avatarHtml = avatarUrl
+                        ? `<img src="${escapeHtml(avatarUrl)}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #e5e7eb;"  onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                           <div style="display:none;width:36px;height:36px;border-radius:50%;background:#3b82f6;color:#fff;font-weight:700;font-size:14px;align-items:center;justify-content:center;">${initials}</div>`
+                        : `<div style="width:36px;height:36px;border-radius:50%;background:#3b82f6;color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;">${initials}</div>`;
+                    const perfilBtn = obj.uid && obj.uid !== 'sin_usuario'
+                        ? `<button onclick="window.open('Perfil_Usuario/perfil.html?usuario_id=${obj.uid}', '_blank')" title="Ver perfil" class="text-blue-500 hover:text-blue-700 transition-all" style="margin-right:6px;">
+                               <span class="iconify" data-icon="mdi:account-eye" style="font-size: 20px;"></span>
+                           </button>`
+                        : '';
                     return `
                         <tr class="border-b border-black/10 hover:bg-gray-50 transition-colors">
-                            <td class="py-4 px-4 text-sm font-bold text-gray-700">${escapeHtml(obj.name || obj.uid)}</td>
-                            <td class="py-4 px-4 text-xs text-gray-500">${escapeHtml(obj.email || '-')}</td>
-                            <td class="py-4 px-4 text-[10px] text-gray-400 font-mono">#${escapeHtml(obj.perfilId || '-')}</td>
-                            <td class="py-4 px-4 text-center">
+                            <td class="py-3 px-4">${avatarHtml}</td>
+                            <td class="py-3 px-4 text-sm font-bold text-gray-700">${escapeHtml(obj.name || obj.uid)}</td>
+                            <td class="py-3 px-4 text-xs text-gray-500">${escapeHtml(obj.email || '-')}</td>
+                            <td class="py-3 px-4 text-[10px] text-gray-400 font-mono">#${escapeHtml(obj.perfilId || '-')}</td>
+                            <td class="py-3 px-4 text-center">
                                 <span class="text-sm font-black text-red-600">${obj.count}</span>
                             </td>
-                            <td class="py-4 px-4 text-center">
+                            <td class="py-3 px-4 text-center" style="white-space:nowrap;">
+                                ${perfilBtn}
                                 <button onclick="openReportDetails('${obj.uid}')" class="text-gray-400 hover:text-black transition-all">
                                     <span class="iconify" data-icon="mdi:eye" style="font-size: 20px;"></span>
                                 </button>

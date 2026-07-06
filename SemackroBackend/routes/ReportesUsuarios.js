@@ -35,6 +35,7 @@ router.get('/all', async (req, res) => {
         // Obtener reportes con datos del usuario reportado y del reportero
         const [rows] = await db.query(
             `SELECT r.*, p.nombre_Persona AS reported_nombre, p.apellido_Persona AS reported_apellido,
+                p.imagenUrl_Persona AS reported_imagen,
                 ur.correo AS reporter_correo, ued.correo AS reported_correo
              FROM ReportesUsuarios r
              LEFT JOIN Personas p ON r.id_perfil_persona = p.id_perfil_persona
