@@ -4367,6 +4367,13 @@
                 const badge = document.querySelector('.verified-badge');
                 if (!badge) return;
                 badge.innerHTML = `<span class="iconify" data-icon="mdi:shield-check" style="color: #2563eb; font-size: 20px; margin-right: 4px;"></span><span>${t('verifying')}</span>`;
+                
+                if (!perfilPersonaId) {
+                    window.currentVerificationStatus = 'no_verificado';
+                    badge.innerHTML = `<span class="iconify" data-icon="mdi:shield-alert" style="color: #6b7280; font-size: 20px; margin-right: 4px;"></span><span>No verificado</span>`;
+                    return;
+                }
+                
                 try {
                     const resp = await fetch(`${window.API_BASE}/verificacion-usuarios/perfil/${perfilPersonaId}`);
                     const perfil = await resp.json();
@@ -6404,7 +6411,6 @@
 
             // Agregar placeholder de subida si hay espacio disponible
             if (galeriaImagenes.length < limiteImagenesPermitidas) {
-            if (galeriaImagenes.length < 3) {
                 const uploadItem = document.createElement('div');
                 uploadItem.className = 'gallery-item gallery-upload';
                 uploadItem.innerHTML = `
