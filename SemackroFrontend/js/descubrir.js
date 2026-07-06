@@ -10126,6 +10126,12 @@ async function cargarOrdenesTrabajo() {
   const geoContainer = document.getElementById('adminGeoFilterContainer');
   if (geoContainer) geoContainer.classList.toggle('hidden', !esAdmin);
 
+  // Ocultar botones de filtro "Completada" y "Cancelada" para usuarios normales
+  const btnFiltroCompletada = document.querySelector('.filtro-orden-btn[data-filtro="completada"]');
+  const btnFiltroCancelada = document.querySelector('.filtro-orden-btn[data-filtro="cancelada"]');
+  if (btnFiltroCompletada) btnFiltroCompletada.style.display = esAdmin ? '' : 'none';
+  if (btnFiltroCancelada) btnFiltroCancelada.style.display = esAdmin ? '' : 'none';
+
   // ── CACHÉ sessionStorage (5 min) ──────────────────────────────
   const _OT_CACHE_KEY_DATA = 'cache_ot_data';
   const _OT_CACHE_KEY_TS = 'cache_ot_ts';
