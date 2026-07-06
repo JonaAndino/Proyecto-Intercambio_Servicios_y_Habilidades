@@ -3076,7 +3076,7 @@
                            <div style="display:none;width:36px;height:36px;border-radius:50%;background:#3b82f6;color:#fff;font-weight:700;font-size:14px;align-items:center;justify-content:center;">${initials}</div>`
                         : `<div style="width:36px;height:36px;border-radius:50%;background:#3b82f6;color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;">${initials}</div>`;
                     const perfilBtn = obj.uid && obj.uid !== 'sin_usuario'
-                        ? `<button onclick="window.open('Perfil_Usuario/perfil.html?usuario_id=${obj.uid}', '_blank')" title="Ver perfil" class="text-blue-500 hover:text-blue-700 transition-all" style="margin-right:6px;">
+                        ? `<button onclick="window.location.href='Perfil_Usuario/perfil.html?usuario_id=${obj.uid}'" title="Ver perfil" class="text-blue-500 hover:text-blue-700 transition-all" style="margin-right:6px;">
                                <span class="iconify" data-icon="mdi:account-eye" style="font-size: 20px;"></span>
                            </button>`
                         : '';
