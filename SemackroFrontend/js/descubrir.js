@@ -10250,10 +10250,23 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
     cancelada: { color: 'bg-red-100 text-red-700', dot: 'bg-red-400', label: () => t('workOrders.filterCancelled') || 'Cancelada' },
   };
 
-  // Para no-admins: filtrar órdenes con restricción de ubicación
+  // Para no-admins: filtrar órdenes con restricción de ubicación, canceladas y vencidas
   let resultado = ordenes;
   if (!esAdmin) {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
     resultado = resultado.filter(o => {
+      // 1. Ocultar canceladas
+      if (o.estado === 'cancelada') return false;
+
+      // 2. Ocultar si la fecha de fin es menor a hoy (vencidas)
+      if (o.fecha_fin) {
+        const fin = new Date(o.fecha_fin);
+        if (fin < hoy) return false;
+      }
+
+      // 3. Restricción por ubicación
       if (!o.restringir_por_ubicacion) return true;
       const ubicOrden = o.ubicacion_obra || o.ubicacion || '';
       if (!ubicOrden) return false;
