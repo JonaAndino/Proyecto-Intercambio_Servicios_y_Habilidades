@@ -1706,10 +1706,16 @@
                             </h2>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Configura las credenciales, conexiones y claves secretas globales del proyecto.</p>
                         </div>
-                        <button onclick="agregarVariable()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-xl shadow-md transition-all self-start sm:self-auto">
-                            <span class="iconify text-lg" data-icon="mdi:plus"></span>
-                            <span data-i18n="config.addVariable">Agregar Variable</span>
-                        </button>
+                        <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                            <button onclick="copiarTodasVariables()" class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:active:bg-gray-750 dark:text-gray-200 font-semibold rounded-xl shadow-sm border border-gray-300/80 dark:border-gray-700 transition-all">
+                                <span class="iconify text-lg" data-icon="mdi:content-copy"></span>
+                                <span>Copiar todas</span>
+                            </button>
+                            <button onclick="agregarVariable()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-xl shadow-md transition-all">
+                                <span class="iconify text-lg" data-icon="mdi:plus"></span>
+                                <span data-i18n="config.addVariable">Agregar Variable</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Buscador de Variables -->
@@ -4317,6 +4323,49 @@
             }
             const filtradas = variablesEntorno.filter(v => v.clave.toLowerCase().includes(query));
             renderVariablesTable(filtradas);
+        }
+
+        // Copiar todas las variables al portapapeles
+        async function copiarTodasVariables() {
+            if (!variablesEntorno || variablesEntorno.length === 0) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'No hay variables para copiar'
+                });
+                return;
+            }
+
+            const result = await Swal.fire({
+                title: 'Copiar Variables de Entorno',
+                text: 'Selecciona el formato para copiar las variables al portapapeles:',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Formato .env (RAW)',
+                denyButtonText: 'Formato CSV',
+                showDenyButton: true,
+                confirmButtonColor: '#2563EB',
+                denyButtonColor: '#10B981',
+                cancelButtonColor: '#6B7280'
+            });
+
+            let textToCopy = '';
+            if (result.isConfirmed) {
+                // Formato .env (RAW)
+                textToCopy = variablesEntorno.map(v => `${v.clave}="${v.valor.replace(/"/g, '\\"')}"`).join('\n');
+            } else if (result.isDenied) {
+                // Formato CSV
+                textToCopy = 'Clave,Valor\n' + variablesEntorno.map(v => `"${v.clave.replace(/"/g, '""')}","${v.valor.replace(/"/g, '""')}"`).join('\n');
+            } else {
+                return; // Cancelado o cerrado
+            }
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                Toast.success('Copiado', 'Variables copiadas al portapapeles');
+            } catch (err) {
+                console.error('Error al copiar:', err);
+                Swal.fire('Error', 'No se pudo copiar al portapapeles.', 'error');
+            }
         }
 
         // Event listeners para toggles
