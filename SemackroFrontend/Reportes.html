@@ -4496,7 +4496,7 @@
 
         // Event listeners para toggles
         document.addEventListener('DOMContentLoaded', () => {
-            ['configDriverPerfil', 'configDriverDescubrir'].forEach(id => {
+            ['configDriverPerfil', 'configDriverDescubrir', 'configIdentificacionDNI', 'configIdentificacionPasaporte', 'configIdentificacionLicencia', 'configIdentificacionOtro'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.addEventListener('change', () => actualizarToggleVisual(el));
