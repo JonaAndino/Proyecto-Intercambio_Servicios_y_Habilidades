@@ -715,7 +715,7 @@
             
             // Cargar tipos de identificación habilitados
             try {
-                const configRes = await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/configuraciones-sistema`);
+                const configRes = await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/configuraciones`);
                 if (configRes.ok) {
                     const data = await configRes.json();
                     const configs = data.data;

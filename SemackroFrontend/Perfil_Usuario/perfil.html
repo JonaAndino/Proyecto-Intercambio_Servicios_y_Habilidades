@@ -3827,7 +3827,7 @@
 
             async function cargarLimiteImagenes() {
                 try {
-                    const res = await fetch(`${API_BASE}/configuraciones-sistema`);
+                    const res = await fetch(`${API_BASE}/configuraciones`);
                     if (res.ok) {
                         const data = await res.json();
                         const configs = data.data;
