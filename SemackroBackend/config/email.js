@@ -367,89 +367,80 @@ const enviarCorreoRecuperacion = async (destinatario, token, options = {}) => {
         subject: 'Recuperación de Contraseña - SEMACKRO',
         html: `
             <!DOCTYPE html>
-            <html>
+            <html lang="es">
             <head>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        line-height: 1.6;
-                        color: #333;
-                        max-width: 600px;
-                        margin: 0 auto;
-                        padding: 20px;
-                    }
-                    .container {
-                        background-color: #f9f9f9;
-                        border-radius: 10px;
-                        padding: 30px;
-                        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                    }
-                    .header {
-                        text-align: center;
-                        color: #4f46e5;
-                        margin-bottom: 30px;
-                    }
-                    .button {
-                        display: inline-block;
-                        padding: 12px 30px;
-                        background-color: #4f46e5;
-                        color: white;
-                        text-decoration: none;
-                        border-radius: 5px;
-                        margin: 20px 0;
-                        font-weight: bold;
-                    }
-                    .button:hover {
-                        background-color: #4338ca;
-                    }
-                    .warning {
-                        background-color: #fef3c7;
-                        border-left: 4px solid #f59e0b;
-                        padding: 15px;
-                        margin: 20px 0;
-                        border-radius: 5px;
-                    }
-                    .footer {
-                        margin-top: 30px;
-                        padding-top: 20px;
-                        border-top: 1px solid #ddd;
-                        font-size: 12px;
-                        color: #666;
-                        text-align: center;
-                    }
-                </style>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
             </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h1>SEMACKRO</h1>
-                        <h2>Recuperación de Contraseña</h2>
-                    </div>
-                    
-                    <p>Hola,</p>
-                    
-                    <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en SEMACKRO.</p>
-                    
-                    <p>Si realizaste esta solicitud, haz clic en el siguiente botón para crear una nueva contraseña:</p>
-                    
-                    <div style="text-align: center;">
-                        <a href="${enlaceRecuperacion}" style="display: inline-block; padding: 15px 40px; background-color: #4f46e5; color: #ffffff !important; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: bold; font-size: 16px;">Restablecer Contraseña</a>
-                    </div>
-                    
-                    <p>O copia y pega este enlace en tu navegador:</p>
-                    <p style="word-break: break-all; color: #4f46e5;">${enlaceRecuperacion}</p>
-                    
-                    <div class="warning">
-                        <strong>Importante:</strong> Este enlace expirará en <strong>${duracionTexto}</strong> por razones de seguridad.
-                    </div>
-                    
-                    <p>Si no solicitaste restablecer tu contraseña, puedes ignorar este correo de forma segura.</p>
-                    
-                    <div class="footer">
-                        <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
-                        <p>&copy; 2025 SEMACKRO. Todos los derechos reservados.</p>
-                    </div>
-                </div>
+            <body style="margin: 0; padding: 0; font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f3f4f6; -webkit-font-smoothing: antialiased;">
+                <!-- Contenedor principal con padding -->
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f4f6; padding: 40px 20px;">
+                    <tr>
+                        <td align="center">
+                            <!-- Tarjeta blanca central -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+                                <!-- Header con banda de color azul corporativo -->
+                                <tr>
+                                    <td align="center" style="background-color: #2563EB; padding: 40px 20px;">
+                                        <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: 2px;">SEMACKRO</h1>
+                                        <p style="color: #bfdbfe; margin: 10px 0 0 0; font-size: 16px; font-weight: 500;">Recuperación de Contraseña</p>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Cuerpo del mensaje -->
+                                <tr>
+                                    <td style="padding: 40px 40px 20px 40px; color: #374151; font-size: 16px; line-height: 1.6;">
+                                        <p style="margin: 0 0 20px 0;">Hola,</p>
+                                        
+                                        <p style="margin: 0 0 20px 0;">Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en <strong>SEMACKRO</strong> asociada al siguiente usuario:</p>
+                                        
+                                        <!-- Caja destacada para el correo -->
+                                        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 25px;">
+                                            <span style="font-size: 14px; color: #64748b; display: block; margin-bottom: 5px;">Tu usuario (correo electrónico)</span>
+                                            <strong style="font-size: 18px; color: #1e293b;">${cleanDestinatario}</strong>
+                                        </div>
+                                        
+                                        <p style="margin: 0 0 25px 0;">Para continuar y crear tu nueva contraseña, haz clic en el botón de abajo. Este enlace es único y seguro.</p>
+                                        
+                                        <!-- Botón CTA -->
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td align="center" style="padding-bottom: 30px;">
+                                                    <a href="${enlaceRecuperacion}" style="display: inline-block; padding: 16px 36px; background-color: #2563EB; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; text-align: center;">
+                                                        Restablecer mi contraseña
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        
+                                        <p style="margin: 0 0 15px 0; font-size: 14px; color: #64748b;">Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:</p>
+                                        <p style="margin: 0 0 30px 0; font-size: 13px; color: #2563EB; word-break: break-all;">
+                                            <a href="${enlaceRecuperacion}" style="color: #2563EB; text-decoration: underline;">${enlaceRecuperacion}</a>
+                                        </p>
+                                        
+                                        <!-- Advertencia de expiración -->
+                                        <div style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 20px;">
+                                            <p style="margin: 0; color: #b45309; font-size: 14px;">
+                                                <strong>Importante:</strong> Por razones de seguridad, este enlace expirará en <strong>${duracionTexto}</strong>.
+                                            </p>
+                                        </div>
+                                        
+                                        <p style="margin: 0; font-size: 14px; color: #94a3b8;">Si no solicitaste este cambio, puedes ignorar este correo de forma segura. Tu cuenta seguirá protegida.</p>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Footer -->
+                                <tr>
+                                    <td align="center" style="background-color: #f8fafc; padding: 25px 40px; border-top: 1px solid #e2e8f0;">
+                                        <p style="margin: 0 0 10px 0; font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; font-weight: bold;">SEMACKRO</p>
+                                        <p style="margin: 0; font-size: 12px; color: #94a3b8;">Este es un mensaje automático, por favor no respondas a esta dirección de correo.</p>
+                                        <p style="margin: 10px 0 0 0; font-size: 12px; color: #94a3b8;">&copy; 2025 SEMACKRO. Todos los derechos reservados.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
             </body>
             </html>
         `

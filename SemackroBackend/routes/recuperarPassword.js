@@ -38,21 +38,11 @@ function buildTraceId() {
 // POST /api/password/solicitar-recuperacion
 // Solicitar recuperación de contraseña
 router.post('/solicitar-recuperacion', async (req, res) => {
-    const { correo, tipoIdentificacion, numeroIdentificacion, FRONTEND_URL, EMAIL_FROM_NAME } = req.body;
-    const cleanCorreo = String(correo || '').trim();
+    const { tipoIdentificacion, numeroIdentificacion, FRONTEND_URL, EMAIL_FROM_NAME } = req.body;
     const traceId = buildTraceId();
     const startedAt = Date.now();
-    const maskedCorreo = maskEmail(cleanCorreo);
 
-    console.log(`[password-recovery][${traceId}] Inicio solicitud para ${maskedCorreo}`);
-
-    if (!cleanCorreo) {
-        console.warn(`[password-recovery][${traceId}] Solicitud rechazada: correo ausente`);
-        return res.status(400).json({ 
-            success: false, 
-            mensaje: 'El correo es requerido' 
-        });
-    }
+    console.log(`[password-recovery][${traceId}] Inicio solicitud por identificación`);
 
     if (!tipoIdentificacion || !numeroIdentificacion) {
         console.warn(`[password-recovery][${traceId}] Solicitud rechazada: datos de identificación incompletos`);
@@ -91,24 +81,28 @@ router.post('/solicitar-recuperacion', async (req, res) => {
             SELECT u.id_usuario, u.correo 
             FROM Usuarios u
             INNER JOIN Personas p ON u.id_usuario = p.id_Usuario
-            WHERE u.correo = ? AND REPLACE(p.identificacion_Persona, '-', '') = ?
+            WHERE (p.tipoIdentificacion_Persona = ? OR p.tipoIdentificacion_Persona IS NULL) 
+              AND REPLACE(p.identificacion_Persona, '-', '') = ?
         `;
-        const [usuarios] = await db.query(query, [cleanCorreo, identificacionLimpia]);
+        const [usuarios] = await db.query(query, [tipoIdentificacion, identificacionLimpia]);
         console.log(`[password-recovery][${traceId}] Resultado búsqueda usuario: ${usuarios.length > 0 ? 'encontrado' : 'no encontrado'}`);
 
         // Por seguridad, siempre devolvemos el mismo mensaje
-        // (no revelamos si el correo existe o no)
-        const mensajeGenerico = 'Si el correo está registrado, recibirás instrucciones para recuperar tu contraseña.';
+        // (no revelamos explícitamente detalles que faciliten enumeración, aunque ahora devolveremos el correo enmascarado si se encuentra para el modal)
+        const mensajeGenerico = 'Si los datos son correctos, recibirás instrucciones en el correo asociado para recuperar tu contraseña.';
 
         if (usuarios.length === 0) {
-            console.log(`[password-recovery][${traceId}] Correo no registrado (${maskedCorreo}). Respuesta genérica enviada en ${Date.now() - startedAt}ms`);
+            console.log(`[password-recovery][${traceId}] Identificación no encontrada. Respuesta genérica enviada en ${Date.now() - startedAt}ms`);
             return res.status(200).json({ 
                 success: true, 
-                mensaje: mensajeGenerico 
+                mensaje: mensajeGenerico,
+                emailEnmascarado: '*****@****.***'
             });
         }
 
         const usuario = usuarios[0];
+        const cleanCorreo = usuario.correo;
+        const maskedCorreo = maskEmail(cleanCorreo);
 
         // Obtener duración del token desde configuraciones (en segundos)
         const tokenDuration = await getConfigValue('jwt_reset_password_duration');
@@ -129,7 +123,8 @@ router.post('/solicitar-recuperacion', async (req, res) => {
         // Responder de inmediato para evitar timeouts en la interfaz.
         res.status(200).json({
             success: true,
-            mensaje: mensajeGenerico
+            mensaje: mensajeGenerico,
+            emailEnmascarado: maskedCorreo
         });
         console.log(`[password-recovery][${traceId}] Respuesta genérica enviada en ${Date.now() - startedAt}ms`);
 
