@@ -3820,18 +3820,43 @@
                 return;
             }
 
+            window.opcionesIdentificacion = [
+                { value: 'DNI', label: t('dni') },
+                { value: 'Pasaporte', label: t('passport') }
+            ];
+
             async function cargarLimiteImagenes() {
                 try {
-                    const res = await fetch(`${API_BASE}/configuraciones`);
+                    const res = await fetch(`${API_BASE}/configuraciones-sistema`);
                     if (res.ok) {
                         const data = await res.json();
-                        if (data.success && data.data && data.data.limite_imagenes_galeria) {
-                            limiteImagenesPermitidas = parseInt(data.data.limite_imagenes_galeria.valor, 10) || 3;
+                        const configs = data.data;
+                        if (configs && configs.limite_imagenes_galeria) {
+                            limiteImagenesPermitidas = parseInt(configs.limite_imagenes_galeria.valor, 10) || 3;
                             console.log('Límite de imágenes cargado:', limiteImagenesPermitidas);
+                        }
+                        
+                        if (configs) {
+                            const newOptions = [];
+                            if (configs.identificacion_dni_activado && configs.identificacion_dni_activado.valor === 'true') {
+                                newOptions.push({ value: 'DNI', label: t('dni') || 'DNI (Honduras)' });
+                            }
+                            if (configs.identificacion_pasaporte_activado && configs.identificacion_pasaporte_activado.valor === 'true') {
+                                newOptions.push({ value: 'Pasaporte', label: t('passport') || 'Pasaporte' });
+                            }
+                            if (configs.identificacion_licencia_activado && configs.identificacion_licencia_activado.valor === 'true') {
+                                newOptions.push({ value: 'Licencia de Conducir', label: t('idTypeLicense') || 'Licencia de Conducir' });
+                            }
+                            if (configs.identificacion_otro_activado && configs.identificacion_otro_activado.valor === 'true') {
+                                newOptions.push({ value: 'Otro', label: t('idTypeOther') || 'Otro' });
+                            }
+                            if (newOptions.length > 0) {
+                                window.opcionesIdentificacion = newOptions;
+                            }
                         }
                     }
                 } catch (e) {
-                    console.warn('Error al cargar límite de imágenes:', e);
+                    console.warn('Error al cargar configuraciones:', e);
                 }
             }
 
@@ -5208,23 +5233,15 @@
         }
 
         function validarPasaporteHonduras(pasaporte) {
-            const pas = pasaporte.trim().toUpperCase();
-            const moderno = /^[AE]\d{6,7}$/;
-            const antiguo = /^\d{6,8}$/;
+            const pas = pasaporte.trim();
+            const alfanumerico = /^[A-Za-z0-9]{5,20}$/;
 
-            if (!moderno.test(pas) && !antiguo.test(pas)) {
+            if (!alfanumerico.test(pas)) {
                 return {
                     valido: false,
-                    mensaje: 'Formato de pasaporte inválido (Ej: A1234567)',
+                    mensaje: 'El pasaporte debe contener entre 5 y 20 caracteres alfanuméricos.',
                     tipo: 'pasaporte'
                 };
-            }
-
-            let tipo = 'Desconocido';
-            if (moderno.test(pas)) {
-                tipo = pas[0] === 'A' ? 'Ordinario' : 'Servicio';
-            } else {
-                tipo = 'Formato antiguo';
             }
 
             return {
@@ -5233,7 +5250,7 @@
                 tipo: 'pasaporte',
                 datos: {
                     numeroPasaporte: pas,
-                    tipoPasaporte: tipo,
+                    tipoPasaporte: 'Internacional',
                     numeroLimpio: pas
                 }
             };
@@ -5279,7 +5296,7 @@
                     ]
                 },
                 {
-                    label: t('idType'), field: 'tipoIdentificacion_Usuario', type: 'select', options: [
+                    label: t('idType'), field: 'tipoIdentificacion_Usuario', type: 'select', options: window.opcionesIdentificacion || [
                         { value: 'DNI', label: t('dni') },
                         { value: 'Pasaporte', label: t('passport') }
                     ]

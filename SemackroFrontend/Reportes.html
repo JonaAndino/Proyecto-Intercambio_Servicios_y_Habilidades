@@ -1637,6 +1637,57 @@
                                 <input type="number" id="configLimiteImagenes" class="w-20 px-3 py-1.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-semibold" value="3" min="1" max="20">
                             </div>
                         </div>
+                        <!-- Fila 5: Habilitar DNI -->
+                        <div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors first:rounded-t-2xl last:rounded-b-2xl">
+                            <div class="flex-1">
+                                <span class="block text-sm font-bold text-gray-800 dark:text-gray-200">Permitir DNI</span>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Habilita el DNI como opción de identificación en registro y perfil.</p>
+                            </div>
+                            <label class="relative flex items-center cursor-pointer shrink-0">
+                                <input type="checkbox" id="configIdentificacionDNI" class="sr-only" checked>
+                                <div class="w-11 h-6 bg-gray-300 dark:bg-gray-750 rounded-full transition-colors duration-300"></div>
+                                <div class="dot absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300"></div>
+                            </label>
+                        </div>
+
+                        <!-- Fila 6: Habilitar Pasaporte -->
+                        <div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors first:rounded-t-2xl last:rounded-b-2xl">
+                            <div class="flex-1">
+                                <span class="block text-sm font-bold text-gray-800 dark:text-gray-200">Permitir Pasaporte</span>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Habilita el Pasaporte como opción de identificación en registro y perfil.</p>
+                            </div>
+                            <label class="relative flex items-center cursor-pointer shrink-0">
+                                <input type="checkbox" id="configIdentificacionPasaporte" class="sr-only" checked>
+                                <div class="w-11 h-6 bg-gray-300 dark:bg-gray-750 rounded-full transition-colors duration-300"></div>
+                                <div class="dot absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300"></div>
+                            </label>
+                        </div>
+
+                        <!-- Fila 7: Habilitar Licencia de Conducir -->
+                        <div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors first:rounded-t-2xl last:rounded-b-2xl">
+                            <div class="flex-1">
+                                <span class="block text-sm font-bold text-gray-800 dark:text-gray-200">Permitir Licencia de Conducir</span>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Habilita la Licencia de Conducir como opción de identificación.</p>
+                            </div>
+                            <label class="relative flex items-center cursor-pointer shrink-0">
+                                <input type="checkbox" id="configIdentificacionLicencia" class="sr-only" checked>
+                                <div class="w-11 h-6 bg-gray-300 dark:bg-gray-750 rounded-full transition-colors duration-300"></div>
+                                <div class="dot absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300"></div>
+                            </label>
+                        </div>
+
+                        <!-- Fila 8: Habilitar Otro -->
+                        <div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors first:rounded-t-2xl last:rounded-b-2xl">
+                            <div class="flex-1">
+                                <span class="block text-sm font-bold text-gray-800 dark:text-gray-200">Permitir Otro documento</span>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Habilita 'Otro' documento como opción de identificación.</p>
+                            </div>
+                            <label class="relative flex items-center cursor-pointer shrink-0">
+                                <input type="checkbox" id="configIdentificacionOtro" class="sr-only" checked>
+                                <div class="w-11 h-6 bg-gray-300 dark:bg-gray-750 rounded-full transition-colors duration-300"></div>
+                                <div class="dot absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300"></div>
+                            </label>
+                        </div>
                     </div>
 
                     <button onclick="guardarConfiguraciones()" class="mt-6 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold rounded-xl shadow-md shadow-blue-500/20 transition-all flex items-center gap-2">
@@ -3784,6 +3835,21 @@
                 if (configs['limite_imagenes_galeria']) {
                     document.getElementById('configLimiteImagenes').value = configs['limite_imagenes_galeria'].valor;
                 }
+                
+                // Configuración de Identificaciones
+                const idConfigs = [
+                    { clave: 'identificacion_dni_activado', id: 'configIdentificacionDNI' },
+                    { clave: 'identificacion_pasaporte_activado', id: 'configIdentificacionPasaporte' },
+                    { clave: 'identificacion_licencia_activado', id: 'configIdentificacionLicencia' },
+                    { clave: 'identificacion_otro_activado', id: 'configIdentificacionOtro' }
+                ];
+                idConfigs.forEach(c => {
+                    if (configs[c.clave]) {
+                        const check = document.getElementById(c.id);
+                        check.checked = (configs[c.clave].valor === 'true' || configs[c.clave].valor === true);
+                        actualizarToggleVisual(check);
+                    }
+                });
             } catch (error) {
                 console.error('Error cargando configuraciones:', error);
             }
@@ -3821,6 +3887,21 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ clave: 'limite_imagenes_galeria', valor: parseInt(limiteImagenes, 10) })
                 });
+                
+                // Guardar Configuración de Identificaciones
+                const idConfigs = [
+                    { clave: 'identificacion_dni_activado', id: 'configIdentificacionDNI' },
+                    { clave: 'identificacion_pasaporte_activado', id: 'configIdentificacionPasaporte' },
+                    { clave: 'identificacion_licencia_activado', id: 'configIdentificacionLicencia' },
+                    { clave: 'identificacion_otro_activado', id: 'configIdentificacionOtro' }
+                ];
+                for (const c of idConfigs) {
+                    await fetch(CONFIG_API, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ clave: c.clave, valor: document.getElementById(c.id).checked })
+                    });
+                }
 
                 Toast.success(t('config.settingsSaved') || 'Configuraciones guardadas correctamente');
             } catch (error) {

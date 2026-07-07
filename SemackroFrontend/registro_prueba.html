@@ -637,9 +637,9 @@
                     formatError = 'El DNI debe contener 13 dígitos (ej: 0101199000123).';
                 }
             } else if (tipoIdentificacion === 'Pasaporte') {
-                if (!/^[A-Za-z]\d{6}$/.test(numeroIdentificacion)) {
+                if (!/^[A-Za-z0-9]{5,20}$/.test(numeroIdentificacion)) {
                     formatValid = false;
-                    formatError = 'El pasaporte debe contener 1 letra seguida de 6 dígitos (ej: H123456).';
+                    formatError = 'El pasaporte debe contener entre 5 y 20 caracteres alfanuméricos.';
                 }
             }
             
@@ -712,6 +712,37 @@
 
             const mensajeDiv = document.getElementById('mensaje');
             const isFromLoginRedirect = source === 'google' && !token;
+            
+            // Cargar tipos de identificación habilitados
+            try {
+                const configRes = await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/configuraciones-sistema`);
+                if (configRes.ok) {
+                    const data = await configRes.json();
+                    const configs = data.data;
+                    const select = document.getElementById('tipoIdentificacion');
+                    select.innerHTML = ''; // Limpiar opciones
+                    
+                    if (configs['identificacion_dni_activado'] && configs['identificacion_dni_activado'].valor === 'true') {
+                        select.innerHTML += `<option value="DNI" data-i18n="register.idTypeDni">DNI (Honduras)</option>`;
+                    }
+                    if (configs['identificacion_pasaporte_activado'] && configs['identificacion_pasaporte_activado'].valor === 'true') {
+                        select.innerHTML += `<option value="Pasaporte" data-i18n="register.idTypePassport">Pasaporte</option>`;
+                    }
+                    if (configs['identificacion_licencia_activado'] && configs['identificacion_licencia_activado'].valor === 'true') {
+                        select.innerHTML += `<option value="Licencia de Conducir" data-i18n="register.idTypeLicense">Licencia de Conducir</option>`;
+                    }
+                    if (configs['identificacion_otro_activado'] && configs['identificacion_otro_activado'].valor === 'true') {
+                        select.innerHTML += `<option value="Otro" data-i18n="register.idTypeOther">Otro</option>`;
+                    }
+                    
+                    // Si todos están desactivados, poner DNI por defecto
+                    if (select.innerHTML === '') {
+                        select.innerHTML = `<option value="DNI" data-i18n="register.idTypeDni">DNI (Honduras)</option>`;
+                    }
+                }
+            } catch (err) {
+                console.error("Error al cargar configuraciones de identificación:", err);
+            }
 
             // Check if we're coming from login page (new Google user without registration data)
             if (isFromLoginRedirect) {
@@ -768,8 +799,8 @@
                                     errorMensaje = 'El DNI debe contener 13 dígitos (ej: 0101199000123).';
                                 }
                             } else if (tipoIdentificacion === 'Pasaporte') {
-                                if (!/^[A-Za-z]\d{6}$/.test(numeroIdentificacion)) {
-                                    errorMensaje = 'El pasaporte debe contener 1 letra seguida de 6 dígitos (ej: H123456).';
+                                if (!/^[A-Za-z0-9]{5,20}$/.test(numeroIdentificacion)) {
+                                    errorMensaje = 'El pasaporte debe contener entre 5 y 20 caracteres alfanuméricos.';
                                 }
                             }
                         }
@@ -971,8 +1002,8 @@
                         errorMensaje = 'El DNI debe contener 13 dígitos (ej: 0101199000123).';
                     }
                 } else if (tipoIdentificacion === 'Pasaporte') {
-                    if (!/^[A-Za-z]\d{6}$/.test(numeroIdentificacion)) {
-                        errorMensaje = 'El pasaporte debe contener 1 letra seguida de 6 dígitos (ej: H123456).';
+                    if (!/^[A-Za-z0-9]{5,20}$/.test(numeroIdentificacion)) {
+                        errorMensaje = 'El pasaporte debe contener entre 5 y 20 caracteres alfanuméricos.';
                     }
                 }
             }
@@ -1193,8 +1224,8 @@
                             errorMensaje = 'El DNI debe contener 13 dígitos (ej: 0101199000123).';
                         }
                     } else if (tipoIdentificacion === 'Pasaporte') {
-                        if (!/^[A-Za-z]\d{6}$/.test(numeroIdentificacion)) {
-                            errorMensaje = 'El pasaporte debe contener 1 letra seguida de 6 dígitos (ej: H123456).';
+                        if (!/^[A-Za-z0-9]{5,20}$/.test(numeroIdentificacion)) {
+                            errorMensaje = 'El pasaporte debe contener entre 5 y 20 caracteres alfanuméricos.';
                         }
                     }
                 }
