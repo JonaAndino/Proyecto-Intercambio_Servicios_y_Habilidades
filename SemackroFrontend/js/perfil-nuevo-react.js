@@ -1643,7 +1643,7 @@ function NuevoPerfilUsuario({ perfilId, onVolver, onSolicitar, onReportar }) {
                 {/* Botón volver */}
                 <button className="perfil-back-btn" onClick={onVolver}>
                     <Icons.ArrowLeft />
-                    {window.perfilBackToView === 'mensajeria' ? t('messages.back') : t('profile.backToDiscover')}
+                    {window.perfilBackToView === 'mensajes' ? t('messages.back') : t('profile.backToDiscover')}
                 </button>
 
                 {/* Header del perfil */}

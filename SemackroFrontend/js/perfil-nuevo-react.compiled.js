@@ -1917,7 +1917,7 @@ function initPerfilNuevo() {
     }, /*#__PURE__*/React.createElement("button", {
       className: "perfil-back-btn",
       onClick: onVolver
-    }, /*#__PURE__*/React.createElement(Icons.ArrowLeft, null), window.perfilBackToView === 'mensajeria' ? t('messages.back') : t('profile.backToDiscover')), /*#__PURE__*/React.createElement(ProfileHeader, {
+    }, /*#__PURE__*/React.createElement(Icons.ArrowLeft, null), window.perfilBackToView === 'mensajes' ? t('messages.back') : t('profile.backToDiscover')), /*#__PURE__*/React.createElement(ProfileHeader, {
       persona: persona,
       ubicacion: ubicacion,
       perfilId: perfilId,

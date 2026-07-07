@@ -2887,8 +2887,8 @@ function volverAlGrid() {
   const targetViewName = window.perfilBackToView || "descubrir";
   window.perfilBackToView = null;
 
-  if (targetViewName !== "descubrir" && typeof showView === "function") {
-    showView(targetViewName);
+  if (targetViewName !== "descubrir" && typeof navigateTo === "function") {
+    navigateTo(targetViewName);
     return;
   }
 
