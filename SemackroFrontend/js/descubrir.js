@@ -2842,6 +2842,7 @@ initializeChat();
 // ========================================
 async function viewProfile(perfilId) {
   console.log("viewProfile() llamado con perfilId:", perfilId);
+  window.perfilBackToView = (typeof currentView !== 'undefined' ? currentView : "descubrir");
 
   try {
     // Ocultar el grid de usuarios
@@ -2883,6 +2884,14 @@ async function viewProfile(perfilId) {
 }
 
 function volverAlGrid() {
+  const targetViewName = window.perfilBackToView || "descubrir";
+  window.perfilBackToView = null;
+
+  if (targetViewName !== "descubrir" && typeof showView === "function") {
+    showView(targetViewName);
+    return;
+  }
+
   const descubrirView = document.getElementById("descubrirView");
   const perfSectionView = document.getElementById("perfilSeccionView");
 
