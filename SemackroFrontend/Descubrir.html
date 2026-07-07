@@ -1857,6 +1857,12 @@
                             videollamada...</span>
                     </div>
                     <div class="flex items-center gap-2">
+                        <!-- Botón grabar reunión -->
+                        <button id="jitsiRecordBtn" onclick="toggleLocalRecording()"
+                            class="flex items-center gap-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium rounded-lg transition-all border border-gray-650">
+                            <span class="iconify" id="jitsiRecordIcon" data-icon="mdi:record-circle-outline" data-width="16"></span>
+                            <span id="jitsiRecordText">Grabar pantalla</span>
+                        </button>
                         <!-- Botón copiar enlace -->
                         <button id="jitsiCopyLinkBtn" onclick="copiarEnlaceVideollamada()"
                             class="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-colors">

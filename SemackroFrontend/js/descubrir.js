@@ -9528,6 +9528,11 @@ window.addEventListener("beforeunload", () => {
   let currentJitsiRoomId = null;
   let pendingIncomingCall = null;
 
+  // Variables para grabación local
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  let recordingStream = null;
+
   // Generar ID de sala limpio (solo alfanumérico)
   function generarJitsiRoomId(idConversacion) {
     // Ejemplo: SEMACKRO73829ad8
@@ -9753,12 +9758,8 @@ window.addEventListener("beforeunload", () => {
           prejoinPageEnabled: true,
           // Deshabilitar lobby explícitamente
           enableLobby: false,
-          // Habilitar características de grabación
-          enableRecording: true,
-          localRecording: {
-            enabled: true,
-            format: 'flac'
-          },
+          // Deshabilitar características que requieren auth
+          enableRecording: false,
           enableLiveStreaming: false,
           disableDeepLinking: true,
         },
@@ -9835,6 +9836,13 @@ window.addEventListener("beforeunload", () => {
       jitsiApi = null;
     }
 
+    // Detener grabación local si está activa
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+      try {
+        mediaRecorder.stop();
+      } catch (e) {}
+    }
+
     if (modal) {
       modal.classList.add("hidden");
       modal.style.display = "";
@@ -9875,6 +9883,133 @@ window.addEventListener("beforeunload", () => {
         // Fallback: mostrar enlace en un prompt
         prompt("Copia este enlace para compartir:", enlace);
       });
+  };
+
+  // Grabar videollamada localmente (captura de pantalla)
+  window.toggleLocalRecording = async function () {
+    const btn = document.getElementById("jitsiRecordBtn");
+    const icon = document.getElementById("jitsiRecordIcon");
+    const text = document.getElementById("jitsiRecordText");
+
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+      // Detener grabación
+      mediaRecorder.stop();
+      return;
+    }
+
+    try {
+      // 1. Pedir captura de pantalla (con audio si el usuario lo desea)
+      recordingStream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          displaySurface: "browser", // Preferir la pestaña del navegador para mejor calidad
+        },
+        audio: true
+      });
+
+      // 2. Si el usuario cancela la grabación antes de iniciar
+      if (!recordingStream) return;
+
+      recordedChunks = [];
+      
+      // Intentar usar códecs comunes
+      let options = { mimeType: "video/webm; codecs=vp9" };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options = { mimeType: "video/webm; codecs=vp8" };
+      }
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options = { mimeType: "video/webm" };
+      }
+
+      mediaRecorder = new MediaRecorder(recordingStream, options);
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        // Restaurar estilos de botón
+        if (btn) {
+          btn.classList.remove("bg-red-600", "hover:bg-red-700");
+          btn.classList.add("bg-gray-700", "hover:bg-gray-600");
+        }
+        if (icon) {
+          icon.setAttribute("data-icon", "mdi:record-circle-outline");
+          icon.classList.remove("animate-pulse", "text-red-200");
+        }
+        if (text) {
+          text.textContent = "Grabar pantalla";
+        }
+
+        // Descargar el archivo
+        if (recordedChunks.length > 0) {
+          const blob = new Blob(recordedChunks, { type: "video/webm" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          document.body.appendChild(a);
+          a.style = "display: none";
+          a.href = url;
+          
+          // Nombre del archivo con la fecha/hora
+          const fecha = new Date().toISOString().slice(0, 19).replace(/:/g, "-");
+          a.download = `Semackro-Reunion-${fecha}.webm`;
+          a.click();
+          
+          // Limpiar recursos
+          setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          }, 100);
+        }
+
+        // Detener todos los tracks del stream
+        if (recordingStream) {
+          recordingStream.getTracks().forEach(track => track.stop());
+          recordingStream = null;
+        }
+
+        Toast.fire({
+          icon: 'success',
+          title: 'Grabación guardada con éxito'
+        });
+      };
+
+      // Iniciar grabación
+      mediaRecorder.start(1000); // Guardar chunks cada 1 segundo
+
+      // Escuchar si el usuario presiona "Dejar de compartir" nativo del navegador
+      recordingStream.getVideoTracks()[0].onended = () => {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
+        }
+      };
+
+      // Cambiar estilos de botón a activo
+      if (btn) {
+        btn.classList.remove("bg-gray-700", "hover:bg-gray-600");
+        btn.classList.add("bg-red-600", "hover:bg-red-700");
+      }
+      if (icon) {
+        icon.setAttribute("data-icon", "mdi:stop-circle-outline");
+        icon.classList.add("animate-pulse", "text-red-200");
+      }
+      if (text) {
+        text.textContent = "Detener grabación";
+      }
+
+      Toast.fire({
+        icon: 'info',
+        title: 'Grabación de pantalla iniciada'
+      });
+
+    } catch (err) {
+      console.error("[GRABACION] Error al iniciar grabación local:", err);
+      Toast.fire({
+        icon: 'error',
+        title: 'No se pudo iniciar la grabación de pantalla'
+      });
+    }
   };
 
   // Detectar mensajes de videollamada entrante
