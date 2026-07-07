@@ -9753,8 +9753,12 @@ window.addEventListener("beforeunload", () => {
           prejoinPageEnabled: true,
           // Deshabilitar lobby explícitamente
           enableLobby: false,
-          // Deshabilitar características que requieren auth
-          enableRecording: false,
+          // Habilitar características de grabación
+          enableRecording: true,
+          localRecording: {
+            enabled: true,
+            format: 'flac'
+          },
           enableLiveStreaming: false,
           disableDeepLinking: true,
         },
