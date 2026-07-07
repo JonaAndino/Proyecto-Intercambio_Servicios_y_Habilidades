@@ -543,6 +543,82 @@
             color: #f87171 !important;
             border-color: rgba(239, 68, 68, 0.2) !important;
         }
+
+        /* Dark mode styling for Create/Edit order modal and Order Details modal */
+        html.dark #modalOrdenCard,
+        html.dark #modalDetalleOrdenCard {
+            background-color: #0f172a !important;
+            border-color: #1e293b !important;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important;
+        }
+        html.dark #modalOrdenCard > div:first-child,
+        html.dark #modalDetalleOrdenCard > div:first-child {
+            background: linear-gradient(to right, #1e3a5f, #1e2d5a) !important;
+        }
+        html.dark #modalOrdenCloseBtn,
+        html.dark #modalDetalleOrdenCloseBtn {
+            color: #94a3b8 !important;
+        }
+        html.dark #modalOrdenTitulo,
+        html.dark #modalDetalleOrdenTitulo {
+            color: #f1f5f9 !important;
+        }
+        html.dark #modalOrdenCard p.text-slate-500,
+        html.dark #modalDetalleOrdenCard p.text-slate-500 {
+            color: #94a3b8 !important;
+        }
+        html.dark #modalOrdenCard label {
+            color: #e2e8f0 !important;
+        }
+        html.dark #modalOrdenCard input,
+        html.dark #modalOrdenCard textarea,
+        html.dark #modalOrdenCard select {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #f1f5f9 !important;
+        }
+        html.dark #modalOrdenCard input:focus,
+        html.dark #modalOrdenCard textarea:focus,
+        html.dark #modalOrdenCard select:focus {
+            border-color: #3b82f6 !important;
+            outline: none;
+        }
+        html.dark #modalOrdenCancelBtn,
+        html.dark #modalDetalleOrdenCancelBtn {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #94a3b8 !important;
+        }
+        html.dark #modalOrdenCancelBtn:hover,
+        html.dark #modalDetalleOrdenCancelBtn:hover {
+            background-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
+        /* Style for warning alert inside restriction container */
+        html.dark #modalOrdenCard .text-amber-800 {
+            color: #fbbf24 !important;
+        }
+        html.dark #modalOrdenCard .text-amber-600 {
+            color: #f59e0b !important;
+        }
+        /* Style details view fields */
+        html.dark #modalDetalleOrdenCard .text-gray-800,
+        html.dark #modalDetalleOrdenCard .text-slate-800 {
+            color: #f1f5f9 !important;
+        }
+        html.dark #modalDetalleOrdenCard .text-gray-500,
+        html.dark #modalDetalleOrdenCard .text-slate-500,
+        html.dark #modalDetalleOrdenCard .text-gray-600 {
+            color: #94a3b8 !important;
+        }
+        html.dark #modalDetalleOrdenCard .border-gray-100,
+        html.dark #modalDetalleOrdenCard .border-slate-100 {
+            border-color: #1e293b !important;
+        }
+        html.dark #modalDetalleOrdenCard .bg-slate-50,
+        html.dark #modalDetalleOrdenCard .bg-gray-50 {
+            background-color: #111827 !important;
+        }
     </style>
 </head>
 
