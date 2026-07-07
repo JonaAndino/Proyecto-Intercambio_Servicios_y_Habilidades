@@ -619,6 +619,50 @@
         html.dark #modalDetalleOrdenCard .bg-gray-50 {
             background-color: #111827 !important;
         }
+
+        /* Dark mode styling for Admin Edit/Create order modal */
+        html.dark #adminModalOrdenCard {
+            background-color: #0f172a !important;
+            border-color: #1e293b !important;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important;
+        }
+        html.dark #adminModalOrdenCard > div:first-child {
+            background: linear-gradient(to right, #1e3a5f, #1e2d5a) !important;
+        }
+        html.dark #adminModalOrdenCloseBtn {
+            color: #94a3b8 !important;
+        }
+        html.dark #adminModalOrdenTitulo {
+            color: #f1f5f9 !important;
+        }
+        html.dark #adminModalOrdenCard p.text-slate-500 {
+            color: #94a3b8 !important;
+        }
+        html.dark #adminModalOrdenCard label {
+            color: #e2e8f0 !important;
+        }
+        html.dark #adminModalOrdenCard input,
+        html.dark #adminModalOrdenCard textarea,
+        html.dark #adminModalOrdenCard select {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #f1f5f9 !important;
+        }
+        html.dark #adminModalOrdenCard input:focus,
+        html.dark #adminModalOrdenCard textarea:focus,
+        html.dark #adminModalOrdenCard select:focus {
+            border-color: #3b82f6 !important;
+            outline: none;
+        }
+        html.dark #adminModalOrdenCancelBtn {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #94a3b8 !important;
+        }
+        html.dark #adminModalOrdenCancelBtn:hover {
+            background-color: #334155 !important;
+            color: #e2e8f0 !important;
+        }
     </style>
 </head>
 
@@ -2164,8 +2208,8 @@
 
                 <form id="adminFormOrden" onsubmit="adminGuardarOrden(event)" class="px-3 md:px-5 pb-3 md:pb-5 overflow-y-auto max-h-[60vh]">
                     <input type="hidden" id="adminOrdenId">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                        <div class="space-y-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                        <div class="space-y-5">
                             <div>
                                 <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">Título <span class="text-red-500">*</span></label>
                                 <input type="text" id="adminOrdenTitulo" required placeholder="Ej: instalación eléctrica residencial"
@@ -2183,7 +2227,7 @@
                             </div>
                         </div>
 
-                        <div class="space-y-3">
+                        <div class="space-y-5">
                             <div class="grid grid-cols-2 gap-2 md:gap-3">
                                 <div>
                                     <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1 md:mb-2">Fecha Inicio <span class="text-red-500">*</span></label>
