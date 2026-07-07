@@ -3838,16 +3838,16 @@
                         
                         if (configs) {
                             const newOptions = [];
-                            if (configs.identificacion_dni_activado && configs.identificacion_dni_activado.valor === 'true') {
+                            if (configs.identificacion_dni_activado && (configs.identificacion_dni_activado.valor === true || configs.identificacion_dni_activado.valor === 'true')) {
                                 newOptions.push({ value: 'DNI', label: t('dni') || 'DNI (Honduras)' });
                             }
-                            if (configs.identificacion_pasaporte_activado && configs.identificacion_pasaporte_activado.valor === 'true') {
+                            if (configs.identificacion_pasaporte_activado && (configs.identificacion_pasaporte_activado.valor === true || configs.identificacion_pasaporte_activado.valor === 'true')) {
                                 newOptions.push({ value: 'Pasaporte', label: t('passport') || 'Pasaporte' });
                             }
-                            if (configs.identificacion_licencia_activado && configs.identificacion_licencia_activado.valor === 'true') {
+                            if (configs.identificacion_licencia_activado && (configs.identificacion_licencia_activado.valor === true || configs.identificacion_licencia_activado.valor === 'true')) {
                                 newOptions.push({ value: 'Licencia de Conducir', label: t('idTypeLicense') || 'Licencia de Conducir' });
                             }
-                            if (configs.identificacion_otro_activado && configs.identificacion_otro_activado.valor === 'true') {
+                            if (configs.identificacion_otro_activado && (configs.identificacion_otro_activado.valor === true || configs.identificacion_otro_activado.valor === 'true')) {
                                 newOptions.push({ value: 'Otro', label: t('idTypeOther') || 'Otro' });
                             }
                             if (newOptions.length > 0) {

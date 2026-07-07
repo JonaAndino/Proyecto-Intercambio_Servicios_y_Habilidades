@@ -722,16 +722,16 @@
                     const select = document.getElementById('tipoIdentificacion');
                     select.innerHTML = ''; // Limpiar opciones
                     
-                    if (configs['identificacion_dni_activado'] && configs['identificacion_dni_activado'].valor === 'true') {
+                    if (configs['identificacion_dni_activado'] && (configs['identificacion_dni_activado'].valor === true || configs['identificacion_dni_activado'].valor === 'true')) {
                         select.innerHTML += `<option value="DNI" data-i18n="register.idTypeDni">DNI (Honduras)</option>`;
                     }
-                    if (configs['identificacion_pasaporte_activado'] && configs['identificacion_pasaporte_activado'].valor === 'true') {
+                    if (configs['identificacion_pasaporte_activado'] && (configs['identificacion_pasaporte_activado'].valor === true || configs['identificacion_pasaporte_activado'].valor === 'true')) {
                         select.innerHTML += `<option value="Pasaporte" data-i18n="register.idTypePassport">Pasaporte</option>`;
                     }
-                    if (configs['identificacion_licencia_activado'] && configs['identificacion_licencia_activado'].valor === 'true') {
+                    if (configs['identificacion_licencia_activado'] && (configs['identificacion_licencia_activado'].valor === true || configs['identificacion_licencia_activado'].valor === 'true')) {
                         select.innerHTML += `<option value="Licencia de Conducir" data-i18n="register.idTypeLicense">Licencia de Conducir</option>`;
                     }
-                    if (configs['identificacion_otro_activado'] && configs['identificacion_otro_activado'].valor === 'true') {
+                    if (configs['identificacion_otro_activado'] && (configs['identificacion_otro_activado'].valor === true || configs['identificacion_otro_activado'].valor === 'true')) {
                         select.innerHTML += `<option value="Otro" data-i18n="register.idTypeOther">Otro</option>`;
                     }
                     
