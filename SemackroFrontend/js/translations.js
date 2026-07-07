@@ -55,7 +55,7 @@ const translations = {
                     'sidebar.favorites': 'Mis favoritos',
                     'sidebar.messages': 'Mensajes',
                     'sidebar.sentRequests': 'Solicitudes de trabajo',
-                    'sidebar.workOrders': 'Órdenes de trabajo',
+                    'sidebar.workOrders': 'Postulaciones',
                     'sidebar.history': 'Historial de trabajos personales',
                     'sidebar.profile': 'Mi perfil',
                     'sidebar.reports': 'Reportes',
@@ -289,7 +289,7 @@ const translations = {
                     'profile.enlargedImage': 'Imagen ampliada',
 
                     // Órdenes de trabajo
-                    'workOrders.title': 'Órdenes de Trabajo',
+                    'workOrders.title': 'Postulaciones',
                     'workOrders.subtitle': 'Gestiona tus órdenes de trabajo: crea, revisa y da seguimiento.',
                     'workOrders.newOrder': 'Nueva Orden',
                     'workOrders.refresh': 'Refrescar',
@@ -405,7 +405,7 @@ const translations = {
                     'sidebar.favorites': 'My favorites',
                     'sidebar.messages': 'Messages',
                     'sidebar.sentRequests': 'Work requests',
-                    'sidebar.workOrders': 'Work orders',
+                    'sidebar.workOrders': 'Applications',
                     'sidebar.history': 'Exchange history',
                     'sidebar.profile': 'My profile',
                     'sidebar.reports': 'Reports',
@@ -639,7 +639,7 @@ const translations = {
                     'profile.enlargedImage': 'Enlarged image',
 
                     // Work orders
-                    'workOrders.title': 'Work Orders',
+                    'workOrders.title': 'Applications',
                     'workOrders.subtitle': 'Manage your work orders: create, review and track.',
                     'workOrders.newOrder': 'New Order',
                     'workOrders.refresh': 'Refresh',
