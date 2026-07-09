@@ -4685,12 +4685,15 @@
                             container.style.display = 'block';
                             barsContainer.innerHTML = '';
                             
-                            const renderBar = (label, val, color) => {
+                            const renderBar = (label, val, color, icon) => {
                                 return `
-                                    <div style="margin-bottom: 8px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                            <span style="font-size: 13px; font-weight: 500; color: #374151;" class="dark:text-gray-300">${label}</span>
-                                            <span style="font-size: 11px; font-weight: 600; color: #6b7280;" class="dark:text-gray-400">${val}%</span>
+                                    <div style="margin-bottom: 12px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                            <div style="display: flex; align-items: center; gap: 6px; color: ${color};">
+                                                <span class="iconify" data-icon="${icon}" style="font-size: 16px;"></span>
+                                                <span style="font-size: 13px; font-weight: 500;">${label}</span>
+                                            </div>
+                                            <span style="font-size: 13px; font-weight: 600; color: ${color};">${val}%</span>
                                         </div>
                                         <div style="width: 100%; background-color: #e5e7eb; border-radius: 9999px; height: 8px;" class="dark:bg-gray-700">
                                             <div style="height: 8px; border-radius: 9999px; width: ${val}%; background-color: ${color};"></div>
@@ -4700,10 +4703,10 @@
                             };
                             
                             let html = '';
-                            if (m.puntualidad > 0) html += renderBar('Puntualidad', m.puntualidad, '#3b82f6');
-                            if (m.calidad_trabajo > 0) html += renderBar('Calidad de trabajo', m.calidad_trabajo, '#10b981');
-                            if (m.limpieza > 0) html += renderBar('Limpieza', m.limpieza, '#06b6d4');
-                            if (m.comunicacion > 0) html += renderBar('Comunicación', m.comunicacion, '#8b5cf6');
+                            if (m.puntualidad > 0) html += renderBar('Puntualidad', m.puntualidad, '#10b981', 'mdi:clock-outline');
+                            if (m.calidad_trabajo > 0) html += renderBar('Calidad de trabajo', m.calidad_trabajo, '#f59e0b', 'mdi:star');
+                            if (m.limpieza > 0) html += renderBar('Limpieza', m.limpieza, '#06b6d4', 'mdi:sparkles');
+                            if (m.comunicacion > 0) html += renderBar('Comunicación', m.comunicacion, '#8b5cf6', 'mdi:chat-outline');
                             
                             barsContainer.innerHTML = html;
                         }
