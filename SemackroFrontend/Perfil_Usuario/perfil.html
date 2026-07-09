@@ -254,12 +254,11 @@
         }
 
         .action-buttons {
-            position: absolute;
-            top: 16px;
-            right: 16px;
             display: flex;
+            justify-content: flex-end;
             gap: 8px;
-            z-index: 10;
+            margin-bottom: 16px;
+            width: 100%;
         }
 
         .action-buttons-mobile {
@@ -2257,6 +2256,14 @@
                     </svg>
                     <span>Repetir tour</span>
                 </button>
+                <button class="logout-button" onclick="abrirModalCambiarPassword()" title="Cambiar contraseña" style="background: linear-gradient(135deg, #4b5563 0%, #374151 100%); margin-right: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span data-i18n="changePassword">Cambiar contraseña</span>
+                </button>
                 <button class="logout-button" onclick="showLogoutModal()" title="Cerrar sesión">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd"
@@ -2311,6 +2318,14 @@
                                 <span class="slider round"></span>
                             </label>
                         </div>
+                        <div class="privacy-toggle-group" style="display: flex; align-items: center; gap: 8px; height: 40px; flex-wrap: wrap;">
+                            <span id="privacyChipText" class="dark:text-gray-300" style="font-size: 13px; font-weight: 600; color: #4b5563; white-space: nowrap;" data-i18n="privateProfile">Perfil privado</span>
+                            <label class="switch" style="margin: 0;">
+                                <input type="checkbox" id="perfilPublicoToggle">
+                                <span class="slider round"></span>
+                            </label>
+                            <span id="privacyErrorMsg" style="display: none; font-size: 11px; color: #dc2626; width: 100%;"></span>
+                        </div>
                     </div>
 
                     <div class="action-buttons action-buttons-mobile">
@@ -2323,6 +2338,14 @@
                                     clip-rule="evenodd" />
                             </svg>
                             <span>Repetir tour</span>
+                        </button>
+                        <button class="logout-button" onclick="abrirModalCambiarPassword()" title="Cambiar contraseña" style="background: linear-gradient(135deg, #4b5563 0%, #374151 100%); margin-right: 8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <span data-i18n="changePassword">Cambiar contraseña</span>
                         </button>
                         <button class="logout-button" onclick="showLogoutModal()" title="Cerrar sesión">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20"
@@ -2603,8 +2626,8 @@
 
                     <!-- Map -->
                     <div class="map-container">
-                        <h3
-                            style="color: #e5e7eb; font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <h3 class="dark:text-white"
+                            style="color: #1f2937; font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20"
                                 fill="currentColor">
                                 <path fill-rule="evenodd"
@@ -2628,6 +2651,14 @@
                             style="display: none; padding: 10px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 12px;"></div>
 
                         <div id="map"></div>
+                        
+                        <!-- Métricas del perfil -->
+                        <div id="profileMetricsContainer" style="margin-top: 1.5rem; display: none;">
+                            <h3 style="font-size: 15px; font-weight: 600; color: #1f2937; margin-bottom: 12px;" class="dark:text-white" data-i18n="serviceMetricsTitle">Métricas de servicio</h3>
+                            <div id="metricsBarsContainer" style="display: flex; flex-direction: column; gap: 12px;">
+                                <!-- Se inyectarán dinámicamente -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2686,7 +2717,47 @@
                                 style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;" data-i18n="certInstitution">Institución</label>
                             <input type="text" id="institucionCertificacion"
                                 placeholder="Ej: sena, universidad nacional, etc." data-i18n-placeholder="certInstitutionPlaceholder"
-                                style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px;">
+                                style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px; background: white; color: inherit;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                        </div>
+
+                        <div>
+                            <label
+                                style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;" data-i18n="certDate">Fecha en que se cursó</label>
+                            <div style="position: relative;">
+                                <input type="text" id="fechaCursoCertificacion" placeholder="AAAA-MM-DD (ej: 2021-05-14)"
+                                    maxlength="10" inputmode="numeric"
+                                    style="width: 100%; padding: 10px 40px 10px 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 14px; font-family: inherit; box-sizing: border-box; background: white; color: inherit;" class="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                                <button type="button" id="btnAbrirCalendarioCertificacion" title="Elegir del calendario"
+                                    style="position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; color: #6b7280; display: flex;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm10 6H4v8h12V8z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <input type="date" id="fechaCertificacionPicker" tabindex="-1"
+                                    style="position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; left: 0; top: 0;">
+                            </div>
+                            <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">Puedes escribirla directamente (formato AAAA-MM-DD) o elegirla con el ícono del calendario.</div>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', () => {
+                                    const btnCalendario = document.getElementById('btnAbrirCalendarioCertificacion');
+                                    const inputFechaTexto = document.getElementById('fechaCursoCertificacion');
+                                    const inputFechaPicker = document.getElementById('fechaCertificacionPicker');
+                                    if (btnCalendario && inputFechaPicker) {
+                                        btnCalendario.addEventListener('click', () => {
+                                            if (typeof inputFechaPicker.showPicker === 'function') {
+                                                inputFechaPicker.showPicker();
+                                            } else {
+                                                inputFechaPicker.focus();
+                                            }
+                                        });
+                                    }
+                                    if (inputFechaPicker && inputFechaTexto) {
+                                        inputFechaPicker.addEventListener('change', (e) => {
+                                            inputFechaTexto.value = inputFechaPicker.value;
+                                        });
+                                    }
+                                });
+                            </script>
                         </div>
 
                         <div>
@@ -2773,6 +2844,25 @@
                     </div>
                 </div>
 
+                <!-- Controles de filtros y orden para reseñas -->
+                <div class="reviews-filters" id="reviewsFilters" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 16px 0;">
+                    <label for="filtroRatingReviews" class="reviews-filter-label text-gray-800 dark:text-gray-300" style="font-size: 14px; font-weight: 700;" data-i18n="ratingFilter">Calificación:</label>
+                    <select id="filtroRatingReviews" class="bg-white text-gray-800 dark:bg-gray-700 dark:text-white dark:border-gray-600" style="padding: 6px 10px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 13px; font-family: inherit;">
+                        <option value="" data-i18n="allStars">Todas las estrellas</option>
+                        <option value="5">5 estrellas</option>
+                        <option value="4">4 estrellas</option>
+                        <option value="3">3 estrellas</option>
+                        <option value="2">2 estrellas</option>
+                        <option value="1">1 estrella</option>
+                    </select>
+
+                    <label for="ordenReviews" class="reviews-filter-label text-gray-800 dark:text-gray-300" style="font-size: 14px; font-weight: 700; margin-left: 8px;" data-i18n="orderFilter">Orden:</label>
+                    <select id="ordenReviews" class="bg-white text-gray-800 dark:bg-gray-700 dark:text-white dark:border-gray-600" style="padding: 6px 10px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 13px; font-family: inherit;">
+                        <option value="recientes" data-i18n="recentReviews">Reseñas recientes</option>
+                        <option value="antiguos" data-i18n="oldReviews">Reseñas antiguas</option>
+                    </select>
+                </div>
+
                 <div class="reviews-container">
                     <div class="review-card">
                         <div class="review-header">
@@ -2842,6 +2932,13 @@
                             récord. la mejor opción."</p>
                         <p class="review-date">Hace 3 semanas - intercambio por tutoría de álgebra</p>
                     </div>
+                </div>
+
+                <!-- Paginación de reseñas -->
+                <div class="reviews-pagination" id="reviewsPagination" style="display: none; align-items: center; justify-content: center; gap: 12px; margin-top: 16px;">
+                    <button id="btnReviewsPrev" type="button" class="dark:bg-gray-700 dark:text-white" style="background: #374151; color: white; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer;">&laquo; <span data-i18n="previous">Anterior</span></button>
+                    <span id="reviewsPaginaActual" class="dark:text-gray-300" style="font-size: 13px; font-weight: 600; color: #6b7280;">Página 1 de 1</span>
+                    <button id="btnReviewsNext" type="button" class="dark:bg-gray-700 dark:text-white" style="background: #374151; color: white; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer;"><span data-i18n="next">Siguiente</span> &raquo;</button>
                 </div>
 
                 <div class="view-all-button">
@@ -3917,8 +4014,6 @@
                         window.location.href = '../Descubrir.html';
                     } else if (isInIframe && isMinimal) {
                         try { window.parent.cerrarModalPerfil(); } catch(e) { window.close(); }
-                    } else if (document.referrer && document.referrer.includes('Reportes.html')) {
-                        history.back();
                     } else {
                         window.location.href = '../Reportes.html';
                     }
@@ -4092,6 +4187,7 @@
                 usuario = {
                     nombre_Usuario: nombreFinal || nombreDefault,
                     apellido_Usuario: apellidoFinal || '',
+                    email_Usuario: personaDB.email_Usuario || '',
                     descripcion_Usuario: personaDB.descripcionPerfil_Persona || '¡Hola! Soy nuevo en SEMACKRO y estoy listo para intercambiar habilidades.',
                     imagenUrl_Usuario: personaDB.imagenUrl_Persona || avatarDefault,
                     imagen1Url_Usuario: personaDB.imagen1Url_Persona || '',
@@ -4109,7 +4205,8 @@
                     anios_experiencia: personaDB.anios_experiencia || 0,
                     url_Dni: personaDB.url_Dni || '',
                     telefono_Usuario: personaDB.telefono_Persona || '',
-                    disponibilidad_Usuario: personaDB.disponibilidad_Persona || personaDB.disponibilidad || 'Disponible'
+                    disponibilidad_Usuario: personaDB.disponibilidad_Persona || personaDB.disponibilidad || 'Disponible',
+                    perfil_publico_Persona: personaDB.perfil_publico_Persona
                 };
 
                 // Auto-save Google data to DB if available
@@ -4239,15 +4336,22 @@
                 // Agregar formulario solo si no está verificado
                 setTimeout(() => {
                     const notVerifiedText = t('notVerified');
-                    if (badge.textContent.includes('No verificado') || badge.textContent.includes(notVerifiedText)) {
+                    const currentUrlParams = new URLSearchParams(window.location.search);
+                    const currentParamUserId = currentUrlParams.get('usuario_id');
+                    const currentUsuarioIdFromStorage = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
+                    const usuarioRol = (sessionStorage.getItem('usuarioRol') || localStorage.getItem('usuarioRol') || '').toLowerCase();
+                    const esAdmin = usuarioRol.includes('admin');
+                    const esMiPropioPerfil = esAdmin || !currentParamUserId || parseInt(currentParamUserId, 10) === parseInt(currentUsuarioIdFromStorage, 10);
+
+                    if (esMiPropioPerfil && (badge.textContent.includes('No verificado') || badge.textContent.includes(notVerifiedText))) {
                         if (!document.getElementById('solicitudVerificacionForm')) {
                             const form = document.createElement('form');
                             form.id = 'solicitudVerificacionForm';
                             form.style.display = 'contents'; // Para que flote en el flex-row sin romperlo
                             form.innerHTML = `
                       <div class="verification-pill" style="display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 20px; padding: 0 6px 0 18px; border: 1px solid #bae6fd; height: 40px; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                        <span style="font-size: 13px; font-weight: 700; color: #0c4a6e; white-space: nowrap;">${t('contactEmail')}:</span>
-                        <input type="email" id="correoVerificacion" required placeholder="Tu@email.com" style="background: transparent; border: none; font-size: 13px; color: #0c4a6e; width: 140px; outline: none; padding: 0; font-family: inherit;">
+                        <span style="font-size: 13px; font-weight: 700; color: #0c4a6e; white-space: nowrap;">${t('contactEmail')}</span>
+                        <span id="correoVerificacion" style="font-size: 13px; color: #0c4a6e; white-space: nowrap; max-width: 180px; overflow: hidden; text-overflow: ellipsis;">${(typeof usuario !== 'undefined' && usuario.email_Usuario ? usuario.email_Usuario : (sessionStorage.getItem('correoUsuario') || localStorage.getItem('correoUsuario') || '')).trim()}</span>
                         <button type="submit" style="background: #2563eb; color: white; padding: 0 14px; border-radius: 20px; font-weight: 700; font-size: 12px; border: none; cursor: pointer; transition: all 0.2s; height: 30px; white-space: nowrap; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);">${t('requestVerification')}</button>
                       </div>
                       <div id="mensajeVerificacion" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; font-size: 13px; font-weight: 500; padding: 12px 20px; border-radius: 10px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></div>
@@ -4259,8 +4363,18 @@
 
                             form.addEventListener('submit', async function (e) {
                                 e.preventDefault();
-                                const correo = document.getElementById('correoVerificacion').value.trim();
+                                const correo = (typeof usuario !== 'undefined' && usuario.email_Usuario ? usuario.email_Usuario : (sessionStorage.getItem('correoUsuario') || localStorage.getItem('correoUsuario') || '')).trim();
                                 const mensaje = document.getElementById('mensajeVerificacion');
+
+                                if (!correo) {
+                                    mensaje.textContent = t('requestError');
+                                    mensaje.style.background = '#fee2e2';
+                                    mensaje.style.color = '#991b1b';
+                                    mensaje.style.border = '1px solid #fca5a5';
+                                    mensaje.style.display = 'block';
+                                    setTimeout(() => { mensaje.style.display = 'none'; }, 5000);
+                                    return;
+                                }
 
                                 const showMsg = (text, bg, color, border) => {
                                     mensaje.textContent = text;
@@ -4284,7 +4398,6 @@
                                         showMsg(t('requestSentAdmin'), '#dcfce7', '#166534', '1px solid #86efac');
                                         form.querySelector('button').disabled = true;
                                         form.querySelector('button').style.opacity = '0.6';
-                                        form.querySelector('input').disabled = true;
                                         mostrarEstadoVerificacion();
                                         iniciarPollingVerificacion();
                                     } else {
@@ -4370,8 +4483,9 @@
             // Cargar certificaciones
             cargarCertificaciones();
 
-            // Inicializar Toggle de Disponibilidad
+            // Inicializar Toggle de Disponibilidad y Privacidad
             initAvailabilityToggle();
+            initPrivacyToggle();
 
             // Inicializar vista previa de DNI si existe
             if (usuario.url_Dni) {
@@ -4472,14 +4586,126 @@
         // Variables globales para manejar respuestas
         let reviewContextMenuData = { reviewId: null, reviewIndex: null };
         let reviewsData = []; // Almacenar datos de reseñas con respuestas
+        
+        let reviewsFiltroRating = '';
+        let reviewsOrden = 'recientes';
+        let reviewsPaginaActual = 1;
+        const reviewsLimitPorPagina = 5;
+
+        function setupReviewsFiltros() {
+            const filtroRating = document.getElementById('filtroRatingReviews');
+            const ordenSelect = document.getElementById('ordenReviews');
+
+            if (filtroRating) {
+                filtroRating.addEventListener('change', () => {
+                    reviewsFiltroRating = filtroRating.value;
+                    cargarCalificacionesYResenas(1, reviewsLimitPorPagina);
+                });
+            }
+
+            if (ordenSelect) {
+                ordenSelect.addEventListener('change', () => {
+                    reviewsOrden = ordenSelect.value;
+                    cargarCalificacionesYResenas(1, reviewsLimitPorPagina);
+                });
+            }
+        }
+
+        function actualizarPaginacionReviews(dataCalificaciones, page, limit) {
+            const paginacion = document.getElementById('reviewsPagination');
+            const paginaActualLabel = document.getElementById('reviewsPaginaActual');
+            const btnPrev = document.getElementById('btnReviewsPrev');
+            const btnNext = document.getElementById('btnReviewsNext');
+            const viewAllBtn = document.getElementById('btnViewAllReviews');
+
+            if (viewAllBtn) viewAllBtn.style.display = 'none';
+
+            const totalPages = dataCalificaciones.totalPages || 0;
+
+            if (!paginacion || !paginaActualLabel || !btnPrev || !btnNext) return;
+
+            if (totalPages <= 1) {
+                paginacion.style.display = 'none';
+                return;
+            }
+
+            paginacion.style.display = 'flex';
+            let pagTxt = t('page') || 'Página';
+            let deTxt = t('of') || 'de';
+            paginaActualLabel.textContent = `${pagTxt} ${page} ${deTxt} ${totalPages}`;
+
+            btnPrev.disabled = page <= 1;
+            btnPrev.style.opacity = btnPrev.disabled ? '0.5' : '1';
+            btnPrev.style.cursor = btnPrev.disabled ? 'default' : 'pointer';
+
+            btnNext.disabled = page >= totalPages;
+            btnNext.style.opacity = btnNext.disabled ? '0.5' : '1';
+            btnNext.style.cursor = btnNext.disabled ? 'default' : 'pointer';
+
+            btnPrev.onclick = () => {
+                if (reviewsPaginaActual > 1) {
+                    cargarCalificacionesYResenas(reviewsPaginaActual - 1, reviewsLimitPorPagina);
+                    document.querySelector('.reviews-container')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            };
+
+            btnNext.onclick = () => {
+                if (reviewsPaginaActual < totalPages) {
+                    cargarCalificacionesYResenas(reviewsPaginaActual + 1, reviewsLimitPorPagina);
+                    document.querySelector('.reviews-container')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            };
+        }
 
         // ======================
         // CARGAR RESEÑAS CON SOPORTE PARA RESPUESTAS
         // ======================
-        async function cargarCalificacionesYResenas(page = 1, limit = 10) {
+        async function cargarCalificacionesYResenas(page = 1, limit = reviewsLimitPorPagina) {
+            reviewsPaginaActual = page;
             try {
                 const resEstadisticas = await fetch(`${API_BASE}/intercambios/estadisticas/${perfilPersonaId}`);
                 const dataEstadisticas = await resEstadisticas.json();
+
+                // Cargar métricas (Puntualidad, Calidad, Limpieza, Comunicación)
+                try {
+                    const resMetricas = await fetch(`${API_BASE}/metricas/persona/${perfilPersonaId}`);
+                    const dataMetricas = await resMetricas.json();
+                    if (resMetricas.ok && dataMetricas.success && dataMetricas.data) {
+                        const m = dataMetricas.data;
+                        const hasMetrics = m.puntualidad > 0 || m.calidad_trabajo > 0 || m.limpieza > 0 || m.comunicacion > 0;
+                        const container = document.getElementById('profileMetricsContainer');
+                        const barsContainer = document.getElementById('metricsBarsContainer');
+                        
+                        if (container && barsContainer && hasMetrics) {
+                            container.style.display = 'block';
+                            barsContainer.innerHTML = '';
+                            
+                            const renderBar = (label, val, color) => {
+                                return `
+                                    <div style="margin-bottom: 8px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                            <span style="font-size: 13px; font-weight: 500; color: #374151;" class="dark:text-gray-300">${label}</span>
+                                            <span style="font-size: 11px; font-weight: 600; color: #6b7280;" class="dark:text-gray-400">${val}%</span>
+                                        </div>
+                                        <div style="width: 100%; background-color: #e5e7eb; border-radius: 9999px; height: 8px;" class="dark:bg-gray-700">
+                                            <div style="height: 8px; border-radius: 9999px; width: ${val}%; background-color: ${color};"></div>
+                                        </div>
+                                    </div>
+                                `;
+                            };
+                            
+                            let html = '';
+                            if (m.puntualidad > 0) html += renderBar('Puntualidad', m.puntualidad, '#3b82f6');
+                            if (m.calidad_trabajo > 0) html += renderBar('Calidad de trabajo', m.calidad_trabajo, '#10b981');
+                            if (m.limpieza > 0) html += renderBar('Limpieza', m.limpieza, '#06b6d4');
+                            if (m.comunicacion > 0) html += renderBar('Comunicación', m.comunicacion, '#8b5cf6');
+                            
+                            barsContainer.innerHTML = html;
+                        }
+                    }
+                } catch(e) {
+                    console.error('Error al cargar metricas de servicio:', e);
+                }
 
                 let promedio = 0;
                 let totalCalificaciones = 0;
@@ -4502,14 +4728,18 @@
                 }
 
                 if (ratingText) {
-                    ratingText.textContent = totalIntercambios > 0
-                        ? `Basado en ${totalIntercambios} intercambio${totalIntercambios !== 1 ? 's' : ''}.`
-                        : 'Sin intercambios completados aún.';
+                    const count = totalCalificaciones || 0;
+                    ratingText.textContent = count > 0
+                        ? `Basado en ${count} reseña${count !== 1 ? 's' : ''}.`
+                        : (totalIntercambios > 0 ? `Basado en ${totalIntercambios} intercambio${totalIntercambios !== 1 ? 's' : ''}.` : 'Sin intercambios completados aún.');
                 }
 
                 actualizarEstrellas(promedio);
 
-                const urlCalificaciones = `${API_BASE}/intercambios/calificaciones/${perfilPersonaId}?page=${page}&limit=${limit}`;
+                const paramsCalificaciones = new URLSearchParams({ page, limit });
+                if (reviewsFiltroRating) paramsCalificaciones.set('rating', reviewsFiltroRating);
+                if (reviewsOrden) paramsCalificaciones.set('orden', reviewsOrden);
+                const urlCalificaciones = `${API_BASE}/intercambios/calificaciones/${perfilPersonaId}?${paramsCalificaciones.toString()}`;
 
                 const resCalificaciones = await fetch(urlCalificaciones);
                 const dataCalificaciones = await resCalificaciones.json();
@@ -4564,26 +4794,28 @@
                     // Mostrar/ocultar y actualizar texto del botón "Ver todas"
                     const viewAllBtn = document.getElementById('btnViewAllReviews');
                     if (viewAllBtn) {
-                        // Preferir el total de calificaciones de las estadísticas si está disponible
-                        const totalAvailable = totalCalificaciones || totalIntercambios || calificaciones.length;
-                        // Si hay más reseñas en total que las actuales (page*limit), mostrar el botón
-                        if (totalAvailable > page * limit) {
-                            viewAllBtn.style.display = 'inline-block';
-                            viewAllBtn.textContent = `Ver todas las ${totalAvailable} reseñas`;
+                        const totalAvailable = totalCalificaciones || calificaciones.length;
+                        if (totalAvailable > 3) {
+                            viewAllBtn.style.display = 'block';
+                            viewAllBtn.textContent = (t('viewAllReviews') || 'Ver todas las reseñas') + ` (${totalAvailable})`;
                         } else {
                             viewAllBtn.style.display = 'none';
                         }
                     }
+                    actualizarPaginacionReviews(dataCalificaciones, page, limit);
                 } else {
                     reviewsContainer.innerHTML = `
-            <div style="text-align: center; padding: 40px 20px; color: #6b7280;">
+            <div style="text-align: center; padding: 40px 20px; color: #6b7280;" class="dark:text-gray-400">
               <svg xmlns="http://www.w3.org/2000/svg" style="width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.5;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
               </svg>
-              <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Este usuario aún no tiene comentarios escritos.</p>
-              <p style="font-size: 14px;">Las reseñas aparecerán aquí después de completar intercambios.</p>
+              <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">
+                ${reviewsFiltroRating ? (t('noReviewsWithStars') || 'No hay reseñas con esa cantidad de estrellas.') : (t('noReviewsYet') || 'Este usuario aún no tiene comentarios escritos.')}
+              </p>
+              <p style="font-size: 14px;">${t('reviewsWillAppear') || 'Las reseñas aparecerán aquí después de completar intercambios.'}</p>
             </div>
           `;
+                    actualizarPaginacionReviews({ totalPages: 0 }, page, limit);
                 }
 
             } catch (error) {
@@ -5964,7 +6196,11 @@
 
             // Validar que haya un nombre de habilidad
             if (!skillInput) {
-                alert('Por favor, primero ingresa el nombre de la habilidad para generar una descripción.');
+                if (window.Toast) {
+                    Toast.warning('Atención', 'Por favor, primero ingresa el nombre de la habilidad para generar una descripción.');
+                } else {
+                    alert('Por favor, primero ingresa el nombre de la habilidad para generar una descripción.');
+                }
                 document.getElementById('skillInput').focus();
                 return;
             }
@@ -5987,7 +6223,11 @@
 
             } catch (error) {
                 console.error('Error al generar descripción:', error);
-                alert('Hubo un error al generar la descripción. Por favor, intenta de nuevo.');
+                if (window.Toast) {
+                    Toast.error('Error', 'Hubo un error al generar la descripción. Por favor, intenta de nuevo.');
+                } else {
+                    alert('Hubo un error al generar la descripción. Por favor, intenta de nuevo.');
+                }
             } finally {
                 // Restaurar el botón
                 generateBtn.disabled = false;
@@ -7433,6 +7673,7 @@
                 skillsNeededDesc: 'Busca a otros usuarios con estas habilidades para iniciar un trueque.',
                 imageGallery: 'Galería de Imágenes',
                 ratingsReviews: 'Calificaciones y Reseñas',
+                serviceMetricsTitle: 'Métricas de servicio',
 
                 // Botones y acciones
                 edit: 'Editar',
@@ -7550,7 +7791,37 @@
                 uploadIdCard: 'Sube una foto de tu dni',
                 preview: 'Vista previa',
                 bannerBackground: 'Fondo del banner',
-                changeImage: 'Cambiar imagen'
+                changeImage: 'Cambiar imagen',
+                
+                // Traducciones adicionales perfil
+                page: 'Página',
+                of: 'de',
+                previous: 'Anterior',
+                next: 'Siguiente',
+                privacyUpdateError: 'Error al actualizar la privacidad: ',
+                privacyUpdated: 'Privacidad del perfil actualizada.',
+                privateProfile: 'Perfil privado',
+                publicProfile: 'Perfil público',
+                changePassword: 'Cambiar contraseña',
+                ratingFilter: 'Calificación:',
+                allStars: 'Todas las estrellas',
+                orderFilter: 'Orden:',
+                recentReviews: 'Reseñas recientes',
+                oldReviews: 'Reseñas antiguas',
+                noReviewsWithStars: 'No hay reseñas con esa cantidad de estrellas.',
+                noReviewsYet: 'Este usuario aún no tiene comentarios escritos.',
+                reviewsWillAppear: 'Las reseñas aparecerán aquí después de completar intercambios.',
+                viewAllReviews: 'Ver todas las reseñas',
+                certDate: 'Fecha del curso',
+                currentPassword: 'Contraseña actual',
+                newPassword: 'Nueva contraseña (mín 6 caracteres)',
+                passwordWeak: 'Contraseña débil',
+                passwordMedium: 'Contraseña media',
+                passwordStrong: 'Contraseña fuerte',
+                passwordsDontMatch: 'Las contraseñas no coinciden',
+                passwordUpdateError: 'No se pudo actualizar la contraseña.',
+                passwordUpdated: 'Contraseña actualizada correctamente.',
+                confirmNewPassword: 'Confirmar nueva contraseña'
             },
             en: {
                 // Header and navigation
@@ -7569,6 +7840,11 @@
                 skillsNeededDesc: 'Find other users with these skills to start a trade.',
                 imageGallery: 'Image Gallery',
                 ratingsReviews: 'Ratings and Reviews',
+                serviceMetricsTitle: 'Service Metrics',
+                page: 'Page',
+                of: 'of',
+                previous: 'Previous',
+                next: 'Next',
 
                 // Buttons and actions
                 edit: 'Edit',
@@ -7686,7 +7962,33 @@
                 uploadIdCard: 'Upload a photo of your DNI',
                 preview: 'Preview',
                 bannerBackground: 'Banner background',
-                changeImage: 'Change image'
+                changeImage: 'Change image',
+                
+                // Additional profile translations
+                privacyUpdateError: 'Error updating privacy: ',
+                privacyUpdated: 'Profile privacy updated.',
+                privateProfile: 'Private profile',
+                publicProfile: 'Public profile',
+                changePassword: 'Change password',
+                ratingFilter: 'Rating:',
+                allStars: 'All stars',
+                orderFilter: 'Order:',
+                recentReviews: 'Recent reviews',
+                oldReviews: 'Old reviews',
+                noReviewsWithStars: 'No reviews with that amount of stars.',
+                noReviewsYet: 'This user doesn\'t have any written reviews yet.',
+                reviewsWillAppear: 'Reviews will appear here after completing exchanges.',
+                viewAllReviews: 'View all reviews',
+                certDate: 'Course date',
+                currentPassword: 'Current password',
+                newPassword: 'New password (min 6 chars)',
+                passwordWeak: 'Weak password',
+                passwordMedium: 'Medium password',
+                passwordStrong: 'Strong password',
+                passwordsDontMatch: 'Passwords do not match',
+                passwordUpdateError: 'Could not update password.',
+                passwordUpdated: 'Password updated successfully.',
+                confirmNewPassword: 'Confirm new password'
             }
         };
 
@@ -7775,12 +8077,10 @@
             // Re-traducir formulario de verificación si existe
             const verificationForm = document.getElementById('solicitudVerificacionForm');
             if (verificationForm) {
-                const label = verificationForm.querySelector('label');
-                const input = verificationForm.querySelector('input[type="email"]');
+                const emailLabelSpan = verificationForm.querySelector('span:first-of-type');
                 const button = verificationForm.querySelector('button[type="submit"]');
 
-                if (label) label.textContent = t('contactEmail');
-                if (input) input.placeholder = t('emailPlaceholder');
+                if (emailLabelSpan) emailLabelSpan.textContent = t('contactEmail');
                 if (button) button.textContent = t('requestVerification');
             }
 
@@ -7839,7 +8139,7 @@
         }
 
         // ======================
-        // SISTEMA DE CERTIFICACIONES
+        // CERTIFICACIONES
         // ======================
 
         // Variable global para almacenar certificaciones
@@ -7862,6 +8162,17 @@
             }
         }
 
+        // sin importar si el backend la envía como "YYYY-MM-DD" o como
+        // un ISO completo tipo "YYYY-MM-DDT00:00:00.000Z" (Date de MySQL).
+        function formatearFechaCurso(fechaCurso) {
+            if (!fechaCurso) return '';
+            // Nos quedamos solo con la parte "YYYY-MM-DD", venga como venga.
+            const soloFecha = String(fechaCurso).split('T')[0];
+            const fecha = new Date(soloFecha + 'T00:00:00');
+            if (isNaN(fecha.getTime())) return '';
+            return fecha.toLocaleDateString('es-ES');
+        }
+
         // Renderizar lista de certificaciones
         function renderCertificaciones() {
             const container = document.getElementById('certificacionesList');
@@ -7869,13 +8180,13 @@
 
             if (certificacionesUsuario.length === 0) {
                 container.innerHTML = `
-          <div style="text-align: center; padding: 20px; color: #6b7280; font-style: italic;">No tienes certificaciones registradas aún.</div>
+          <div style="text-align: center; padding: 20px; color: #6b7280; font-style: italic;" class="dark:text-gray-400">No tienes certificaciones registradas aún.</div>
         `;
                 return;
             }
 
             container.innerHTML = certificacionesUsuario.map(cert => `
-        <div class="certificacion-item" data-id="${cert.id_certificacion}" style="
+        <div class="certificacion-item dark:bg-gray-800 dark:border-gray-700" data-id="${cert.id_certificacion}" style="
           display: flex; 
           align-items: center; 
           justify-content: space-between;
@@ -7887,10 +8198,11 @@
           box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         ">
           <div style="flex: 1;">
-            <div style="font-weight: 600; color: #1f2937; font-size: 14px;">
+            <div style="font-weight: 600; color: #1f2937; font-size: 14px;" class="dark:text-white">
               ${cert.titulo_certificacion}
             </div>
-            ${cert.institucion ? `<div style="font-size: 12px; color: #6b7280;">${cert.institucion}</div>` : ''}
+            ${cert.institucion ? `<div style="font-size: 12px; color: #6b7280;" class="dark:text-gray-400">${cert.institucion}</div>` : ''}
+            ${cert.fecha_curso ? `<div style="font-size: 11px; color: #6b7280; margin-top: 4px;" class="dark:text-gray-400" data-i18n="certCourseDate">Cursado: ${formatearFechaCurso(cert.fecha_curso)}</div>` : ''}
             <div style="font-size: 11px; color: #9ca3af; margin-top: 4px;">
               ${cert.fecha_registro ? new Date(cert.fecha_registro).toLocaleDateString('es-ES') : ''}
             </div>
@@ -7929,6 +8241,7 @@
         async function agregarCertificacion() {
             const titulo = document.getElementById('tituloCertificacion').value.trim();
             const institucion = document.getElementById('institucionCertificacion').value.trim();
+            const fechaCurso = document.getElementById('fechaCursoCertificacion').value;
             const fileInput = document.getElementById('documentoCertificacion');
             const mensaje = document.getElementById('mensajeCertificacion');
 
@@ -7979,7 +8292,8 @@
                         id_Perfil_Persona: perfilPersonaId,
                         titulo_certificacion: titulo,
                         institucion: institucion || null,
-                        url_certificado: urlCertificado
+                        url_certificado: urlCertificado,
+                        fecha_curso: fechaCurso || null
                     })
                 });
 
@@ -7992,6 +8306,7 @@
                 // Limpiar formulario
                 document.getElementById('tituloCertificacion').value = '';
                 document.getElementById('institucionCertificacion').value = '';
+                document.getElementById('fechaCursoCertificacion').value = '';
                 document.getElementById('documentoCertificacion').value = '';
 
                 // Recargar certificaciones
@@ -8123,10 +8438,85 @@
         // ======================
         // FUNCIONALIDAD DE TOGGLE DE DISPONIBILIDAD
         // ======================
+        function initPrivacyToggle() {
+            const toggle = document.getElementById('perfilPublicoToggle');
+            const chipText = document.getElementById('privacyChipText');
+            if (!toggle) return;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const paramUserId = urlParams.get('usuario_id');
+            const usuarioIdFromStorage = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
+            const usuarioRol = (sessionStorage.getItem('usuarioRol') || localStorage.getItem('usuarioRol') || '').toLowerCase();
+            const esAdmin = usuarioRol.includes('admin');
+            const esPerfilPropio = esAdmin || !paramUserId || parseInt(paramUserId, 10) === parseInt(usuarioIdFromStorage, 10);
+            if (!esPerfilPropio) {
+                const grupo = toggle.closest('.privacy-toggle-group');
+                if (grupo) grupo.style.display = 'none';
+                return;
+            }
+
+            const updatePrivacyUI = (estadoPublico) => {
+                if (chipText) {
+                    chipText.textContent = estadoPublico ? (t('publicProfile') || 'Perfil público') : (t('privateProfile') || 'Perfil privado');
+                }
+            };
+
+            // Revisar el nombre correcto de la columna: perfil_publico_Persona (TINYINT devuelve 1 o 0)
+            const estadoActualPublico = Boolean(usuario.perfil_publico == true || usuario.perfil_publico_Persona == true || usuario.perfil_publico_Persona === 1 || usuario.perfil_publico_Usuario == true);
+            toggle.checked = estadoActualPublico;
+            updatePrivacyUI(estadoActualPublico);
+
+            toggle.onclick = async (e) => {
+                const nuevoEstado = e.target.checked;
+                updatePrivacyUI(nuevoEstado);
+
+                // Actualizar el estado local para la vista
+                usuario.perfil_publico = nuevoEstado;
+                usuario.perfil_publico_Persona = nuevoEstado;
+
+                try {
+                    const payload = { perfil_publico_Persona: nuevoEstado ? 1 : 0 };
+                    const response = await fetch(`${API_BASE}/personas/${usuarioId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        throw new Error(result.error || result.message || 'Error al actualizar la privacidad del perfil');
+                    }
+                    usuario.perfil_publico = nuevoEstado;
+                    if (window.Toast) {
+                        Toast.success('Éxito', t('privacyUpdated') || 'Privacidad del perfil actualizada.');
+                    }
+                } catch (error) {
+                    toggle.checked = !nuevoEstado;
+                    updatePrivacyUI(!nuevoEstado);
+                    if (window.Toast) {
+                        Toast.error('Error', (t('privacyUpdateError') || 'No se pudo actualizar la privacidad del perfil: ') + error.message);
+                    }
+                }
+            };
+        }
+
         function initAvailabilityToggle() {
             const toggle = document.getElementById("availabilityToggle");
 
             if (!toggle) return;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const paramUserId = urlParams.get('usuario_id');
+            const usuarioIdFromStorage = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
+            const usuarioRol = (sessionStorage.getItem('usuarioRol') || localStorage.getItem('usuarioRol') || '').toLowerCase();
+            const esAdmin = usuarioRol.includes('admin');
+            const esPerfilPropio = esAdmin || !paramUserId || parseInt(paramUserId, 10) === parseInt(usuarioIdFromStorage, 10);
+
+            if (!esPerfilPropio) {
+                // Ocultar solo el switch, pero mantener el chip de estado
+                const switchLabel = toggle.closest('.switch');
+                if (switchLabel) switchLabel.style.display = 'none';
+            }
 
             // 1. Establecer estado inicial basado en usuario cargado
             // Aseguramos compatibilidad con 1/0, true/false, "Disponible"/"No disponible"
@@ -8141,6 +8531,8 @@
 
             toggle.checked = isAvailable;
             updateStatusUI(isAvailable);
+
+            if (!esPerfilPropio) return;
 
             // 2. Manejar cambios
             // Remover listeners anteriores si existen para evitar duplicados (usando onclick directo es mas simple aqui)
@@ -8228,8 +8620,188 @@
                 }
             }
         }
+
+        // ============================================
+        // CAMBIO DE CONTRASEÑA
+        // ============================================
+        function abrirModalCambiarPassword() {
+            const modal = document.getElementById('passwordModal');
+            const form = document.getElementById('cambiarPasswordForm');
+            const mensaje = document.getElementById('mensajeCambiarPassword');
+            if (!modal) return;
+            if (form) form.reset();
+            if (mensaje) mensaje.style.display = 'none';
+            ['passwordActual', 'passwordNueva', 'passwordNuevaConfirmar'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) input.type = 'password';
+            });
+            actualizarFortalezaPassword();
+            modal.style.display = 'flex';
+        }
+
+        function cerrarModalCambiarPassword() {
+            const modal = document.getElementById('passwordModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function toggleVerPassword(inputId, btnEl) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const mostrando = input.type === 'text';
+            input.type = mostrando ? 'password' : 'text';
+            const ojoAbierto = `<path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />`;
+            const ojoTachado = `<path fill-rule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clip-rule="evenodd" /><path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />`;
+            btnEl.querySelector('svg').innerHTML = mostrando ? ojoAbierto : ojoTachado;
+        }
+
+        function actualizarFortalezaPassword() {
+            const input = document.getElementById('passwordNueva');
+            const fill = document.getElementById('passwordStrengthFill');
+            const label = document.getElementById('passwordStrengthLabel');
+            if (!input || !fill || !label) return;
+            const valor = input.value;
+            if (!valor) {
+                fill.style.width = '0%';
+                fill.style.background = '#e5e7eb';
+                label.textContent = '';
+                return;
+            }
+            let puntaje = 0;
+            if (valor.length >= 6) puntaje++;
+            if (valor.length >= 10) puntaje++;
+            if (/[a-z]/.test(valor) && /[A-Z]/.test(valor)) puntaje++;
+            if (/[0-9]/.test(valor)) puntaje++;
+            if (/[^a-zA-Z0-9]/.test(valor)) puntaje++;
+            
+            let color = '#ef4444';
+            let txt = t('passwordWeak') || 'Débil';
+            if (puntaje >= 3) { color = '#f59e0b'; txt = t('passwordMedium') || 'Media'; }
+            if (puntaje >= 5) { color = '#10b981'; txt = t('passwordStrong') || 'Fuerte'; }
+            
+            fill.style.width = (puntaje * 20) + '%';
+            fill.style.background = color;
+            label.textContent = txt;
+            label.style.color = color;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupReviewsFiltros();
+            
+            const formCambiarPassword = document.getElementById('cambiarPasswordForm');
+            if (formCambiarPassword) {
+                formCambiarPassword.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const contrasenaActual = document.getElementById('passwordActual').value;
+                    const contrasenaNueva = document.getElementById('passwordNueva').value;
+                    const contrasenaNuevaConfirmar = document.getElementById('passwordNuevaConfirmar').value;
+                    const btn = document.getElementById('btnCambiarPassword');
+                    const mensaje = document.getElementById('mensajeCambiarPassword');
+                    
+                    const showMsg = (text, bg, color, border) => {
+                        mensaje.textContent = text;
+                        mensaje.style.background = bg;
+                        mensaje.style.color = color;
+                        mensaje.style.border = border;
+                        mensaje.style.display = 'block';
+                    };
+                    
+                    if (contrasenaNueva !== contrasenaNuevaConfirmar) {
+                        return showMsg(t('passwordsDontMatch') || 'Las nuevas contraseñas no coinciden.', '#fee2e2', '#991b1b', '1px solid #fca5a5');
+                    }
+                    if (contrasenaNueva.length < 6) {
+                        return showMsg(t('passwordMinLength') || 'La nueva contraseña debe tener al menos 6 caracteres.', '#fee2e2', '#991b1b', '1px solid #fca5a5');
+                    }
+                    
+                    btn.disabled = true;
+                    const textoOriginal = btn.textContent;
+                    btn.textContent = t('updating') || 'Actualizando...';
+                    
+                    try {
+                        const resp = await fetch(`${window.API_BASE}/cambiar-password`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                id_usuario: usuarioId,
+                                contrasenaActual,
+                                contrasenaNueva
+                            })
+                        });
+                        const data = await resp.json();
+                        
+                        if (resp.ok && data.success) {
+                            showMsg(t('passwordUpdated') || 'Contraseña actualizada correctamente.', '#dcfce7', '#166534', '1px solid #86efac');
+                            formCambiarPassword.reset();
+                            actualizarFortalezaPassword();
+                            setTimeout(() => cerrarModalCambiarPassword(), 1200);
+                        } else {
+                            showMsg(data.error || t('passwordUpdateError') || 'No se pudo actualizar la contraseña.', '#fee2e2', '#991b1b', '1px solid #fca5a5');
+                        }
+                    } catch (err) {
+                        showMsg(t('connectionError') || 'Error de conexión al actualizar la contraseña.', '#fee2e2', '#991b1b', '1px solid #fca5a5');
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = textoOriginal;
+                    }
+                });
+            }
+        });
     </script>
     <script src="../js/toast.js"></script>
+
+    <!-- Modal: Cambiar Contraseña -->
+    <div id="passwordModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content glass-card" style="max-width: 380px;">
+            <h3 class="modal-title" data-i18n="changePassword">Cambiar contraseña</h3>
+            <form id="cambiarPasswordForm" autocomplete="off" style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="position: relative;">
+                    <input type="password" id="passwordActual" class="modal-input" placeholder="Contraseña actual" data-i18n-placeholder="currentPassword"
+                        autocomplete="current-password" required style="width: 100%; padding-right: 40px;">
+                    <button type="button" class="password-eye-btn" onclick="toggleVerPassword('passwordActual', this)"
+                        style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; color: #6b7280;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <div>
+                    <div style="position: relative;">
+                        <input type="password" id="passwordNueva" class="modal-input" placeholder="Nueva contraseña (mínimo 6 caracteres)" data-i18n-placeholder="newPassword"
+                            autocomplete="new-password" required minlength="6" style="width: 100%; padding-right: 40px;" oninput="actualizarFortalezaPassword()">
+                        <button type="button" class="password-eye-btn" onclick="toggleVerPassword('passwordNueva', this)"
+                            style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; color: #6b7280;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div style="height: 5px; border-radius: 3px; background: #e5e7eb; margin-top: 6px; overflow: hidden;">
+                        <div id="passwordStrengthFill" style="height: 100%; width: 0%; background: #ef4444; transition: width 0.25s, background-color 0.25s;"></div>
+                    </div>
+                    <span id="passwordStrengthLabel" style="font-size: 11px; color: #9ca3af; display: block; margin-top: 3px;"></span>
+                </div>
+                <div style="position: relative;">
+                    <input type="password" id="passwordNuevaConfirmar" class="modal-input" placeholder="Confirmar nueva contraseña" data-i18n-placeholder="confirmNewPassword"
+                        autocomplete="new-password" required minlength="6" style="width: 100%; padding-right: 40px;">
+                    <button type="button" class="password-eye-btn" onclick="toggleVerPassword('passwordNuevaConfirmar', this)"
+                        style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; color: #6b7280;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="mensajeCambiarPassword" style="display: none; font-size: 13px; font-weight: 500; padding: 10px 12px; border-radius: 8px;"></div>
+                <div class="modal-buttons" style="gap: 8px; margin-top: 12px;">
+                    <button type="button" class="modal-button-cancel" onclick="cerrarModalCambiarPassword()"
+                        style="padding: 8px 14px; font-size: 13px; flex: 1;">Cancelar</button>
+                    <button type="submit" id="btnCambiarPassword" class="modal-button-submit"
+                        style="padding: 8px 14px; font-size: 13px; flex: 1;">Actualizar contraseña</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>

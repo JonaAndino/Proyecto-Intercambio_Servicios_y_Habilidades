@@ -4165,7 +4165,10 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ nombre })
                     });
-                    if (!res.ok) throw new Error('Error al agregar categoría');
+                    if (!res.ok) {
+                        const errorData = await res.json().catch(() => ({}));
+                        throw new Error(errorData.message || 'Error al agregar categoría');
+                    }
                     Toast.success('Categoría agregada', 'La categoría se ha agregado correctamente');
                     cargarCategorias();
                 } catch (error) {
@@ -4189,12 +4192,15 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nombre })
                 });
-                if (!res.ok) throw new Error('Error al actualizar categoría');
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({}));
+                    throw new Error(errorData.message || 'Error al actualizar categoría');
+                }
                 Toast.success('Actualizado', 'La categoría se ha actualizado correctamente');
                 cargarCategorias();
             } catch (error) {
                 console.error('Error actualizando categoría:', error);
-                Toast.error('Error', 'No se pudo actualizar la categoría');
+                Toast.error('Error', error.message || 'No se pudo actualizar la categoría');
                 cargarCategorias();
             }
         }

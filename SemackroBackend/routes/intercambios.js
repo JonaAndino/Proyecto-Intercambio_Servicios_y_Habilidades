@@ -352,20 +352,24 @@ router.get('/calificaciones/:idPersona', async (req, res) => {
     
     
     try {
+        const rating = parseInt(req.query.rating) || 0;
+        const orden = req.query.orden === 'antiguos' ? 'ASC' : 'DESC';
+        
+        let countQuery = `SELECT COUNT(*) as total FROM Calificaciones_Intercambio WHERE id_persona_calificada = ? AND visible = TRUE`;
+        let countParams = [idPersona];
+        
+        if (rating > 0) {
+            countQuery += ` AND puntuacion = ?`;
+            countParams.push(rating);
+        }
+
         // Contar total de calificaciones
-        const [countResult] = await db.query(
-            `SELECT COUNT(*) as total 
-             FROM Calificaciones_Intercambio 
-             WHERE id_persona_calificada = ? AND visible = TRUE`,
-            [idPersona]
-        );
+        const [countResult] = await db.query(countQuery, countParams);
         
         const total = countResult[0].total;
         const totalPages = Math.ceil(total / limit);
 
-        // Obtener calificaciones con datos del calificador
-        const [calificaciones] = await db.query(
-            `SELECT 
+        let dataQuery = `SELECT 
                 c.id_calificacion,
                 c.id_intercambio,
                 c.id_persona_calificadora,
@@ -387,11 +391,20 @@ router.get('/calificaciones/:idPersona', async (req, res) => {
             INNER JOIN Personas p ON c.id_persona_calificadora = p.id_Perfil_Persona
             INNER JOIN Intercambios_Finalizados i ON c.id_intercambio = i.id_intercambio
             
-            WHERE c.id_persona_calificada = ? AND c.visible = TRUE
-            ORDER BY c.fecha_calificacion DESC
-            LIMIT ? OFFSET ?`,
-            [idPersona, limit, offset]
-        );
+            WHERE c.id_persona_calificada = ? AND c.visible = TRUE`;
+        
+        let dataParams = [idPersona];
+        
+        if (rating > 0) {
+            dataQuery += ` AND c.puntuacion = ?`;
+            dataParams.push(rating);
+        }
+        
+        dataQuery += ` ORDER BY c.fecha_calificacion ${orden} LIMIT ? OFFSET ?`;
+        dataParams.push(limit, offset);
+
+        // Obtener calificaciones con datos del calificador
+        const [calificaciones] = await db.query(dataQuery, dataParams);
 
 
         res.json({

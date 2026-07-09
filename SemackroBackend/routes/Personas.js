@@ -8,8 +8,10 @@ router.get('/by-usuario/:usuarioId', async (req, res) => {
     }
     try {
         let [rows] = await db.execute(`
-            SELECT *, IFNULL(anios_experiencia, 0) AS anios_experiencia 
-            FROM Personas WHERE id_Usuario = ?`, [usuarioId]);
+            SELECT p.*, IFNULL(p.anios_experiencia, 0) AS anios_experiencia, u.correo AS email_Usuario 
+            FROM Personas p
+            INNER JOIN Usuarios u ON p.id_Usuario = u.id_usuario
+            WHERE p.id_Usuario = ?`, [usuarioId]);
 
         if (rows.length === 0) {
             // First check that the user exists in Usuarios
@@ -27,8 +29,10 @@ router.get('/by-usuario/:usuarioId', async (req, res) => {
 
             // Fetch the newly created record
             [rows] = await db.execute(`
-                SELECT *, IFNULL(anios_experiencia, 0) AS anios_experiencia 
-                FROM Personas WHERE id_Usuario = ?`, [usuarioId]);
+                SELECT p.*, IFNULL(p.anios_experiencia, 0) AS anios_experiencia, u.correo AS email_Usuario 
+                FROM Personas p
+                INNER JOIN Usuarios u ON p.id_Usuario = u.id_usuario
+                WHERE p.id_Usuario = ?`, [usuarioId]);
         }
 
         res.json({ success: true, data: rows[0] });
@@ -346,8 +350,8 @@ router.put('/:id', async (req, res) => {
         'nombre_Persona', 'apellido_Persona', 'fechaNac_Persona', 'genero_Persona',
         'estadoCivil_Persona', 'tipoIdentificacion_Persona', 'identificacion_Persona',
         'imagenUrl_Persona', 'imagen1Url_Persona', 'imagen2Url_Persona', 'imagen3Url_Persona',
-        'descripcionPerfil_Persona', 'disponibilidad', 'anios_experiencia', 'url_Dni',
-        'mascota', 'url_fondo_banner', 'telefono_Persona'
+        'descripcionPerfil_Persona', 'anios_experiencia', 'disponibilidad',
+        'mascota', 'url_fondo_banner', 'telefono_Persona', 'perfil_publico_Persona'
     ];
 
     // Validar que mascota sea uno de los valores permitidos

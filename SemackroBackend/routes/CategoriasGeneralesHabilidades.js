@@ -86,6 +86,9 @@ router.post('/', async (req, res) => {
             message: 'Categoría agregada correctamente'
         });
     } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ success: false, message: 'Ya existe una categoría con ese nombre' });
+        }
         console.error('Error al agregar categoría:', error.message);
         res.status(500).json({ 
             success: false,
@@ -126,6 +129,9 @@ router.put('/:id', async (req, res) => {
             message: 'Categoría actualizada correctamente'
         });
     } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ success: false, message: 'Ya existe una categoría con ese nombre' });
+        }
         console.error('Error al actualizar categoría:', error.message);
         res.status(500).json({ 
             success: false,

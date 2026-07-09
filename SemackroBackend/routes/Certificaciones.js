@@ -24,6 +24,7 @@ router.get('/persona/:id', async (req, res) => {
                 titulo_certificacion,
                 institucion,
                 url_certificado,
+                fecha_curso,
                 fecha_registro
             FROM Certificaciones
             WHERE id_Perfil_Persona = ?
@@ -61,6 +62,7 @@ router.get('/:id', async (req, res) => {
                 titulo_certificacion,
                 institucion,
                 url_certificado,
+                fecha_curso,
                 fecha_registro
             FROM Certificaciones
             WHERE id_certificacion = ?
@@ -91,10 +93,10 @@ router.get('/:id', async (req, res) => {
 // ============================================
 // POST /certificaciones
 // Crear una nueva certificación usando SP
-// Body: { id_Perfil_Persona, titulo_certificacion, institucion, url_certificado }
+// Body: { id_Perfil_Persona, titulo_certificacion, institucion, url_certificado, fecha_curso }
 // ============================================
 router.post('/', async (req, res) => {
-    const { id_Perfil_Persona, titulo_certificacion, institucion, url_certificado } = req.body;
+    const { id_Perfil_Persona, titulo_certificacion, institucion, url_certificado, fecha_curso } = req.body;
     
     // Validaciones
     if (!id_Perfil_Persona) {
@@ -114,8 +116,8 @@ router.post('/', async (req, res) => {
     try {
         // Usar el stored procedure sp_insertar_certificacion
         await db.execute(
-            'CALL sp_insertar_certificacion(?, ?, ?, ?)',
-            [id_Perfil_Persona, titulo_certificacion.trim(), institucion || null, url_certificado || null]
+            'CALL sp_insertar_certificacion(?, ?, ?, ?, ?)',
+            [id_Perfil_Persona, titulo_certificacion.trim(), institucion || null, url_certificado || null, fecha_curso || null]
         );
         
         // Obtener la última certificación insertada
@@ -145,11 +147,11 @@ router.post('/', async (req, res) => {
 // ============================================
 // PUT /certificaciones/:id
 // Actualizar una certificación existente
-// Body: { titulo_certificacion, institucion, url_certificado }
+// Body: { titulo_certificacion, institucion, url_certificado, fecha_curso }
 // ============================================
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { titulo_certificacion, institucion, url_certificado } = req.body;
+    const { titulo_certificacion, institucion, url_certificado, fecha_curso } = req.body;
     
     try {
         // Verificar que la certificación existe
@@ -180,6 +182,10 @@ router.put('/:id', async (req, res) => {
         if (url_certificado !== undefined) {
             updates.push('url_certificado = ?');
             values.push(url_certificado);
+        }
+        if (fecha_curso !== undefined) {
+            updates.push('fecha_curso = ?');
+            values.push(fecha_curso);
         }
         
         if (updates.length === 0) {

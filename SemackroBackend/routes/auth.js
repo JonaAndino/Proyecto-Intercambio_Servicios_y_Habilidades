@@ -632,4 +632,67 @@ router.put('/usuarios/:id_usuario/rol', async (req, res) => {
     }
 });
 
+// ----------------------------------------------------
+// ENDPOINT: Cambiar contraseña desde el perfil del usuario
+// PUT /api/auth/cambiar-password
+// Requiere: id_usuario, contrasenaActual, contrasenaNueva
+// ----------------------------------------------------
+router.put('/cambiar-password', async (req, res) => {
+    const { id_usuario, contrasenaActual, contrasenaNueva } = req.body;
+
+    if (!id_usuario || !contrasenaActual || !contrasenaNueva) {
+        return res.status(400).json({
+            success: false,
+            error: 'Faltan datos: id_usuario, contrasenaActual y contrasenaNueva son requeridos.'
+        });
+    }
+
+    if (contrasenaNueva.length < 6) {
+        return res.status(400).json({
+            success: false,
+            error: 'La nueva contraseña debe tener al menos 6 caracteres.'
+        });
+    }
+
+    try {
+        const [usuarios] = await pool.execute(
+            'SELECT id_usuario, contrasena_hash FROM Usuarios WHERE id_usuario = ?',
+            [id_usuario]
+        );
+
+        if (usuarios.length === 0) {
+            return res.status(404).json({ success: false, error: 'Usuario no encontrado.' });
+        }
+
+        const usuario = usuarios[0];
+
+        // Verificar que la contraseña actual sea correcta
+        const contrasenaValida = await bcrypt.compare(contrasenaActual, usuario.contrasena_hash);
+        if (!contrasenaValida) {
+            return res.status(401).json({ success: false, error: 'La contraseña actual es incorrecta.' });
+        }
+
+        // Evitar que la nueva contraseña sea igual a la actual
+        const esIgualALaActual = await bcrypt.compare(contrasenaNueva, usuario.contrasena_hash);
+        if (esIgualALaActual) {
+            return res.status(400).json({
+                success: false,
+                error: 'La nueva contraseña no puede ser igual a la contraseña actual.'
+            });
+        }
+
+        const nuevoHash = await bcrypt.hash(contrasenaNueva, saltRounds);
+
+        await pool.execute(
+            'UPDATE Usuarios SET contrasena_hash = ? WHERE id_usuario = ?',
+            [nuevoHash, id_usuario]
+        );
+
+        res.status(200).json({ success: true, mensaje: 'Contraseña actualizada correctamente.' });
+    } catch (error) {
+        console.error('Error al cambiar la contraseña:', error);
+        res.status(500).json({ success: false, error: 'Error del servidor al cambiar la contraseña.' });
+    }
+});
+
 module.exports = router;

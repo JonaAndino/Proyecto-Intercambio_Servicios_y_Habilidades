@@ -348,7 +348,33 @@ const translations = {
                     'config.categories': 'Categorías de Habilidades',
                     'config.addCategory': 'Agregar Categoría',
                     'config.categoryName': 'Nombre de la Categoría',
-                    'config.globalSkills': 'Habilidades Globales'
+                    'config.globalSkills': 'Habilidades Globales',
+                    
+                    // Traducciones adicionales perfil
+                    'privacyUpdateError': 'Error al actualizar la privacidad: ',
+                    'privacyUpdated': 'Privacidad del perfil actualizada.',
+                    'privateProfile': 'Perfil privado',
+                    'publicProfile': 'Perfil público',
+                    'changePassword': 'Cambiar contraseña',
+                    'ratingFilter': 'Calificación:',
+                    'allStars': 'Todas las estrellas',
+                    'orderFilter': 'Orden:',
+                    'recentReviews': 'Reseñas recientes',
+                    'oldReviews': 'Reseñas antiguas',
+                    'noReviewsWithStars': 'No hay reseñas con esa cantidad de estrellas.',
+                    'noReviewsYet': 'Este usuario aún no tiene comentarios escritos.',
+                    'reviewsWillAppear': 'Las reseñas aparecerán aquí después de completar intercambios.',
+                    'viewAllReviews': 'Ver todas las reseñas',
+                    'certDate': 'Fecha del curso',
+                    'currentPassword': 'Contraseña actual',
+                    'newPassword': 'Nueva contraseña (mín 6 caracteres)',
+                    'confirmNewPassword': 'Confirmar nueva contraseña',
+                    'passwordWeak': 'Contraseña débil',
+                    'passwordMedium': 'Contraseña media',
+                    'passwordStrong': 'Contraseña fuerte',
+                    'passwordsDontMatch': 'Las contraseñas no coinciden',
+                    'passwordUpdateError': 'No se pudo actualizar la contraseña.',
+                    'passwordUpdated': 'Contraseña actualizada correctamente.'
                 },
                 en: {
                     // Hero section
@@ -698,7 +724,33 @@ const translations = {
                     'config.categories': 'Skill Categories',
                     'config.addCategory': 'Add Category',
                     'config.categoryName': 'Category Name',
-                    'config.globalSkills': 'Global Skills'
+                    'config.globalSkills': 'Global Skills',
+                    
+                    // Additional profile translations
+                    'privacyUpdateError': 'Error updating privacy: ',
+                    'privacyUpdated': 'Profile privacy updated.',
+                    'privateProfile': 'Private profile',
+                    'publicProfile': 'Public profile',
+                    'changePassword': 'Change password',
+                    'ratingFilter': 'Rating:',
+                    'allStars': 'All stars',
+                    'orderFilter': 'Order:',
+                    'recentReviews': 'Recent reviews',
+                    'oldReviews': 'Old reviews',
+                    'noReviewsWithStars': 'No reviews with that amount of stars.',
+                    'noReviewsYet': 'This user doesn\'t have any written reviews yet.',
+                    'reviewsWillAppear': 'Reviews will appear here after completing exchanges.',
+                    'viewAllReviews': 'View all reviews',
+                    'certDate': 'Course date',
+                    'currentPassword': 'Current password',
+                    'newPassword': 'New password (min 6 chars)',
+                    'confirmNewPassword': 'Confirm new password',
+                    'passwordWeak': 'Weak password',
+                    'passwordMedium': 'Medium password',
+                    'passwordStrong': 'Strong password',
+                    'passwordsDontMatch': 'Passwords do not match',
+                    'passwordUpdateError': 'Could not update password.',
+                    'passwordUpdated': 'Password updated successfully.'
                 }
             };
 
