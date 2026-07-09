@@ -1,0 +1,4521 @@
+
+        // ======================
+        // VARIABLES GLOBALES
+        // ======================
+        let usuario = {};
+        let offeredSkills = [];
+        let requiredSkills = [];
+        let categorias = [];
+        let galeriaImagenes = [];
+        let limiteImagenesPermitidas = 3;
+        let geolocalizacion = {
+            latitud: 14.0650,
+            longitud: -87.1715,
+            obteniendo: false,
+            mensaje: '',
+            ubicacionReal: false
+        };
+        let mapInstance = null;
+        let perfilPersonaId = null;
+        let direccionId = null;
+        let geolocalizacionId = null;
+        let usuarioId = null;
+        let guardando = false;
+        let currentSkillType = 'offered';
+        let editSkillIndex = null;
+        let editSkillId = null;
+        let contextMenuData = { type: null, index: null };
+        let imageContextMenuIndex = null;
+
+        // ======================
+        // MASCOTAS VIRTUALES
+        // ======================
+        const PET_TYPES = {
+            CAT: 'CAT',
+            DOG: 'DOG',
+            SLIME: 'SLIME',
+            CRAB: 'CRAB',
+            FOX: 'FOX',
+            FROG: 'FROG',
+            DINO: 'DINO',
+            GHOST: 'GHOST'
+        };
+
+
+        let urlFondoBanner = null;
+
+        // ======================
+        // API BASE URL
+        // ======================
+        const API_BASE = window.API_BASE;
+        const PROFILE_TOUR_STORAGE_KEY = 'semackro_profile_tour_v1';
+        const PROFILE_TOUR_DRIVER_KEY = 'perfil_onboarding_v1';
+        const TOUR_REQUIRED_PERSONAL_FIELDS = [
+            'pais',
+            'departamento',
+            'ciudad',
+            'codigoPostal',
+            'estadoCivil_Usuario',
+            'genero_Usuario',
+            'tipoIdentificacion_Usuario',
+            'identificacion_usuario',
+            'fechaNacimiento',
+            'anios_experiencia'
+        ];
+        const TOUR_MASCOT_GIF_CANDIDATES = [
+            '../MascotaTour.gif',
+            './MascotaTour.gif',
+            '/MascotaTour.gif',
+            '/SemackroFrontend/MascotaTour.gif',
+            'MascotaTour.gif'
+        ];
+        const TOUR_EVENT_OFFERED_SKILL_MODAL_CLOSED = 'tour-offered-skill-modal-closed';
+        const TOUR_EVENT_EDITABLE_SAVED = 'tour-editable-saved';
+        const TOUR_OFFERED_SKILL_CONTAINER_SELECTOR = '#offeredSkillsContainer';
+        const TOUR_OFFERED_SKILL_MODAL_SELECTOR = '#skillModal .modal-content';
+        const TOUR_OFFERED_SKILL_ADD_BTN_SELECTOR = '#offeredSkillsContainer .add-skill-button-primary';
+        const TOUR_CONTACT_EMAIL_SELECTOR = '#solicitudVerificacionForm .verification-pill, #correoVerificacion';
+        let profileTourHasStarted = false;
+        let profileTourInstance = null;
+        let tourAutoAdvanceCleanup = null;
+        let tourWaitingOfferedSkillModalClose = false;
+        let tourOfferedSkillModalOpened = false;
+
+        function getDriverFactory() {
+            if (window.driver && typeof window.driver === 'function') return window.driver;
+            if (window.driver && typeof window.driver.driver === 'function') return window.driver.driver;
+            if (window.driver && window.driver.js && typeof window.driver.js.driver === 'function') return window.driver.js.driver;
+            return null;
+        }
+
+        function setTourMascotGifSource(imgElement) {
+            if (!imgElement) return;
+            let index = 0;
+
+            const tryNextSource = () => {
+                if (index >= TOUR_MASCOT_GIF_CANDIDATES.length) {
+                    imgElement.onerror = null;
+                    imgElement.src = 'https://ui-avatars.com/api/?name=S&background=dbeafe&color=1d4ed8&size=128&rounded=true&bold=true';
+                    return;
+                }
+
+                const src = TOUR_MASCOT_GIF_CANDIDATES[index++];
+                imgElement.src = src;
+            };
+
+            imgElement.onerror = tryNextSource;
+            tryNextSource();
+        }
+
+        function createTourInlineMascot() {
+            const mascot = document.createElement('div');
+            mascot.className = 'tour-inline-mascot';
+            mascot.setAttribute('aria-hidden', 'true');
+            mascot.innerHTML = `
+                <img class="tour-inline-mascot-img" src="" alt="Mascota del tour" loading="eager" decoding="async">
+                <span class="tour-inline-mascot-spark"></span>
+                <span class="tour-inline-mascot-spark s2"></span>
+            `;
+            const mascotImg = mascot.querySelector('.tour-inline-mascot-img');
+            setTourMascotGifSource(mascotImg);
+            return mascot;
+        }
+
+        function attachMascotToPopover(popoverDom) {
+            if (!popoverDom) return;
+            const descriptionEl = popoverDom.description || document.querySelector('.driver-popover-description');
+            if (!descriptionEl || !descriptionEl.parentNode) return;
+            if (descriptionEl.parentNode.classList && descriptionEl.parentNode.classList.contains('tour-inline-row')) return;
+
+            const row = document.createElement('div');
+            row.className = 'tour-inline-row';
+            const mascot = createTourInlineMascot();
+            descriptionEl.parentNode.insertBefore(row, descriptionEl);
+            row.appendChild(mascot);
+            row.appendChild(descriptionEl);
+        }
+
+        function removeTourMascot() {
+            const legacyMascot = document.getElementById('profileTourMascot');
+            if (legacyMascot) legacyMascot.remove();
+        }
+
+        function clearTourQueryParam() {
+            const url = new URL(window.location.href);
+            if (!url.searchParams.has('tour')) return;
+            url.searchParams.delete('tour');
+            const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+            window.history.replaceState({}, '', nextUrl);
+        }
+
+
+        // ======================
+        // FUNCIONES FONDO BANNER
+        // ======================
+        function renderFondoBanner() {
+            const container = document.getElementById('fondoBannerContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (urlFondoBanner) {
+                // Mostrar la imagen de fondo del banner
+                const previewDiv = document.createElement('div');
+                previewDiv.style.position = 'relative';
+                
+                const img = document.createElement('img');
+                img.src = urlFondoBanner;
+                img.alt = 'Fondo del banner';
+                img.style.width = '100%';
+                img.style.height = '120px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '10px';
+                img.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                img.onerror = function() {
+                    previewDiv.innerHTML = `
+                        <div style="width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; background: rgba(229, 231, 235, 0.5); color: #9ca3af; border-radius: 10px;">
+                            Error al cargar la imagen
+                        </div>
+                    `;
+                };
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.style.position = 'absolute';
+                removeBtn.style.top = '-10px';
+                removeBtn.style.right = '-10px';
+                removeBtn.style.background = '#ef4444';
+                removeBtn.style.color = 'white';
+                removeBtn.style.border = 'none';
+                removeBtn.style.borderRadius = '50%';
+                removeBtn.style.width = '24px';
+                removeBtn.style.height = '24px';
+                removeBtn.style.display = 'flex';
+                removeBtn.style.alignItems = 'center';
+                removeBtn.style.justifyContent = 'center';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                removeBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                `;
+                removeBtn.addEventListener('click', handleFondoBannerRemove);
+                
+                const changeBtn = document.createElement('button');
+                changeBtn.setAttribute('data-i18n', 'changeImage');
+                changeBtn.textContent = t('changeImage');
+                changeBtn.addEventListener('click', () => document.getElementById('fondoBannerUpload').click());
+                
+                previewDiv.appendChild(img);
+                previewDiv.appendChild(removeBtn);
+                container.appendChild(previewDiv);
+                container.appendChild(changeBtn);
+            } else {
+                // Mostrar placeholder de subida
+                const uploadDiv = document.createElement('div');
+                uploadDiv.style.border = '2px dashed #e5e7eb';
+                uploadDiv.style.borderRadius = '12px';
+                uploadDiv.style.padding = '24px';
+                uploadDiv.style.textAlign = 'center';
+                uploadDiv.style.backgroundColor = '#f9fafb';
+                uploadDiv.style.transition = 'all 0.3s';
+                uploadDiv.style.cursor = 'pointer';
+                uploadDiv.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" style="width: 56px; height: 56px; color: #818cf8;" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z" />
+                            <path d="M9 13h2v5a1 1 0 11-2 0v-5z" />
+                        </svg>
+                        <span style="color: #6366f1; font-size: 13px; font-weight: 600;">Subir imagen de fondo</span>
+                        <span style="font-size: 12px; color: #9ca3af;">PNG, JPG o GIF</span>
+                    </div>
+                `;
+                uploadDiv.addEventListener('click', () => document.getElementById('fondoBannerUpload').click());
+                container.appendChild(uploadDiv);
+            }
+        }
+
+        async function handleFondoBannerUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            try {
+                setGuardando(true);
+                
+                // Obtener la URL de la imagen antigua para eliminarla
+                const oldImageUrl = urlFondoBanner;
+                
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                if (oldImageUrl && oldImageUrl.includes('r2.dev')) {
+                    formData.append('oldImageUrl', oldImageUrl);
+                }
+                
+                // Subir a Cloudflare R2
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    urlFondoBanner = result.url;
+                    await saveFondoBannerToAPI();
+                    renderFondoBanner();
+                    console.log('Fondo del banner subido a Cloudflare:', result.url);
+                } else {
+                    console.error('Error al subir fondo del banner:', result.error);
+                    alert('Error al subir la imagen. Inténtalo de nuevo.');
+                }
+                
+                setGuardando(false);
+            } catch (error) {
+                console.error('Error al subir fondo del banner:', error);
+                alert('Error de conexión al subir la imagen.');
+                setGuardando(false);
+            }
+            
+            event.target.value = '';
+        }
+
+        async function handleFondoBannerRemove() {
+            if (urlFondoBanner && urlFondoBanner.includes('r2.dev')) {
+                try {
+                    setGuardando(true);
+                    const response = await fetch(`${API_BASE}/upload`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imageUrl: urlFondoBanner })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        console.log('Imagen eliminada de Cloudflare:', urlFondoBanner);
+                    }
+                } catch (err) {
+                    console.error('Error al eliminar de Cloudflare:', err);
+                }
+            }
+            
+            urlFondoBanner = null;
+            await saveFondoBannerToAPI();
+            renderFondoBanner();
+            setGuardando(false);
+        }
+
+        async function saveFondoBannerToAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/personas/${usuarioId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url_fondo_banner: urlFondoBanner
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Error al guardar el fondo del banner');
+                }
+            } catch (err) {
+                console.error('Error al guardar fondo del banner:', err);
+            }
+        }
+
+        function isFilledTourValue(value) {
+            if (value === null || value === undefined) return false;
+            if (typeof value === 'number') return Number.isFinite(value);
+            return String(value).trim() !== '';
+        }
+
+        function isDatosPersonalesCompletos() {
+            return TOUR_REQUIRED_PERSONAL_FIELDS.every(field => isFilledTourValue(usuario[field]));
+        }
+
+        function isCorreoVerificacionCompleto() {
+            const correoInput = document.getElementById('correoVerificacion');
+            if (!correoInput) return false;
+
+            const correo = correoInput.value.trim();
+            if (!correo) return false;
+
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
+        }
+
+        function isNombreCompletoValido() {
+            const inputActivo = document.querySelector('#nombreCompleto input, #nombreCompleto textarea');
+            const nombreActual = inputActivo
+                ? inputActivo.value
+                : ((usuario && usuario.nombre_Usuario) || (document.getElementById('nombreCompleto')?.textContent || ''));
+
+            const nombre = String(nombreActual || '').trim();
+            if (!nombre) return false;
+            return !/^haz clic/i.test(nombre);
+        }
+
+        function isDescripcionPerfilCompleta() {
+            const inputActivo = document.querySelector('#descripcion textarea, #descripcion input');
+            const descripcionActual = inputActivo
+                ? inputActivo.value
+                : ((usuario && usuario.descripcion_Usuario) || (document.getElementById('descripcion')?.textContent || ''));
+
+            const descripcion = String(descripcionActual || '').trim();
+            if (!descripcion) return false;
+
+            return !/^haz clic/i.test(descripcion) && !/a[nñ]adir una descripcion personal/i.test(descripcion);
+        }
+
+        function evaluateTourCompletionCheck(checkName) {
+            if (!checkName) return true;
+            if (checkName === 'datosPersonales') return isDatosPersonalesCompletos();
+            if (checkName === 'correoVerificacion') return isCorreoVerificacionCompleto();
+            if (checkName === 'nombreCompleto') return isNombreCompletoValido();
+            if (checkName === 'descripcionPerfil') return isDescripcionPerfilCompleta();
+            return true;
+        }
+
+        function notifyTourOfferedSkillModalClosed() {
+            const offeredContainer = document.getElementById('offeredSkillsContainer');
+            if (!offeredContainer) return;
+            offeredContainer.dispatchEvent(new CustomEvent(TOUR_EVENT_OFFERED_SKILL_MODAL_CLOSED, { bubbles: true }));
+        }
+
+        async function obtenerEstadoDriverServidor(driverKey) {
+            if (!driverKey || !perfilPersonaId || !API_BASE) return false;
+
+            try {
+                const response = await fetch(
+                    `${API_BASE}/onboarding-drivers/${encodeURIComponent(perfilPersonaId)}/${encodeURIComponent(driverKey)}`
+                );
+
+                if (!response.ok) return false;
+                const data = await response.json();
+                return !!(data && data.success && data.data && data.data.ejecutado === true);
+            } catch (error) {
+                console.warn('[TOUR] No se pudo leer estado de driver en servidor:', error);
+                return false;
+            }
+        }
+
+        async function marcarDriverEjecutadoServidor(driverKey) {
+            if (!driverKey || !perfilPersonaId || !API_BASE) return;
+
+            try {
+                await fetch(
+                    `${API_BASE}/onboarding-drivers/${encodeURIComponent(perfilPersonaId)}/${encodeURIComponent(driverKey)}`,
+                    {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ejecutado: true })
+                    }
+                );
+            } catch (error) {
+                console.warn('[TOUR] No se pudo guardar estado de driver en servidor:', error);
+            }
+        }
+
+        function isSkillModalVisible() {
+            const skillModal = document.getElementById('skillModal');
+            if (!skillModal) return false;
+            const inlineDisplay = skillModal.style.display;
+            const computedDisplay = window.getComputedStyle ? window.getComputedStyle(skillModal).display : inlineDisplay;
+            return inlineDisplay !== 'none' && computedDisplay !== 'none';
+        }
+
+        function buildProfileTourSteps() {
+            const steps = [
+                {
+                    element: '#profilePicContainer',
+                    title: 'Sube tu foto',
+                    description: 'Haz clic para agregar una foto clara y profesional.',
+                    side: 'bottom',
+                    align: 'start',
+                    mascot: 'Comienza por tu foto. Da confianza al instante.',
+                    autoAdvance: { listenSelector: '#profileUpload', events: ['change'], delayMs: 220 }
+                },
+                {
+                    element: '#datosPersonales',
+                    title: 'Completa tus datos personales',
+                    description: 'Llena telefono, identidad, ciudad y demas datos para tener un perfil completo.',
+                    side: 'right',
+                    align: 'start',
+                    mascot: 'Entre mas completo tu perfil, mas facil sera que confien en ti.',
+                    autoAdvance: {
+                        listenSelector: '#datosPersonales',
+                        delegateSelector: 'input, textarea, select',
+                        completeCheck: 'datosPersonales',
+                        events: ['change', 'blur'],
+                        delayMs: 320
+                    }
+                },
+                {
+                    stepKey: 'nombreCompleto',
+                    element: '#nombreCompleto',
+                    title: 'Completa tu nombre',
+                    description: 'Presiona sobre tu nombre para editarlo.',
+                    side: 'bottom',
+                    align: 'start',
+                    mascot: 'Asegura que tu nombre se vea como quieres que te contacten.',
+                    autoAdvance: {
+                        listenSelector: '#nombreCompleto',
+                        completeCheck: 'nombreCompleto',
+                        events: [TOUR_EVENT_EDITABLE_SAVED],
+                        delayMs: 140
+                    }
+                },
+                {
+                    stepKey: 'descripcionPerfil',
+                    element: '#descripcion',
+                    title: 'Describe tu perfil',
+                    description: 'Explica en pocas lineas que haces y en que destacas.',
+                    side: 'top',
+                    align: 'start',
+                    mascot: 'Una buena descripcion te trae mejores oportunidades.',
+                    autoAdvance: {
+                        listenSelector: '#descripcion',
+                        completeCheck: 'descripcionPerfil',
+                        events: [TOUR_EVENT_EDITABLE_SAVED],
+                        delayMs: 140
+                    }
+                },
+                {
+                    stepKey: 'contactVerificationEmail',
+                    element: TOUR_CONTACT_EMAIL_SELECTOR,
+                    title: 'Correo para contacto',
+                    description: 'Llena este correo para poder verificar tu perfil.',
+                    side: 'bottom',
+                    align: 'start',
+                    mascot: 'Este correo nos ayuda a iniciar tu proceso de verificacion.',
+                    autoAdvance: {
+                        listenSelector: '#solicitudVerificacionForm',
+                        delegateSelector: '#correoVerificacion',
+                        completeCheck: 'correoVerificacion',
+                        events: ['change', 'blur'],
+                        delayMs: 260
+                    }
+                },
+                {
+                    stepKey: 'offeredSkillsPlus',
+                    element: TOUR_OFFERED_SKILL_ADD_BTN_SELECTOR,
+                    title: 'Agrega habilidades',
+                    description: 'Toca el boton + para abrir el formulario de habilidad.',
+                    side: 'left',
+                    align: 'start',
+                    mascot: 'Tus habilidades son la clave para que te encuentren.',
+                    autoAdvance: {
+                        listenSelector: TOUR_OFFERED_SKILL_CONTAINER_SELECTOR,
+                        delegateSelector: '.add-skill-button-primary',
+                        events: ['click'],
+                        delayMs: 240
+                    }
+                },
+                {
+                    stepKey: 'offeredSkillsModal',
+                    element: TOUR_OFFERED_SKILL_MODAL_SELECTOR,
+                    title: 'Completa la habilidad',
+                    description: 'Completa los datos y luego pulsa Agregar o Cancelar para continuar el tour.',
+                    side: 'left',
+                    align: 'start',
+                    mascot: 'Perfecto. Completa este modal para dejar tu habilidad lista.',
+                    autoAdvance: { listenSelector: TOUR_OFFERED_SKILL_CONTAINER_SELECTOR, events: [TOUR_EVENT_OFFERED_SKILL_MODAL_CLOSED], delayMs: 120 }
+                },
+                {
+                    element: '#locationBtn',
+                    title: 'Usa obtener mi ubicacion',
+                    description: 'Pulsa este boton, acepta permisos y asi se guarda tu ubicacion en el mapa para mejorar coincidencias cercanas.',
+                    side: 'left',
+                    align: 'center',
+                    mascot: 'La ubicacion ayuda a mostrarte oportunidades reales cerca de ti.',
+                    autoAdvance: { listenSelector: '#locationBtn', events: ['click'], delayMs: 220 }
+                },
+                {
+                    element: '#reviewsSection',
+                    title: 'Como se actualizan tus resenas',
+                    description: 'Tus calificaciones y resenas se actualizan cuando cierras intercambios y el otro usuario te evalua.',
+                    side: 'top',
+                    align: 'start',
+                    mascot: 'Las resenas crecen con cada trabajo finalizado. Cuida cada experiencia.'
+                },
+                {
+                    element: '.status-toggle-group',
+                    title: 'Activa disponibilidad',
+                    description: 'Si estas listo para trabajar o intercambiar, dejalo activo. Puedes mover el switch ahora mismo.',
+                    side: 'bottom',
+                    align: 'start',
+                    mascot: 'Listo. Con esto tu perfil queda preparado para conectar.',
+                    autoAdvance: { listenSelector: '#availabilityToggle', events: ['change'], delayMs: 180 }
+                }
+            ];
+
+            return steps
+                .filter(step => document.querySelector(step.element))
+                .map(step => ({
+                    stepKey: step.stepKey || null,
+                    element: step.element,
+                    mascot: step.mascot,
+                    autoAdvance: step.autoAdvance || null,
+                    disableActiveInteraction: false,
+                    popover: {
+                        title: step.title,
+                        description: step.description,
+                        side: step.side,
+                        align: step.align
+                    }
+                }));
+        }
+
+        async function startProfileTourIfNeeded(options = {}) {
+            const { readOnlyMode = false, force = false } = options;
+            if (profileTourHasStarted) return;
+            if (readOnlyMode && !force) return;
+
+            // Verificar si el driver de perfil está habilitado en las configuraciones del sistema
+            try {
+                const resConfig = await fetch(`${API_BASE}/configuraciones`);
+                const jsonConfig = await resConfig.json();
+                if (resConfig.ok && jsonConfig.success && jsonConfig.data) {
+                    const driverActivo = jsonConfig.data['driver_perfil_activado']?.valor;
+                    if (driverActivo === false && !force) {
+                        console.log('[Tour Perfil] El driver de perfil está desactivado globalmente.');
+                        return;
+                    }
+                }
+            } catch (errConfig) {
+                console.error('Error al validar driver_perfil_activado:', errConfig);
+            }
+
+            const searchParams = new URLSearchParams(window.location.search);
+            const forceByQuery = searchParams.get('tour') === 'onboarding';
+            const wasSeenLocal = localStorage.getItem(PROFILE_TOUR_STORAGE_KEY) === '1';
+            const wasSeenServer = (!force && !forceByQuery)
+                ? await obtenerEstadoDriverServidor(PROFILE_TOUR_DRIVER_KEY)
+                : false;
+
+            if (wasSeenServer && !wasSeenLocal) {
+                localStorage.setItem(PROFILE_TOUR_STORAGE_KEY, '1');
+            }
+
+            const shouldStart = force || forceByQuery || (!wasSeenLocal && !wasSeenServer);
+            if (!shouldStart) return;
+
+            const createDriver = getDriverFactory();
+            if (!createDriver) {
+                console.warn('[TOUR] Driver.js no disponible, se omite tour.');
+                return;
+            }
+
+            const steps = buildProfileTourSteps();
+            if (steps.length < 2) return;
+
+            profileTourHasStarted = true;
+            let tourClosed = false;
+
+            const clearAutoAdvanceBinding = () => {
+                if (typeof tourAutoAdvanceCleanup === 'function') {
+                    tourAutoAdvanceCleanup();
+                }
+                tourAutoAdvanceCleanup = null;
+                tourWaitingOfferedSkillModalClose = false;
+                tourOfferedSkillModalOpened = false;
+            };
+
+            const focusEditableStepInput = (step) => {
+                if (!step || !step.stepKey) return;
+                if (step.stepKey !== 'nombreCompleto' && step.stepKey !== 'descripcionPerfil') return;
+
+                const container = typeof step.element === 'string'
+                    ? document.querySelector(step.element)
+                    : step.element;
+
+                if (!container) return;
+
+                if (typeof container.scrollIntoView === 'function') {
+                    try {
+                        container.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                    } catch (_) {
+                        container.scrollIntoView();
+                    }
+                }
+
+                window.setTimeout(() => {
+                    let input = container.querySelector('input, textarea');
+
+                    if (!input && !container.classList.contains('editing')) {
+                        container.click();
+                        input = container.querySelector('input, textarea');
+
+                        if (profileTourInstance && typeof profileTourInstance.refresh === 'function') {
+                            profileTourInstance.refresh();
+                        }
+                    }
+
+                    if (!input) return;
+
+                    try {
+                        input.focus({ preventScroll: true });
+                    } catch (_) {
+                        input.focus();
+                    }
+
+                    if (input.tagName === 'TEXTAREA') {
+                        const len = input.value.length;
+                        if (typeof input.setSelectionRange === 'function') {
+                            input.setSelectionRange(len, len);
+                        }
+                    } else if (typeof input.select === 'function') {
+                        input.select();
+                    }
+
+                    if (profileTourInstance && typeof profileTourInstance.refresh === 'function') {
+                        profileTourInstance.refresh();
+                    }
+                }, 80);
+            };
+
+            const bindAutoAdvance = (step) => {
+                clearAutoAdvanceBinding();
+                if (!step || !step.autoAdvance) return;
+
+                const cfg = step.autoAdvance;
+                tourWaitingOfferedSkillModalClose = step.stepKey === 'offeredSkillsModal';
+                if (tourWaitingOfferedSkillModalClose) {
+                    const skillModal = document.getElementById('skillModal');
+                    tourOfferedSkillModalOpened = !!(skillModal && skillModal.style.display !== 'none');
+                }
+                const root = cfg.listenSelector
+                    ? document.querySelector(cfg.listenSelector)
+                    : (typeof step.element === 'string' ? document.querySelector(step.element) : step.element);
+
+                if (!root) return;
+
+                const events = Array.isArray(cfg.events) && cfg.events.length ? cfg.events : ['click'];
+                let triggered = false;
+
+                const handler = (event) => {
+                    if (triggered || !profileTourInstance) return;
+
+                    if (cfg.delegateSelector) {
+                        const matched = event.target && event.target.closest
+                            ? event.target.closest(cfg.delegateSelector)
+                            : null;
+                        if (!matched || !root.contains(matched)) return;
+                    }
+
+                    window.setTimeout(() => {
+                        if (!evaluateTourCompletionCheck(cfg.completeCheck)) {
+                            return;
+                        }
+
+                        triggered = true;
+                        if (!profileTourInstance || typeof profileTourInstance.getState !== 'function') return;
+                        const state = profileTourInstance.getState();
+                        const activeIndex = typeof state.activeIndex === 'number' ? state.activeIndex : -1;
+                        if (activeIndex >= 0 && activeIndex < (steps.length - 1)) {
+                            profileTourInstance.moveNext();
+                        }
+                    }, cfg.delayMs || 250);
+                };
+
+                events.forEach(evt => root.addEventListener(evt, handler, true));
+                tourAutoAdvanceCleanup = () => {
+                    events.forEach(evt => root.removeEventListener(evt, handler, true));
+                };
+            };
+
+            const handleStepChange = (_, step) => {
+                bindAutoAdvance(step);
+                focusEditableStepInput(step);
+            };
+
+            const handleTourClose = () => {
+                if (tourClosed) return;
+                tourClosed = true;
+                clearAutoAdvanceBinding();
+                localStorage.setItem(PROFILE_TOUR_STORAGE_KEY, '1');
+                void marcarDriverEjecutadoServidor(PROFILE_TOUR_DRIVER_KEY);
+                removeTourMascot();
+                clearTourQueryParam();
+                profileTourInstance = null;
+                profileTourHasStarted = false;
+            };
+
+            const tour = createDriver({
+                steps,
+                showProgress: true,
+                allowClose: true,
+                overlayClickBehavior: 'close',
+                disableActiveInteraction: false,
+                overlayOpacity: 0.55,
+                stagePadding: 14,
+                popoverOffset: 18,
+                popoverClass: 'profile-tour-popover',
+                nextBtnText: 'Siguiente',
+                prevBtnText: 'Atras',
+                doneBtnText: 'Listo',
+                showButtons: ['previous', 'next', 'close'],
+                onPopoverRender: (popover, options) => {
+                    attachMascotToPopover(popover);
+                    if (options && options.state && options.state.activeStep) {
+                        bindAutoAdvance(options.state.activeStep);
+                    }
+                },
+                onNextClick: (_, __, options) => {
+                    clearAutoAdvanceBinding();
+                    const configuredSteps = options.config.steps || [];
+                    const total = configuredSteps.length;
+                    const index = options.state.activeIndex || 0;
+                    if (index >= total - 1) {
+                        options.driver.destroy();
+                        return;
+                    }
+
+                    const currentStep = configuredSteps[index] || null;
+                    const nextStep = configuredSteps[index + 1] || null;
+
+                    // Si el usuario pulsa "Siguiente" sin tocar +, abrimos el modal y luego avanzamos al paso del modal.
+                    if (
+                        currentStep && nextStep &&
+                        currentStep.stepKey === 'offeredSkillsPlus' &&
+                        nextStep.stepKey === 'offeredSkillsModal' &&
+                        !isSkillModalVisible()
+                    ) {
+                        showSkillModal('offered');
+                        window.requestAnimationFrame(() => {
+                            options.driver.moveNext();
+                        });
+                        return;
+                    }
+
+                    // Si el usuario pulsa "Siguiente" en el paso del modal sin llenarlo, cerrar el modal antes de avanzar.
+                    if (currentStep && currentStep.stepKey === 'offeredSkillsModal' && isSkillModalVisible()) {
+                        hideSkillModal();
+                        window.requestAnimationFrame(() => {
+                            options.driver.moveNext();
+                        });
+                        return;
+                    }
+
+                    options.driver.moveNext();
+                },
+                onPrevClick: (_, __, options) => {
+                    clearAutoAdvanceBinding();
+                    options.driver.movePrevious();
+                },
+                onCloseClick: (_, __, options) => {
+                    clearAutoAdvanceBinding();
+                    options.driver.destroy();
+                },
+                onHighlightStarted: handleStepChange,
+                onHighlighted: handleStepChange,
+                onDestroyStarted: handleTourClose,
+                onDestroyed: handleTourClose
+            });
+            profileTourInstance = tour;
+
+            if (typeof tour.drive === 'function') {
+                setTimeout(() => tour.drive(), 240);
+            }
+        }
+
+        window.iniciarTourPerfil = function () {
+            localStorage.removeItem(PROFILE_TOUR_STORAGE_KEY);
+            if (profileTourInstance && typeof profileTourInstance.destroy === 'function') {
+                profileTourInstance.destroy();
+            }
+            startProfileTourIfNeeded({ force: true, readOnlyMode: false });
+        };
+
+        // ======================
+        // INICIALIZACIÓN
+        // ======================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Soporte para ver perfil de otro usuario vía ?usuario_id=X
+            const urlParams = new URLSearchParams(window.location.search);
+            const paramUserId = urlParams.get('usuario_id');
+
+            // Obtener usuario ID desde sessionStorage o localStorage
+            const usuarioIdFromStorage = sessionStorage.getItem('usuarioId') || localStorage.getItem('usuarioId');
+            const usuarioIdPropio = usuarioIdFromStorage ? parseInt(usuarioIdFromStorage, 10) : null;
+            usuarioId = usuarioIdPropio;
+            const readOnlyMode = !!(paramUserId && parseInt(paramUserId, 10) !== usuarioIdPropio);
+
+            if (paramUserId && parseInt(paramUserId, 10) !== usuarioId) {
+                // Modo solo lectura: ver perfil de otro usuario
+                usuarioId = parseInt(paramUserId, 10);
+            }
+
+            // Verificar sesión
+            if (!usuarioId) {
+                showSessionExpiredModal();
+                return;
+            }
+
+            window.opcionesIdentificacion = [
+                { value: 'DNI', label: t('dni') },
+                { value: 'Pasaporte', label: t('passport') }
+            ];
+
+            async function cargarLimiteImagenes() {
+                try {
+                    const res = await fetch(`${API_BASE}/configuraciones`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const configs = data.data;
+                        if (configs && configs.limite_imagenes_galeria) {
+                            limiteImagenesPermitidas = parseInt(configs.limite_imagenes_galeria.valor, 10) || 3;
+                            console.log('Límite de imágenes cargado:', limiteImagenesPermitidas);
+                        }
+                        
+                        if (configs) {
+                            const newOptions = [];
+                            if (configs.identificacion_dni_activado && (configs.identificacion_dni_activado.valor === true || configs.identificacion_dni_activado.valor === 'true')) {
+                                newOptions.push({ value: 'DNI', label: t('dni') || 'DNI (Honduras)' });
+                            }
+                            if (configs.identificacion_pasaporte_activado && (configs.identificacion_pasaporte_activado.valor === true || configs.identificacion_pasaporte_activado.valor === 'true')) {
+                                newOptions.push({ value: 'Pasaporte', label: t('passport') || 'Pasaporte' });
+                            }
+                            if (configs.identificacion_licencia_activado && (configs.identificacion_licencia_activado.valor === true || configs.identificacion_licencia_activado.valor === 'true')) {
+                                newOptions.push({ value: 'Licencia de Conducir', label: t('idTypeLicense') || 'Licencia de Conducir' });
+                            }
+                            if (configs.identificacion_otro_activado && (configs.identificacion_otro_activado.valor === true || configs.identificacion_otro_activado.valor === 'true')) {
+                                newOptions.push({ value: 'Otro', label: t('idTypeOther') || 'Otro' });
+                            }
+                            if (newOptions.length > 0) {
+                                window.opcionesIdentificacion = newOptions;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Error al cargar configuraciones:', e);
+                }
+            }
+
+            // Cargar límite, luego datos y luego iniciar tour de primer ingreso
+            cargarLimiteImagenes().then(() => {
+                return cargarUsuario();
+            }).finally(() => {
+                startProfileTourIfNeeded({ readOnlyMode });
+            });
+
+            // Event listeners
+            setupEventListeners();
+
+            // Configurar actualización automática de estadísticas
+            configurarActualizacionAutomatica();
+
+            // ── Botón "Volver al Panel" (solo cuando es acceso admin con ?usuario_id=) ──
+            if (paramUserId) {
+                const isInIframe = window.self !== window.top;
+                const isMinimal = urlParams.get('minimal') === 'true';
+                const desdeOrden = urlParams.get('desde_orden');
+
+                const btn = document.createElement('button');
+                btn.id = 'btnVolverAdmin';
+                btn.title = desdeOrden ? 'Volver a postulaciones' : (isInIframe && isMinimal ? 'Volver a postulantes' : 'Volver al Panel de Administración');
+                btn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0;">
+                        <path d="M19 12H5M12 5l-7 7 7 7"/>
+                    </svg>
+                    <span>${desdeOrden ? 'Volver a Postulaciones' : (isInIframe && isMinimal ? 'Volver a postulantes' : 'Volver al Panel')}</span>
+                `;
+                Object.assign(btn.style, {
+                    position: 'fixed',
+                    top: '16px',
+                    left: '16px',
+                    zIndex: '99999',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    background: '#1a2a4b',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '999px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    fontFamily: 'Inter, sans-serif',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 16px rgba(26,42,75,0.35)',
+                    transition: 'background 0.18s, transform 0.18s',
+                    letterSpacing: '0.01em'
+                });
+                btn.onmouseenter = () => { btn.style.background = '#2563EB'; btn.style.transform = 'scale(1.04)'; };
+                btn.onmouseleave = () => { btn.style.background = '#1a2a4b'; btn.style.transform = 'scale(1)'; };
+                btn.onclick = () => {
+                    if (desdeOrden) {
+                        sessionStorage.setItem('reopenPostulacionesOrderId', desdeOrden);
+                        window.location.href = '../Descubrir.html';
+                    } else if (isInIframe && isMinimal) {
+                        try { window.parent.cerrarModalPerfil(); } catch(e) { window.close(); }
+                    } else if (document.referrer && document.referrer.includes('Reportes.html')) {
+                        history.back();
+                    } else {
+                        window.location.href = '../Reportes.html';
+                    }
+                };
+                document.body.appendChild(btn);
+            }
+        });
+
+        // ======================
+        // ACTUALIZACIÓN AUTOMÁTICA DE ESTADÍSTICAS
+        // ======================
+        function configurarActualizacionAutomatica() {
+            // 1. Escuchar cuando el usuario regresa a la pestaña
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && perfilPersonaId) {
+                    // console.log eliminado
+                    cargarEstadisticasUsuario();
+                }
+            });
+
+            // 2. Escuchar eventos de localStorage (cuando se actualiza desde otra pestaña/página)
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'actualizarEstadisticas' && perfilPersonaId) {
+                    // console.log eliminado
+                    cargarEstadisticasUsuario();
+                }
+            });
+
+            // 3. Polling cada 30 segundos (opcional, solo si el usuario está activo)
+            let lastActivity = Date.now();
+
+            // Detectar actividad del usuario
+            ['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(event => {
+                document.addEventListener(event, () => {
+                    lastActivity = Date.now();
+                }, true);
+            });
+
+            // Polling inteligente: solo actualiza si el usuario estuvo activo en los últimos 2 minutos
+            setInterval(() => {
+                const timeSinceActivity = Date.now() - lastActivity;
+                if (timeSinceActivity < 120000 && perfilPersonaId) { // 2 minutos
+                    // console.log eliminado
+                    cargarEstadisticasUsuario();
+                }
+            }, 30000); // Cada 30 segundos
+        }
+
+        // ======================
+        // SETUP EVENT LISTENERS
+        // ======================
+        function setupEventListeners() {
+            // Profile pic upload
+            document.getElementById('profilePicContainer').addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('profileUpload').click();
+            });
+
+            document.getElementById('profilePicContainer').addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                showProfileContextMenu(e.clientX, e.clientY);
+            });
+
+            document.getElementById('profileUpload').addEventListener('change', handleProfileImageUpload);
+
+            // Gallery upload
+            document.getElementById('galleryUpload').addEventListener('change', handleGalleryImageUpload);
+
+            // Location button
+            document.getElementById('locationBtn').addEventListener('click', obtenerUbicacion);
+
+            // Close context menus on click outside
+            document.addEventListener('click', () => {
+                closeAllContextMenus();
+            });
+
+            // Close context menus on escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeAllContextMenus();
+                    hideSkillModal();
+                }
+            });
+
+            // Modal overlay click
+            document.getElementById('skillModal').addEventListener('click', (e) => {
+                if (e.target.id === 'skillModal') {
+                    hideSkillModal();
+                }
+            });
+        }
+
+        // ======================
+        // CARGAR DATOS DEL USUARIO
+        // ======================
+        async function cargarUsuario() {
+            try {
+                showLoading(true);
+
+                // 1. Consultar persona por usuario ID
+                const resPersona = await fetch(`${API_BASE}/personas/by-usuario/${usuarioId}`);
+                const dataPersona = await resPersona.json();
+
+                if (!resPersona.ok || !dataPersona.success || !dataPersona.data) {
+                    throw new Error('No se pudo obtener el perfil de la persona');
+                }
+
+                const personaDB = dataPersona.data;
+                perfilPersonaId = personaDB.id_Perfil_Persona;
+
+                // 2. Consultar dirección (sin mostrar error 404 en consola)
+                let direccionDB = null;
+                try {
+                    await fetch(`${API_BASE}/direcciones/persona/${perfilPersonaId}`)
+                        .then(async resDireccion => {
+                            if (resDireccion.status === 404) {
+                                // No hay dirección, dejar null
+                            } else {
+                                const dataDireccion = await resDireccion.json();
+                                if (resDireccion.ok && dataDireccion.success && dataDireccion.data) {
+                                    direccionDB = Array.isArray(dataDireccion.data) ? dataDireccion.data[0] : dataDireccion.data;
+                                    if (direccionDB) direccionId = direccionDB.id_Direccion;
+                                }
+                            }
+                        })
+                        .catch(() => { });
+                } catch (err) {
+                    // No mostrar nada
+                }
+
+                // 3. Mapear datos con defaults inteligentes, usando datos de Google si están disponibles
+                const correoUsuario = sessionStorage.getItem('correoUsuario') || localStorage.getItem('correoUsuario') || '';
+                const nombreDelCorreo = correoUsuario.split('@')[0] || 'Usuario';
+                
+                // Capitalizar primera letra
+                const nombreDefault = nombreDelCorreo.charAt(0).toUpperCase() + nombreDelCorreo.slice(1);
+                
+                let googleData = null;
+                try {
+                    const googleDataStr = localStorage.getItem('googleRegistroData');
+                    if (googleDataStr) {
+                        googleData = JSON.parse(googleDataStr);
+                    }
+                } catch (e) {
+                    console.warn('Error parsing googleRegistroData:', e);
+                }
+                
+                let nombreFinal = personaDB.nombre_Persona;
+                let apellidoFinal = personaDB.apellido_Persona;
+                let tipoIdentificacionFinal = personaDB.tipoIdentificacion_Persona;
+                let identificacionFinal = personaDB.identificacion_Persona;
+                
+                // If we have Google data and the DB fields are still default/empty, use the Google data
+                if (googleData) {
+                    if (!nombreFinal || nombreFinal === nombreDefault) {
+                        const nombreParts = googleData.nombre.split(' ');
+                        nombreFinal = nombreParts[0] || nombreDefault;
+                        apellidoFinal = nombreParts.slice(1).join(' ') || apellidoFinal;
+                    }
+                    if (!tipoIdentificacionFinal) {
+                        tipoIdentificacionFinal = googleData.tipoIdentificacion;
+                    }
+                    if (!identificacionFinal) {
+                        identificacionFinal = googleData.numeroIdentificacion;
+                    }
+                }
+
+                const avatarDefault = `https://ui-avatars.com/api/?name=${encodeURIComponent(nombreFinal || nombreDefault)}&background=3b82f6&color=fff&size=200&bold=true&rounded=true`;
+
+                usuario = {
+                    nombre_Usuario: nombreFinal || nombreDefault,
+                    apellido_Usuario: apellidoFinal || '',
+                    descripcion_Usuario: personaDB.descripcionPerfil_Persona || '¡Hola! Soy nuevo en SEMACKRO y estoy listo para intercambiar habilidades.',
+                    imagenUrl_Usuario: personaDB.imagenUrl_Persona || avatarDefault,
+                    imagen1Url_Usuario: personaDB.imagen1Url_Persona || '',
+                    imagen2Url_Usuario: personaDB.imagen2Url_Persona || '',
+                    imagen3Url_Usuario: personaDB.imagen3Url_Persona || '',
+                    pais: direccionDB && (direccionDB.pais_Direccion || direccionDB.pais) || '',
+                    departamento: direccionDB && (direccionDB.departamento_Direccion || direccionDB.departamento) || '',
+                    ciudad: direccionDB && (direccionDB.ciudad_Direccion || direccionDB.ciudad) || '',
+                    codigoPostal: direccionDB && (direccionDB.codigoPostal_Direccion || direccionDB.codigoPostal) || '',
+                    estadoCivil_Usuario: personaDB.estadoCivil_Persona || 'Soltero',
+                    genero_Usuario: personaDB.genero_Persona || 'Otro',
+                    tipoIdentificacion_Usuario: tipoIdentificacionFinal || 'DNI',
+                    identificacion_usuario: identificacionFinal || '',
+                    fechaNacimiento: personaDB.fechaNac_Persona || '',
+                    anios_experiencia: personaDB.anios_experiencia || 0,
+                    url_Dni: personaDB.url_Dni || '',
+                    telefono_Usuario: personaDB.telefono_Persona || '',
+                    disponibilidad_Usuario: personaDB.disponibilidad_Persona || personaDB.disponibilidad || 'Disponible'
+                };
+
+                // Auto-save Google data to DB if available
+                if (googleData) {
+                    try {
+                        // Save name first
+                        if (nombreFinal && (!personaDB.nombre_Persona || personaDB.nombre_Persona === nombreDefault)) {
+                            await updateUsuario('nombre_Usuario', nombreFinal);
+                        }
+                        // Save last name
+                        if (apellidoFinal && !personaDB.apellido_Persona) {
+                            await updateUsuario('apellido_Usuario', apellidoFinal);
+                        }
+                        // Save ID type
+                        if (tipoIdentificacionFinal && !personaDB.tipoIdentificacion_Persona) {
+                            await updateUsuario('tipoIdentificacion_Usuario', tipoIdentificacionFinal);
+                        }
+                        // Save ID number
+                        if (identificacionFinal && !personaDB.identificacion_Persona) {
+                            await updateUsuario('identificacion_usuario', identificacionFinal);
+                        }
+                    } catch (error) {
+                        console.error('Error auto-saving Google registration data:', error);
+                    }
+                }
+
+
+                urlFondoBanner = personaDB.url_fondo_banner || null;
+
+                // 4. Cargar imágenes de galería
+                galeriaImagenes = [];
+                if (personaDB.imagen1Url_Persona) {
+                    galeriaImagenes.push({ id: 1, url: personaDB.imagen1Url_Persona });
+                }
+                if (personaDB.imagen2Url_Persona) {
+                    galeriaImagenes.push({ id: 2, url: personaDB.imagen2Url_Persona });
+                }
+                if (personaDB.imagen3Url_Persona) {
+                    galeriaImagenes.push({ id: 3, url: personaDB.imagen3Url_Persona });
+                }
+
+                console.log('Imágenes de galería cargadas desde BD:', galeriaImagenes);
+                console.log('URLs de la BD:', {
+                    imagen1: personaDB.imagen1Url_Persona,
+                    imagen2: personaDB.imagen2Url_Persona,
+                    imagen3: personaDB.imagen3Url_Persona
+                });
+
+                // 5. Cargar habilidades
+                try {
+                    const resHabilidades = await fetch(`${API_BASE}/habilidades/persona/${perfilPersonaId}`);
+                    const dataHabilidades = await resHabilidades.json();
+                    if (resHabilidades.ok && dataHabilidades.success && dataHabilidades.data) {
+                        const habilidades = dataHabilidades.data;
+                        offeredSkills = habilidades
+                            .filter(h => h.tipoEstado_Habilidad === 'Ofrece')
+                            .map(h => ({
+                                id: h.id_Habilidad,
+                                name: h.nombre_Habilidad,
+                                description: h.descripcion_Habilidad || '',
+                                categoryId: h.id_categorias_Habilidades_Servicios
+                            }));
+                        requiredSkills = habilidades
+                            .filter(h => h.tipoEstado_Habilidad === 'Necesita')
+                            .map(h => ({
+                                id: h.id_Habilidad,
+                                name: h.nombre_Habilidad,
+                                description: h.descripcion_Habilidad || '',
+                                categoryId: h.id_categorias_Habilidades_Servicios
+                            }));
+                    }
+                } catch (err) {
+                    console.error('Error al cargar habilidades:', err);
+                }
+
+                // 6. Cargar categorías
+                try {
+                    const resCategorias = await fetch(`${API_BASE}/categorias`);
+                    const dataCategorias = await resCategorias.json();
+                    if (resCategorias.ok && dataCategorias.success && dataCategorias.data) {
+                        categorias = dataCategorias.data;
+                    }
+                } catch (err) {
+                    console.error('Error al cargar categorías:', err);
+                }
+
+                // 7. Cargar geolocalización
+                if (direccionDB && direccionDB.id_Direccion) {
+                    try {
+                        const resGeo = await fetch(`${API_BASE}/geolocalizacion/direccion/${direccionDB.id_Direccion}`);
+                        const dataGeo = await resGeo.json();
+                        if (resGeo.ok && dataGeo.success && dataGeo.data) {
+                            const geoDB = dataGeo.data;
+                            geolocalizacionId = geoDB.id_Geolocalizacion;
+                            geolocalizacion = {
+                                latitud: geoDB.latitud_Geolocalizacion,
+                                longitud: geoDB.Longitud_Geolocalizacion,
+                                obteniendo: false,
+                                mensaje: '',
+                                ubicacionReal: true
+                            };
+                        }
+                    } catch (err) {
+                        console.log('No se encontró geolocalización');
+                    }
+                }
+
+                // Renderizar UI
+                renderUsuario();
+
+                renderFondoBanner();
+                showLoading(false);
+
+            } catch (err) {
+                console.error('Error al cargar usuario:', err);
+                showError(err.message);
+            }
+        }
+
+        // ======================
+        // RENDERIZAR USUARIO
+        // ======================
+        function renderUsuario() {
+            // Sección de solicitud de verificación
+            const badge = document.querySelector('.verified-badge');
+            if (badge) {
+                // Agregar formulario solo si no está verificado
+                setTimeout(() => {
+                    const notVerifiedText = t('notVerified');
+                    if (badge.textContent.includes('No verificado') || badge.textContent.includes(notVerifiedText)) {
+                        if (!document.getElementById('solicitudVerificacionForm')) {
+                            const form = document.createElement('form');
+                            form.id = 'solicitudVerificacionForm';
+                            form.style.display = 'contents'; // Para que flote en el flex-row sin romperlo
+                            form.innerHTML = `
+                      <div class="verification-pill" style="display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 20px; padding: 6px 10px; border: 1px solid #bae6fd; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <button type="submit" style="background: #2563eb; color: white; padding: 0 14px; border-radius: 20px; font-weight: 700; font-size: 12px; border: none; cursor: pointer; transition: all 0.2s; height: 30px; white-space: nowrap; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);">${t('requestVerification')}</button>
+                      </div>
+                      <div id="mensajeVerificacion" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; font-size: 13px; font-weight: 500; padding: 12px 20px; border-radius: 10px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></div>
+                    `;
+                            badge.parentNode.insertBefore(form, badge.nextSibling);
+
+                            // Aplicar traducciones
+                            applyTranslations();
+
+                            form.addEventListener('submit', async function (e) {
+                                e.preventDefault();
+                                const mensaje = document.getElementById('mensajeVerificacion');
+
+                                const showMsg = (text, bg, color, border) => {
+                                    mensaje.textContent = text;
+                                    mensaje.style.background = bg;
+                                    mensaje.style.color = color;
+                                    mensaje.style.border = border;
+                                    mensaje.style.display = 'block';
+                                    setTimeout(() => { mensaje.style.display = 'none'; }, 5000);
+                                };
+
+                                showMsg(t('sendingRequest'), '#dbeafe', '#1e40af', '1px solid #93c5fd');
+
+                                try {
+                                    const resp = await fetch(`${window.API_BASE}/verificacion-usuarios`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ id_Perfil: perfilPersonaId })
+                                    });
+                                    const data = await resp.json();
+                                    if (resp.ok && data.ok) {
+                                        showMsg(t('requestSentAdmin'), '#dcfce7', '#166534', '1px solid #86efac');
+                                        form.querySelector('button').disabled = true;
+                                        form.querySelector('button').style.opacity = '0.6';
+                                        mostrarEstadoVerificacion();
+                                        iniciarPollingVerificacion();
+                                    } else {
+                                        showMsg(data.error || t('requestError'), '#fee2e2', '#991b1b', '1px solid #fca5a5');
+                                    }
+                                } catch (err) {
+                                    showMsg(t('requestError'), '#fee2e2', '#991b1b', '1px solid #fca5a5');
+                                }
+                            });
+                        }
+                    }
+                }, 800);
+            }
+            // Profile pic
+            const profilePic = document.getElementById('profilePic');
+            profilePic.src = getImagenPerfil();
+            profilePic.onerror = () => {
+                profilePic.src = getDefaultAvatar();
+            };
+
+            // Nombre
+            const nombreCompleto = document.getElementById('nombreCompleto');
+            const nombreTexto = `${usuario.nombre_Usuario || ''} ${usuario.apellido_Usuario || ''}`.trim();
+            nombreCompleto.textContent = nombreTexto || 'Haz clic para agregar tu nombre';
+            if (!nombreTexto) {
+                nombreCompleto.style.color = '#9ca3af'; // Color gris para placeholder
+                nombreCompleto.style.fontStyle = 'italic';
+            } else {
+                nombreCompleto.style.color = '';
+                nombreCompleto.style.fontStyle = '';
+            }
+            makeEditable(nombreCompleto, 'nombre_Usuario', (value) => {
+                const parts = value.split(' ');
+                updateUsuario('nombre_Usuario', parts[0] || '');
+                updateUsuario('apellido_Usuario', parts.slice(1).join(' ') || '');
+            });
+
+            // Username
+            const username = document.getElementById('username');
+            if (usuario.nombre_Usuario || usuario.apellido_Usuario) {
+                username.textContent = `@${usuario.nombre_Usuario || ''}${usuario.apellido_Usuario ? usuario.apellido_Usuario[0] : ''}`;
+            } else {
+                username.textContent = '@usuario';
+                username.style.color = '#9ca3af';
+            }
+
+            // Descripción
+            const descripcion = document.getElementById('descripcion');
+            descripcion.textContent = usuario.descripcion_Usuario || 'Haz clic aquí para añadir una descripción personal';
+            if (!usuario.descripcion_Usuario) {
+                descripcion.style.color = '#9ca3af';
+                descripcion.style.fontStyle = 'italic';
+            } else {
+                descripcion.style.color = '';
+                descripcion.style.fontStyle = '';
+            }
+            makeEditable(descripcion, 'descripcion_Usuario', (value) => updateUsuario('descripcion_Usuario', value), true);
+
+            // Mostrar distintivo de verificación
+            mostrarEstadoVerificacion();
+
+            // Datos personales
+            renderDatosPersonales();
+
+            // Skills
+            renderSkills();
+
+            // Gallery
+            renderGallery();
+
+            // Stats
+            updateStats();
+
+            // Map
+            initMap();
+
+            // Pixel chart
+            renderPixelChart();
+
+            // Cargar calificaciones y reseñas
+            cargarCalificacionesYResenas();
+
+            // Cargar certificaciones
+            cargarCertificaciones();
+
+            // Inicializar Toggle de Disponibilidad y Privacidad
+            initAvailabilityToggle();
+            initPrivacyToggle();
+
+            // Inicializar vista previa de DNI si existe
+            if (usuario.url_Dni) {
+                const idCardImage = document.getElementById('idCardImage');
+                const idCardPlaceholder = document.getElementById('idCardPlaceholder');
+                const idCardPreview = document.getElementById('idCardPreview');
+                const idCardUploadArea = document.getElementById('idCardUploadArea');
+
+                if (idCardImage && idCardPlaceholder && idCardPreview) {
+                    idCardImage.src = usuario.url_Dni;
+                    idCardPlaceholder.style.display = 'none';
+                    idCardPreview.style.display = 'block';
+                    idCardUploadArea.setAttribute('data-cloudflare-url', usuario.url_Dni);
+                }
+            }
+
+            // Configurar eventos de certificaciones
+            setupCertificacionesEventListeners();
+
+            // ======================
+            // MOSTRAR ESTADO DE VERIFICACIÓN
+            // ======================
+            // Variable global para almacenar el estado actual
+            window.currentVerificationStatus = null;
+
+            async function mostrarEstadoVerificacion() {
+                const badge = document.querySelector('.verified-badge');
+                if (!badge) return;
+                badge.innerHTML = `<span class="iconify" data-icon="mdi:shield-check" style="color: #2563eb; font-size: 20px; margin-right: 4px;"></span><span>${t('verifying')}</span>`;
+                
+                if (!perfilPersonaId) {
+                    window.currentVerificationStatus = 'no_verificado';
+                    badge.innerHTML = `<span class="iconify" data-icon="mdi:shield-alert" style="color: #6b7280; font-size: 20px; margin-right: 4px;"></span><span>No verificado</span>`;
+                    return;
+                }
+                
+                try {
+                    const resp = await fetch(`${window.API_BASE}/verificacion-usuarios/perfil/${perfilPersonaId}`);
+                    const perfil = await resp.json();
+
+                    // Almacenar el estado actual
+                    window.currentVerificationStatus = perfil?.estado_verificacion || 'no_verificado';
+
+                    if (perfil && perfil.estado_verificacion === 'aprobada') {
+                        badge.innerHTML = `<span class="iconify" data-icon="mdi:shield-check" style="color: #22c55e; font-size: 20px; margin-right: 4px;"></span><span>${t('verifiedUser')}</span>`;
+                        badge.style.background = 'rgba(34,197,94,0.1)';
+                        badge.style.color = '#22c55e';
+                        badge.style.border = '1px solid #22c55e';
+                        // Detener polling si fue aprobada
+                        if (window.verificationPollingInterval) {
+                            clearInterval(window.verificationPollingInterval);
+                            window.verificationPollingInterval = null;
+                        }
+                        // Remover formulario de solicitud si existe
+                        const form = document.getElementById('solicitudVerificacionForm');
+                        if (form) form.remove();
+                    } else if (perfil && perfil.estado_verificacion === 'pendiente') {
+                        badge.innerHTML = `<span class="iconify" data-icon="mdi:shield-alert" style="color: #eab308; font-size: 20px; margin-right: 4px;"></span><span>${t('verificationPending')}</span>`;
+                        badge.style.background = 'rgba(234,179,8,0.1)';
+                        badge.style.color = '#eab308';
+                        badge.style.border = '1px solid #eab308';
+                    } else {
+                        badge.innerHTML = `<span class="iconify" data-icon="mdi:shield-off" style="color: #ef4444; font-size: 20px; margin-right: 4px;"></span><span>${t('notVerified')}</span>`;
+                        badge.style.background = 'rgba(239,68,68,0.1)';
+                        badge.style.color = '#ef4444';
+                        badge.style.border = '1px solid #ef4444';
+                    }
+                    return perfil;
+                } catch (error) {
+                    window.currentVerificationStatus = 'error';
+                    badge.innerHTML = `<span class="iconify" data-icon="mdi:shield-alert" style="color: #eab308; font-size: 20px; margin-right: 4px;"></span><span>${t('verificationError')}</span>`;
+                    badge.style.background = 'rgba(234,179,8,0.1)';
+                    badge.style.color = '#eab308';
+                    badge.style.border = '1px solid #eab308';
+                    return null;
+                }
+            }
+
+            // Función para iniciar polling de verificación
+            function iniciarPollingVerificacion() {
+                // Verificar cada 5 segundos si el estado cambió
+                if (window.verificationPollingInterval) {
+                    clearInterval(window.verificationPollingInterval);
+                }
+
+                window.verificationPollingInterval = setInterval(async () => {
+                    await mostrarEstadoVerificacion();
+                }, 5000); // Cada 5 segundos
+
+                console.log('Polling de verificación iniciado');
+            }
+        }
+
+        // ======================
+        // SISTEMA DE RESPUESTAS A RESEÑAS
+        // ======================
+
+        // Variables globales para manejar respuestas
+        let reviewContextMenuData = { reviewId: null, reviewIndex: null };
+        let reviewsData = []; // Almacenar datos de reseñas con respuestas
+        
+        let reviewsFiltroRating = '';
+        let reviewsOrden = 'recientes';
+        let reviewsPaginaActual = 1;
+        const reviewsLimitPorPagina = 5;
+
+        function setupReviewsFiltros() {
+            const filtroRating = document.getElementById('filtroRatingReviews');
+            const ordenSelect = document.getElementById('ordenReviews');
+
+            if (filtroRating) {
+                filtroRating.addEventListener('change', () => {
+                    reviewsFiltroRating = filtroRating.value;
+                    cargarCalificacionesYResenas(1, reviewsLimitPorPagina);
+                });
+            }
+
+            if (ordenSelect) {
+                ordenSelect.addEventListener('change', () => {
+                    reviewsOrden = ordenSelect.value;
+                    cargarCalificacionesYResenas(1, reviewsLimitPorPagina);
+                });
+            }
+        }
+
+        function actualizarPaginacionReviews(dataCalificaciones, page, limit) {
+            const paginacion = document.getElementById('reviewsPagination');
+            const paginaActualLabel = document.getElementById('reviewsPaginaActual');
+            const btnPrev = document.getElementById('btnReviewsPrev');
+            const btnNext = document.getElementById('btnReviewsNext');
+            const viewAllBtn = document.getElementById('btnViewAllReviews');
+
+            if (viewAllBtn) viewAllBtn.style.display = 'none';
+
+            const totalPages = dataCalificaciones.totalPages || 0;
+
+            if (!paginacion || !paginaActualLabel || !btnPrev || !btnNext) return;
+
+            if (totalPages <= 1) {
+                paginacion.style.display = 'none';
+                return;
+            }
+
+            paginacion.style.display = 'flex';
+            let pagTxt = t('page') || 'Página';
+            let deTxt = t('of') || 'de';
+            paginaActualLabel.textContent = `${pagTxt} ${page} ${deTxt} ${totalPages}`;
+
+            btnPrev.disabled = page <= 1;
+            btnPrev.style.opacity = btnPrev.disabled ? '0.5' : '1';
+            btnPrev.style.cursor = btnPrev.disabled ? 'default' : 'pointer';
+
+            btnNext.disabled = page >= totalPages;
+            btnNext.style.opacity = btnNext.disabled ? '0.5' : '1';
+            btnNext.style.cursor = btnNext.disabled ? 'default' : 'pointer';
+
+            btnPrev.onclick = () => {
+                if (reviewsPaginaActual > 1) {
+                    cargarCalificacionesYResenas(reviewsPaginaActual - 1, reviewsLimitPorPagina);
+                    document.querySelector('.reviews-container')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            };
+
+            btnNext.onclick = () => {
+                if (reviewsPaginaActual < totalPages) {
+                    cargarCalificacionesYResenas(reviewsPaginaActual + 1, reviewsLimitPorPagina);
+                    document.querySelector('.reviews-container')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            };
+        }
+
+        // ======================
+        // CARGAR RESEÑAS CON SOPORTE PARA RESPUESTAS
+        // ======================
+        async function cargarCalificacionesYResenas(page = 1, limit = reviewsLimitPorPagina) {
+            reviewsPaginaActual = page;
+            try {
+                const resEstadisticas = await fetch(`${API_BASE}/intercambios/estadisticas/${perfilPersonaId}`);
+                const dataEstadisticas = await resEstadisticas.json();
+
+                let promedio = 0;
+                let totalCalificaciones = 0;
+                let totalIntercambios = 0;
+                let distribucion = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+
+                if (resEstadisticas.ok && dataEstadisticas.success && dataEstadisticas.data) {
+                    const stats = dataEstadisticas.data;
+                    promedio = stats.promedio_calificacion || 0;
+                    totalCalificaciones = stats.total_calificaciones || 0;
+                    totalIntercambios = stats.total_intercambios_completados || 0;
+                    distribucion = stats.distribucion_calificaciones || distribucion;
+                }
+
+                const ratingScore = document.querySelector('.rating-score');
+                const ratingText = document.querySelector('.rating-text');
+
+                if (ratingScore) {
+                    ratingScore.textContent = promedio > 0 ? promedio.toFixed(1) : '0.0';
+                }
+
+                if (ratingText) {
+                    const count = totalCalificaciones || 0;
+                    ratingText.textContent = count > 0
+                        ? `Basado en ${count} reseña${count !== 1 ? 's' : ''}.`
+                        : (totalIntercambios > 0 ? `Basado en ${totalIntercambios} intercambio${totalIntercambios !== 1 ? 's' : ''}.` : 'Sin intercambios completados aún.');
+                }
+
+                actualizarEstrellas(promedio);
+
+                const paramsCalificaciones = new URLSearchParams({ page, limit });
+                if (reviewsFiltroRating) paramsCalificaciones.set('rating', reviewsFiltroRating);
+                if (reviewsOrden) paramsCalificaciones.set('orden', reviewsOrden);
+                const urlCalificaciones = `${API_BASE}/intercambios/calificaciones/${perfilPersonaId}?${paramsCalificaciones.toString()}`;
+
+                const resCalificaciones = await fetch(urlCalificaciones);
+                const dataCalificaciones = await resCalificaciones.json();
+
+                const reviewsContainer = document.querySelector('.reviews-container');
+                if (!reviewsContainer) {
+                    return;
+                }
+
+                reviewsContainer.innerHTML = '';
+
+                if (resCalificaciones.ok && dataCalificaciones.success && dataCalificaciones.data && dataCalificaciones.data.length > 0) {
+                    const calificaciones = dataCalificaciones.data;
+                    // Normalizar nombres de campo de id para evitar 'undefined'
+                    calificaciones.forEach(cal => {
+                        // Soportar distintas formas que pueda devolver la API
+                        cal.id_Calificacion = cal.id_Calificacion ?? cal.id_calificacion ?? cal.id ?? cal.idCalificacion ?? null;
+                    });
+
+                    reviewsData = calificaciones; // Guardar datos para uso posterior
+
+                    // Cargar respuestas para cada reseña
+                    for (let i = 0; i < calificaciones.length; i++) {
+                        const cal = calificaciones[i];
+                        console.log('calificacion recibida:', cal);
+                        if (!cal.id_Calificacion) {
+                            console.warn('Reseña sin id detectada, se omitirá la carga de respuestas:', cal);
+                            continue;
+                        }
+                        try {
+                            const resRespuestas = await fetch(`${API_BASE}/respuestas-resenia/por-resena/${cal.id_Calificacion}`);
+                            if (resRespuestas.ok) {
+                                const dataRespuestas = await resRespuestas.json();
+                                if (dataRespuestas.success && dataRespuestas.data && dataRespuestas.data.length > 0) {
+                                    cal.respuesta_del_dueno = dataRespuestas.data[0].respuesta || '';
+                                    cal.id_respuesta = dataRespuestas.data[0].id_respuesta;
+                                    cal.fecha_respuesta = dataRespuestas.data[0].fecha_creacion || new Date().toISOString();
+                                }
+                            } else {
+                                console.debug('No se encontraron respuestas (status:', resRespuestas.status, ') para resenna id:', cal.id_Calificacion);
+                            }
+                        } catch (err) {
+                            console.log('No hay respuesta para esta reseña', err);
+                        }
+                    }
+
+                    // Renderizar todas las reseñas
+                    calificaciones.forEach((cal, index) => {
+                        renderReviewCard(cal, index);
+                    });
+
+                    // Mostrar/ocultar y actualizar texto del botón "Ver todas"
+                    const viewAllBtn = document.getElementById('btnViewAllReviews');
+                    if (viewAllBtn) {
+                        const totalAvailable = totalCalificaciones || calificaciones.length;
+                        if (totalAvailable > 3) {
+                            viewAllBtn.style.display = 'block';
+                            viewAllBtn.textContent = (t('viewAllReviews') || 'Ver todas las reseñas') + ` (${totalAvailable})`;
+                        } else {
+                            viewAllBtn.style.display = 'none';
+                        }
+                    }
+                    actualizarPaginacionReviews(dataCalificaciones, page, limit);
+                } else {
+                    reviewsContainer.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #6b7280;" class="dark:text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" style="width: 48px; height: 48px; margin: 0 auto 16px; opacity: 0.5;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+              </svg>
+              <p style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">
+                ${reviewsFiltroRating ? (t('noReviewsWithStars') || 'No hay reseñas con esa cantidad de estrellas.') : (t('noReviewsYet') || 'Este usuario aún no tiene comentarios escritos.')}
+              </p>
+              <p style="font-size: 14px;">${t('reviewsWillAppear') || 'Las reseñas aparecerán aquí después de completar intercambios.'}</p>
+            </div>
+          `;
+                    actualizarPaginacionReviews({ totalPages: 0 }, page, limit);
+                }
+
+            } catch (error) {
+                console.error('Error al cargar calificaciones:', error);
+            }
+        }
+
+        // Cargar todas las reseñas (llama a cargarCalificacionesYResenas con limit grande)
+        function viewAllReviews() {
+            // Cargar con un limit alto para traer todas (el backend debería paginar correctamente)
+            cargarCalificacionesYResenas(1, 1000).then(() => {
+                // hacer scroll hacia la sección de reseñas para mejor UX
+                const reviewsContainer = document.querySelector('.reviews-container');
+                if (reviewsContainer) reviewsContainer.scrollIntoView({ behavior: 'smooth' });
+            }).catch(err => {
+                console.error('Error al cargar todas las reseñas:', err);
+                alert('No se pudieron cargar todas las reseñas. Intenta recargar la página.');
+            });
+        }
+
+        // ======================
+        // RENDERIZAR TARJETA DE RESEÑA
+        // ======================
+        function renderReviewCard(cal, index) {
+            const reviewsContainer = document.querySelector('.reviews-container');
+            const reviewCard = document.createElement('div');
+            reviewCard.className = 'review-card';
+            reviewCard.dataset.reviewId = cal.id_Calificacion;
+            reviewCard.dataset.reviewIndex = index;
+
+            const nombreCalificador = cal.nombre_calificador || 'Usuario';
+            const apellidoCalificador = cal.apellido_calificador || '';
+            const nombreCompleto = `${nombreCalificador} ${apellidoCalificador}`.trim();
+            const iniciales = `${nombreCalificador.charAt(0)}${apellidoCalificador.charAt(0) || ''}`.toUpperCase();
+
+            const fechaCalificacion = cal.fecha_calificacion
+                ? new Date(cal.fecha_calificacion).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })
+                : 'Fecha no disponible';
+
+            let reviewHTML = `
+        <div class="review-card-content" style="position: relative;">
+          <div class="review-header">
+            <img class="review-avatar" 
+                 src="${cal.imagen_calificador || `https://ui-avatars.com/api/?name=${iniciales}&background=10B981&color=ffffff&size=40&bold=true&rounded=true`}" 
+                                 alt="${nombreCompleto}"
+                 onerror="this.src='https://ui-avatars.com/api/?name=${iniciales}&background=10B981&color=ffffff&size=40&bold=true&rounded=true'">
+            <div>
+              <p class="review-name">${nombreCompleto}</p>
+              <div class="review-rating">
+                <span>${cal.puntuacion}.0</span>
+                <svg class="star-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <p class="review-text">"${cal.comentario || t('noComment')}"</p>
+          <p class="review-date">${fechaCalificacion}</p>
+          
+          <!-- Respuesta si existe -->
+          ${cal.respuesta_del_dueno ? `
+            <div class="review-reply" style="margin-top: 16px; padding: 12px; background: #f0f9ff; border-left: 4px solid #2563eb; border-radius: 4px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style="color: #2563eb;">
+                  <path d="M3 6a3 3 0 013-3h10a1 1 0 01.82.055l.487.979A2 2 0 0116 6v10a3 3 0 01-3 3H6a3 3 0 01-3-3V6z"/>
+                </svg>
+                <span style="font-weight: 600; color: #1f2937; font-size: 13px;">${t('yourReply')}</span>
+              </div>
+              <p style="color: #4b5563; font-size: 14px; margin: 0; line-height: 1.5;">"${cal.respuesta_del_dueno}"</p>
+              <p style="color: #9ca3af; font-size: 12px; margin-top: 8px; margin-bottom: 0;">${t('replied')} ${new Date(cal.fecha_respuesta).toLocaleDateString(currentLanguage === 'es' ? 'es-ES' : 'en-US')}</p>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+            reviewCard.innerHTML = reviewHTML;
+
+            // Event listener para clic derecho
+            reviewCard.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                showReviewContextMenu(e.clientX, e.clientY, cal.id_Calificacion, index, !!cal.respuesta_del_dueno, cal.id_respuesta);
+            });
+
+            reviewsContainer.appendChild(reviewCard);
+        }
+
+        // ======================
+        // CONTEXT MENÚ PARA RESEÑAS
+        // ======================
+        function showReviewContextMenu(x, y, reviewId, reviewIndex, hasReply, replyId) {
+            reviewContextMenuData = { reviewId, reviewIndex, replyId };
+
+            // Cerrar menú anterior si existe
+            const oldMenu = document.getElementById('reviewContextMenu');
+            if (oldMenu) oldMenu.remove();
+
+            const menu = document.createElement('div');
+            menu.className = 'context-menu';
+            menu.id = 'reviewContextMenu';
+            menu.style.position = 'fixed';
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            menu.style.zIndex = '1000';
+
+            if (hasReply) {
+                // Si ya hay respuesta: Editar y Borrar
+                menu.innerHTML = `
+          <button class="context-menu-item" onclick="editReviewResponse(${reviewId})">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
+              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+            </svg>
+            ${t('editReply')}
+          </button>
+          <button class="context-menu-item danger" onclick="showDeleteReplyConfirm(${reviewId})">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
+              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+            ${t('deleteReply')}
+          </button>
+        `;
+            } else {
+                // Si no hay respuesta: Solo Contestar
+                menu.innerHTML = `
+          <button class="context-menu-item" onclick="replyToReview(${reviewId})">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon-xs" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 8px;">
+              <path fill-rule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.82.055l.487.979A2 2 0 0116 6v10a3 3 0 01-3 3H6a3 3 0 01-3-3V6z" clip-rule="evenodd" />
+            </svg>
+            ${t('reply')}
+          </button>
+        `;
+            }
+
+            document.body.appendChild(menu);
+
+            // Agregar backdrop
+            const backdrop = document.getElementById('contextMenuBackdrop');
+            if (backdrop) {
+                backdrop.style.display = 'block';
+            }
+
+            // Cerrar menú al hacer clic fuera
+            setTimeout(() => {
+                document.addEventListener('click', closeReviewContextMenu);
+            }, 100);
+        }
+
+        function closeReviewContextMenu() {
+            const menu = document.getElementById('reviewContextMenu');
+            if (menu) {
+                menu.remove();
+            }
+            const backdrop = document.getElementById('contextMenuBackdrop');
+            if (backdrop) {
+                backdrop.style.display = 'none';
+            }
+            document.removeEventListener('click', closeReviewContextMenu);
+        }
+
+        // ======================
+        // MODAL PARA RESPONDER
+        // ======================
+        function replyToReview(reviewId) {
+            // Mostrar editor inline dentro de la tarjeta de la reseña (evitar modal)
+            closeReviewContextMenu();
+
+            const reviewCard = document.querySelector(`[data-review-id="${reviewId}"]`);
+            if (!reviewCard) return;
+
+            // Si ya existe un bloque .review-reply, no hacemos nada (o lo reemplazamos)
+            let replyDiv = reviewCard.querySelector('.review-reply');
+            if (!replyDiv) {
+                // crear bloque de respuesta vacío donde insertaremos el editor
+                replyDiv = document.createElement('div');
+                replyDiv.className = 'review-reply';
+                reviewCard.querySelector('.review-card-content')?.appendChild(replyDiv);
+            }
+
+            // Guardar contenido original para restaurar si cancela
+            reviewCard.dataset.originalReplyHtml = replyDiv.innerHTML || '';
+
+            // Insertar editor inline
+            const editorHtml = `
+        <div style="margin-top:8px;">
+                    <textarea id="inlineReply_${reviewId}" style="width:100%; min-height:90px; padding:10px; font-family:inherit; border:2px solid #2563eb; border-radius:6px;" placeholder="${t('description')}..."></textarea>
+          <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
+            <button class="modal-button-cancel" onclick="cancelInlineReply(${reviewId})">${t('cancel')}</button>
+            <button class="modal-button-submit" onclick="submitReviewReplyInline(${reviewId})">${t('reply')}</button>
+          </div>
+        </div>
+      `;
+
+            replyDiv.innerHTML = editorHtml;
+            const ta = document.getElementById(`inlineReply_${reviewId}`);
+            if (ta) ta.focus();
+        }
+
+        // Cancelar editor inline de respuesta
+        function cancelInlineReply(reviewId) {
+            const reviewCard = document.querySelector(`[data-review-id="${reviewId}"]`);
+            if (!reviewCard) return;
+            const replyDiv = reviewCard.querySelector('.review-reply');
+            if (!replyDiv) return;
+
+            if (typeof reviewCard.dataset.originalReplyHtml !== 'undefined') {
+                replyDiv.innerHTML = reviewCard.dataset.originalReplyHtml;
+                delete reviewCard.dataset.originalReplyHtml;
+            } else {
+                // si no había contenido original, simplemente eliminar el bloque
+                replyDiv.remove();
+            }
+        }
+
+        // Enviar respuesta desde el editor inline
+        async function submitReviewReplyInline(reviewId) {
+            const ta = document.getElementById(`inlineReply_${reviewId}`);
+            if (!ta) return alert('Editor no encontrado');
+            const replyText = ta.value.trim();
+            if (!replyText) return alert('La respuesta no puede estar vacía');
+
+            try {
+                setGuardando(true);
+
+                if (!reviewId) {
+                    alert('No se pudo identificar la reseña. Intenta recargar la página.');
+                    setGuardando(false);
+                    return;
+                }
+                if (typeof usuarioId === 'undefined' || usuarioId === null) {
+                    alert('Debes iniciar sesión para responder la reseña.');
+                    setGuardando(false);
+                    return;
+                }
+
+                const payload = { id_calificacion: reviewId, id_usuario: usuarioId, respuesta: replyText };
+                console.debug('Enviar POST /respuestas-resenia/insertar payload:', payload);
+                const response = await fetch(`${API_BASE}/respuestas-resenia/insertar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                console.debug('Respuesta POST insertar (inline):', { status: response.status, body: result });
+
+                if (response.ok && (result.success === true || result.success === 1)) {
+                    // recargar reseñas para mostrar la respuesta recién creada
+                    await cargarCalificacionesYResenas();
+                } else {
+                    alert(result.message || result.error || 'Error al guardar la respuesta');
+                }
+
+                setGuardando(false);
+            } catch (error) {
+                console.error('Error al enviar respuesta (inline):', error);
+                alert('Error de conexión al enviar la respuesta');
+                setGuardando(false);
+            }
+        }
+
+        function editReviewResponse(reviewId) {
+            // Cambiar a edición inline dentro de la tarjeta (evitar abrir otro modal)
+            closeReviewContextMenu();
+
+            const reviewCard = document.querySelector(`[data-review-id="${reviewId}"]`);
+            if (!reviewCard) return;
+
+            const replyDiv = reviewCard.querySelector('.review-reply');
+            if (!replyDiv) return;
+
+            // Guardar el HTML original para poder cancelar
+            reviewCard.dataset.originalReplyHtml = replyDiv.innerHTML;
+
+            // Obtener el texto actual (primer <p>)
+            const replyP = replyDiv.querySelector('p');
+            const currentReply = replyP ? replyP.textContent.replace(/"/g, '') : '';
+
+            // Crear editor inline
+            const editorHtml = `
+        <div style="margin-top: 8px;">
+          <textarea id="inlineEditReply_${reviewId}" style="width:100%; min-height:90px; padding:10px; font-family:inherit; border:2px solid #2563eb; border-radius:6px;">${currentReply}</textarea>
+          <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:8px;">
+            <button class="modal-button-cancel" onclick="cancelInlineEdit(${reviewId})">${t('cancel')}</button>
+            <button class="modal-button-submit" onclick="submitEditReviewReplyInline(${reviewId})">${t('saveChanges')}</button>
+          </div>
+        </div>
+      `;
+
+            replyDiv.innerHTML = editorHtml;
+
+            // focus y mover cursor al final
+            const ta = document.getElementById(`inlineEditReply_${reviewId}`);
+            if (ta) {
+                ta.focus();
+                const len = ta.value.length;
+                ta.setSelectionRange(len, len);
+            }
+        }
+
+        // Guardar edición inline
+        async function submitEditReviewReplyInline(reviewId) {
+            const ta = document.getElementById(`inlineEditReply_${reviewId}`);
+            if (!ta) return alert('Editor no encontrado');
+            const replyText = ta.value.trim();
+            if (!replyText) return alert('La respuesta no puede estar vacía');
+
+            try {
+                setGuardando(true);
+
+                const reviewData = reviewsData.find(r => r.id_Calificacion == reviewId);
+                if (!reviewData || !reviewData.id_respuesta) {
+                    throw new Error('No se encontró el ID de la respuesta');
+                }
+
+                const payload = { respuesta: replyText };
+                const response = await fetch(`${API_BASE}/respuestas-resenia/actualizar/${reviewData.id_respuesta}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (response.ok && (result.success === true || result.success === 1)) {
+                    // recargar reseñas para reflejar cambio
+                    await cargarCalificacionesYResenas();
+                } else {
+                    alert(result.message || result.error || 'Error al actualizar la respuesta');
+                }
+
+                setGuardando(false);
+            } catch (error) {
+                console.error('Error al actualizar respuesta (inline):', error);
+                alert('Error de conexión al actualizar la respuesta');
+                setGuardando(false);
+            }
+        }
+
+        function cancelInlineEdit(reviewId) {
+            const reviewCard = document.querySelector(`[data-review-id="${reviewId}"]`);
+            if (!reviewCard) return;
+            const replyDiv = reviewCard.querySelector('.review-reply');
+            if (!replyDiv) return;
+            // Restaurar HTML original si existe, si no recargar reseñas
+            if (reviewCard.dataset.originalReplyHtml) {
+                replyDiv.innerHTML = reviewCard.dataset.originalReplyHtml;
+                delete reviewCard.dataset.originalReplyHtml;
+            } else {
+                cargarCalificacionesYResenas();
+            }
+        }
+
+        function closeReplyModal() {
+            const modal = document.getElementById('replyModal');
+            if (modal) modal.remove();
+        }
+
+        function closeEditReplyModal() {
+            const modal = document.getElementById('editReplyModal');
+            if (modal) modal.remove();
+        }
+
+        // ======================
+        // GUARDAR RESPUESTA - USAR ENDPOINTS EXISTENTES
+        // ======================
+        async function submitReviewReply(reviewId) {
+            const replyText = document.getElementById('replyText').value.trim();
+
+            if (!replyText) {
+                alert('La respuesta no puede estar vacía');
+                return;
+            }
+
+            try {
+                // Validaciones previas
+                if (!reviewId) {
+                    alert('No se pudo identificar la reseña. Intenta recargar la página.');
+                    return;
+                }
+                if (typeof usuarioId === 'undefined' || usuarioId === null) {
+                    alert('Debes iniciar sesión para responder la reseña.');
+                    return;
+                }
+
+                setGuardando(true);
+
+                // Usar endpoint POST /respuestas-resenia/insertar
+                const payload = { id_calificacion: reviewId, id_usuario: usuarioId, respuesta: replyText };
+                console.debug('Enviar POST /respuestas-resenia/insertar payload:', payload);
+                const response = await fetch(`${API_BASE}/respuestas-resenia/insertar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                console.debug('Respuesta POST insertar:', { status: response.status, body: result });
+
+                if (response.ok && (result.success === true || result.success === 1)) {
+                    closeReplyModal();
+                    await cargarCalificacionesYResenas();
+                } else {
+                    alert(result.message || result.error || 'Error al guardar la respuesta');
+                }
+
+                setGuardando(false);
+            } catch (error) {
+                console.error('Error al enviar respuesta:', error);
+                alert('Error de conexión al enviar la respuesta');
+                setGuardando(false);
+            }
+        }
+
+        // ======================
+        // GUARDAR EDICIÓN - ACTUALIZAR EN BD
+        // ======================
+        async function submitEditReviewReply(reviewId) {
+            const replyText = document.getElementById('editReplyText').value.trim();
+
+            if (!replyText) {
+                alert('La respuesta no puede estar vacía');
+                return;
+            }
+
+            try {
+                setGuardando(true);
+
+                // Obtener el ID de la respuesta actual
+                const reviewData = reviewsData.find(r => r.id_Calificacion == reviewId);
+                if (!reviewData || !reviewData.id_respuesta) {
+                    throw new Error('No se encontró el ID de la respuesta');
+                }
+
+                // Usar endpoint PUT para actualizar
+                const payload = { respuesta: replyText };
+                console.debug('Enviar PUT /respuestas-resenia/actualizar/', reviewData.id_respuesta, 'payload:', payload);
+                const response = await fetch(`${API_BASE}/respuestas-resenia/actualizar/${reviewData.id_respuesta}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (response.ok && (result.success === true || result.success === 1)) {
+                    closeEditReplyModal();
+                    await cargarCalificacionesYResenas();
+                } else {
+                    alert(result.message || result.error || 'Error al actualizar la respuesta');
+                }
+
+                setGuardando(false);
+            } catch (error) {
+                console.error('Error al actualizar respuesta:', error);
+                alert('Error de conexión al actualizar la respuesta');
+                setGuardando(false);
+            }
+        }
+
+        // ======================
+        // BORRAR RESPUESTA (modal personalizado)
+        // ======================
+        function showDeleteReplyConfirm(reviewId) {
+            // cerrar menú contextual si está abierto
+            closeReviewContextMenu();
+
+            // eliminar modal anterior si existe
+            const existing = document.getElementById('deleteReplyConfirmModal');
+            if (existing) existing.remove();
+
+            const modalHTML = `
+        <div class="custom-modal-overlay" id="deleteReplyConfirmModal" onclick="if(event.target.id === 'deleteReplyConfirmModal') document.getElementById('deleteReplyConfirmModal')?.remove()">
+          <div class="custom-modal custom-modal-logout" style="max-width:420px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-icon modal-icon-logout" aria-hidden="true"><svg class="logout-title-svg" xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72"><path fill="#fcea2b" d="M32.294 14.233a3.892 3.892 0 0 1 6.706 0l20.12 40.142a4.5 4.5 0 0 1 .574 1.916a3.885 3.885 0 0 1-3.832 3.88H15.528a3.803 3.803 0 0 1-3.832-3.784a3.45 3.45 0 0 1 .575-1.916z"/><path fill="#d22f27" d="M35.854 39.049c0 1.505-2.728 3.81-2.728 5.991l-.06.188s-.322 1.428-1.39 1.428a1.3 1.3 0 0 1-.772-.325c-.262-.244-.6.13-.547.458c.16 1.31 3.023 5.521 5.17 5.521c2.456 0 4.629-2.945 4.822-3.985c0-.498-.834-.187-.834-.873c0-.582.507-.964.507-1.729a.41.41 0 0 0-.424-.378c-.191 0-.46.134-.674.134c-.82 0-1.007-.746-1.007-1.51c0 0 .154.05.154-1.58a5.9 5.9 0 0 0-1.422-3.493a.55.55 0 0 0-.357-.133c-.19 0-.438.084-.438.286"/><g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M29.548 52.622a8.3 8.3 0 0 0 5.936 2.332a8.84 8.84 0 0 0 6.02-2.332M27.69 50.224s-4.452-4.75-.212-11.025c0 0 .856 1.088 1.508 2.132c.486.56 1.367 1.515 1.833 1.515a1.004 1.004 0 0 0 1.018-1.102v-.382a15.5 15.5 0 0 1 1.526-7.293s2.969 1.611 1.697-6.191c0 0 6.763 4.558 6.509 12.106c0 .551.248.975.847.975c.59 0 2.388-.572 2.388-1.124c.042.043 2.671 5.555-1.06 10.389"/><path d="M33.079 45.118s-.298 1.641-1.488 1.527a2.7 2.7 0 0 1-.61-.245c-.328-.36-.674.084-.624.39a10.96 10.96 0 0 0 3.02 4.472s.93.685.98.685m2.609.063a12.4 12.4 0 0 0 1.547-1.048a6.84 6.84 0 0 0 1.806-2.487a.335.335 0 0 0-.297-.458a.78.78 0 0 1-.496-.458h0s-.1-.305.297-.992a1.6 1.6 0 0 0 .199-.916a.47.47 0 0 0-.645-.267a.96.96 0 0 1-1.29-.42s-.312-.153-.014-1.64a6 6 0 0 0-1.425-4.428a.55.55 0 0 0-.377-.133a.395.395 0 0 0-.417.286"/><path d="M32.294 14.233a3.892 3.892 0 0 1 6.706 0l20.12 40.142a4.5 4.5 0 0 1 .574 1.916a3.885 3.885 0 0 1-3.832 3.88H15.528a3.803 3.803 0 0 1-3.832-3.784a3.45 3.45 0 0 1 .575-1.916z"/></g></svg></div>
+              <div class="modal-title">${t('deleteReplyTitle')}</div>
+            </div>
+            <div class="modal-message" style="margin-bottom: 16px;">${t('deleteReplyMessage')}</div>
+            <div class="modal-actions">
+              <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('deleteReplyConfirmModal')?.remove()">${t('cancel')}</button>
+              <button class="modal-btn modal-btn-confirm" onclick="performDeleteReviewResponse(${reviewId})" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">${t('deleteReplyConfirm')}</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        async function performDeleteReviewResponse(reviewId) {
+            // cerrar modal
+            const modal = document.getElementById('deleteReplyConfirmModal');
+            if (modal) modal.remove();
+
+            try {
+                setGuardando(true);
+
+                // Obtener el ID de la respuesta
+                const reviewData = reviewsData.find(r => r.id_Calificacion == reviewId);
+                if (!reviewData || !reviewData.id_respuesta) {
+                    throw new Error('No se encontró el ID de la respuesta');
+                }
+
+                // Usar endpoint DELETE /respuestas-resenia/eliminar/:id_respuesta
+                const response = await fetch(`${API_BASE}/respuestas-resenia/eliminar/${reviewData.id_respuesta}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    await cargarCalificacionesYResenas();
+                } else {
+                    alert(result.message || 'Error al borrar la respuesta');
+                }
+
+                setGuardando(false);
+            } catch (error) {
+                console.error('Error al borrar respuesta:', error);
+                alert('Error de conexión al borrar la respuesta');
+                setGuardando(false);
+            }
+        }
+
+        // Función auxiliar para actualizar las estrellas del resumen
+        function actualizarEstrellas(promedio) {
+            const starsContainer = document.querySelector('.rating-summary .stars-container');
+            if (!starsContainer) return;
+
+            const estrellasLlenas = Math.floor(promedio);
+            const tieneMedia = promedio % 1 >= 0.5;
+
+            starsContainer.innerHTML = '';
+
+            // Estrellas llenas
+            for (let i = 0; i < estrellasLlenas; i++) {
+                starsContainer.innerHTML += `
+          <svg class="star-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+        `;
+            }
+
+            // Estrella media (opcional, si quieres mostrarla)
+            if (tieneMedia && estrellasLlenas < 5) {
+                starsContainer.innerHTML += `
+          <svg class="star-filled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="opacity: 0.5;">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+        `;
+            }
+
+            // Estrellas vacías
+            const estrellasVacias = 5 - Math.ceil(promedio);
+            for (let i = 0; i < estrellasVacias; i++) {
+                starsContainer.innerHTML += `
+          <svg class="star-empty" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.91 8.724c-.783-.57-.381-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+        `;
+            }
+        }
+
+        // ======================
+        // UTILIDADES DE FORMATO
+        // ======================
+        function formatearFecha(fechaISO) {
+            if (!fechaISO) return 'No especificado';
+
+            try {
+                const fecha = new Date(fechaISO);
+                const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
+                return fecha.toLocaleDateString('es-ES', opciones);
+            } catch (error) {
+                return fechaISO;
+            }
+        }
+
+        function formatearFechaParaInput(fechaISO) {
+            if (!fechaISO) return '';
+
+            try {
+                const fecha = new Date(fechaISO);
+                const year = fecha.getFullYear();
+                const month = String(fecha.getMonth() + 1).padStart(2, '0');
+                const day = String(fecha.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            } catch (error) {
+                return fechaISO;
+            }
+        }
+
+        // ======================
+        // VALIDACIÓN DE DOCUMENTOS (HONDURAS)
+        // ======================
+        function validarIdentidadHonduras(numeroIdentidad) {
+            const num = numeroIdentidad.trim();
+            const conGuiones = /^\d{4}-\d{4}-\d{5}$/;
+            const sinGuiones = /^\d{13}$/;
+
+            if (!conGuiones.test(num) && !sinGuiones.test(num)) {
+                return {
+                    valido: false,
+                    mensaje: 'Formato inválido (Ej: 0801-1990-12345 o 0801199012345)',
+                    tipo: 'identidad'
+                };
+            }
+
+            let depto, anio, corr;
+            if (conGuiones.test(num)) {
+                [depto, anio, corr] = num.split('-');
+            } else {
+                depto = num.substring(0, 4);
+                anio = num.substring(4, 8);
+                corr = num.substring(8, 13);
+            }
+
+            const anioNum = parseInt(anio);
+            const anioActual = new Date().getFullYear();
+
+            if (anioNum < 1900 || anioNum > anioActual) {
+                return {
+                    valido: false,
+                    mensaje: `Año de nacimiento inválido: ${anio}`,
+                    tipo: 'identidad'
+                };
+            }
+
+            const codDepto = parseInt(depto);
+            if (codDepto < 101 || codDepto > 1899) {
+                return {
+                    valido: false,
+                    mensaje: 'Código de departamento/municipio inválido',
+                    tipo: 'identidad'
+                };
+            }
+
+            return {
+                valido: true,
+                mensaje: 'Identidad válida',
+                tipo: 'identidad',
+                datos: {
+                    departamentoMunicipio: depto,
+                    anioNacimiento: anio,
+                    correlativo: corr,
+                    formatoCompleto: `${depto}-${anio}-${corr}`,
+                    numeroLimpio: `${depto}${anio}${corr}`
+                }
+            };
+        }
+
+        function validarPasaporteHonduras(pasaporte) {
+            const pas = pasaporte.trim();
+            const alfanumerico = /^[A-Za-z0-9]{5,20}$/;
+
+            if (!alfanumerico.test(pas)) {
+                return {
+                    valido: false,
+                    mensaje: 'El pasaporte debe contener entre 5 y 20 caracteres alfanuméricos.',
+                    tipo: 'pasaporte'
+                };
+            }
+
+            return {
+                valido: true,
+                mensaje: 'Pasaporte válido',
+                tipo: 'pasaporte',
+                datos: {
+                    numeroPasaporte: pas,
+                    tipoPasaporte: 'Internacional',
+                    numeroLimpio: pas
+                }
+            };
+        }
+
+        function calcularEdad(fechaNacimiento) {
+            const hoy = new Date();
+            const cumple = new Date(fechaNacimiento);
+            let edad = hoy.getFullYear() - cumple.getFullYear();
+            const m = hoy.getMonth() - cumple.getMonth();
+            if (m < 0 || (m === 0 && hoy.getDate() < cumple.getDate())) {
+                edad--;
+            }
+            return edad;
+        }
+
+        // ======================
+        // RENDERIZAR DATOS PERSONALES
+        // ======================
+        function renderDatosPersonales() {
+            const datosPersonales = document.getElementById('datosPersonales');
+            datosPersonales.innerHTML = '';
+
+            const campos = [
+                { label: t('country'), field: 'pais', value: usuario.pais },
+                { label: t('department'), field: 'departamento', value: usuario.departamento },
+                { label: t('city'), field: 'ciudad', value: usuario.ciudad },
+                { label: t('postalCode'), field: 'codigoPostal', value: usuario.codigoPostal },
+                { label: t('phone'), field: 'telefono_Usuario', value: usuario.telefono_Usuario },
+                {
+                    label: t('maritalStatus'), field: 'estadoCivil_Usuario', value: usuario.estadoCivil_Usuario, type: 'select', options: [
+                        { value: 'Soltero', label: t('single') },
+                        { value: 'Casado', label: t('married') },
+                        { value: 'Divorciado', label: t('divorced') },
+                        { value: 'Viudo', label: t('widowed') }
+                    ]
+                },
+                {
+                    label: t('gender'), field: 'genero_Usuario', value: usuario.genero_Usuario, type: 'select', options: [
+                        { value: 'Masculino', label: t('male') },
+                        { value: 'Femenino', label: t('female') },
+                        { value: 'Otro', label: t('other') }
+                    ]
+                },
+                {
+                    label: t('idType'), field: 'tipoIdentificacion_Usuario', type: 'select', options: window.opcionesIdentificacion || [
+                        { value: 'DNI', label: t('dni') },
+                        { value: 'Pasaporte', label: t('passport') }
+                    ]
+                },
+                { label: t('idNumber'), field: 'identificacion_usuario', value: usuario.identificacion_usuario },
+                { label: t('birthDate'), field: 'fechaNacimiento', value: usuario.fechaNacimiento, type: 'date', displayValue: formatearFecha(usuario.fechaNacimiento) },
+                { label: t('yearsOfExperience'), field: 'anios_experiencia', value: usuario.anios_experiencia || 0, type: 'number' }
+            ];
+
+            campos.forEach(campo => {
+                const li = document.createElement('li');
+                const displayValue = campo.displayValue || campo.value || t('clickToAddField');
+                const needsPlaceholderStyle = !campo.value || campo.value === '';
+
+                li.innerHTML = `
+          <span class="label">${campo.label}:</span>
+          <span class="editable" data-field="${campo.field}" ${needsPlaceholderStyle ? 'style="color: #9ca3af; font-style: italic;"' : ''}>${displayValue}</span>
+        `;
+                datosPersonales.appendChild(li);
+
+                const editableSpan = li.querySelector('.editable');
+                if (campo.type === 'select') {
+                    makeSelectEditable(editableSpan, campo.field, campo.options, async (value) => {
+                        await updateUsuario(campo.field, value);
+                        // Si cambiamos el tipo de identificación, limpiar el número de identificación
+                        if (campo.field === 'tipoIdentificacion_Usuario') {
+                            await updateUsuario('identificacion_usuario', '');
+                            renderDatosPersonales(); // Re-renderizar para reflejar el cambio en la UI
+                        }
+                    });
+                } else if (campo.type === 'date') {
+                    makeEditable(editableSpan, campo.field, (value) => updateUsuario(campo.field, value), false, 'date');
+                } else if (campo.type === 'number') {
+                    makeEditable(editableSpan, campo.field, (value) => updateUsuario(campo.field, parseInt(value) || 0), false, 'number');
+                } else {
+                    makeEditable(editableSpan, campo.field, (value) => updateUsuario(campo.field, value));
+                }
+            });
+        }
+
+        // ======================
+        // HACER ELEMENTO EDITABLE
+        // ======================
+        function makeEditable(element, field, onSave, multiline = false, inputType = 'text') {
+            element.addEventListener('click', () => {
+                if (element.classList.contains('editing')) return;
+
+                const currentDisplayValue = element.textContent;
+                let currentValue = currentDisplayValue;
+
+                // Detectar si es un placeholder (texto gris en itálica)
+                const isPlaceholder = element.style.color === 'rgb(156, 163, 175)' ||
+                    element.style.fontStyle === 'italic' ||
+                    currentDisplayValue.includes('Haz clic') ||
+                    currentDisplayValue.includes('añadir') ||
+                    currentDisplayValue === 'No especificado';
+
+                if (isPlaceholder) {
+                    currentValue = ''; // Limpiar el placeholder al editar
+                }
+
+                // Si es un campo de fecha, convertir el texto formateado a formato ISO para el input
+                if (inputType === 'date') {
+                    currentValue = formatearFechaParaInput(usuario[field]);
+                }
+
+                element.classList.add('editing');
+
+                if (multiline) {
+                    const placeholderText = field === 'descripcion_Usuario'
+                        ? 'Escribe algo sobre ti...'
+                        : 'Escribe aquí...';
+                    element.innerHTML = `<textarea rows="3" placeholder="${placeholderText}">${currentValue}</textarea>`;
+                } else {
+                    let placeholderText = 'Escribe aquí...';
+                    if (field === 'nombre_Usuario') placeholderText = 'Nombre completo';
+                    else if (field === 'email_Usuario') placeholderText = 'correo@ejemplo.com';
+                    else if (field === 'celular_Usuario') placeholderText = 'Número de celular';
+                    else if (field === 'identificacion_usuario') placeholderText = 'Número de identificación';
+
+                    element.innerHTML = `<input type="${inputType}" value="${currentValue}" placeholder="${placeholderText}">`;
+                }
+
+                const input = element.querySelector(multiline ? 'textarea' : 'input');
+                if (input) {
+                    input.addEventListener('input', () => {
+                        if (['pais', 'departamento', 'ciudad'].includes(field)) {
+                            input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+                        } else if (field === 'codigoPostal' || field === 'anios_experiencia') {
+                            input.value = input.value.replace(/\D/g, '');
+                        }
+                    });
+                }
+
+                const focusEditableInput = () => {
+                    try {
+                        input.focus({ preventScroll: true });
+                    } catch (_) {
+                        input.focus();
+                    }
+
+                    if (inputType === 'date') return;
+
+                    if (multiline) {
+                        const len = input.value.length;
+                        if (typeof input.setSelectionRange === 'function') {
+                            input.setSelectionRange(len, len);
+                        }
+                        return;
+                    }
+
+                    if (typeof input.select === 'function') {
+                        input.select();
+                    }
+                };
+
+                window.requestAnimationFrame(focusEditableInput);
+                window.setTimeout(focusEditableInput, 30);
+
+                let guardado = false;
+                const save = async () => {
+                    if (guardado) return;
+                    guardado = true;
+                    const newValue = input.value.trim();
+
+                    // VALIDACIÓN DE CONTENIDO REQUERIDO (NO DEJAR SALIR VACÍO)
+                    const camposObligatorios = ['nombre_Usuario', 'pais', 'departamento', 'ciudad', 'codigoPostal', 'identificacion_usuario', 'fechaNacimiento', 'anios_experiencia'];
+                    if (camposObligatorios.includes(field) && newValue === '') {
+                        const msg = 'Este campo es obligatorio y no puede quedar vacío.';
+                        if (window.Toast) Toast.error('Campo requerido', msg);
+                        else alert(msg);
+                        guardado = false;
+                        setTimeout(() => input.focus(), 10);
+                        return;
+                    }
+
+                    // VALIDACIONES ADICIONALES DE TIPO DE CARACTERES
+                    if (['pais', 'departamento', 'ciudad'].includes(field) && newValue !== '') {
+                        const regexLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+                        if (!regexLetras.test(newValue)) {
+                            const campoEs = field === 'pais' ? 'País' : field === 'departamento' ? 'Departamento' : 'Ciudad';
+                            const msg = `El campo ${campoEs} solo debe contener letras.`;
+                            if (window.Toast) Toast.error('Formato inválido', msg);
+                            else alert(msg);
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
+                            return;
+                        }
+                    } else if (field === 'codigoPostal' && newValue !== '') {
+                        const regexNumeros = /^\d+$/;
+                        if (!regexNumeros.test(newValue)) {
+                            const msg = 'El Código Postal solo debe contener números.';
+                            if (window.Toast) Toast.error('Formato inválido', msg);
+                            else alert(msg);
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
+                            return;
+                        }
+                    } else if (field === 'anios_experiencia' && newValue !== '') {
+                        const exp = parseInt(newValue);
+                        if (isNaN(exp) || exp < 0) {
+                            const msg = 'Los años de experiencia deben ser un número positivo.';
+                            if (window.Toast) Toast.error('Valor inválido', msg);
+                            else alert(msg);
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
+                            return;
+                        }
+                        let edad = 18;
+                        if (usuario.fechaNacimiento) {
+                            edad = calcularEdad(usuario.fechaNacimiento);
+                        }
+                        const maxExp = Math.max(0, edad - 14);
+                        if (exp > maxExp) {
+                            const msg = `Los años de experiencia (${exp}) no corresponden con tu edad (${edad} años). Máximo permitido: ${maxExp} años.`;
+                            if (window.Toast) Toast.warning('Incoherencia de datos', msg);
+                            else alert(msg);
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
+                            return;
+                        }
+                    }
+
+                    // VALIDACIONES DE IDENTIDAD Y EDAD
+                    if (field === 'identificacion_usuario' && newValue !== '') {
+                        const tipo = usuario.tipoIdentificacion_Usuario;
+                        let valResult;
+
+                        if (tipo === 'DNI' || tipo === 'Identidad') {
+                            valResult = validarIdentidadHonduras(newValue);
+                        } else if (tipo === 'Pasaporte') {
+                            valResult = validarPasaporteHonduras(newValue);
+                        }
+
+                        if (valResult && !valResult.valido) {
+                            if (window.Toast) {
+                                Toast.error('Error de Formato', valResult.mensaje);
+                            } else {
+                                alert(valResult.mensaje);
+                            }
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
+                            return;
+                        }
+
+                        // VERIFICAR DUPLICADOS EN LA BASE DE DATOS
+                        try {
+                            const resVerify = await fetch(`${API_BASE}/personas/verificar-identificacion/${encodeURIComponent(newValue)}?excludeId=${usuarioId}`);
+                            const dataVerify = await resVerify.json();
+                            if (dataVerify.success && dataVerify.exists) {
+                                const errorMsg = `El número de identificación ${newValue} ya está registrado en otro perfil.`;
+                                if (window.Toast) {
+                                    Toast.error('Documento Duplicado', errorMsg);
+                                } else {
+                                    alert(`Error: ${errorMsg}`);
+                                }
+                                guardado = false;
+                                setTimeout(() => input.focus(), 10);
+                                return;
+                            }
+                        } catch (err) {
+                            console.error('Error al verificar duplicados:', err);
+                        }
+
+                    } else if (field === 'fechaNacimiento' && newValue !== '') {
+                        const edad = calcularEdad(newValue);
+                        if (edad < 18) {
+                            const ageMsg = 'Debes ser mayor de 18 años para usar SEMACKRO.';
+                            if (window.Toast) {
+                                Toast.warning('Restricción de Edad', ageMsg);
+                            } else {
+                                alert(ageMsg);
+                            }
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
+                            return;
+                        }
+                        if (edad > 110) {
+                            const invMsg = 'Por favor ingresa una fecha de nacimiento válida.';
+                            if (window.Toast) {
+                                Toast.error('Fecha Inválida', invMsg);
+                            } else {
+                                alert(invMsg);
+                            }
+                            guardado = false;
+                            setTimeout(() => input.focus(), 10);
+                            return;
+                        }
+                    }
+
+                    // Si es fecha, mostrar formateado pero guardar en formato ISO
+                    if (inputType === 'date') {
+                        element.textContent = formatearFecha(newValue);
+                        if (!newValue) {
+                            element.style.color = '#9ca3af';
+                            element.style.fontStyle = 'italic';
+                        } else {
+                            element.style.color = '';
+                            element.style.fontStyle = '';
+                        }
+                    } else {
+                        // Si el valor está vacío, mostrar un placeholder visual
+                        if (!newValue) {
+                            if (field === 'nombre_Usuario') {
+                                element.textContent = 'Haz clic para agregar tu nombre';
+                            } else if (field === 'descripcion_Usuario') {
+                                element.textContent = 'Haz clic aquí para añadir una descripción personal';
+                            } else {
+                                element.textContent = 'No especificado';
+                            }
+                            element.style.color = '#9ca3af';
+                            element.style.fontStyle = 'italic';
+                        } else {
+                            element.textContent = newValue;
+                            element.style.color = '';
+                            element.style.fontStyle = '';
+                        }
+                    }
+
+                    element.classList.remove('editing');
+
+                    if (newValue !== currentValue) {
+                        onSave(newValue);
+                        element.dispatchEvent(new CustomEvent(TOUR_EVENT_EDITABLE_SAVED, {
+                            bubbles: true,
+                            detail: {
+                                field,
+                                value: newValue
+                            }
+                        }));
+                    }
+                };
+
+                input.addEventListener('blur', save);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !multiline) {
+                        e.preventDefault();
+                        save();
+                    }
+                    if (e.key === 'Escape') {
+                        guardado = true; // Evitar que el blur dispare el save
+                        element.textContent = currentDisplayValue;
+                        element.classList.remove('editing');
+                    }
+                });
+            });
+        }
+
+        // ======================
+        // HACER SELECT EDITABLE
+        // ======================
+        function makeSelectEditable(element, field, options, onSave) {
+            element.innerHTML = '';
+
+            const selectEditable = new SelectEditable(element, {
+                value: usuario[field] || '',
+                options: options.map(opt => ({
+                    value: opt.value,
+                    label: opt.label
+                })),
+                onSave: (newValue) => {
+                    onSave(newValue);
+                },
+                placeholder: 'Seleccionar...'
+            });
+
+            element._selectEditableInstance = selectEditable;
+            return selectEditable;
+        }
+
+        // ======================
+        // ACTUALIZAR USUARIO
+        // ======================
+        async function updateUsuario(campo, valor) {
+            // Actualizar estado local
+            usuario[campo] = valor;
+
+            const camposDireccion = ['pais', 'departamento', 'ciudad', 'codigoPostal'];
+
+            if (camposDireccion.includes(campo)) {
+                try {
+                    setGuardando(true);
+                    const datosActualizar = { [campo]: valor };
+                    if (perfilPersonaId) datosActualizar.idPersona = perfilPersonaId;
+
+                    if (direccionId) {
+                        const resultado = await fetch(`${API_BASE}/direcciones/${direccionId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(datosActualizar)
+                        });
+                        const resJson = await resultado.json();
+                        if (!resultado.ok || !resJson.success) {
+                            console.error('Error al actualizar dirección:', resJson.error);
+                        }
+                    } else {
+                        const nuevaDireccion = {
+                            ciudad: campo === 'ciudad' ? valor : usuario.ciudad || '',
+                            departamento: campo === 'departamento' ? valor : usuario.departamento || '',
+                            pais: campo === 'pais' ? valor : usuario.pais || '',
+                            codigoPostal: campo === 'codigoPostal' ? valor : usuario.codigoPostal || '',
+                            idPersona: perfilPersonaId
+                        };
+                        const resultado = await fetch(`${API_BASE}/direcciones`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(nuevaDireccion)
+                        });
+                        const resJson = await resultado.json();
+                        if (resJson.success && resJson.data) {
+                            direccionId = resJson.data.id;
+                        }
+                    }
+                    setGuardando(false);
+                } catch (error) {
+                    console.error('Error al actualizar dirección:', error);
+                    setGuardando(false);
+                }
+            } else {
+                const camposBD = {
+                    'nombre_Usuario': 'nombre_Persona',
+                    'apellido_Usuario': 'apellido_Persona',
+                    'descripcion_Usuario': 'descripcionPerfil_Persona',
+                    'imagenUrl_Usuario': 'imagenUrl_Persona',
+                    'imagen1Url_Usuario': 'imagen1Url_Persona',
+                    'imagen2Url_Usuario': 'imagen2Url_Persona',
+                    'imagen3Url_Usuario': 'imagen3Url_Persona',
+                    'estadoCivil_Usuario': 'estadoCivil_Persona',
+                    'genero_Usuario': 'genero_Persona',
+                    'tipoIdentificacion_Usuario': 'tipoIdentificacion_Persona',
+                    'telefono_Usuario': 'telefono_Persona',
+                    'identificacion_usuario': 'identificacion_Persona',
+                    'fechaNacimiento': 'fechaNac_Persona',
+                    'anios_experiencia': 'anios_experiencia',
+                    'url_Dni': 'url_Dni'
+                };
+
+                const campoDB = camposBD[campo];
+                if (campoDB) {
+                    try {
+                        setGuardando(true);
+                        const datosActualizar = { [campoDB]: valor };
+                        const resultado = await fetch(`${API_BASE}/personas/${usuarioId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(datosActualizar)
+                        });
+                        const resJson = await resultado.json();
+                        if (!resultado.ok || !resJson.success) {
+                            const backendError = resJson.error || resJson.message || 'Error desconocido del backend';
+                            console.error('Error al actualizar en BD:', backendError);
+                            if (window.Toast) {
+                                Toast.error('No se pudo actualizar', backendError);
+                            }
+                        } else {
+                            // If we saved the name or identification, clear the Google data from localStorage
+                            const camposClave = ['nombre_Usuario', 'apellido_Usuario', 'tipoIdentificacion_Usuario', 'identificacion_usuario'];
+                            if (camposClave.includes(campo)) {
+                                localStorage.removeItem('googleRegistroData');
+                            }
+                        }
+                        setGuardando(false);
+                    } catch (error) {
+                        console.error('Error al actualizar usuario:', error);
+                        setGuardando(false);
+                    }
+                }
+            }
+        }
+
+        // ======================
+        // IMAGEN DE PERFIL
+        // ======================
+        function getIniciales() {
+            const nombre = usuario.nombre_Usuario || '';
+            // Solo retornar la primera letra del nombre en mayúscula
+            return nombre.charAt(0).toUpperCase() || 'U';
+        }
+
+        function getDefaultAvatar() {
+            const iniciales = getIniciales();
+            const colors = ['4F46E5', '10B981', '8B5CF6', '14B8A6', 'F59E0B', 'EF4444'];
+            const colorIndex = (usuario.nombre_Usuario?.length || 0) % colors.length;
+            const bgColor = colors[colorIndex];
+            return `https://ui-avatars.com/api/?name=${iniciales}&background=${bgColor}&color=ffffff&size=200&bold=true&rounded=true`;
+        }
+
+        function getImagenPerfil() {
+            const url = usuario.imagenUrl_Usuario;
+            if (!url || url.trim() === '') {
+                return getDefaultAvatar();
+            }
+            return url;
+        }
+
+        // Función para sincronizar imagen con el Dashboard
+        function sincronizarImagenConDashboard(nuevaImagenUrl) {
+            try {
+                // Guardar en localStorage para que el Dashboard la lea
+                localStorage.setItem('perfilImagenActualizada', nuevaImagenUrl || getDefaultAvatar());
+                localStorage.setItem('perfilImagenTimestamp', Date.now().toString());
+
+                // Disparar evento personalizado para notificar cambios
+                window.dispatchEvent(new CustomEvent('perfilActualizado', {
+                    detail: { imagenUrl: nuevaImagenUrl || getDefaultAvatar() }
+                }));
+            } catch (error) {
+                console.error('Error al sincronizar imagen:', error);
+            }
+        }
+
+        async function handleProfileImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                try {
+                    setGuardando(true);
+                    const oldImageUrl = usuario.imagenUrl_Usuario;
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    if (oldImageUrl && oldImageUrl.includes('r2.dev')) {
+                        formData.append('oldImageUrl', oldImageUrl);
+                    }
+
+                    const response = await fetch(`${API_BASE}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        await updateUsuario('imagenUrl_Usuario', result.url);
+                        document.getElementById('profilePic').src = result.url;
+                        // Sincronizar con Dashboard
+                        sincronizarImagenConDashboard(result.url);
+                    } else {
+                        alert('Error al subir la imagen. Inténtalo de nuevo.');
+                    }
+                    setGuardando(false);
+                } catch (error) {
+                    console.error('Error al subir imagen:', error);
+                    alert('Error de conexión al subir la imagen.');
+                    setGuardando(false);
+                }
+            }
+            event.target.value = '';
+        }
+
+        async function handleDeleteProfileImage() {
+            try {
+                setGuardando(true);
+                const oldImageUrl = usuario.imagenUrl_Usuario;
+                if (oldImageUrl && oldImageUrl.includes('r2.dev')) {
+                    await fetch(`${API_BASE}/upload`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imageUrl: oldImageUrl })
+                    });
+                }
+                await updateUsuario('imagenUrl_Usuario', '');
+                document.getElementById('profilePic').src = getDefaultAvatar();
+                // Sincronizar con Dashboard
+                sincronizarImagenConDashboard(null);
+                setGuardando(false);
+            } catch (error) {
+                console.error('Error al eliminar foto de perfil:', error);
+                setGuardando(false);
+            }
+            closeAllContextMenus();
+        }
+
+        function handleEditProfileImage() {
+            document.getElementById('profileUpload').click();
+            closeAllContextMenus();
+        }
+
+        // ======================
+        // SKILLS (Solo Especialidades Técnicas - antes "Habilidades que Ofrezco")
+        // ======================
+        function renderSkills() {
+            const offeredContainer = document.getElementById('offeredSkillsContainer');
+
+            // Verificar que el contenedor existe
+            if (!offeredContainer) {
+                console.warn('No se encontró offeredSkillsContainer');
+                return;
+            }
+
+            offeredContainer.innerHTML = '';
+
+            offeredSkills.forEach((skill, index) => {
+                const tag = document.createElement('span');
+                tag.className = 'skill-tag-offered';
+                tag.textContent = skill.name;
+                tag.addEventListener('click', () => showSkillDetail(skill, 'offered'));
+                tag.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    showSkillContextMenu(e.clientX, e.clientY, 'offered', index);
+                });
+                offeredContainer.appendChild(tag);
+            });
+
+            const addOfferedBtn = document.createElement('button');
+            addOfferedBtn.className = 'add-skill-button-primary';
+            addOfferedBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+        </svg>
+        Añadir
+      `;
+            addOfferedBtn.addEventListener('click', () => showSkillModal('offered'));
+            offeredContainer.appendChild(addOfferedBtn);
+
+            // Ya no renderizamos requiredSkills - sección eliminada del frontend
+
+            updateStats();
+        }
+
+        function showSkillDetail(skill, type) {
+            // Solo manejamos 'offered' ya que 'required' fue eliminado
+            const detailId = 'selectedOfferedDetail';
+            const detailDiv = document.getElementById(detailId);
+
+            if (!detailDiv) {
+                console.warn('No se encontró el contenedor de detalle de habilidad');
+                return;
+            }
+
+            const categoryName = getNombreCategoria(skill.categoryId);
+
+            detailDiv.innerHTML = `
+        <div class="skill-detail-card">
+          <p class="skill-detail-title">${skill.name}</p>
+          ${categoryName ? `
+            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+              </svg>
+              ${categoryName}
+            </p>
+          ` : ''}
+          <p class="skill-detail-text">${skill.description || 'Sin descripción.'}</p>
+        </div>
+      `;
+            detailDiv.style.display = 'block';
+        }
+
+        function getNombreCategoria(categoryId) {
+            if (!categoryId) return null;
+            const categoria = categorias.find(cat => cat.id_categoria_Habilidad_Servicio === categoryId);
+            return categoria ? categoria.nombre_categoria_Habilidad : null;
+        }
+
+        function showSkillModal(type) {
+            currentSkillType = type;
+            editSkillIndex = null;
+            editSkillId = null;
+            const isTourOfferedSkillFlow = type === 'offered' && !!profileTourInstance;
+
+            if (isTourOfferedSkillFlow) {
+                tourOfferedSkillModalOpened = true;
+            }
+
+            document.getElementById('modalTitle').textContent =
+                type === 'offered' ? 'Añadir Habilidad Ofrecida' : 'Añadir Habilidad Requerida';
+
+            document.getElementById('skillInput').value = '';
+            document.getElementById('skillDescription').value = '';
+            document.getElementById('skillCategory').value = '';
+
+            // Populate categories
+            const categorySelect = document.getElementById('skillCategory');
+            categorySelect.innerHTML = '<option value="">Seleccione una categoría (opcional)</option>';
+            categorias.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id_categoria_Habilidad_Servicio;
+                option.textContent = cat.nombre_categoria_Habilidad;
+                categorySelect.appendChild(option);
+            });
+
+            document.getElementById('skillModal').style.display = 'flex';
+            document.getElementById('skillInput')?.focus();
+        }
+
+        function hideSkillModal() {
+            const modal = document.getElementById('skillModal');
+            if (!modal) return;
+
+            const wasVisible = modal.style.display !== 'none';
+            modal.style.display = 'none';
+
+            if (wasVisible && tourOfferedSkillModalOpened) {
+                tourOfferedSkillModalOpened = false;
+                notifyTourOfferedSkillModalClosed();
+            }
+        }
+
+        // ======================
+        // GENERADOR DE DESCRIPCIONES DE HABILIDADES
+        // ======================
+        async function generateSkillDescription() {
+            const skillInput = document.getElementById('skillInput').value.trim();
+            const skillCategory = document.getElementById('skillCategory');
+            const skillDescription = document.getElementById('skillDescription');
+            const generateBtn = document.getElementById('generateDescriptionBtn');
+
+            // Validar que haya un nombre de habilidad
+            if (!skillInput) {
+                alert('Por favor, primero ingresa el nombre de la habilidad para generar una descripción.');
+                document.getElementById('skillInput').focus();
+                return;
+            }
+
+            // Obtener el nombre de la categoría
+            const categoryName = skillCategory.options[skillCategory.selectedIndex]?.text || '';
+            const categoryId = skillCategory.value;
+
+            // Mostrar estado de carga
+            generateBtn.disabled = true;
+            generateBtn.classList.add('loading');
+            generateBtn.querySelector('span').textContent = 'Generando...';
+
+            try {
+                // Generar descripción basada en plantillas y contexto
+                const description = await generateContextualDescription(skillInput, categoryName, categoryId);
+
+                // Aplicar la descripción generada con efecto de escritura
+                await typewriterEffect(skillDescription, description);
+
+            } catch (error) {
+                console.error('Error al generar descripción:', error);
+                alert('Hubo un error al generar la descripción. Por favor, intenta de nuevo.');
+            } finally {
+                // Restaurar el botón
+                generateBtn.disabled = false;
+                generateBtn.classList.remove('loading');
+                generateBtn.querySelector('span').textContent = 'Generar';
+            }
+        }
+
+        // Función para generar descripción usando IA (Proxy a través de nuestro Backend)
+        // Función para generar descripción usando plantillas locales (Rápido, robusto y sin errores de API)
+        function generateContextualDescription(skillName, categoryName, categoryId) {
+            return new Promise((resolve) => {
+                // Simulamos un retraso aleatorio para dar sensación de "pensar" (300-800ms)
+                const delay = Math.floor(Math.random() * 500) + 300;
+
+                setTimeout(() => {
+                    // Base de datos de plantillas ampliada y variada
+                    const templates = {
+                        'Tecnología': [
+                            `Ofrezco servicios profesionales de ${skillName}. Cuento con experiencia sólida en resolución de problemas técnicos y optimización de sistemas.`,
+                            `Especialista en ${skillName} con enfoque práctico. Puedo ayudarte a configurar y mejorar tus herramientas para maximizar tu productividad.`,
+                            `Servicio técnico de ${skillName} confiable y rápido. Diagnóstico preciso y reparación garantizada para tus equipos y software.`,
+                            `Asesoría experta en ${skillName}. Te guío paso a paso para dominar las herramientas digitales que necesitas en tu día a día.`
+                        ],
+                        'Programación': [
+                            `Desarrollador con experiencia en ${skillName}. Creo código limpio, escalable y bien documentado para llevar tus ideas a la realidad.`,
+                            `Programador especializado en ${skillName}. Ofrezco servicios de desarrollo a medida, debugging y refactorización de código existente.`,
+                            `Experto en ${skillName} listo para colaborar en tu proyecto. Desde scripts de automatización hasta aplicaciones completas.`,
+                            `Mentoría y desarrollo en ${skillName}. Te ayudo a superar bloqueos técnicos y a implementar las mejores prácticas de la industria.`
+                        ],
+                        'Idiomas': [
+                            `Clases de ${skillName} dinámicas y personalizadas. Enfocadas en conversación real y situaciones prácticas para ganar fluidez.`,
+                            `Tutor nativo/experto de ${skillName}. Te ayudo a perfeccionar tu pronunciación, gramática y vocabulario con un método natural.`,
+                            `Aprende ${skillName} a tu propio ritmo. Sesiones adaptadas a tus objetivos (viajes, negocios, certificación) y nivel actual.`,
+                            `Traducción e interpretación de ${skillName}. Servicios precisos y culturalmente adecuados para tus documentos y reuniones.`
+                        ],
+                        'Música': [
+                            `Clases de ${skillName} para todos los niveles. Aprende con un método progresivo que combina técnica, teoría y diversión.`,
+                            `Músico profesional ofreciendo lecciones de ${skillName}. Desarrolla tu musicalidad, oído y creatividad en un ambiente relajado.`,
+                            `Taller intensivo de ${skillName}. Domina los fundamentos y avanza rápidamente con ejercicios prácticos y feedback personalizado.`,
+                            `Sesiones de ${skillName} enfocadas en la expresión artística. Descubre tu propio sonido y disfruta del proceso de hacer música.`
+                        ],
+                        'Diseño': [
+                            `Servicios de diseño en ${skillName}. Transformo conceptos abstractos en piezas visuales impactantes que comunican tu mensaje.`,
+                            `Diseñador creativo especializado en ${skillName}. Soluciones estéticas y funcionales adaptadas a la identidad de tu marca.`,
+                            `Experto en ${skillName} con atención al detalle. Desde bocetos iniciales hasta el arte final, garantizo calidad profesional.`,
+                            `Asesoría y creación en ${skillName}. Renueva tu imagen visual con diseños modernos, limpios y efectivos.`
+                        ],
+                        'Marketing': [
+                            `Estratega de ${skillName} orientado a resultados. Ayudo a crecer tu audiencia y convertir seguidores en clientes leales.`,
+                            `Consultoría en ${skillName} para potenciar tu marca. Análisis de mercado y planes de acción personalizados para tu negocio.`,
+                            `Servicios de ${skillName} para mejorar tu visibilidad online. Campañas creativas que conectan emocionalmente con tu público.`,
+                            `Experto en ${skillName} digital. Optimización de conversiones y estrategias de contenido que generan impacto real.`
+                        ],
+                        'Educación': [
+                            `Tutorías de ${skillName} con paciencia y dedicación. Metodología adaptada a tu estilo de aprendizaje para garantizar la comprensión.`,
+                            `Apoyo escolar y universitario en ${skillName}. Refuerzo de conceptos clave, resolución de dudas y preparación para exámenes.`,
+                            `Profesor particular de ${skillName}. Clases estructuradas y material didáctico incluido para facilitar tu progreso académico.`,
+                            `Mentoría académica en ${skillName}. Desarrolla hábitos de estudio efectivos y supera cualquier dificultad en la materia.`
+                        ],
+                        'Negocios': [
+                            `Consultoría de negocios en ${skillName}. Estrategias prácticas para optimizar procesos y aumentar la rentabilidad de tu empresa.`,
+                            `Asesoría financiera y administrativa en ${skillName}. Ordena tus números y toma decisiones informadas para el crecimiento de tu negocio.`,
+                            `Gestión de proyectos con enfoque en ${skillName}. Liderazgo efectivo para cumplir plazos y objetivos con recursos optimizados.`,
+                            `Coaching ejecutivo en ${skillName}. Potencia tus habilidades de liderazgo y lleva tu carrera profesional al siguiente nivel.`
+                        ],
+                        'Salud': [
+                            `Sesiones de ${skillName} para mejorar tu bienestar integral. Un enfoque holístico que cuida tu cuerpo y tu mente.`,
+                            `Profesional de la salud especializado en ${skillName}. Atención personalizada y planes de tratamiento basados en evidencia.`,
+                            `Clases y terapias de ${skillName}. Descubre herramientas prácticas para reducir el estrés y aumentar tu vitalidad.`,
+                            `Asesoría en ${skillName} para una vida saludable. Hábitos sostenibles y cambios positivos que perduran en el tiempo.`
+                        ],
+                        'Hogar': [
+                            `Servicios de ${skillName} para el hogar. Trabajo impecable, puntual y con materiales de primera calidad.`,
+                            `Especialista en renovaciones y ${skillName}. Transformo tus espacios para que sean más cómodos, funcionales y bellos.`,
+                            `Mantenimiento y reparaciones de ${skillName}. Soluciones rápidas y efectivas para cualquier desperfecto en tu casa.`,
+                            `Ayuda doméstica experta en ${skillName}. Confianza, limpieza y organización garantizadas para tu tranquilidad.`
+                        ],
+                        'Deportes': [
+                            `Entrenador personal de ${skillName}. Planes de entrenamiento a medida para alcanzar tus metas físicas de forma segura.`,
+                            `Clases de ${skillName} dinámicas y motivadoras. Mejora tu condición física, técnica y resistencia mientras te diviertes.`,
+                            `Coaching deportivo en ${skillName}. Preparación física y mental para competiciones o simplemente para mantenerte en forma.`,
+                            `Instrucción técnica de ${skillName}. Corrige errores, perfecciona movimientos y evita lesiones con guía profesional.`
+                        ],
+                        'Arte': [
+                            `Clases de ${skillName} para explorar tu creatividad. Técnicas clásicas y modernas para expresar tu visión artística.`,
+                            `Servicios artísticos de ${skillName} por encargo. Obras únicas y personalizadas que capturan emociones y momentos especiales.`,
+                            `Taller de ${skillName} para principiantes y avanzados. Aprende a observar, componer y crear con confianza.`,
+                            `Restauración y conservación en ${skillName}. Cuidado experto para preservar la belleza y valor de tus obras de arte.`
+                        ],
+                        'default': [
+                            `Profesional apasionado por ${skillName}. Ofrezco servicios de alta calidad, compromiso y atención personalizada a tus necesidades.`,
+                            `Servicios de ${skillName} confiables y eficientes. Mi prioridad es tu satisfacción y superar tus expectativas en cada proyecto.`,
+                            `Experiencia comprobada en ${skillName}. Trabajo con dedicación para entregarte los mejores resultados en tiempo y forma.`,
+                            `¿Necesitas ayuda con ${skillName}? Estoy aquí para ofrecerte soluciones prácticas, creativas y adaptadas a lo que buscas.`
+                        ]
+                    };
+
+                    let selectedTemplates = templates['default'];
+
+                    // 1. Intentar coincidir por Categoría seleccionada
+                    for (const [key, list] of Object.entries(templates)) {
+                        if (key !== 'default' && categoryName && categoryName.toLowerCase().includes(key.toLowerCase())) {
+                            selectedTemplates = list;
+                            break;
+                        }
+                    }
+
+                    // 2. Intentar coincidir por palabras clave en el nombre de la habilidad
+                    const lowerSkill = skillName.toLowerCase();
+
+                    // Mapeo detallado de palabras clave a categorías
+                    const keyMap = {
+                        'java': 'Programación', 'js': 'Programación', 'php': 'Programación', 'html': 'Programación', 'css': 'Programación', 'react': 'Programación',
+                        'python': 'Programación', 'c++': 'Programación', 'sql': 'Programación', 'app': 'Programación', 'web': 'Programación', 'code': 'Programación',
+                        'inglés': 'Idiomas', 'frances': 'Idiomas', 'alemán': 'Idiomas', 'italiano': 'Idiomas', 'chino': 'Idiomas', 'japonés': 'Idiomas', 'idioma': 'Idiomas',
+                        'guitarra': 'Música', 'piano': 'Música', 'violín': 'Música', 'voz': 'Música', 'canto': 'Música', 'batería': 'Música', 'musical': 'Música',
+                        'logo': 'Diseño', 'banner': 'Diseño', 'flyer': 'Diseño', 'photoshop': 'Diseño', 'illustrator': 'Diseño', 'ux': 'Diseño', 'ui': 'Diseño',
+                        'seo': 'Marketing', 'sem': 'Marketing', 'facebook': 'Marketing', 'instagram': 'Marketing', 'redes': 'Marketing', 'publicidad': 'Marketing',
+                        'matemáticas': 'Educación', 'física': 'Educación', 'química': 'Educación', 'historia': 'Educación', 'tutoría': 'Educación', 'clase': 'Educación',
+                        'finanzas': 'Negocios', 'contabilidad': 'Negocios', 'admin': 'Negocios', 'ventas': 'Negocios', 'consultoría': 'Negocios',
+                        'yoga': 'Salud', 'meditación': 'Salud', 'masaje': 'Salud', 'terapia': 'Salud', 'nutrición': 'Salud', 'psicología': 'Salud',
+                        'plomería': 'Hogar', 'electricidad': 'Hogar', 'limpieza': 'Hogar', 'jardinería': 'Hogar', 'carpintería': 'Hogar', 'pintura': 'Hogar',
+                        'fitness': 'Deportes', 'gym': 'Deportes', 'entrenamiento': 'Deportes', 'fútbol': 'Deportes', 'tenis': 'Deportes', 'natación': 'Deportes',
+                        'dibujo': 'Arte', 'escultura': 'Arte', 'fotografía': 'Arte', 'video': 'Arte', 'cine': 'Arte', 'edición': 'Arte'
+                    };
+
+                    for (const [key, cat] of Object.entries(keyMap)) {
+                        if (lowerSkill.includes(key)) {
+                            selectedTemplates = templates[cat];
+                            break;
+                        }
+                    }
+
+                    // Selección aleatoria para dar variedad
+                    const randomIndex = Math.floor(Math.random() * selectedTemplates.length);
+                    const description = selectedTemplates[randomIndex];
+
+                    resolve(description);
+
+                }, delay);
+            });
+        }
+
+        // Función de fallback con plantillas locales
+        function generateLocalDescription(skillName, categoryName) {
+            const templates = {
+                'Tecnología': [
+                    `Ofrezco servicios profesionales de ${skillName}. Experiencia sólida en desarrollo y solución de problemas técnicos.`,
+                    `Especialista en ${skillName} con habilidades comprobadas en proyectos reales.`
+                ],
+                'Programación': [
+                    `Desarrollo profesional en ${skillName}. Experiencia en creación de aplicaciones y soluciones de software.`,
+                    `Programador especializado en ${skillName}. Ayuda con desarrollo, debugging y optimización de código.`
+                ],
+                'Idiomas': [
+                    `Clases y tutorías de ${skillName} para todos los niveles. Metodología práctica enfocada en conversación.`,
+                    `Enseñanza de ${skillName} con enfoque comunicativo para desarrollar fluidez y confianza.`
+                ],
+                'Música': [
+                    `Clases de ${skillName} para principiantes y nivel intermedio. Método progresivo y divertido.`,
+                    `Lecciones personalizadas de ${skillName} adaptadas a tus gustos musicales y objetivos.`
+                ],
+                'Diseño': [
+                    `Diseñador profesional de ${skillName}. Soluciones visuales atractivas y funcionales.`,
+                    `Servicios de ${skillName} con enfoque creativo y profesional.`
+                ],
+                'Educación': [
+                    `Tutorías personalizadas de ${skillName}. Metodología adaptada a tu estilo de aprendizaje.`,
+                    `Profesor particular de ${skillName} con experiencia comprobada.`
+                ],
+                'default': [
+                    `Ofrezco mis servicios de ${skillName} con dedicación y profesionalismo.`,
+                    `Profesional con experiencia en ${skillName}. Trabajo personalizado y de calidad.`
+                ]
+            };
+
+            // Buscar la categoría adecuada
+            let selectedTemplates = templates['default'];
+
+            for (const [category, templateList] of Object.entries(templates)) {
+                if (category !== 'default' && categoryName && categoryName.toLowerCase().includes(category.toLowerCase())) {
+                    selectedTemplates = templateList;
+                    break;
+                }
+            }
+
+            // Detección por palabras clave
+            const skillLower = skillName.toLowerCase();
+            if (skillLower.includes('python') || skillLower.includes('javascript') || skillLower.includes('programación')) {
+                selectedTemplates = templates['Programación'];
+            } else if (skillLower.includes('inglés') || skillLower.includes('idioma') || skillLower.includes('francés')) {
+                selectedTemplates = templates['Idiomas'];
+            } else if (skillLower.includes('guitarra') || skillLower.includes('piano') || skillLower.includes('música')) {
+                selectedTemplates = templates['Música'];
+            } else if (skillLower.includes('diseño') || skillLower.includes('photoshop') || skillLower.includes('figma')) {
+                selectedTemplates = templates['Diseño'];
+            }
+
+            const randomIndex = Math.floor(Math.random() * selectedTemplates.length);
+            return selectedTemplates[randomIndex];
+        }
+
+        // Efecto de escritura para la descripción
+        function typewriterEffect(element, text) {
+            return new Promise((resolve) => {
+                element.value = '';
+                let index = 0;
+                const speed = 15; // milisegundos entre caracteres
+
+                function type() {
+                    if (index < text.length) {
+                        element.value += text.charAt(index);
+                        index++;
+                        setTimeout(type, speed);
+                    } else {
+                        resolve();
+                    }
+                }
+
+                type();
+            });
+        }
+
+        async function addSkill() {
+            const skillInput = document.getElementById('skillInput').value.trim();
+            const skillDescription = document.getElementById('skillDescription').value.trim();
+            const skillCategory = document.getElementById('skillCategory').value;
+
+            if (!skillInput) {
+                if (window.Toast) {
+                    Toast.warning('Campo requerido', 'El nombre de la habilidad no puede estar vacío');
+                } else {
+                    alert('El nombre de la habilidad no puede estar vacío');
+                }
+                const skillInputEl = document.getElementById('skillInput');
+                if (skillInputEl) skillInputEl.focus();
+                return;
+            }
+
+            const newSkill = {
+                name: skillInput,
+                description: skillDescription,
+                categoryId: skillCategory ? parseInt(skillCategory) : null
+            };
+
+            if (editSkillIndex !== null) {
+                await updateSkill(currentSkillType === 'offered', editSkillIndex, newSkill);
+            } else {
+                await createSkill(currentSkillType === 'offered', newSkill);
+            }
+
+            hideSkillModal();
+            renderSkills();
+        }
+
+        async function createSkill(isOffered, skill) {
+            try {
+                setGuardando(true);
+                const habilidadData = {
+                    tipoEstado: isOffered ? 'Ofrece' : 'Necesita',
+                    nombre: skill.name,
+                    descripcion: skill.description || null,
+                    idPersona: perfilPersonaId,
+                    idCategoria: skill.categoryId || null
+                };
+
+                const response = await fetch(`${API_BASE}/habilidades`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(habilidadData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    const nuevaHabilidad = {
+                        id: result.data.id,
+                        name: skill.name,
+                        description: skill.description || '',
+                        categoryId: skill.categoryId
+                    };
+
+                    if (isOffered) {
+                        offeredSkills.push(nuevaHabilidad);
+                    } else {
+                        requiredSkills.push(nuevaHabilidad);
+                    }
+                }
+                setGuardando(false);
+            } catch (error) {
+                console.error('Error al crear habilidad:', error);
+                setGuardando(false);
+            }
+        }
+
+        async function updateSkill(isOffered, index, skill) {
+            try {
+                setGuardando(true);
+                const source = isOffered ? offeredSkills : requiredSkills;
+                const habilidadActual = source[index];
+
+                if (!habilidadActual || !habilidadActual.id) {
+                    console.error('No se encontró el ID de la habilidad');
+                    setGuardando(false);
+                    return;
+                }
+
+                const habilidadData = {
+                    tipoEstado: isOffered ? 'Ofrece' : 'Necesita',
+                    nombre: skill.name,
+                    descripcion: skill.description || null,
+                    idPersona: perfilPersonaId,
+                    idCategoria: skill.categoryId || null
+                };
+
+                const response = await fetch(`${API_BASE}/habilidades/${habilidadActual.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(habilidadData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    habilidadActual.name = skill.name;
+                    habilidadActual.description = skill.description || '';
+                    habilidadActual.categoryId = skill.categoryId;
+                }
+                setGuardando(false);
+            } catch (error) {
+                console.error('Error al actualizar habilidad:', error);
+                setGuardando(false);
+            }
+        }
+
+        async function removeSkill(isOffered, index) {
+            try {
+                setGuardando(true);
+                const source = isOffered ? offeredSkills : requiredSkills;
+                const habilidad = source[index];
+
+                if (!habilidad || !habilidad.id) {
+                    console.error('No se encontró el ID de la habilidad');
+                    setGuardando(false);
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE}/habilidades/${habilidad.id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    if (isOffered) {
+                        offeredSkills.splice(index, 1);
+                    } else {
+                        requiredSkills.splice(index, 1);
+                    }
+                }
+                setGuardando(false);
+            } catch (error) {
+                console.error('Error al eliminar habilidad:', error);
+                setGuardando(false);
+            }
+        }
+
+        function handleEditSkill() {
+            if (contextMenuData.type === null || contextMenuData.index === null) return;
+
+            const isOffered = contextMenuData.type === 'offered';
+            const source = isOffered ? offeredSkills : requiredSkills;
+            const skill = source[contextMenuData.index];
+
+            currentSkillType = contextMenuData.type;
+            editSkillIndex = contextMenuData.index;
+            editSkillId = skill?.id || null;
+
+            document.getElementById('modalTitle').textContent =
+                isOffered ? 'Editar Habilidad Ofrecida' : 'Editar Habilidad Requerida';
+
+            document.getElementById('skillInput').value = skill?.name || '';
+            document.getElementById('skillDescription').value = skill?.description || '';
+            document.getElementById('skillCategory').value = skill?.categoryId || '';
+
+            // Populate categories
+            const categorySelect = document.getElementById('skillCategory');
+            categorySelect.innerHTML = '<option value="">Seleccione una categoría (opcional)</option>';
+            categorias.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id_categoria_Habilidad_Servicio;
+                option.textContent = cat.nombre_categoria_Habilidad;
+                if (cat.id_categoria_Habilidad_Servicio === skill?.categoryId) {
+                    option.selected = true;
+                }
+                categorySelect.appendChild(option);
+            });
+
+            document.getElementById('skillModal').style.display = 'flex';
+            closeAllContextMenus();
+        }
+
+        async function handleDeleteSkill() {
+            if (contextMenuData.type === null || contextMenuData.index === null) return;
+
+            const isOffered = contextMenuData.type === 'offered';
+            await removeSkill(isOffered, contextMenuData.index);
+
+            closeAllContextMenus();
+            renderSkills();
+        }
+
+        // ======================
+        // GALERÍA
+        // ======================
+
+        function renderGallery() {
+            const galleryGrid = document.getElementById('galleryGrid');
+            if (!galleryGrid) return;
+            galleryGrid.innerHTML = '';
+
+            // Renderizar imágenes existentes
+            galeriaImagenes.forEach((img, index) => {
+                if (img && img.url) {
+                    const item = document.createElement('div');
+                    item.className = 'gallery-item';
+                    item.setAttribute('data-img-index', index);
+
+                    const imgElement = document.createElement('img');
+                    imgElement.src = img.url;
+                    imgElement.alt = `Galería ${index + 1}`;
+                    imgElement.onerror = () => {
+                        item.innerHTML = `
+              <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(229, 231, 235, 0.5); color: #9ca3af;">
+                <svg xmlns='http://www.w3.org/2000/svg' style='width: 48px; height: 48px;' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                  <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-8a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+            </svg>
+          `;
+                    };
+
+                    item.appendChild(imgElement);
+                    item.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        showImageContextMenu(e.clientX, e.clientY, index);
+                    });
+                    galleryGrid.appendChild(item);
+                }
+            });
+
+            // Agregar placeholder de subida si hay espacio disponible
+            if (galeriaImagenes.length < limiteImagenesPermitidas) {
+                const uploadItem = document.createElement('div');
+                uploadItem.className = 'gallery-item gallery-upload';
+                uploadItem.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" style="width: 56px; height: 56px; color: #818cf8;" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z" />
+              <path d="M9 13h2v5a1 1 0 11-2 0v-5z" />
+            </svg>
+            <span style="color: #6366f1; font-size: 13px; font-weight: 600;">Subir imagen</span>
+          </div>
+        `;
+                uploadItem.addEventListener('click', () => {
+                    document.getElementById('galleryUpload').click();
+                });
+                galleryGrid.appendChild(uploadItem);
+            }
+        }
+
+        async function handleGalleryImageUpload(event) {
+            const file = event.target.files[0];
+            if (file && galeriaImagenes.length < limiteImagenesPermitidas) {
+                try {
+                    setGuardando(true);
+
+                    console.log('Subiendo imagen de galería...', file.name);
+                    console.log('Imágenes actuales antes de subir:', galeriaImagenes.length);
+
+                    const formData = new FormData();
+                    formData.append('image', file);
+
+                    const response = await fetch(`${API_BASE}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        const newImageId = Date.now();
+
+                        console.log('Imagen subida exitosamente a R2:', result.url);
+
+                        // Añadir la nueva imagen a la galería con la URL de R2
+                        const nuevasImagenes = [
+                            ...galeriaImagenes,
+                            {
+                                id: newImageId,
+                                title: result.fileName || `Imagen ${newImageId}`,
+                                url: result.url
+                            }
+                        ].slice(0, 3); // Asegurar que no excedamos el límite
+
+                        galeriaImagenes = nuevasImagenes;
+
+                        console.log('Array de imágenes actualizado:', galeriaImagenes);
+
+                        // Guardar las URLs en la base de datos
+                        await guardarImagenesGaleria();
+                        renderGallery();
+
+                        console.log('Proceso de subida completado');
+                    } else {
+                        console.error('Error al subir imagen:', result.error);
+                        alert('Error al subir la imagen. Inténtalo de nuevo.');
+                    }
+                    setGuardando(false);
+                } catch (error) {
+                    console.error('Error al subir imagen de galería:', error);
+                    alert('Error de conexión al subir la imagen.');
+                    setGuardando(false);
+                }
+            }
+
+            // Limpiar el valor del input file para permitir seleccionar el mismo archivo nuevamente
+            event.target.value = '';
+        }
+
+        async function guardarImagenesGaleria() {
+            try {
+                // Filtrar solo imágenes válidas (con url)
+                const imagenesValidas = galeriaImagenes.filter(img => img && img.url);
+
+                // Extraer las URLs de las imágenes (máximo 3 para la galería)
+                const imagen1 = imagenesValidas[0]?.url || '';
+                const imagen2 = imagenesValidas[1]?.url || '';
+                const imagen3 = imagenesValidas[2]?.url || '';
+
+                console.log('Guardando imágenes en BD:', { imagen1, imagen2, imagen3 });
+
+                // Actualizar los tres campos secuencialmente con delay
+                await updateUsuario('imagen1Url_Usuario', imagen1);
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                await updateUsuario('imagen2Url_Usuario', imagen2);
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                await updateUsuario('imagen3Url_Usuario', imagen3);
+
+                console.log('Imágenes guardadas exitosamente en BD');
+            } catch (error) {
+                console.error('Error al guardar imágenes de galería:', error);
+            }
+        }
+
+        async function handleChangeImage() {
+            if (imageContextMenuIndex === null) return;
+
+            // Guardar el índice actual antes de cerrar el menú
+            const currentIndex = imageContextMenuIndex;
+
+            // Disparar el input de archivo para seleccionar nueva imagen
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/jpeg, image/png, image/gif';
+
+            fileInput.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    try {
+                        setGuardando(true);
+
+                        // Obtener URL de imagen antigua
+                        const oldImageUrl = galeriaImagenes[currentIndex]?.url;
+
+                        // Crear FormData para enviar el archivo
+                        const formData = new FormData();
+                        formData.append('image', file);
+
+                        // Si existe una imagen antigua en R2, enviarla para que se elimine
+                        if (oldImageUrl && oldImageUrl.includes('r2.dev')) {
+                            formData.append('oldImageUrl', oldImageUrl);
+                        }
+
+                        // Subir imagen a Cloudflare R2 (automáticamente eliminará la antigua)
+                        const response = await fetch(`${API_BASE}/upload`, {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const result = await response.json();
+                        if (result.success) {
+                            // Actualizar la imagen en la galería con la URL de R2
+                            galeriaImagenes[currentIndex] = {
+                                id: Date.now(),
+                                title: result.fileName,
+                                url: result.url
+                            };
+
+                            // Guardar los cambios en la base de datos
+                            await guardarImagenesGaleria();
+                            renderGallery();
+
+                            console.log('Imagen de galería reemplazada en R2:', result.url);
+                            if (result.replacedOld) {
+                                console.log('Imagen anterior eliminada de R2');
+                            }
+                        } else {
+                            console.error('Error al cambiar imagen:', result.error);
+                            alert('Error al cambiar la imagen. Inténtalo de nuevo.');
+                        }
+
+                        setGuardando(false);
+                    } catch (error) {
+                        console.error('Error al cambiar imagen de galería:', error);
+                        alert('Error de conexión al cambiar la imagen.');
+                        setGuardando(false);
+                    }
+                }
+            };
+
+            fileInput.click();
+            closeAllContextMenus();
+        }
+
+        async function handleDeleteImage() {
+            if (imageContextMenuIndex === null) return;
+
+            try {
+                setGuardando(true);
+
+                // Índice y URL de la imagen a eliminar
+                const idx = imageContextMenuIndex;
+                const imagenAEliminar = galeriaImagenes[idx];
+                const imageUrl = imagenAEliminar && imagenAEliminar.url ? imagenAEliminar.url : null;
+
+                // Si la imagen está en R2, pedir eliminación en backend
+                if (imageUrl && imageUrl.includes('r2.dev')) {
+                    try {
+                        const response = await fetch(`${API_BASE}/upload`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ imageUrl })
+                        });
+                        const result = await response.json();
+                        if (result && result.success) {
+                            console.log('Imagen eliminada de R2:', imageUrl);
+                        } else {
+                            console.warn('Respuesta inesperada al eliminar de R2:', result);
+                        }
+                    } catch (err) {
+                        console.error('Error al eliminar de R2 (continuando):', err);
+                    }
+                }
+
+                // Eliminar del array local. Primero intentar por índice; si no coincide, por URL.
+                if (typeof idx === 'number' && idx >= 0 && idx < galeriaImagenes.length) {
+                    galeriaImagenes.splice(idx, 1);
+                } else if (imageUrl) {
+                    galeriaImagenes = galeriaImagenes.filter(img => img && img.url !== imageUrl);
+                } else {
+                    // Fallback: quitar entradas inválidas
+                    galeriaImagenes = galeriaImagenes.filter(Boolean);
+                }
+
+                // Normalizar: mantener solo objetos con url y hasta 3 elementos
+                galeriaImagenes = galeriaImagenes.filter(img => img && img.url).slice(0, limiteImagenesPermitidas);
+
+                // Guardar los cambios en la base de datos y refrescar UI
+                await guardarImagenesGaleria();
+                renderGallery();
+
+                setGuardando(false);
+            } catch (error) {
+                console.error('Error al eliminar imagen:', error);
+                setGuardando(false);
+            }
+
+            // Limpiar índice y cerrar menús
+            imageContextMenuIndex = null;
+            closeAllContextMenus();
+        }
+
+        // ======================
+        // GEOLOCALIZACIÓN Y MAPA
+        // ======================
+        function initMap() {
+            if (!window.L) {
+                setTimeout(initMap, 100);
+                return;
+            }
+
+            if (mapInstance) {
+                mapInstance.remove();
+                mapInstance = null;
+            }
+
+            try {
+                const zoomLevel = geolocalizacion.ubicacionReal ? 15 : 6;
+                const map = window.L.map('map', {
+                    center: [geolocalizacion.latitud, geolocalizacion.longitud],
+                    zoom: zoomLevel,
+                    scrollWheelZoom: true,
+                    dragging: true,
+                    zoomControl: true
+                });
+
+                window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+                    maxZoom: 19,
+                    minZoom: 2
+                }).addTo(map);
+
+                if (geolocalizacion.ubicacionReal) {
+                    window.L.marker([geolocalizacion.latitud, geolocalizacion.longitud])
+                        .addTo(map)
+                        .bindPopup(t('yourLocation'))
+                        .openPopup();
+                }
+
+                mapInstance = map;
+
+                setTimeout(() => {
+                    if (mapInstance) {
+                        mapInstance.invalidateSize();
+                    }
+                }, 250);
+            } catch (error) {
+                console.error('Error al inicializar mapa:', error);
+            }
+        }
+
+        async function obtenerUbicacion() {
+            if (!navigator.geolocation) {
+                showLocationMessage('Tu navegador no soporta la geolocalización.', 'error');
+                return;
+            }
+
+            const locationBtn = document.getElementById('locationBtn');
+            locationBtn.disabled = true;
+            locationBtn.innerHTML = `
+        <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        ${t('gettingLocation')}
+      `;
+
+            showLocationMessage(t('gettingLocation'), 'info');
+
+            const options = { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 };
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+
+                    geolocalizacion = {
+                        latitud: latitude,
+                        longitud: longitude,
+                        ubicacionReal: true,
+                        obteniendo: false,
+                        mensaje: 'Buscando dirección...'
+                    };
+
+                    showLocationMessage('Buscando dirección...', 'info');
+
+                    try {
+                        const response = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+                        );
+
+                        if (!response.ok) throw new Error('No se pudo obtener la dirección.');
+
+                        const data = await response.json();
+                        const addr = data.address;
+
+                        const pais = addr.country || '';
+                        const departamento = addr.state || addr.region || '';
+                        const ciudad = addr.city || addr.town || addr.village || '';
+                        const codigoPostal = addr.postcode || '';
+
+                        if (pais) await updateUsuario('pais', pais);
+                        if (departamento) await updateUsuario('departamento', departamento);
+                        if (ciudad) await updateUsuario('ciudad', ciudad);
+                        if (codigoPostal) await updateUsuario('codigoPostal', codigoPostal);
+
+                        // Guardar coordenadas en BD
+                        if (direccionId) {
+                            try {
+                                if (geolocalizacionId) {
+                                    await fetch(`${API_BASE}/geolocalizacion/${geolocalizacionId}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            latitud: latitude,
+                                            longitud: longitude,
+                                            idDireccion: direccionId
+                                        })
+                                    });
+                                } else {
+                                    const resGeo = await fetch(`${API_BASE}/geolocalizacion`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            latitud: latitude,
+                                            longitud: longitude,
+                                            idDireccion: direccionId
+                                        })
+                                    });
+                                    const dataGeo = await resGeo.json();
+                                    if (dataGeo.success && dataGeo.data) {
+                                        geolocalizacionId = dataGeo.data.id_Geolocalizacion_Nueva;
+                                    }
+                                }
+                            } catch (errGeo) {
+                                console.error('Error al guardar geolocalización:', errGeo);
+                            }
+                        }
+
+                        showLocationMessage(t('locationSuccess'), 'success');
+                        renderDatosPersonales();
+                        initMap();
+
+                        setTimeout(() => {
+                            hideLocationMessage();
+                        }, 5000);
+
+                    } catch (err) {
+                        showLocationMessage('Coordenadas obtenidas, pero no se pudo encontrar la dirección.', 'warning');
+                        initMap();
+                    }
+
+                    locationBtn.disabled = false;
+                    locationBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+            </svg>
+            Obtener mi ubicación
+          `;
+                },
+                (err) => {
+                    let mensaje = '';
+                    switch (err.code) {
+                        case err.PERMISSION_DENIED:
+                            mensaje = t('permissionDenied');
+                            break;
+                        case err.POSITION_UNAVAILABLE:
+                            mensaje = t('locationUnavailable');
+                            break;
+                        case err.TIMEOUT:
+                            mensaje = t('locationTimeout');
+                            break;
+                        default:
+                            mensaje = t('locationError');
+                            break;
+                    }
+                    showLocationMessage(mensaje, 'error');
+
+                    locationBtn.disabled = false;
+                    locationBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+            </svg>
+            ${t('getMyLocation')}
+          `;
+                },
+                options
+            );
+        }
+
+        function showLocationMessage(message, type) {
+            const messageDiv = document.getElementById('locationMessage');
+            messageDiv.textContent = message;
+            messageDiv.style.display = 'block';
+
+            const colors = {
+                success: { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: 'rgba(16, 185, 129, 0.2)' },
+                error: { bg: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'rgba(239, 68, 68, 0.2)' },
+                warning: { bg: 'rgba(251, 191, 36, 0.1)', color: '#fbbf24', border: 'rgba(251, 191, 36, 0.2)' },
+                info: { bg: 'rgba(79, 70, 229, 0.1)', color: '#a5b4fc', border: 'rgba(79, 70, 229, 0.2)' }
+            };
+
+            const style = colors[type] || colors.info;
+            messageDiv.style.backgroundColor = style.bg;
+            messageDiv.style.color = style.color;
+            messageDiv.style.border = `1px solid ${style.border}`;
+        }
+
+        function hideLocationMessage() {
+            document.getElementById('locationMessage').style.display = 'none';
+        }
+
+        // ======================
+        // PIXEL BAR CHART - CON COLORES COORDINADOS
+        // ======================
+        // ======================
+        // PIXEL BAR CHART - VERSIÓN COMPLETAMENTE DINÁMICA
+        // ======================
+        function renderPixelChart() {
+            const container = document.querySelector('.pixel-chart');
+            if (!container) return;
+
+            // Buscar o crear el contenedor del SVG
+            let svgContainer = container.querySelector('.pixel-chart-svg-container');
+            if (!svgContainer) {
+                svgContainer = document.createElement('div');
+                svgContainer.className = 'pixel-chart-svg-container';
+
+                // Insertar después del título
+                const title = container.querySelector('.pixel-chart-title');
+                if (title && title.nextSibling) {
+                    container.insertBefore(svgContainer, title.nextSibling);
+                } else {
+                    container.appendChild(svgContainer);
+                }
+            }
+
+            // Limpiar contenido anterior
+            svgContainer.innerHTML = '';
+
+            // LEER VALORES DEL DOM EN TIEMPO REAL
+            const intercambios = parseInt(document.getElementById('statIntercambios')?.textContent || '0');
+            const favoritos = parseInt(document.getElementById('statFavoritos')?.textContent || '0');
+            const habilidades = offeredSkills.length;
+
+            console.log('Renderizando gráfico con valores:', { intercambios, favoritos, habilidades });
+
+            // 🎨 COLORES COORDINADOS (DINÁMICOS - NO HARDCODEADOS)
+            const data = [
+                {
+                    label: 'Int',
+                    value: intercambios,  // DINÁMICO - Lee del DOM
+                    fill: '#2563eb',
+                    highlight: '#1d4ed8'
+                },
+                {
+                    label: 'Fav',
+                    value: favoritos,     // DINÁMICO - Lee del DOM
+                    fill: '#10B981',
+                    highlight: '#059669'
+                },
+                {
+                    label: 'Hab',
+                    value: habilidades,   // DINÁMICO - Lee del array
+                    fill: '#8B5CF6',
+                    highlight: '#7C3AED'
+                }
+            ];
+
+            // Configuración del SVG
+            const width = 320;
+            const height = 200;
+            const maxValue = Math.max(...data.map(d => d.value), 5);
+            const isDarkChart = document.documentElement.classList.contains('dark');
+            const chartTheme = isDarkChart
+                ? {
+                    bgStart: '#111827',
+                    bgEnd: '#111827',
+                    frame: '#374151',
+                    grid: '#253244',
+                    axis: '#4b5563',
+                    label: '#9ca3af',
+                    shadow: 'transparent',
+                    barStroke: 'rgba(255,255,255,0.16)',
+                    shine: 'rgba(255,255,255,0.18)'
+                }
+                : {
+                    bgStart: '#f9fafb',
+                    bgEnd: '#e5e7eb',
+                    frame: '#d1d5db',
+                    grid: '#e5e7eb',
+                    axis: '#9ca3af',
+                    label: '#4b5563',
+                    shadow: 'rgba(0,0,0,0.1)',
+                    barStroke: 'rgba(255,255,255,0.2)',
+                    shine: 'rgba(255,255,255,0.3)'
+                };
+
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            svg.setAttribute('class', 'pixel-chart-svg');
+            svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            svg.style.width = '100%';
+            svg.style.height = 'auto';
+
+            // 🎨 Fondo con gradiente
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+            gradient.setAttribute('id', 'bgGradient');
+            gradient.setAttribute('x1', '0%');
+            gradient.setAttribute('y1', '0%');
+            gradient.setAttribute('x2', '0%');
+            gradient.setAttribute('y2', '100%');
+
+            const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop1.setAttribute('offset', '0%');
+            stop1.setAttribute('style', `stop-color:${chartTheme.bgStart};stop-opacity:1`);
+
+            const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop2.setAttribute('offset', '100%');
+            stop2.setAttribute('style', `stop-color:${chartTheme.bgEnd};stop-opacity:1`);
+
+            gradient.appendChild(stop1);
+            gradient.appendChild(stop2);
+            defs.appendChild(gradient);
+            svg.appendChild(defs);
+
+            // Fondo
+            const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            bgRect.setAttribute('x', '0');
+            bgRect.setAttribute('y', '0');
+            bgRect.setAttribute('width', width);
+            bgRect.setAttribute('height', height);
+            bgRect.setAttribute('fill', 'url(#bgGradient)');
+            bgRect.setAttribute('rx', '8');
+            svg.appendChild(bgRect);
+
+            // Marco
+            const frameRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            frameRect.setAttribute('x', '8');
+            frameRect.setAttribute('y', '12');
+            frameRect.setAttribute('width', width - 16);
+            frameRect.setAttribute('height', height - 24);
+            frameRect.setAttribute('fill', 'transparent');
+            frameRect.setAttribute('stroke', chartTheme.frame);
+            frameRect.setAttribute('stroke-width', '1');
+            frameRect.setAttribute('shape-rendering', 'crispEdges');
+            svg.appendChild(frameRect);
+
+            // Grid horizontal
+            const gridYs = [152, 122, 92, 62, 32];
+            const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            gridGroup.setAttribute('stroke', chartTheme.grid);
+            gridGroup.setAttribute('stroke-width', '1');
+            gridGroup.setAttribute('stroke-dasharray', '2,2');
+            gridGroup.setAttribute('shape-rendering', 'crispEdges');
+
+            gridYs.forEach(gy => {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', '16');
+                line.setAttribute('y1', gy);
+                line.setAttribute('x2', '304');
+                line.setAttribute('y2', gy);
+                gridGroup.appendChild(line);
+            });
+            svg.appendChild(gridGroup);
+
+            // Ejes
+            const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            xAxis.setAttribute('x1', '16');
+            xAxis.setAttribute('y1', '156');
+            xAxis.setAttribute('x2', '304');
+            xAxis.setAttribute('y2', '156');
+            xAxis.setAttribute('stroke', chartTheme.axis);
+            xAxis.setAttribute('stroke-width', '2');
+            xAxis.setAttribute('shape-rendering', 'crispEdges');
+            svg.appendChild(xAxis);
+
+            const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            yAxis.setAttribute('x1', '16');
+            yAxis.setAttribute('y1', '20');
+            yAxis.setAttribute('x2', '16');
+            yAxis.setAttribute('y2', '156');
+            yAxis.setAttribute('stroke', chartTheme.axis);
+            yAxis.setAttribute('stroke-width', '2');
+            yAxis.setAttribute('shape-rendering', 'crispEdges');
+            svg.appendChild(yAxis);
+
+            // Barras con animación
+            const groupOffsets = [48, 128, 208];
+            const barW = 44;
+            const capH = 4;
+            const baseY = 156;
+
+            data.slice(0, 3).forEach((d, i) => {
+                const h = Math.round((d.value / maxValue) * 120);
+                const y = baseY - h;
+                const x = groupOffsets[i];
+                const capY = y - capH;
+
+                const barGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                barGroup.setAttribute('transform', `translate(${x},0)`);
+
+                // Sombra
+                const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                shadow.setAttribute('x', '2');
+                shadow.setAttribute('y', y + 2);
+                shadow.setAttribute('width', barW);
+                shadow.setAttribute('height', h);
+                shadow.setAttribute('fill', chartTheme.shadow);
+                shadow.setAttribute('rx', '4');
+                barGroup.appendChild(shadow);
+
+                // Barra principal
+                const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                bar.setAttribute('x', '0');
+                bar.setAttribute('y', y);
+                bar.setAttribute('width', barW);
+                bar.setAttribute('height', h);
+                bar.setAttribute('fill', d.fill);
+                bar.setAttribute('stroke', chartTheme.barStroke);
+                bar.setAttribute('stroke-width', '1');
+                bar.setAttribute('rx', '4');
+                bar.setAttribute('ry', '4');
+
+                // Animación
+                const animate = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+                animate.setAttribute('attributeName', 'height');
+                animate.setAttribute('from', '0');
+                animate.setAttribute('to', h);
+                animate.setAttribute('dur', '0.8s');
+                animate.setAttribute('fill', 'freeze');
+                bar.appendChild(animate);
+
+                const animateY = document.createElementNS('http://www.w3.org/2000/svg', 'animate');
+                animateY.setAttribute('attributeName', 'y');
+                animateY.setAttribute('from', baseY);
+                animateY.setAttribute('to', y);
+                animateY.setAttribute('dur', '0.8s');
+                animateY.setAttribute('fill', 'freeze');
+                bar.appendChild(animateY);
+
+                barGroup.appendChild(bar);
+
+                // Brillo
+                const shine = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                shine.setAttribute('x', '2');
+                shine.setAttribute('y', y + 2);
+                shine.setAttribute('width', barW - 4);
+                shine.setAttribute('height', Math.max(h / 3, 10));
+                shine.setAttribute('fill', chartTheme.shine);
+                shine.setAttribute('rx', '3');
+                barGroup.appendChild(shine);
+
+                // Tapa superior
+                const cap = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                cap.setAttribute('x', '0');
+                cap.setAttribute('y', capY);
+                cap.setAttribute('width', barW);
+                cap.setAttribute('height', capH);
+                cap.setAttribute('fill', d.highlight);
+                cap.setAttribute('rx', '2');
+                barGroup.appendChild(cap);
+
+                // Etiqueta
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', barW / 2);
+                label.setAttribute('y', '172');
+                label.setAttribute('text-anchor', 'middle');
+                label.setAttribute('fill', chartTheme.label);
+                label.setAttribute('font-size', '12');
+                label.setAttribute('font-weight', '700');
+                label.textContent = d.label;
+                barGroup.appendChild(label);
+
+                // Valor
+                const value = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                value.setAttribute('x', barW / 2);
+                value.setAttribute('y', y - 8);
+                value.setAttribute('text-anchor', 'middle');
+                value.setAttribute('fill', d.fill);
+                value.setAttribute('font-size', '13');
+                value.setAttribute('font-weight', '700');
+                value.textContent = d.value;
+                barGroup.appendChild(value);
+
+                svg.appendChild(barGroup);
+            });
+
+            svgContainer.appendChild(svg);
+        }
+
+        // Función helper para oscurecer colores
+        function darken(hex, amount = 0.3) {
+            try {
+                const c = hex.replace('#', '');
+                const num = parseInt(c, 16);
+                let r = (num >> 16) & 0xff;
+                let g = (num >> 8) & 0xff;
+                let b = num & 0xff;
+                r = Math.max(0, Math.round(r * (1 - amount)));
+                g = Math.max(0, Math.round(g * (1 - amount)));
+                b = Math.max(0, Math.round(b * (1 - amount)));
+                return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+            } catch {
+                return hex;
+            }
+        }
+        // ======================
+        // ESTADÍSTICAS
+        // ======================
+        async function updateStats() {
+            // Actualizar habilidades ofrecidas (ya estaba)
+            document.getElementById('statOfferedSkills').textContent = offeredSkills.length;
+
+            // Cargar estadísticas desde el backend
+            await cargarEstadisticasUsuario();
+            renderPixelChart();
+        }
+
+        async function cargarEstadisticasUsuario() {
+            try {
+                // console.log eliminado
+
+                // 1. Obtener intercambios completados
+                const resIntercambios = await fetch(`${API_BASE}/intercambios/estadisticas/${perfilPersonaId}`);
+                if (resIntercambios.ok) {
+                    const dataIntercambios = await resIntercambios.json();
+                    if (dataIntercambios.success && dataIntercambios.data) {
+                        const totalIntercambios = dataIntercambios.data.total_intercambios_completados || 0;
+                        // console.log eliminado
+                        document.getElementById('statIntercambios').textContent = totalIntercambios;
+                    }
+                }
+
+                // 2. Obtener la lista de favoritos de ESTE usuario (cuántos usuarios tiene agregados)
+                const resFavoritos = await fetch(`${API_BASE}/favoritos/${perfilPersonaId}`);
+                // console.log eliminado
+
+                if (resFavoritos.ok) {
+                    const dataFavoritos = await resFavoritos.json();
+                    // console.log eliminado
+
+                    if (dataFavoritos.success) {
+                        const totalFavoritos = dataFavoritos.total || 0;
+                        // console.log eliminado
+                        document.getElementById('statFavoritos').textContent = totalFavoritos;
+                    }
+                }
+
+            } catch (error) {
+                // console.error eliminado
+                // Mantener valores por defecto en caso de error
+            }
+        }
+
+        // ======================
+        // CONTEXT MENUS
+        // ======================
+        function showSkillContextMenu(x, y, type, index) {
+            contextMenuData = { type, index };
+            const menu = document.getElementById('contextMenu');
+            const backdrop = document.getElementById('contextMenuBackdrop');
+
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            menu.style.display = 'block';
+            backdrop.style.display = 'block';
+        }
+
+        function showImageContextMenu(x, y, index) {
+            imageContextMenuIndex = index;
+            const menu = document.getElementById('imageContextMenu');
+            const backdrop = document.getElementById('contextMenuBackdrop');
+
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            menu.style.display = 'block';
+            backdrop.style.display = 'block';
+        }
+
+        function showProfileContextMenu(x, y) {
+            const menu = document.getElementById('profileContextMenu');
+            const backdrop = document.getElementById('contextMenuBackdrop');
+
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            menu.style.display = 'block';
+            backdrop.style.display = 'block';
+        }
+
+        function closeAllContextMenus() {
+            document.getElementById('contextMenu').style.display = 'none';
+            document.getElementById('imageContextMenu').style.display = 'none';
+            document.getElementById('profileContextMenu').style.display = 'none';
+            document.getElementById('contextMenuBackdrop').style.display = 'none';
+            contextMenuData = { type: null, index: null };
+            imageContextMenuIndex = null;
+        }
+
+        // ======================
+        // UI HELPERS
+        // ======================
+        function showLoading(show) {
+            document.getElementById('loadingState').style.display = show ? 'flex' : 'None';
+            document.getElementById('mainContent').style.display = show ? 'none' : 'Block';
+            document.getElementById('errorState').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorState').style.display = 'flex';
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'none';
+        }
+
+        function setGuardando(saving) {
+            guardando = saving;
+            document.getElementById('savingIndicator').style.display = saving ? 'flex' : 'None';
+        }
+
+        // ======================
+        // MODAL DE SESIÓN EXPIRADA
+        // ======================
+        function showSessionExpiredModal() {
+            const modalHTML = `
+        <div class="custom-modal-overlay" id="sessionModal" style="z-index: 10001;">
+          <div class="custom-modal custom-modal-logout" onclick="event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-icon modal-icon-logout" aria-hidden="true"><svg class="logout-title-svg" xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72"><path fill="#fcea2b" d="M32.294 14.233a3.892 3.892 0 0 1 6.706 0l20.12 40.142a4.5 4.5 0 0 1 .574 1.916a3.885 3.885 0 0 1-3.832 3.88H15.528a3.803 3.803 0 0 1-3.832-3.784a3.45 3.45 0 0 1 .575-1.916z"/><path fill="#d22f27" d="M35.854 39.049c0 1.505-2.728 3.81-2.728 5.991l-.06.188s-.322 1.428-1.39 1.428a1.3 1.3 0 0 1-.772-.325c-.262-.244-.6.13-.547.458c.16 1.31 3.023 5.521 5.17 5.521c2.456 0 4.629-2.945 4.822-3.985c0-.498-.834-.187-.834-.873c0-.582.507-.964.507-1.729a.41.41 0 0 0-.424-.378c-.191 0-.46.134-.674.134c-.82 0-1.007-.746-1.007-1.51c0 0 .154.05.154-1.58a5.9 5.9 0 0 0-1.422-3.493a.55.55 0 0 0-.357-.133c-.19 0-.438.084-.438.286"/><g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M29.548 52.622a8.3 8.3 0 0 0 5.936 2.332a8.84 8.84 0 0 0 6.02-2.332M27.69 50.224s-4.452-4.75-.212-11.025c0 0 .856 1.088 1.508 2.132c.486.56 1.367 1.515 1.833 1.515a1.004 1.004 0 0 0 1.018-1.102v-.382a15.5 15.5 0 0 1 1.526-7.293s2.969 1.611 1.697-6.191c0 0 6.763 4.558 6.509 12.106c0 .551.248.975.847.975c.59 0 2.388-.572 2.388-1.124c.042.043 2.671 5.555-1.06 10.389"/><path d="M33.079 45.118s-.298 1.641-1.488 1.527a2.7 2.7 0 0 1-.61-.245c-.328-.36-.674.084-.624.39a10.96 10.96 0 0 0 3.02 4.472s.93.685.98.685m2.609.063a12.4 12.4 0 0 0 1.547-1.048a6.84 6.84 0 0 0 1.806-2.487a.335.335 0 0 0-.297-.458a.78.78 0 0 1-.496-.458h0s-.1-.305.297-.992a1.6 1.6 0 0 0 .199-.916a.47.47 0 0 0-.645-.267a.96.96 0 0 1-1.29-.42s-.312-.153-.014-1.64a6 6 0 0 0-1.425-4.428a.55.55 0 0 0-.377-.133a.395.395 0 0 0-.417.286"/><path d="M32.294 14.233a3.892 3.892 0 0 1 6.706 0l20.12 40.142a4.5 4.5 0 0 1 .574 1.916a3.885 3.885 0 0 1-3.832 3.88H15.528a3.803 3.803 0 0 1-3.832-3.784a3.45 3.45 0 0 1 .575-1.916z"/></g></svg></div>
+              <div class="modal-title">Sesión no iniciada</div>
+            </div>
+            <div class="modal-message">No has iniciado sesión. necesitas iniciar sesión para acceder a tu perfil.</div>
+            <div class="modal-actions">
+              <button class="modal-btn modal-btn-confirm" onclick="redirectToLogin()" style="width: 100%;">Ir al login</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            // Auto-redirigir después de 3 segundos
+            setTimeout(() => {
+                redirectToLogin();
+            }, 3000);
+        }
+
+        function redirectToLogin() {
+            window.location.href = '../login.html';
+        }
+
+        // ======================
+        // MODAL DE CERRAR SESIÓN
+        // ======================
+        function showLogoutModal() {
+            const modalHTML = `
+        <div class="fixed inset-0 z-[10000] flex items-center justify-center" id="logoutModal" onclick="closeLogoutModal(event)">
+          <div class="relative bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-100 flex flex-col overflow-visible z-10 max-h-[95vh]" onclick="event.stopPropagation()">
+            <div class="h-20 md:h-28 bg-gradient-to-r from-red-50 to-amber-50 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-2 md:pb-3">
+              <button class="absolute top-2 right-2 md:top-3 md:right-3 text-red-800 hover:scale-110 transition-transform z-20 cursor-pointer" aria-label="Cerrar modal" onclick="closeLogoutModal()">
+                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+              <div class="absolute -top-10 md:-top-14 inset-x-0 flex justify-center items-end gap-3 md:gap-5 pointer-events-none">
+                <div class="w-10 h-10 md:w-14 md:h-14 bg-[#ef4444] rounded-xl md:rounded-2xl rotate-[-12deg] shadow-lg flex items-center justify-center border-2 md:border-4 border-white transform translate-y-2">
+                  <svg class="w-5 h-5 md:w-7 md:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                  </svg>
+                </div>
+                <div class="relative w-14 h-14 md:w-20 md:h-20 bg-white rounded-full shadow-2xl flex items-center justify-center border-2 md:border-4 border-white transform -translate-y-1">
+                  <div class="p-1 w-full h-full flex items-center justify-center">
+                    <svg class="logout-title-svg" xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72">
+                      <path fill="#fcea2b" d="M32.294 14.233a3.892 3.892 0 0 1 6.706 0l20.12 40.142a4.5 4.5 0 0 1 .574 1.916a3.885 3.885 0 0 1-3.832 3.88H15.528a3.803 3.803 0 0 1-3.832-3.784a3.45 3.45 0 0 1 .575-1.916z"></path>
+                      <path fill="#d22f27" d="M35.854 39.049c0 1.505-2.728 3.81-2.728 5.991l-.06.188s-.322 1.428-1.39 1.428a1.3 1.3 0 0 1-.772-.325c-.262-.244-.6.13-.547.458c.16 1.31 3.023 5.521 5.17 5.521c2.456 0 4.629-2.945 4.822-3.985c0-.498-.834-.187-.834-.873c0-.582.507-.964.507-1.729a.41.41 0 0 0-.424-.378c-.191 0-.46.134-.674.134c-.82 0-1.007-.746-1.007-1.51c0 0 .154.05.154-1.58a5.9 5.9 0 0 0-1.422-3.493a.55.55 0 0 0-.357-.133c-.19 0-.438.084-.438.286"></path>
+                      <g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                        <path d="M29.548 52.622a8.3 8.3 0 0 0 5.936 2.332a8.84 8.84 0 0 0 6.02-2.332M27.69 50.224s-4.452-4.75-.212-11.025c0 0 .856 1.088 1.508 2.132c.486.56 1.367 1.515 1.833 1.515a1.004 1.004 0 0 0 1.018-1.102v-.382a15.5 15.5 0 0 1 1.526-7.293s2.969 1.611 1.697-6.191c0 0 6.763 4.558 6.509 12.106c0 .551.248.975.847.975c.59 0 2.388-.572 2.388-1.124c.042.043 2.671 5.555-1.06 10.389"></path>
+                        <path d="M33.079 45.118s-.298 1.641-1.488 1.527a2.7 2.7 0 0 1-.61-.245c-.328-.36-.674.084-.624.39a10.96 10.96 0 0 0 3.02 4.472s.93.685.98.685m2.609.063a12.4 12.4 0 0 0 1.547-1.048a6.84 6.84 0 0 0 1.806-2.487a.335.335 0 0 0-.297-.458a.78.78 0 0 1-.496-.458h0s-.1-.305.297-.992a1.6 1.6 0 0 0 .199-.916a.47.47 0 0 0-.645-.267a.96.96 0 0 1-1.29-.42s-.312-.153-.014-1.64a6 6 0 0 0-1.425-4.428a.55.55 0 0 0-.377-.133a.395.395 0 0 0-.417.286"></path>
+                        <path d="M32.294 14.233a3.892 3.892 0 0 1 6.706 0l20.12 40.142a4.5 4.5 0 0 1 .574 1.916a3.885 3.885 0 0 1-3.832 3.88H15.528a3.803 3.803 0 0 1-3.832-3.784a3.45 3.45 0 0 1 .575-1.916z"></path>
+                      </g>
+                    </svg>
+                  </div>
+                </div>
+                <div class="w-10 h-10 md:w-14 md:h-14 bg-[#f97316] rounded-xl md:rounded-2xl rotate-[12deg] shadow-lg flex items-center justify-center border-2 md:border-4 border-white transform translate-y-2">
+                  <svg class="w-5 h-5 md:w-7 md:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="px-4 md:px-8 py-4 md:py-6 text-center">
+              <h3 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">${t('logoutTitle')}</h3>
+              <p class="text-sm md:text-base text-slate-500 mt-2">${t('logoutMessage')}</p>
+            </div>
+            <div class="px-4 md:px-8 pb-4 md:pb-6 bg-slate-50 rounded-b-3xl border-t border-slate-100">
+              <div class="flex gap-3 md:gap-4 justify-center flex-wrap">
+                <button class="flex-1 min-w-[140px] bg-white border-2 border-slate-200 text-slate-700 font-bold py-3 md:py-4 rounded-2xl hover:border-slate-300 hover:bg-slate-50 transition-all active:scale-[0.98]" onclick="closeLogoutModal()">${t('cancel')}</button>
+                <button class="flex-1 min-w-[140px] bg-gradient-to-r from-orange-500 to-red-500 text-white font-black py-3 md:py-4 rounded-2xl shadow-lg shadow-orange-500/30 hover:from-orange-600 hover:to-red-600 hover:shadow-orange-500/40 transition-all active:scale-[0.98]" onclick="confirmLogout()">${t('logoutConfirm')}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        function closeLogoutModal(event) {
+            if (event && event.target.id !== 'logoutModal') return;
+            const modal = document.getElementById('logoutModal');
+            if (modal) {
+                modal.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        function confirmLogout() {
+            // Limpiar localStorage
+            localStorage.removeItem("usuarioId");
+            localStorage.removeItem("token");
+            localStorage.removeItem("usuario");
+
+            // Verificar si estamos dentro de un iframe
+            if (window.parent && window.parent !== window) {
+                // Enviar mensaje al padre para que maneje el cierre de sesión
+                window.parent.postMessage({ type: "LOGOUT" }, "*");
+            } else {
+                // Si no es iframe, redirigir directamente
+                window.location.href = "../login.html";
+            }
+        }
+
+        // Animación de salida del modal
+        const style = document.createElement('style');
+        style.textContent = `
+      @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+    `;
+        document.head.appendChild(style);
+    

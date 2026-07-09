@@ -56,7 +56,7 @@ const translations = {
                     'sidebar.messages': 'Mensajes',
                     'sidebar.sentRequests': 'Solicitudes de trabajo',
                     'sidebar.workOrders': 'Postulaciones',
-                    'sidebar.history': 'Historial de trabajos personales',
+                    'sidebar.history': 'Historial',
                     'sidebar.profile': 'Mi perfil',
                     'sidebar.reports': 'Reportes',
                     'sidebar.logout': 'Cerrar sesión',
