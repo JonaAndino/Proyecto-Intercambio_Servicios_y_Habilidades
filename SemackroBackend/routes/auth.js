@@ -91,11 +91,17 @@ router.post('/registro', async (req, res) => {
         const finalRolNombre = finalRolId === 1 ? 'Administrador' : 'Usuario Estandar';
 
         const [result] = await pool.execute(
-            'INSERT INTO Usuarios (correo, contrasena_hash, id_rol, rol) VALUES (?, ?, ?, ?)',
-            [correo, contrasena_hash, finalRolId, finalRolNombre]
+            'INSERT INTO Usuarios (correo, contrasena_hash) VALUES (?, ?)',
+            [correo, contrasena_hash]
         );
 
         const nuevoUsuarioId = result.insertId;
+
+        // Insertar en la nueva tabla d_usuarios_roles
+        await pool.execute(
+            'INSERT INTO d_usuarios_roles (usuario_id, rol_id) VALUES (?, ?)',
+            [nuevoUsuarioId, finalRolId]
+        );
 
         // 6. CREAR REGISTRO EN TABLA PERSONAS con los datos proporcionados
         // Vamos a dividir el nombre completo en nombre y apellido (solo como aproximación, el primer espacio es el separador)
@@ -619,12 +625,22 @@ router.put('/usuarios/:id_usuario/rol', async (req, res) => {
         const rolNombre = roles[0].nombre_rol;
 
         const [result] = await pool.execute(
-            'UPDATE Usuarios SET id_rol = ?, rol = ? WHERE id_usuario = ?',
-            [id_rol, rolNombre, id_usuario]
+            'SELECT id_usuario FROM Usuarios WHERE id_usuario = ?',
+            [id_usuario]
         );
-        if (result.affectedRows === 0) {
+        if (result.length === 0) {
             return res.status(404).json({ success: false, error: 'Usuario no encontrado.' });
         }
+        
+        // Actualizar en d_usuarios_roles también
+        // Primero verificar si existe
+        const [existeRol] = await pool.execute('SELECT d_usuario_rol FROM d_usuarios_roles WHERE usuario_id = ?', [id_usuario]);
+        if (existeRol.length > 0) {
+            await pool.execute('UPDATE d_usuarios_roles SET rol_id = ? WHERE usuario_id = ?', [id_rol, id_usuario]);
+        } else {
+            await pool.execute('INSERT INTO d_usuarios_roles (usuario_id, rol_id) VALUES (?, ?)', [id_usuario, id_rol]);
+        }
+
         res.status(200).json({ success: true, mensaje: 'Rol de usuario actualizado con éxito.' });
     } catch (error) {
         console.error('Error al actualizar rol del usuario:', error);

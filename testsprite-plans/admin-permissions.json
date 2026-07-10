@@ -1,0 +1,12 @@
+{
+  "projectId": "cbae6fb7-7559-42c8-b759-c7dc08dd7dd2",
+  "type": "frontend",
+  "name": "Admin Flow - Verify admin configurations and permissions management",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the home page or login page." },
+    { "type": "action", "description": "Login as an admin user using email 'fares@gmail.com'. If the password is not known, sign up a new admin user or try common test passwords like '1234' or '123456'." },
+    { "type": "assertion", "description": "User is successfully logged in and redirected to the dashboard." },
+    { "type": "action", "description": "Navigate to the configuration page or open the settings modal where Roles and Permissions are managed." },
+    { "type": "assertion", "description": "The admin should be able to see the list of options, roles, and be able to grant or revoke permissions." }
+  ]
+}

@@ -147,11 +147,13 @@ router.get('/', async (req, res) => {
                 u.correo,
                 u.intentos_fallidos,
                 u.bloqueado_hasta,
-                u.id_rol,
-                u.rol,
+                r.id_rol,
+                r.nombre_rol AS rol,
                 u.motivo_bloqueo
             FROM Usuarios u
             LEFT JOIN Personas p ON p.id_Usuario = u.id_usuario
+            LEFT JOIN d_usuarios_roles ur ON u.id_usuario = ur.usuario_id
+            LEFT JOIN Roles r ON ur.rol_id = r.id_rol
         `);
 
         res.json({

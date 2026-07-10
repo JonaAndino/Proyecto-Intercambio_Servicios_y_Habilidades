@@ -252,7 +252,7 @@ router.delete('/motivos-bloqueo', async (req, res) => {
 // Obtener permisos disponibles en el sistema (GET /configuraciones/permisos)
 router.get('/permisos', async (req, res) => {
     try {
-        const [rows] = await db.execute('SELECT clave_permiso as clave, nombre_permiso as nombre FROM Permisos');
+        const [rows] = await db.execute('SELECT link as clave, nombre FROM opciones ORDER BY orden ASC');
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('Error al obtener permisos:', error.message);
@@ -265,10 +265,10 @@ router.get('/roles', async (req, res) => {
     try {
         const [rows] = await db.execute(`
             SELECT r.id_rol, r.nombre_rol, r.descripcion_rol, r.es_default,
-                   GROUP_CONCAT(p.clave_permiso) as permisos_lista
+                   GROUP_CONCAT(o.link) as permisos_lista
             FROM Roles r
-            LEFT JOIN Roles_Permisos rp ON r.id_rol = rp.id_rol
-            LEFT JOIN Permisos p ON rp.id_permiso = p.id_permiso
+            LEFT JOIN d_roles_opciones ro ON r.id_rol = ro.rol_id
+            LEFT JOIN opciones o ON ro.opcion_id = o.opcion_id
             GROUP BY r.id_rol
         `);
         
@@ -300,8 +300,11 @@ router.post('/roles', async (req, res) => {
         );
         const nuevoId = result.insertId;
         
-        // Asignar el permiso básico predeterminado: VER_HISTORIAL_PERSONAL (id_permiso = 5)
-        await db.execute('INSERT INTO Roles_Permisos (id_rol, id_permiso) VALUES (?, 5)', [nuevoId]);
+        // Asignar el permiso básico predeterminado: VER_HISTORIAL_PERSONAL
+        const [opcion] = await db.execute('SELECT opcion_id FROM opciones WHERE link = "VER_HISTORIAL_PERSONAL" LIMIT 1');
+        if (opcion.length > 0) {
+            await db.execute('INSERT INTO d_roles_opciones (rol_id, opcion_id) VALUES (?, ?)', [nuevoId, opcion[0].opcion_id]);
+        }
         
         res.json({ success: true, message: 'Rol creado correctamente', id_rol: nuevoId });
     } catch (error) {
@@ -369,16 +372,16 @@ router.put('/roles/:id/permisos', async (req, res) => {
     }
 
     try {
-        // Obtener IDs de los permisos correspondientes
-        const [permisosDB] = await db.execute('SELECT id_permiso, clave_permiso FROM Permisos');
+        // Obtener IDs de las opciones correspondientes
+        const [opcionesDB] = await db.execute('SELECT opcion_id, link FROM opciones');
         
         // Empezar actualización de permisos
-        await db.execute('DELETE FROM Roles_Permisos WHERE id_rol = ?', [id]);
+        await db.execute('DELETE FROM d_roles_opciones WHERE rol_id = ?', [id]);
 
         for (let clave of permisos) {
-            const p = permisosDB.find(pdb => pdb.clave_permiso === clave);
-            if (p) {
-                await db.execute('INSERT INTO Roles_Permisos (id_rol, id_permiso) VALUES (?, ?)', [id, p.id_permiso]);
+            const op = opcionesDB.find(o => o.link === clave);
+            if (op) {
+                await db.execute('INSERT INTO d_roles_opciones (rol_id, opcion_id) VALUES (?, ?)', [id, op.opcion_id]);
             }
         }
 

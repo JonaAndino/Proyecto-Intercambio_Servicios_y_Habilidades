@@ -6003,17 +6003,45 @@
 
             document.getElementById('permisosRoleNombre').textContent = `Permisos para "${rol.nombre_rol}"`;
             
+            const getIconoOpcion = (clave) => {
+                const map = {
+                    'descubrir': 'mdi:compass-outline',
+                    'perfil': 'mdi:account-outline',
+                    'ordenesTrabajo': 'mdi:briefcase-outline',
+                    'mensajes': 'mdi:message-outline',
+                    'solicitudesEnviadas': 'mdi:file-document-outline',
+                    'favoritos': 'mdi:heart-outline',
+                    'historial': 'mdi:history',
+                    'reportes': 'mdi:chart-bar',
+                    'VER_METRICAS': 'mdi:chart-pie',
+                    'MODERAR_USUARIOS': 'mdi:shield-account-outline',
+                    'GESTIONAR_CONFIGURACION': 'mdi:cog-outline',
+                    'ACEPTAR_INTERCAMBIOS': 'mdi:handshake-outline',
+                    'VER_HISTORIAL_PERSONAL': 'mdi:history',
+                    'VER_DIRECTORIO': 'mdi:folder-account-outline',
+                    'CREAR_CUENTAS': 'mdi:account-plus-outline',
+                    'EDITAR_USUARIOS': 'mdi:account-edit-outline',
+                    'ASIGNAR_ROLES_PERMISOS': 'mdi:shield-key-outline',
+                    'VER_SOLICITUDES_VERIFICACION': 'mdi:check-decagram-outline'
+                };
+                return map[clave] || 'mdi:checkbox-marked-circle-outline';
+            };
+
             const container = document.getElementById('permisosCheckboxesContainer');
             if (container) {
                 container.innerHTML = todosLosPermisosDisponibles.map(p => {
                     const activo = rol.permisos && rol.permisos.includes(p.clave);
+                    const iconoSVG = getIconoOpcion(p.clave);
                     return `
                         <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-150 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-900/30 hover:bg-slate-50 dark:hover:bg-gray-900/50 transition-colors cursor-pointer">
                             <input type="checkbox" value="${p.clave}" ${activo ? 'checked' : ''}
                                 class="permiso-checkbox mt-1 rounded text-blue-600 focus:ring-blue-500/20 w-4 h-4 cursor-pointer">
-                            <div>
-                                <span class="block text-sm font-semibold text-slate-800 dark:text-white">${escapeHtml(p.clave)}</span>
-                                <span class="block text-xs text-gray-400 dark:text-gray-500">${escapeHtml(p.nombre)}</span>
+                            <div class="mt-0.5 text-gray-500 dark:text-gray-400">
+                                <span class="iconify text-xl" data-icon="${iconoSVG}"></span>
+                            </div>
+                            <div class="flex-1">
+                                <span class="block text-sm font-semibold text-slate-800 dark:text-white">${escapeHtml(p.nombre)}</span>
+                                <span class="block text-xs text-gray-400 dark:text-gray-500 font-mono mt-0.5 opacity-80">${escapeHtml(p.clave)}</span>
                             </div>
                         </label>
                     `;

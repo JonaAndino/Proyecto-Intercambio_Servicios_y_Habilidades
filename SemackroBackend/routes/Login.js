@@ -171,37 +171,47 @@ router.get('/login/rol/correo/:correo', async (req, res) => {
 
         const id_usuario = idResult[0].id_usuario;
 
-        // Ahora llamar al procedimiento que devuelve el rol completo
-        const [rowsRol] = await pool.execute('CALL GetUsuarioRolCompleto(?)', [id_usuario]);
-        const rolResult = Array.isArray(rowsRol) && rowsRol.length > 0 ? rowsRol[0] : rowsRol;
+        // Ahora obtener el rol desde d_usuarios_roles (asumiendo que tiene al menos un rol)
+        const [rowsRol] = await pool.execute(`
+            SELECT r.id_rol, r.nombre_rol as rol
+            FROM d_usuarios_roles dur
+            JOIN Roles r ON dur.rol_id = r.id_rol
+            WHERE dur.usuario_id = ?
+            LIMIT 1
+        `, [id_usuario]);
+        const rolResult = Array.isArray(rowsRol) && rowsRol.length > 0 ? rowsRol[0] : null;
 
-        if (!rolResult || rolResult.length === 0) {
+        if (!rolResult) {
             return res.status(404).json({ error: 'No se encontró rol para el usuario.' });
         }
 
-        const id_rol = rolResult[0].id_rol;
+        const id_rol = rolResult.id_rol;
 
-        // Obtener los permisos asociados al rol del usuario
+        // Obtener las opciones de menú y mapear sus links como permisos para compatibilidad con el frontend
+        let opciones = [];
         let permisos = [];
         try {
-            const [permisosRows] = await pool.execute(
-                `SELECT p.clave_permiso 
-                 FROM Roles_Permisos rp 
-                 JOIN Permisos p ON rp.id_permiso = p.id_permiso 
-                 WHERE rp.id_rol = ?`,
+            const [opcionesRows] = await pool.execute(
+                `SELECT o.opcion_id as id_opcion, o.nombre as nombre_opcion, o.link, o.orden 
+                 FROM d_roles_opciones ro 
+                 JOIN opciones o ON ro.opcion_id = o.opcion_id 
+                 WHERE ro.rol_id = ? ORDER BY o.orden ASC`,
                 [id_rol]
             );
-            permisos = permisosRows.map(p => p.clave_permiso);
-        } catch (permErr) {
-            console.warn('No se pudieron obtener permisos del rol:', permErr.message);
+            opciones = opcionesRows;
+            // Usamos 'link' como la antigua 'clave_permiso'
+            permisos = opcionesRows.map(o => o.link).filter(Boolean);
+        } catch (opcErr) {
+            console.warn('No se pudieron obtener opciones/permisos del rol:', opcErr.message);
         }
 
         res.status(200).json({
             id_usuario: Number(id_usuario),
             correo,
-            rol: rolResult[0].rol,
+            rol: rolResult.rol,
             id_rol: id_rol,
             permisos: permisos,
+            opciones: opciones,
             raw: { idResult, rolResult }
         });
 

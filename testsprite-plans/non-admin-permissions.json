@@ -1,0 +1,12 @@
+{
+  "projectId": "cbae6fb7-7559-42c8-b759-c7dc08dd7dd2",
+  "type": "frontend",
+  "name": "Standard User Flow - Verify restrictions on admin configurations",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the home page or login page." },
+    { "type": "action", "description": "Login as a standard user or sign up a brand new user with default role." },
+    { "type": "assertion", "description": "User is successfully logged in and redirected to the dashboard." },
+    { "type": "action", "description": "Attempt to find or access the system configurations, roles, or permissions page." },
+    { "type": "assertion", "description": "The standard user should NOT see the admin configurations and should be restricted from managing roles or permissions." }
+  ]
+}
