@@ -351,6 +351,12 @@ router.delete('/roles/:id', async (req, res) => {
             return res.status(400).json({ success: false, error: 'No se puede eliminar un rol por defecto del sistema' });
         }
 
+        // Verificar si hay usuarios asignados a este rol
+        const [users] = await db.execute('SELECT COUNT(*) as count FROM d_usuarios_roles WHERE rol_id = ?', [id]);
+        if (users[0].count > 0) {
+            return res.status(400).json({ success: false, error: `No se puede eliminar el rol porque hay ${users[0].count} usuario(s) asignado(s) a él. Reasigne a estos usuarios antes de eliminar el rol.` });
+        }
+
         await db.execute('DELETE FROM Roles WHERE id_rol = ?', [id]);
         res.json({ success: true, message: 'Rol eliminado correctamente' });
     } catch (error) {
@@ -453,6 +459,65 @@ router.delete('/variables/:clave', async (req, res) => {
     } catch (error) {
         console.error('Error al eliminar variable de entorno:', error.message);
         res.status(500).json({ success: false, error: 'Error al eliminar la variable' });
+    }
+});
+
+// ====================================================
+// ENDPOINTS PARA PERMISOS INDIVIDUALES DE USUARIOS
+// ====================================================
+
+// Obtener permisos individuales de un usuario
+router.get('/usuarios/:id/permisos', async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ success: false, message: 'ID no válido' });
+
+    try {
+        const [rows] = await db.execute(
+            `SELECT o.link, uo.concedido
+             FROM d_usuarios_opciones uo
+             JOIN opciones o ON uo.opcion_id = o.opcion_id
+             WHERE uo.usuario_id = ?`,
+            [id]
+        );
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('Error al obtener permisos de usuario:', error.message);
+        res.status(500).json({ success: false, error: 'Error al obtener permisos' });
+    }
+});
+
+// Actualizar permisos individuales de un usuario
+router.put('/usuarios/:id/permisos', async (req, res) => {
+    const id = parseInt(req.params.id);
+    const { permisos } = req.body; // array de objetos: { link: 'mensajes', concedido: true/false }
+
+    if (isNaN(id)) return res.status(400).json({ success: false, message: 'ID no válido' });
+    if (!Array.isArray(permisos)) return res.status(400).json({ success: false, message: 'Formato incorrecto' });
+
+    try {
+        // Obtener map de opciones para convertir link a opcion_id
+        const [opcionesDB] = await db.execute('SELECT opcion_id, link FROM opciones');
+        const mapOpciones = new Map();
+        opcionesDB.forEach(o => mapOpciones.set(o.link, o.opcion_id));
+
+        // Borramos todos los permisos individuales actuales del usuario
+        await db.execute('DELETE FROM d_usuarios_opciones WHERE usuario_id = ?', [id]);
+
+        // Insertamos los nuevos
+        for (let p of permisos) {
+            const opcion_id = mapOpciones.get(p.link);
+            if (opcion_id) {
+                await db.execute(
+                    'INSERT INTO d_usuarios_opciones (usuario_id, opcion_id, concedido) VALUES (?, ?, ?)',
+                    [id, opcion_id, p.concedido ? 1 : 0]
+                );
+            }
+        }
+
+        res.json({ success: true, message: 'Permisos de usuario actualizados correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar permisos de usuario:', error.message);
+        res.status(500).json({ success: false, error: 'Error al guardar permisos de usuario' });
     }
 });
 

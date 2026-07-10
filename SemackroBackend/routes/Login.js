@@ -191,18 +191,46 @@ router.get('/login/rol/correo/:correo', async (req, res) => {
         let opciones = [];
         let permisos = [];
         try {
-            const [opcionesRows] = await pool.execute(
+            // 1. Obtener opciones del ROL
+            const [opcionesRolRows] = await pool.execute(
                 `SELECT o.opcion_id as id_opcion, o.nombre as nombre_opcion, o.link, o.orden 
                  FROM d_roles_opciones ro 
                  JOIN opciones o ON ro.opcion_id = o.opcion_id 
-                 WHERE ro.rol_id = ? ORDER BY o.orden ASC`,
+                 WHERE ro.rol_id = ?`,
                 [id_rol]
             );
-            opciones = opcionesRows;
+            
+            // 2. Obtener excepciones del USUARIO INDIVIDUAL
+            const [opcionesUsuarioRows] = await pool.execute(
+                `SELECT o.opcion_id as id_opcion, o.nombre as nombre_opcion, o.link, o.orden, uo.concedido
+                 FROM d_usuarios_opciones uo
+                 JOIN opciones o ON uo.opcion_id = o.opcion_id
+                 WHERE uo.usuario_id = ?`,
+                [id_usuario]
+            );
+
+            // 3. Mezclar priorizando excepciones individuales
+            const opcionesMap = new Map();
+            opcionesRolRows.forEach(o => opcionesMap.set(o.id_opcion, o));
+            
+            opcionesUsuarioRows.forEach(uo => {
+                if (uo.concedido) {
+                    opcionesMap.set(uo.id_opcion, {
+                        id_opcion: uo.id_opcion,
+                        nombre_opcion: uo.nombre_opcion,
+                        link: uo.link,
+                        orden: uo.orden
+                    });
+                } else {
+                    opcionesMap.delete(uo.id_opcion); // Si concedido es false, quitamos el permiso (incluso si el rol lo daba)
+                }
+            });
+
+            opciones = Array.from(opcionesMap.values()).sort((a, b) => (a.orden || 0) - (b.orden || 0));
             // Usamos 'link' como la antigua 'clave_permiso'
-            permisos = opcionesRows.map(o => o.link).filter(Boolean);
+            permisos = opciones.map(o => o.link).filter(Boolean);
         } catch (opcErr) {
-            console.warn('No se pudieron obtener opciones/permisos del rol:', opcErr.message);
+            console.warn('No se pudieron obtener opciones/permisos combinados:', opcErr.message);
         }
 
         res.status(200).json({

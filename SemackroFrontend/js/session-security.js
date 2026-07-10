@@ -137,4 +137,20 @@
 
     // Iniciar timer en carga
     reiniciarTimerInactividad();
+
+    // 6. Aplicar restricciones dinámicas en la interfaz (Sidebar)
+    document.addEventListener("DOMContentLoaded", () => {
+        if (window.Permisos) {
+            const permisos = window.Permisos._obtenerPermisos();
+            // Si hay permisos cargados, ocultamos los items de navegación que no estén en la lista
+            if (permisos.length > 0) {
+                document.querySelectorAll('.sidebar-item[data-view]').forEach(item => {
+                    const viewName = item.getAttribute('data-view');
+                    if (viewName && !permisos.includes(viewName)) {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+        }
+    });
 })();
