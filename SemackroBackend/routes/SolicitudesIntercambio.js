@@ -35,8 +35,7 @@ router.post('/enviar', async (req, res) => {
              LEFT JOIN conversaciones c ON c.id_solicitud = s.id_solicitud
              WHERE ((s.id_persona_solicitante = ? AND s.id_persona_receptor = ?) 
                 OR (s.id_persona_solicitante = ? AND s.id_persona_receptor = ?))
-             AND s.estado IN ('Pendiente', 'Aceptada')
-             AND c.id_conversacion IS NOT NULL`,
+             AND s.estado IN ('Pendiente', 'Aceptada')`,
             [solicitanteId, receptorId, receptorId, solicitanteId]
         );
 
@@ -436,8 +435,7 @@ router.post('/enviar-detallada', async (req, res) => {
              LEFT JOIN conversaciones c ON c.id_solicitud = s.id_solicitud
              WHERE ((s.id_persona_solicitante = ? AND s.id_persona_receptor = ?) 
                 OR (s.id_persona_solicitante = ? AND s.id_persona_receptor = ?))
-             AND s.estado IN ('Pendiente', 'Aceptada')
-             AND c.id_conversacion IS NOT NULL`,
+             AND s.estado IN ('Pendiente', 'Aceptada')`,
             [solicitanteId, receptorId, receptorId, solicitanteId]
         );
 
