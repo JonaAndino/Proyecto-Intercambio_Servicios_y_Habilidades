@@ -4181,6 +4181,12 @@
                 perfilPersonaId = personaDB.id_Perfil_Persona;
 
                 // === PRIVACY CHECK START ===
+                const urlParams = new URLSearchParams(window.location.search);
+                const paramUserId = urlParams.get('usuario_id');
+                const usuarioIdFromStorage = sessionStorage.getItem('usuarioId') || localStorage.getItem('usuarioId');
+                const usuarioIdPropio = usuarioIdFromStorage ? parseInt(usuarioIdFromStorage, 10) : null;
+                const isDifferentUser = !!(paramUserId && parseInt(paramUserId, 10) !== usuarioIdPropio);
+
                 if (isDifferentUser && (personaDB.perfil_publico_Persona == 0 || personaDB.perfil_publico_Persona === false)) {
                     if (window.parent && window.parent.Toast) {
                         window.parent.Toast.error('Perfil Privado', 'Este usuario tiene su perfil configurado como privado.');
