@@ -1558,108 +1558,37 @@ async function aplicarFiltros() {
       );
     });
 
-    // 3. Procesar usuarios en lotes para no saturar la base de datos
-    const resultados = await processInBatches(personasFiltradas, 5, async (persona) => {
-      try {
-        const estadoVerificacion = await obtenerEstadoVerificacionPerfil(
-          persona.id_Perfil_Persona,
-          persona.estado_verificacion || persona.estadoVerificacion || persona.verificado,
-        );
-
-        if (!esPerfilVerificado(estadoVerificacion)) {
-          return null;
-        }
-
-        const [resHabilidades, resDireccion] = await Promise.all([
-          fetch(
-            `${API_BASE}/habilidades/persona/${persona.id_Perfil_Persona}`,
-          ).catch(() => null),
-          fetch(
-            `${API_BASE}/direcciones/persona/${persona.id_Perfil_Persona}`,
-          ).catch(() => null),
-        ]);
-
-        let habilidades = [];
-        if (resHabilidades && resHabilidades.ok) {
-          const dataHabilidades = await resHabilidades.json();
-          if (dataHabilidades.success && dataHabilidades.data) {
-            habilidades = dataHabilidades.data
-              .filter((h) => h.tipoEstado_Habilidad === "Ofrece")
-              .map((h) => h.nombre_Habilidad)
-              .slice(0, 4);
-          }
-        }
-
-        let location = "Sin ubicación";
-        if (resDireccion && resDireccion.ok) {
-          const dataDireccion = await resDireccion.json();
-          if (dataDireccion.success && dataDireccion.data) {
-            const direccion = Array.isArray(dataDireccion.data)
-              ? dataDireccion.data[0]
-              : dataDireccion.data;
-
-            const ciudad = direccion.ciudad_Direccion || direccion.ciudad || "";
-            const pais = direccion.pais_Direccion || direccion.pais || "";
-            location =
-              [ciudad, pais].filter(Boolean).join(", ") || "Sin ubicación";
-          }
-        }
-
-        // Obtener estadísticas reales
-        let rating = 0;
-        let exchanges = 0;
-
-        try {
-          const resEstadisticas = await fetch(
-            `${API_BASE}/intercambios/estadisticas/${persona.id_Perfil_Persona}`,
-          );
-          if (resEstadisticas.ok) {
-            const dataEstadisticas = await resEstadisticas.json();
-            if (dataEstadisticas.success && dataEstadisticas.data) {
-              rating = dataEstadisticas.data.promedio_calificacion || 0;
-              exchanges =
-                dataEstadisticas.data.total_intercambios_completados || 0;
-            }
-          }
-        } catch (e) {
-          console.error("Error al obtener estadísticas:", e);
-        }
-
+    // 3. Mapeo RÁPIDO (Carga Lazy)
+    let usuariosFiltrados = personasFiltradas
+      .filter((persona) => {
+        const estadoVerif = persona.estado_verificacion || persona.estadoVerificacion || persona.verificado;
+        return esPerfilVerificado(estadoVerif);
+      })
+      .map((persona) => {
         return {
           id: persona.id_Perfil_Persona,
           usuarioId: persona.id_Usuario,
-          name:
-            `${persona.nombre_Persona || ""} ${persona.apellido_Persona || ""}`.trim() ||
-            "Usuario",
-          profession:
-            persona.descripcionPerfil_Persona || "Usuario SEMACKRO",
-          genero:
-            persona.genero_Persona || persona.genero || persona.genero_Usuario || "",
-          availability:
-            persona.disponibilidad_Persona || persona.disponibilidad || "",
-          location: location,
-          skills: habilidades,
+          name: `${persona.nombre_Persona || ""} ${persona.apellido_Persona || ""}`.trim() || "Usuario",
+          profession: persona.descripcionPerfil_Persona || "Usuario SEMACKRO",
+          genero: persona.genero_Persona || persona.genero || persona.genero_Usuario || "",
+          availability: persona.disponibilidad_Persona || persona.disponibilidad || "",
+          location: persona.location_resumida || "Sin ubicación",
+          location_sort: persona.location_resumida || "Sin ubicación",
+          skills: [], 
+          skills_text: persona.habilidades_nombres || "",
+          skills_count: Number(persona.habilidades_count || 0),
           bio: persona.descripcionPerfil_Persona || "Sin descripción",
-          experienceYears: Number(
-            persona.anios_experiencia || persona.anios_experiencia_Persona || 0,
-          ),
-          rating: rating,
-          exchanges: exchanges,
+          experienceYears: Number(persona.anios_experiencia || persona.anios_experiencia_Persona || 0),
+          rating: 0,
+          exchanges: 0,
           online: Math.random() > 0.5,
           avatar: persona.imagenUrl_Persona || null,
           avatarInitials: (persona.nombre_Persona || "U")[0].toUpperCase(),
-          estadoVerificacion,
+          urlFondoBanner: persona.url_fondo_banner || null,
+          estadoVerificacion: persona.estado_verificacion || persona.estadoVerificacion || persona.verificado,
+          detailsFetched: false
         };
-      } catch (error) {
-        console.error(
-          `Error al procesar persona ${persona.id_Perfil_Persona}:`,
-          error,
-        );
-        return null;
-      }
-    });
-
-    let usuariosFiltrados = resultados.filter((u) => u !== null);
+      });
 
     // 4. Aplicar filtro de búsqueda si existe
     if (currentSearchFilter && currentSearchFilter.trim() !== "") {
@@ -1668,9 +1597,7 @@ async function aplicarFiltros() {
       usuariosFiltrados = usuariosFiltrados.filter((user) => {
         const matchName = user.name.toLowerCase().includes(searchTerm);
         const matchLocation = user.location.toLowerCase().includes(searchTerm);
-        const matchSkills = user.skills.some((skill) =>
-          skill.toLowerCase().includes(searchTerm),
-        );
+        const matchSkills = (user.skills_text || "").toLowerCase().includes(searchTerm);
         const matchBio = user.bio.toLowerCase().includes(searchTerm);
 
         return matchName || matchLocation || matchSkills || matchBio;
@@ -1791,8 +1718,7 @@ async function cargarUsuariosReales() {
     usuariosReales = personasFiltradas
       .filter((persona) => {
         const estadoVerif = persona.estado_verificacion || persona.estadoVerificacion || persona.verificado;
-        const norm = normalizarEstadoVerificacion(estadoVerif);
-        return norm === "aprobado" || norm === "verificado";
+        return esPerfilVerificado(estadoVerif);
       })
       .map((persona) => {
         return {
@@ -1804,6 +1730,7 @@ async function cargarUsuariosReales() {
           availability: persona.disponibilidad_Persona || persona.disponibilidad || "",
           location: persona.location_resumida || "Sin ubicación",
           location_sort: persona.location_resumida || "Sin ubicación",
+          skills_text: persona.habilidades_nombres || "",
           skills: [], // Lazy
           skills_count: Number(persona.habilidades_count || 0),
           bio: persona.descripcionPerfil_Persona || "Sin descripción",

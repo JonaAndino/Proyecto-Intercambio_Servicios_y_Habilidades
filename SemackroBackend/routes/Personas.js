@@ -151,6 +151,7 @@ router.get('/', async (req, res) => {
                 r.nombre_rol AS rol,
                 u.motivo_bloqueo,
                 (SELECT COUNT(*) FROM Habilidades_Ofrecidas_Necesitadas hp WHERE hp.id_Perfil_Persona = p.id_Perfil_Persona AND hp.tipoEstado_Habilidad = 'Ofrece') AS habilidades_count,
+                (SELECT GROUP_CONCAT(hp2.nombre_Habilidad SEPARATOR ', ') FROM Habilidades_Ofrecidas_Necesitadas hp2 WHERE hp2.id_Perfil_Persona = p.id_Perfil_Persona AND hp2.tipoEstado_Habilidad = 'Ofrece') AS habilidades_nombres,
                 (SELECT CONCAT(IFNULL(d.ciudad_Direccion, ''), IF(d.ciudad_Direccion IS NOT NULL AND d.pais_Direccion IS NOT NULL, ', ', ''), IFNULL(d.pais_Direccion, '')) FROM Direcciones d WHERE d.id_Perfil_Persona = p.id_Perfil_Persona LIMIT 1) AS location_resumida,
                 (SELECT sv.estado FROM solicitud_verificacion sv WHERE sv.id_Perfil = p.id_Perfil_Persona ORDER BY sv.fecha_solicitud DESC LIMIT 1) AS estado_verificacion
             FROM Usuarios u
@@ -503,6 +504,7 @@ router.get('/categoria/:idCategoria', async (req, res) => {
                 r.nombre_rol AS rol,
                 u.motivo_bloqueo,
                 (SELECT COUNT(*) FROM Habilidades_Ofrecidas_Necesitadas hp WHERE hp.id_Perfil_Persona = p.id_Perfil_Persona AND hp.tipoEstado_Habilidad = 'Ofrece') AS habilidades_count,
+                (SELECT GROUP_CONCAT(hp2.nombre_Habilidad SEPARATOR ', ') FROM Habilidades_Ofrecidas_Necesitadas hp2 WHERE hp2.id_Perfil_Persona = p.id_Perfil_Persona AND hp2.tipoEstado_Habilidad = 'Ofrece') AS habilidades_nombres,
                 (SELECT CONCAT(IFNULL(d.ciudad_Direccion, ''), IF(d.ciudad_Direccion IS NOT NULL AND d.pais_Direccion IS NOT NULL, ', ', ''), IFNULL(d.pais_Direccion, '')) FROM Direcciones d WHERE d.id_Perfil_Persona = p.id_Perfil_Persona LIMIT 1) AS location_resumida,
                 (SELECT sv.estado FROM solicitud_verificacion sv WHERE sv.id_Perfil = p.id_Perfil_Persona ORDER BY sv.fecha_solicitud DESC LIMIT 1) AS estado_verificacion
             FROM Personas p
