@@ -520,12 +520,14 @@ router.post('/enviar', async (req, res) => {
                 // Emitir evento socket al destinatario
                 try {
                     const io = getIo();
+                    console.log('==== SOCKET EMIT DEBUG ====', { ioExists: !!io, personaRecibeId, conversacionId });
                     if (io && personaRecibeId) {
                         io.to(`user_${personaRecibeId}`).emit('nuevo_mensaje', {
                             ...mensaje,
                             conversacionId: conversacionId,
                             senderName: req.body.senderName || ''
                         });
+                        console.log('Emitiendo a sala:', `user_${personaRecibeId}`);
                     }
                 } catch (e) {
                     console.warn('Error emitiendo nuevo_mensaje (directo):', e);

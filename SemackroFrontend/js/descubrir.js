@@ -5542,9 +5542,12 @@ function inicializarSocketMensajeria() {
 
     // Escuchar nuevos mensajes globales
     window._mensajeriaSocket.on('nuevo_mensaje', (mensaje) => {
+        console.log('==== NUEVO MENSAJE SOCKET RECIBIDO ====', mensaje);
         const enVistaMensajes = window.currentView === 'mensajes';
         const conversacionActivaId = window.conversacionActivaDashboard ? window.conversacionActivaDashboard.id_conversacion : null;
         const esMismaConversacion = conversacionActivaId == mensaje.conversacionId;
+
+        console.log('Condiciones:', { enVistaMensajes, conversacionActivaId, esMismaConversacion });
 
         // Actualizar la lista lateral de conversaciones de forma pasiva
         if (enVistaMensajes && typeof cargarConversacionesDashboard === 'function') {
