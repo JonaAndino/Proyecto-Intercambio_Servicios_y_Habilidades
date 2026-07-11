@@ -583,6 +583,7 @@ router.post('/enviar', async (req, res) => {
         // Emitir evento socket al destinatario o grupo
         try {
             const io = getIo();
+            console.log('==== SOCKET EMIT DEBUG (SP/Grupo) ====', { ioExists: !!io, mensajeInfo: mensaje, conversacionId, personaEnviaId });
             if (io && mensaje && mensaje.id_mensaje) {
                 // Obtener todos los participantes excepto el emisor
                 const [parts] = await pool.query(
@@ -590,15 +591,20 @@ router.post('/enviar', async (req, res) => {
                     [conversacionId, personaEnviaId]
                 );
                 let receptores = parts.map(p => p.id_persona);
+                console.log('Miembros de la conversacion (BD):', receptores);
 
                 // Fallback por si la tabla participantes está vacía
                 if (receptores.length === 0 && mensaje.id_persona_recibe) {
                     receptores.push(mensaje.id_persona_recibe);
+                    console.log('Fallback: usando mensaje.id_persona_recibe', mensaje.id_persona_recibe);
                 }
                 
                 if (receptores.length === 0 && personaRecibeId) {
                     receptores.push(personaRecibeId);
+                    console.log('Fallback: usando personaRecibeId (payload)', personaRecibeId);
                 }
+
+                console.log('Receptores finales a notificar:', receptores);
 
                 receptores.forEach(recibeId => {
                     io.to(`user_${recibeId}`).emit('nuevo_mensaje', {
@@ -609,6 +615,7 @@ router.post('/enviar', async (req, res) => {
                         id_persona_envia: personaEnviaId,
                         senderName: req.body.senderName || 'Nuevo mensaje'
                     });
+                    console.log(`Emitido evento nuevo_mensaje a sala user_${recibeId}`);
                 });
             }
         } catch (e) {

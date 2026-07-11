@@ -5532,6 +5532,10 @@ function inicializarSocketMensajeria() {
     const backendUrl = window.APP_CONFIG?.BACKEND_URL || 'http://localhost:3001';
     window._mensajeriaSocket = io(backendUrl, { transports: ['websocket', 'polling'] });
 
+    window._mensajeriaSocket.onAny((eventName, ...args) => {
+        console.log(`[SOCKET EVENT] ${eventName}:`, args);
+    });
+
     window._mensajeriaSocket.on('connect', () => {
       // Registrar el usuario en su room personal para recibir eventos directos
       const userId = localStorage.getItem('id_usuario') || localStorage.getItem('usuarioId');
