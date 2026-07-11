@@ -4557,9 +4557,178 @@ async function mostrarFormularioSolicitudDetallada(
       btnConfirmar.disabled = false;
     };
 
-    // Mostrar el modal
-    document.getElementById('solicitudIntercambioModalRoot').style.display = 'flex';
-    setTimeout(() => { document.getElementById('solicitudIntercambioCard').classList.remove('scale-95', 'opacity-0'); }, 10);
+    console.log("-> Creando el modal dinámico...");
+    
+    // 1. Eliminar cualquier modal anterior si existe
+    const oldModal = document.getElementById('modalSolicitudDinamicoRoot');
+    if (oldModal) {
+        oldModal.remove();
+    }
+    
+    // 2. Crear el contenedor raíz del modal
+    const modalRoot = document.createElement('div');
+    modalRoot.id = 'modalSolicitudDinamicoRoot';
+    modalRoot.className = 'fixed inset-0 z-[999999] flex items-center justify-center p-4 overflow-y-auto transition-opacity duration-300 opacity-0';
+    // Fondo transparente como solicitó el usuario
+    modalRoot.style.cssText = 'background-color: transparent;';
+    
+    // 3. Definir el HTML de la tarjeta (alturas reducidas)
+    modalRoot.innerHTML = `
+        <div class="fixed inset-0" onclick="document.getElementById('modalSolicitudDinamicoRoot').classList.remove('opacity-100'); setTimeout(() => document.getElementById('modalSolicitudDinamicoRoot').remove(), 300)"></div>
+        <div id="solicitudIntercambioCard" class="relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-2xl shadow-[0_0_50px_rgba(0,0,0,0.2)] dark:shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-slate-200 dark:border-gray-700 flex flex-col z-10 transition-all transform scale-95 duration-300 text-left overflow-hidden">
+            <div class="relative p-5 sm:p-6 flex-1 overflow-y-auto" style="max-height: calc(100vh - 4rem);">
+                <!-- Header Decorativo (reducido a h-20) -->
+                <div class="absolute top-0 left-0 w-full h-20 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-t-3xl -z-10 overflow-hidden">
+                    <div class="absolute -top-12 -right-12 w-32 h-32 bg-blue-100 dark:bg-blue-900/20 rounded-full mix-blend-multiply filter blur-xl opacity-70"></div>
+                </div>
+                <button onclick="document.getElementById('modalSolicitudDinamicoRoot').classList.remove('opacity-100'); setTimeout(() => document.getElementById('modalSolicitudDinamicoRoot').remove(), 300)" class="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-gray-700 transition-colors text-slate-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-1 mt-2" data-i18n="requestModal.title">Solicitud de Intercambio</h3>
+                <p class="text-sm text-slate-600 dark:text-gray-400 mb-5 font-medium">
+                    <span data-i18n="requestModal.proposeTo">Estás proponiendo un intercambio a</span> 
+                    <strong class="text-blue-600 dark:text-blue-400">${escapeHtml(nombreReceptor)}</strong>
+                </p>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.skillOffered">Habilidad que ofreces</label>
+                        <select id="habilidadOfrecidaDinamica" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-700 dark:text-gray-200 outline-none transition-all">
+                            <option value="">${t("requestModal.selectSkill")}</option>
+                            ${opcionesOfrecidas}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.skillInterested">Habilidad que te interesa</label>
+                        <select id="habilidadSolicitadaDinamica" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-700 dark:text-gray-200 outline-none transition-all">
+                            <option value="">${t("requestModal.selectSkill")}</option>
+                            ${opcionesCategorias}
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.proposedDate">Fecha propuesta</label>
+                            <input type="date" id="fechaPropuestaDinamica" min="${hoy}" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-700 dark:text-gray-200 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.proposedTime">Hora propuesta</label>
+                            <input type="time" id="horaPropuestaDinamica" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-700 dark:text-gray-200 outline-none transition-all">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.duration">Duración (min)</label>
+                            <input type="number" id="duracionEstimadaDinamica" min="15" step="15" placeholder="Ej: 60" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-700 dark:text-gray-200 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.modality">Modalidad</label>
+                            <select id="modalidadDinamica" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-700 dark:text-gray-200 outline-none transition-all">
+                                ${selectModalidad.innerHTML}
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.additionalMessage">Mensaje adicional</label>
+                        <textarea id="mensajeAdicionalDinamica" rows="2" placeholder="Escribe un mensaje personalizado (opcional)" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-700 dark:text-gray-200 outline-none transition-all resize-none"></textarea>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 w-full mt-6">
+                    <button id="btnConfirmarSolicitudDinamica" class="flex-1 px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm shadow-blue-500/30" data-i18n="requestModal.sendRequest">Enviar solicitud</button>
+                    <button onclick="document.getElementById('modalSolicitudDinamicoRoot').classList.remove('opacity-100'); setTimeout(() => document.getElementById('modalSolicitudDinamicoRoot').remove(), 300)" class="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-gray-700 border border-slate-200 dark:border-gray-600 text-slate-700 dark:text-gray-200 text-sm font-semibold rounded-lg hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors" data-i18n="common.cancel">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 4. Agregar al body
+    document.body.appendChild(modalRoot);
+    
+    // 5. Redirigir el evento del botón dinámico hacia nuestra función original
+    document.getElementById('btnConfirmarSolicitudDinamica').onclick = () => {
+        // Copiar los valores del modal dinámico a las variables que espera la función de enviar
+        const originalBtnConfirmarOnClick = btnConfirmar.onclick;
+        
+        // Creamos una función wrapper
+        btnConfirmar.onclick = async () => {
+            const btn = document.getElementById('btnConfirmarSolicitudDinamica');
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = `<span class="iconify animate-spin" data-icon="mdi:loading"></span> Enviando...`;
+            btn.disabled = true;
+
+            const requestBody = {
+                solicitanteId: solicitanteId,
+                receptorId: receptorId,
+                fechaPropuesta: document.getElementById("fechaPropuestaDinamica").value || null,
+                horaPropuesta: document.getElementById("horaPropuestaDinamica").value || null,
+                duracionEstimada: document.getElementById("duracionEstimadaDinamica").value ? parseInt(document.getElementById("duracionEstimadaDinamica").value) : null,
+                idHabilidadSolicitada: document.getElementById("habilidadSolicitadaDinamica").value || null,
+                idHabilidadOfrecida: document.getElementById("habilidadOfrecidaDinamica").value || null,
+                mensajeAdicional: document.getElementById("mensajeAdicionalDinamica").value || null,
+                modalidad: document.getElementById("modalidadDinamica").value || null,
+            };
+
+            try {
+                const token = sessionStorage.getItem("token") || sessionStorage.getItem("authToken") || localStorage.getItem("token") || localStorage.getItem("authToken");
+                
+                const response = await fetch(`${API_BASE}/solicitudes-intercambio/enviar-detallada`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    Toast.success(t("common.success") || "Éxito", t("requestModal.sent") || "¡Solicitud enviada!");
+                    document.getElementById('modalSolicitudDinamicoRoot').remove(); // Cerrar modal dinámico
+                    if (typeof cargarSolicitudesRealizadas === "function") {
+                        cargarSolicitudesRealizadas();
+                    }
+                } else {
+                    // Restablecer la validación de solicitud duplicada amigable original
+                    const esYaEnviada =
+                        data.message &&
+                        (data.message.includes("ya existe") ||
+                         data.message.includes("pendiente") ||
+                         data.message.includes("conexión") ||
+                         data.message.includes("solicitud"));
+
+                    if (esYaEnviada) {
+                        Toast.info(
+                            t("requestModal.alreadySent") || "Solicitud ya enviada",
+                            `${t("requestModal.alreadySentMessage") || "Ya has enviado una solicitud a"} ${nombreReceptor}. ${t("requestModal.viewPending") || "Puedes ver tus solicitudes pendientes en el menú lateral."}`
+                        );
+                    } else {
+                        Toast.error(
+                            t("common.error") || "Error",
+                            data.message || t("requestModal.errorSending") || "Ocurrió un error al enviar la solicitud"
+                        );
+                    }
+                }
+            } catch (error) {
+                console.error("Error al enviar solicitud:", error);
+                Toast.error(t("common.error"), "Ocurrió un error al procesar la solicitud");
+            }
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+        };
+        
+        // Llamar a nuestro nuevo wrapper
+        btnConfirmar.onclick();
+    };
+    
+    // 6. Animar la entrada
+    // Un pequeño delay para que el navegador procese el DOM insertado antes de animar
+    setTimeout(() => {
+        modalRoot.classList.add('opacity-100');
+        const card = modalRoot.querySelector('#solicitudIntercambioCard');
+        if (card) {
+            card.classList.remove('scale-95');
+            card.classList.add('scale-100');
+        }
+    }, 10);
+    
+    console.log("-> Modal dinámico inyectado correctamente.");
   } catch (error) {
     console.error("Error general en mostrarFormularioSolicitudDetallada:", error);
     Toast.error(t("common.error"), "Ocurrió un error al cargar el formulario de solicitud");
