@@ -586,7 +586,7 @@ router.post('/enviar', async (req, res) => {
             if (io && mensaje && mensaje.id_mensaje) {
                 // Obtener todos los participantes excepto el emisor
                 const [parts] = await pool.query(
-                    'SELECT id_persona FROM participantes_conversacion WHERE id_conversacion = ? AND id_persona != ?', 
+                    'SELECT id_Perfil_Persona as id_persona FROM conversaciones_miembros WHERE id_conversacion = ? AND id_Perfil_Persona != ?', 
                     [conversacionId, personaEnviaId]
                 );
                 let receptores = parts.map(p => p.id_persona);
