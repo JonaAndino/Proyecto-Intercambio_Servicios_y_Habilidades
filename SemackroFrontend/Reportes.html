@@ -4195,24 +4195,34 @@
             }
         }
 
-        // Agregar categoría
-        async function agregarCategoria() {
-            const { value: nombre } = await Swal.fire({
-                title: t('config.addCategory') || 'Agregar Categoría',
-                input: 'text',
-                inputLabel: t('config.categoryName') || 'Nombre de la Categoría',
-                inputPlaceholder: 'Ej: Tecnología',
-                showCancelButton: true,
-                confirmButtonText: t('common.confirm') || 'Confirmar',
-                cancelButtonText: t('common.cancel') || 'Cancelar',
-                inputValidator: (value) => {
-                    if (!value) {
-                        return t('common.error') || 'Debes ingresar un nombre';
-                    }
-                }
-            });
+        // --- LOGICA MODALES CATEGORIAS ---
+        window.cerrarModalCategoria = function() {
+            document.getElementById('categoriaCard').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { document.getElementById('categoriaModalRoot').style.display = 'none'; }, 200);
+        };
 
-            if (nombre) {
+        window.cerrarModalConfirmarEliminarCategoria = function() {
+            document.getElementById('confirmEliminarCategoriaCard').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { document.getElementById('confirmEliminarCategoriaModalRoot').style.display = 'none'; }, 200);
+        };
+
+        // Agregar categoría
+        window.agregarCategoria = function() {
+            document.getElementById('inputCategoriaNombre').value = '';
+            
+            const btnConfirmar = document.getElementById('btnConfirmarCategoria');
+            btnConfirmar.onclick = async function() {
+                const nombre = document.getElementById('inputCategoriaNombre').value.trim();
+                
+                if (!nombre) {
+                    Toast.warning('Atención', t('common.error') || 'Debes ingresar un nombre');
+                    return;
+                }
+
+                const textoOriginal = btnConfirmar.innerHTML;
+                btnConfirmar.innerHTML = '<span class="iconify animate-spin text-lg" data-icon="mdi:loading"></span> Guardando...';
+                btnConfirmar.disabled = true;
+
                 try {
                     const res = await fetch(CATEGORIAS_API, {
                         method: 'POST',
@@ -4224,20 +4234,23 @@
                         throw new Error(errorData.message || 'Error al agregar categoría');
                     }
                     Toast.success('Categoría agregada', 'La categoría se ha agregado correctamente');
+                    window.cerrarModalCategoria();
                     cargarCategorias();
                 } catch (error) {
                     console.error('Error agregando categoría:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: t('common.error') || 'Error',
-                        text: error.message || 'No se pudo agregar la categoría'
-                    });
+                    Toast.error(t('common.error') || 'Error', error.message || 'No se pudo agregar la categoría');
                 }
-            }
+
+                btnConfirmar.innerHTML = textoOriginal;
+                btnConfirmar.disabled = false;
+            };
+
+            document.getElementById('categoriaModalRoot').style.display = 'flex';
+            setTimeout(() => { document.getElementById('categoriaCard').classList.remove('scale-95', 'opacity-0'); }, 10);
         }
 
         // Actualizar categoría
-        async function actualizarCategoria(id) {
+        window.actualizarCategoria = async function(id) {
             try {
                 const row = document.querySelector(`.cat-nombre[data-id="${id}"]`).closest('tr');
                 const nombre = row.querySelector('.cat-nombre').value;
@@ -4260,34 +4273,32 @@
         }
 
         // Eliminar categoría
-        async function eliminarCategoria(id) {
-            const isConfirmed = await Swal.fire({
-                title: t('common.confirm') || '¿Confirmar?',
-                text: '¿Estás seguro de eliminar esta categoría?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                confirmButtonText: t('common.delete') || 'Eliminar',
-                cancelButtonText: t('common.cancel') || 'Cancelar'
-            });
+        window.eliminarCategoria = async function(id) {
+            const btnConfirmar = document.getElementById('btnConfirmarEliminarCategoriaAccion');
+            btnConfirmar.onclick = async function() {
+                const textoOriginal = btnConfirmar.innerHTML;
+                btnConfirmar.innerHTML = '<span class="iconify animate-spin text-lg" data-icon="mdi:loading"></span> Eliminando...';
+                btnConfirmar.disabled = true;
 
-            if (isConfirmed.isConfirmed) {
                 try {
                     const res = await fetch(`${CATEGORIAS_API}/${id}`, {
                         method: 'DELETE'
                     });
                     if (!res.ok) throw new Error('Error al eliminar categoría');
                     Toast.success('Categoría eliminada', 'La categoría se ha eliminado correctamente');
+                    window.cerrarModalConfirmarEliminarCategoria();
                     cargarCategorias();
                 } catch (error) {
                     console.error('Error eliminando categoría:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: t('common.error') || 'Error',
-                        text: error.message || 'No se pudo eliminar la categoría'
-                    });
+                    Toast.error(t('common.error') || 'Error', error.message || 'No se pudo eliminar la categoría');
                 }
-            }
+
+                btnConfirmar.innerHTML = textoOriginal;
+                btnConfirmar.disabled = false;
+            };
+
+            document.getElementById('confirmEliminarCategoriaModalRoot').style.display = 'flex';
+            setTimeout(() => { document.getElementById('confirmEliminarCategoriaCard').classList.remove('scale-95', 'opacity-0'); }, 10);
         }
 
         // Actualizar visualización de toggle
@@ -6867,6 +6878,55 @@
                 <button onclick="guardarPermisosRolSeleccionado()" type="button" class="flex-1 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-bold shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
                     <span>Guardar Permisos</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL PERSONALIZADO: Agregar Categoría                    -->
+    <!-- ========================================================= -->
+    <div id="categoriaModalRoot" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+        <div id="categoriaBackdrop" class="fixed inset-0 bg-transparent transition-opacity" onclick="cerrarModalCategoria()"></div>
+        <div id="categoriaCard" class="relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md shadow-2xl border border-slate-100 dark:border-gray-700 flex flex-col mt-8 z-10 transition-all transform scale-95 opacity-0">
+            <div class="h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-2">
+                <button onclick="cerrarModalCategoria()" class="absolute top-2 right-4 text-white hover:scale-110 transition-transform z-20 cursor-pointer" aria-label="Cerrar modal">
+                    <span class="iconify text-2xl" data-icon="mdi:close-circle"></span>
+                </button>
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-6 text-center" id="categoriaModalTitle" data-i18n="config.addCategory">Agregar Categoría</h3>
+                <div class="text-left space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1" id="labelCategoriaNombre" data-i18n="config.categoryName">Nombre de la Categoría</label>
+                        <input id="inputCategoriaNombre" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-gray-200 outline-none transition-all" placeholder="Ej: Tecnología">
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 w-full mt-8">
+                    <button onclick="cerrarModalCategoria()" class="flex-1 px-4 py-2.5 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors" data-i18n="common.cancel">Cancelar</button>
+                    <button id="btnConfirmarCategoria" class="flex-1 px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-blue-500/30" data-i18n="common.confirm">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL PERSONALIZADO: Confirmar Eliminación de Categoría   -->
+    <!-- ========================================================= -->
+    <div id="confirmEliminarCategoriaModalRoot" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+        <div id="confirmEliminarCategoriaBackdrop" class="fixed inset-0 bg-transparent transition-opacity" onclick="cerrarModalConfirmarEliminarCategoria()"></div>
+        <div id="confirmEliminarCategoriaCard" class="relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md shadow-2xl border border-slate-100 dark:border-gray-700 flex flex-col mt-8 z-10 transition-all transform scale-95 opacity-0">
+            <div class="p-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
+                    <span class="iconify text-red-500 text-3xl" data-icon="mdi:alert-outline"></span>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2" data-i18n="common.confirm">¿Confirmar?</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6" id="eliminarCategoriaText">¿Estás seguro de eliminar esta categoría?</p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 w-full">
+                    <button onclick="cerrarModalConfirmarEliminarCategoria()" class="flex-1 px-4 py-2.5 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors" data-i18n="common.cancel">Cancelar</button>
+                    <button id="btnConfirmarEliminarCategoriaAccion" class="flex-1 px-4 py-2.5 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 active:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-red-500/30" data-i18n="common.delete">Eliminar</button>
+                </div>
             </div>
         </div>
     </div>
