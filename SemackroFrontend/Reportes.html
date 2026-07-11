@@ -1357,14 +1357,13 @@
                                 <th class="py-3 px-4">Foto</th>
                                 <th class="py-3 px-4" data-i18n="table.user">Usuario</th>
                                 <th class="py-3 px-4" data-i18n="table.email">Email</th>
-                                <th class="py-3 px-4 text-center" data-i18n="table.id">Id</th>
                                 <th class="py-3 px-4 text-center" data-i18n="table.reports">Reps</th>
                                 <th class="py-3 px-4 text-center" data-i18n="table.action">Acción</th>
                             </tr>
                         </thead>
                         <tbody id="reportCountsTbody">
                             <tr>
-                                <td colspan="6" class="py-10 text-center text-gray-300 dark:text-gray-600 italic"
+                                <td colspan="5" class="py-10 text-center text-gray-300 dark:text-gray-600 italic"
                                     data-i18n="table.loading">Cargando datos...</td>
                             </tr>
                         </tbody>
@@ -1535,7 +1534,7 @@
         <!-- CSS y JS para Ocultar/Mostrar Columnas -->
         <style id="dynamicColumnStyles"></style>
         <script>
-            const directorioColumns = [
+            let directorioColumns = [
                 { index: 1, label: 'Foto', visible: true },
                 { index: 2, label: 'Nombre completo', visible: true },
                 { index: 3, label: 'Correo', visible: true },
@@ -1548,6 +1547,22 @@
                 { index: 10, label: 'Bloqueo', visible: true },
                 { index: 11, label: 'Acciones', visible: true }
             ];
+
+            // Cargar configuración de columnas si existe en localStorage
+            try {
+                const savedCols = localStorage.getItem('directorioColumns');
+                if (savedCols) {
+                    const parsed = JSON.parse(savedCols);
+                    directorioColumns = directorioColumns.map(col => {
+                        const savedCol = parsed.find(c => c.index === col.index);
+                        if (savedCol) col.visible = savedCol.visible;
+                        return col;
+                    });
+                }
+            } catch(e) {}
+            
+            // Aplicar estilos iniciales basados en localStorage (o en default)
+            applyColumnStyles();
 
             function toggleColumnMenu() {
                 const menu = document.getElementById('columnMenu');
@@ -1591,6 +1606,8 @@
                 if (col) {
                     col.visible = isVisible;
                     applyColumnStyles();
+                    // Guardar en localStorage
+                    try { localStorage.setItem('directorioColumns', JSON.stringify(directorioColumns)); } catch(e) {}
                 }
             }
 
@@ -3139,7 +3156,7 @@
 
             // Solo poner "Cargando..." si está vacío o tiene mensaje de error, para no parpadear en polling
             if (!rcTbody.hasChildNodes() || rcTbody.textContent.includes('Error') || rcTbody.textContent.includes('Cargando') || rcTbody.textContent.includes('Loading')) {
-                rcTbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-gray-500">${t('table.loading')}</td></tr>`;
+                rcTbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-gray-500">${t('table.loading')}</td></tr>`;
             }
 
             const API_BASE = `${window.APP_CONFIG.BACKEND_URL}`;
@@ -3229,7 +3246,7 @@
 
             // Renderizar filas de la tabla
             if (datosPagina.length === 0) {
-                rcTbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-gray-300 italic">${t('table.noRecords')}</td></tr>`;
+                rcTbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-gray-300 italic">${t('table.noRecords')}</td></tr>`;
             } else {
                 rcTbody.innerHTML = datosPagina.map(obj => {
                     const avatarUrl = obj.imagen || '';
@@ -3261,7 +3278,6 @@
                             <td class="py-3 px-4">${avatarHtml}</td>
                             <td class="py-3 px-4 text-sm font-bold text-gray-700">${escapeHtml(obj.name || obj.uid)}</td>
                             <td class="py-3 px-4 text-xs text-gray-500 hidden md:table-cell">${escapeHtml(obj.email || '-')}</td>
-                            <td class="py-3 px-4 text-[10px] text-gray-400 font-mono text-center">#${escapeHtml(obj.perfilId || '-')}</td>
                             <td class="py-3 px-4 text-center">
                                 <span class="text-sm font-black text-red-600">${obj.count}</span>
                             </td>
