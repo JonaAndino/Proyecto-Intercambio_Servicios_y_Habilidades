@@ -564,7 +564,11 @@ router.post('/enviar', async (req, res) => {
         } else {
             // Para 1:1: usar el stored procedure existente (compatibilidad)
             const [results] = await pool.query('CALL sp_EnviarMensaje(?, ?, ?)', [conversacionId, personaEnviaId, contenidoStr]);
-            mensaje = results[0] && results[0][0] ? results[0][0] : null;
+            const id_mensaje_sp = results[0] && results[0][0] ? results[0][0].id_mensaje : null;
+            if (id_mensaje_sp) {
+                const [rows] = await pool.query('SELECT * FROM mensajes WHERE id_mensaje = ?', [id_mensaje_sp]);
+                mensaje = rows && rows[0] ? rows[0] : { id_mensaje: id_mensaje_sp };
+            }
         }
 
         // Si el SP devolvió un id_mensaje y hay adjuntos, insertarlos
@@ -579,21 +583,31 @@ router.post('/enviar', async (req, res) => {
         // Emitir evento socket al destinatario o grupo
         try {
             const io = getIo();
-            if (io && mensaje) {
-                let receptores = [];
-                if (mensaje.id_persona_recibe) {
+            if (io && mensaje && mensaje.id_mensaje) {
+                // Obtener todos los participantes excepto el emisor
+                const [parts] = await pool.query(
+                    'SELECT id_persona FROM participantes_conversacion WHERE id_conversacion = ? AND id_persona != ?', 
+                    [conversacionId, personaEnviaId]
+                );
+                let receptores = parts.map(p => p.id_persona);
+
+                // Fallback por si la tabla participantes está vacía
+                if (receptores.length === 0 && mensaje.id_persona_recibe) {
                     receptores.push(mensaje.id_persona_recibe);
-                } else if (esGrupoConv) {
-                    // Obtener todos los participantes del grupo excepto el emisor
-                    const [parts] = await pool.query('SELECT id_persona FROM participantes_conversacion WHERE id_conversacion = ? AND id_persona != ?', [conversacionId, personaEnviaId]);
-                    receptores = parts.map(p => p.id_persona);
+                }
+                
+                if (receptores.length === 0 && personaRecibeId) {
+                    receptores.push(personaRecibeId);
                 }
 
                 receptores.forEach(recibeId => {
                     io.to(`user_${recibeId}`).emit('nuevo_mensaje', {
-                        ...mensaje,
+                        id_mensaje: mensaje.id_mensaje,
+                        contenido: contenidoStr,
+                        id_conversacion: conversacionId,
                         conversacionId: conversacionId,
-                        senderName: req.body.senderName || ''
+                        id_persona_envia: personaEnviaId,
+                        senderName: req.body.senderName || 'Nuevo mensaje'
                     });
                 });
             }
