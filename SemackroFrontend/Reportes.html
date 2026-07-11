@@ -3057,6 +3057,9 @@
                         email: r.reported_correo || null,
                         perfilId: r.id_perfil_persona || r.id_Perfil_Persona || null,
                         imagen: r.reported_imagen || null,
+                        activo: r.reported_activo,
+                        bloqueado_hasta: r.reported_bloqueado_hasta,
+                        intentos_fallidos: r.reported_intentos_fallidos,
                         count: 0,
                         lastDate: null,
                         lastMotivo: null,
@@ -3116,6 +3119,8 @@
             const fin = inicio + itemsPorPaginaReportes;
             const datosPagina = todosLosReportes.slice(inicio, fin);
 
+            const puedeModerar = window.Permisos ? window.Permisos.puedeModerarUsuarios() : false;
+
             // Renderizar filas de la tabla
             if (datosPagina.length === 0) {
                 rcTbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-gray-300 italic">${t('table.noRecords')}</td></tr>`;
@@ -3132,18 +3137,32 @@
                                <span class="iconify" data-icon="mdi:account-eye" style="font-size: 20px;"></span>
                            </button>`
                         : '';
+                    let moderarBtn = '';
+                    if (puedeModerar && obj.uid !== 'sin_usuario') {
+                        if (obj.activo === 0) {
+                            moderarBtn = `<button onclick="abrirModalBloqueo(${obj.uid}, '${escapeHtml(obj.name || obj.uid)}', true)" title="Ver Motivo de Bloqueo" class="text-orange-500 hover:text-orange-700 transition-all" style="margin-right:6px;">
+                                <span class="iconify" data-icon="mdi:comment-text-outline" style="font-size: 20px;"></span>
+                            </button>`;
+                        } else {
+                            moderarBtn = `<button onclick="abrirModalBloqueo(${obj.uid}, '${escapeHtml(obj.name || obj.uid)}', false)" title="Bloquear Usuario" class="text-red-500 hover:text-red-700 transition-all" style="margin-right:6px;">
+                                <span class="iconify" data-icon="mdi:account-off" style="font-size: 20px;"></span>
+                            </button>`;
+                        }
+                    }
+
                     return `
                         <tr class="border-b border-black/10 hover:bg-gray-50 transition-colors">
                             <td class="py-3 px-4">${avatarHtml}</td>
                             <td class="py-3 px-4 text-sm font-bold text-gray-700">${escapeHtml(obj.name || obj.uid)}</td>
-                            <td class="py-3 px-4 text-xs text-gray-500">${escapeHtml(obj.email || '-')}</td>
-                            <td class="py-3 px-4 text-[10px] text-gray-400 font-mono">#${escapeHtml(obj.perfilId || '-')}</td>
+                            <td class="py-3 px-4 text-xs text-gray-500 hidden md:table-cell">${escapeHtml(obj.email || '-')}</td>
+                            <td class="py-3 px-4 text-[10px] text-gray-400 font-mono text-center">#${escapeHtml(obj.perfilId || '-')}</td>
                             <td class="py-3 px-4 text-center">
                                 <span class="text-sm font-black text-red-600">${obj.count}</span>
                             </td>
                             <td class="py-3 px-4 text-center" style="white-space:nowrap;">
+                                ${moderarBtn}
                                 ${perfilBtn}
-                                <button onclick="openReportDetails('${obj.uid}')" class="text-gray-400 hover:text-black transition-all">
+                                <button onclick="openReportDetails('${obj.uid}')" title="Ver Detalles de Reportes" class="text-gray-400 hover:text-black transition-all">
                                     <span class="iconify" data-icon="mdi:eye" style="font-size: 20px;"></span>
                                 </button>
                             </td>
