@@ -39,7 +39,8 @@ app.use((req, res, next) => {
         '/historial': 'historial',
         '/busqueda': 'busqueda',
         '/solicitud-intercambio': 'solicitud',
-        '/video-llamada': 'videoLlamada'
+        '/video-llamada': 'videoLlamada',
+        '/panel-admin': 'panel-admin'
     };
 
     const viewName = routeToView[route];
@@ -97,5 +98,5 @@ app.listen(port, () => {
     console.log(`📁 Sirviendo archivos de: ${__dirname}`);
     console.log(`⚠️  SOLO para desarrollo - NO usar en producción`);
     console.log(`🔗 Backend API disponible en: http://localhost:3001/api`);
-    console.log(`📋 Rutas centralizadas con layout principal: /, /descubrir, /perfil, /reportes, /favoritos, /mensajes, /solicitudes-enviadas, /ordenes-trabajo, /historial, /busqueda, /solicitud-intercambio, /video-llamada`);
+    console.log(`📋 Rutas centralizadas con layout principal: /, /descubrir, /perfil, /reportes, /favoritos, /mensajes, /solicitudes-enviadas, /ordenes-trabajo, /historial, /busqueda, /solicitud-intercambio, /video-llamada, /panel-admin`);
 });
