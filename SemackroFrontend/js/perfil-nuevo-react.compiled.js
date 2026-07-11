@@ -1574,6 +1574,23 @@ function initPerfilNuevo() {
           if (!personaData) {
             throw new Error('Usuario no encontrado');
           }
+
+          // === PRIVACY CHECK START ===
+          const usuarioIdFromStorage = sessionStorage.getItem('usuarioId') || localStorage.getItem('usuarioId');
+          const usuarioIdPropio = usuarioIdFromStorage ? parseInt(usuarioIdFromStorage, 10) : null;
+          const isDifferentUser = !!(personaData.id_Usuario && parseInt(personaData.id_Usuario, 10) !== usuarioIdPropio);
+          
+          if (isDifferentUser && (personaData.perfil_publico_Persona == 0 || personaData.perfil_publico_Persona === false)) {
+              if (window.Toast) {
+                  window.Toast.error('Perfil Privado', 'Este usuario tiene su perfil configurado como privado y no se puede ver su información detallada.');
+              } else {
+                  alert('Este usuario tiene su perfil privado.');
+              }
+              if (onVolver) onVolver();
+              return;
+          }
+          // === PRIVACY CHECK END ===
+
           // DEBUG: Ver qué campos vienen de la API
           console.log('=== DEBUG: Datos de persona cargados ===');
           console.log('persona.disponibilidad:', personaData.disponibilidad);
