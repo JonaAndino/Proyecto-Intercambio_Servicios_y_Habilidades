@@ -3119,7 +3119,7 @@
             const fin = inicio + itemsPorPaginaReportes;
             const datosPagina = todosLosReportes.slice(inicio, fin);
 
-            const puedeModerar = window.Permisos ? window.Permisos.puedeModerarUsuarios() : false;
+            const puedeModerar = window.Permisos ? window.Permisos.puedeModerar() : false;
 
             // Renderizar filas de la tabla
             if (datosPagina.length === 0) {
