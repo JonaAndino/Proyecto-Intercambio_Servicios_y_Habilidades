@@ -142,14 +142,36 @@
     document.addEventListener("DOMContentLoaded", () => {
         if (window.Permisos) {
             const permisos = window.Permisos._obtenerPermisos();
-            // Si hay permisos cargados, ocultamos los items de navegación que no estén en la lista
-            if (permisos.length > 0) {
+            const esAdminRole = sessionStorage.getItem('usuarioRolId') === '1';
+
+            // Si NO es administrador, o si tiene un arreglo de permisos definido, aplicamos los filtros
+            if (!esAdminRole || permisos.length > 0) {
+                let firstAvailableView = null;
+
                 document.querySelectorAll('.sidebar-item[data-view]').forEach(item => {
                     const viewName = item.getAttribute('data-view');
-                    if (viewName && !permisos.includes(viewName)) {
-                        item.style.display = 'none';
+                    if (viewName) {
+                        // Si no tiene el permiso, lo ocultamos
+                        if (!permisos.includes(viewName)) {
+                            item.style.display = 'none';
+                        } else if (!firstAvailableView) {
+                            firstAvailableView = viewName;
+                        }
                     }
                 });
+
+                // Si no tiene permiso para la vista "descubrir" (que es la de por defecto), redirigir
+                if (!permisos.includes('descubrir')) {
+                    setTimeout(() => {
+                        if (firstAvailableView && typeof navigateTo === 'function') {
+                            navigateTo(firstAvailableView);
+                        } else {
+                            // Si no tiene acceso a NADA, ocultamos la vista principal para que no la vea "de contrabando"
+                            const descubrirView = document.getElementById('descubrirView');
+                            if (descubrirView) descubrirView.style.display = 'none';
+                        }
+                    }, 100);
+                }
             }
         }
     });
