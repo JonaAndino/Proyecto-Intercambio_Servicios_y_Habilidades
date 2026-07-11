@@ -303,7 +303,7 @@ router.post('/roles', async (req, res) => {
         // Asignar el permiso básico predeterminado: VER_HISTORIAL_PERSONAL
         const [opcion] = await db.execute('SELECT opcion_id FROM opciones WHERE link = "VER_HISTORIAL_PERSONAL" LIMIT 1');
         if (opcion.length > 0) {
-            await db.execute('INSERT INTO d_roles_opciones (rol_id, opcion_id) VALUES (?, ?)', [nuevoId, opcion[0].opcion_id]);
+            await db.execute('INSERT IGNORE INTO d_roles_opciones (rol_id, opcion_id) VALUES (?, ?)', [nuevoId, opcion[0].opcion_id]);
         }
         
         res.json({ success: true, message: 'Rol creado correctamente', id_rol: nuevoId });
@@ -387,7 +387,7 @@ router.put('/roles/:id/permisos', async (req, res) => {
         for (let clave of permisos) {
             const op = opcionesDB.find(o => o.link === clave);
             if (op) {
-                await db.execute('INSERT INTO d_roles_opciones (rol_id, opcion_id) VALUES (?, ?)', [id, op.opcion_id]);
+                await db.execute('INSERT IGNORE INTO d_roles_opciones (rol_id, opcion_id) VALUES (?, ?)', [id, op.opcion_id]);
             }
         }
 
