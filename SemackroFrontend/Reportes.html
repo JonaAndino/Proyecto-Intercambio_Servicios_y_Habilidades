@@ -1304,12 +1304,12 @@
     <!-- ════ BARRA DE PESTAÑAS EXCEL (parte superior) ════ -->
     <div id="xlTabBar">
         <button id="tabReportes" onclick="switchSheet('reportes')" data-sheet="reportes"
-            class="xl-tab active">
+            class="xl-tab active" style="display: none;">
             <span class="iconify mr-1" data-icon="mdi:chart-bar" style="vertical-align:-2px;"></span>
             Panel de administración
         </button>
         <button id="tabConfiguraciones" onclick="switchSheet('configuraciones')" data-sheet="configuraciones"
-            class="xl-tab">
+            class="xl-tab" style="display: none;">
             <span class="iconify mr-1" data-icon="mdi:cog-outline" style="vertical-align:-2px;"></span>
             <span data-i18n="config.tabTitle">Configuraciones</span>
         </button>
@@ -3745,6 +3745,15 @@
 
         // ── Navegación entre hojas tipo Excel ──────────────────────────
         function switchSheet(nombre) {
+            // SEGURIDAD ESTRICTA: Evitar cambios de pestaña si no hay permisos
+            if (nombre === 'configuraciones') {
+                const tieneAcceso = window.Permisos ? window.Permisos.puedeConfigurar() : false;
+                if (!tieneAcceso) {
+                    console.warn('[SEGURIDAD] Acceso denegado a configuraciones.');
+                    return; // Bloquea la navegación por completo
+                }
+            }
+
             const sheets  = { reportes: 'sheetReportes', ordenes: 'sheetOrdenes', recuperar: 'sheetRecuperar', configuraciones: 'sheetConfiguraciones' };
             const tabs    = { reportes: 'tabReportes',   ordenes: 'tabOrdenes',   recuperar: 'tabRecuperar',   configuraciones: 'tabConfiguraciones'   };
             Object.keys(sheets).forEach(key => {
