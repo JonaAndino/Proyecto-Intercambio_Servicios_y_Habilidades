@@ -760,6 +760,17 @@ document.addEventListener("visibilitychange", () => {
 let currentView = "descubrir";
 
 async function navigateTo(viewName) {
+  // BLOQUEO DE SEGURIDAD ESTRICTO ANTES DE NAVEGAR
+  if (window.Permisos && typeof window.Permisos.puedeAccederVista === 'function') {
+      if (!window.Permisos.puedeAccederVista(viewName)) {
+          console.warn(`[SEGURIDAD] Acceso denegado a la vista: ${viewName}`);
+          if (viewName !== 'descubrir') {
+              navigateTo('descubrir');
+          }
+          return;
+      }
+  }
+
   syncAppHeaderHeight();
   document.documentElement.classList.toggle("mensajes-open", viewName === "mensajes");
   document.body.classList.toggle("mensajes-open", viewName === "mensajes");

@@ -123,5 +123,33 @@ window.Permisos = {
         const permisos = this._obtenerPermisos();
         if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
         return permisos.includes('VER_SOLICITUDES_VERIFICACION');
+    },
+
+    /**
+     * Verifica si el usuario tiene permiso para acceder a una vista de la SPA
+     * @param {string} viewName - El nombre de la vista (ej. 'panel-admin')
+     * @returns {boolean}
+     */
+    puedeAccederVista(viewName) {
+        const vistasBasicas = ['descubrir', 'perfil', 'mensajes', 'favoritos', 'historial', 'ordenesTrabajo', 'solicitudesEnviadas'];
+        if (vistasBasicas.includes(viewName)) return true;
+
+        const permisos = this._obtenerPermisos();
+        
+        // Mapeo de vistas específicas a permisos requeridos
+        const viewPermMap = {
+            'panel-admin': 'VER_METRICAS'
+        };
+
+        const requiredPerm = viewPermMap[viewName] || viewName;
+        
+        if (permisos.length === 0) {
+            // Fallback para administradores legacy sin JSON de permisos
+            const isLegacyAdmin = sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
+            if (viewName === 'panel-admin' && isLegacyAdmin) return true;
+            return false;
+        }
+
+        return permisos.includes(requiredPerm);
     }
 };
