@@ -280,7 +280,7 @@ router.put('/roles/reasignar-usuarios', async (req, res) => {
     }
 });
 
-\n// Actualizar nombre de un permiso (PUT /configuraciones/permisos/:clave)
+// Actualizar nombre de un permiso (PUT /configuraciones/permisos/:clave)
 router.put('/permisos/:clave', async (req, res) => {
     const { clave } = req.params;
     const { nombre } = req.body;
