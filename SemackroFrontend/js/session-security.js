@@ -150,9 +150,10 @@
 
                 document.querySelectorAll('.sidebar-item[data-view]').forEach(item => {
                     const viewName = item.getAttribute('data-view');
+                    const permName = item.getAttribute('data-permission') || viewName;
                     if (viewName) {
                         // Si no tiene el permiso, lo ocultamos
-                        if (!permisos.includes(viewName)) {
+                        if (!permisos.includes(permName)) {
                             item.style.display = 'none';
                         } else if (!firstAvailableView) {
                             firstAvailableView = viewName;
