@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
+const { getIo } = require('../socketInstance');
 // Multer para manejo de multipart/form-data (subida de archivos en memoria)
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
@@ -516,6 +517,20 @@ router.post('/enviar', async (req, res) => {
                     console.warn('No se pudieron insertar adjuntos para mensaje', insert.insertId, errAdj.message);
                 }
 
+                // Emitir evento socket al destinatario
+                try {
+                    const io = getIo();
+                    if (io && personaRecibeId) {
+                        io.to(`user_${personaRecibeId}`).emit('nuevo_mensaje', {
+                            ...mensaje,
+                            conversacionId: conversacionId,
+                            senderName: req.body.senderName || ''
+                        });
+                    }
+                } catch (e) {
+                    console.warn('Error emitiendo nuevo_mensaje (directo):', e);
+                }
+
                 return res.status(201).json({ success: true, message: 'Mensaje enviado exitosamente', data: mensaje });
             } catch (errInsert) {
                 // Si falla por estructura de tabla (columna no existe), caemos al SP para compatibilidad
@@ -557,6 +572,31 @@ router.post('/enviar', async (req, res) => {
             }
         } catch (errAdj2) {
             console.warn('No se pudieron insertar adjuntos para mensaje (SP)', errAdj2.message);
+        }
+
+        // Emitir evento socket al destinatario o grupo
+        try {
+            const io = getIo();
+            if (io && mensaje) {
+                let receptores = [];
+                if (mensaje.id_persona_recibe) {
+                    receptores.push(mensaje.id_persona_recibe);
+                } else if (esGrupoConv) {
+                    // Obtener todos los participantes del grupo excepto el emisor
+                    const [parts] = await pool.query('SELECT id_persona FROM participantes_conversacion WHERE id_conversacion = ? AND id_persona != ?', [conversacionId, personaEnviaId]);
+                    receptores = parts.map(p => p.id_persona);
+                }
+
+                receptores.forEach(recibeId => {
+                    io.to(`user_${recibeId}`).emit('nuevo_mensaje', {
+                        ...mensaje,
+                        conversacionId: conversacionId,
+                        senderName: req.body.senderName || ''
+                    });
+                });
+            }
+        } catch (e) {
+            console.warn('Error emitiendo nuevo_mensaje (SP/Grupo):', e);
         }
 
         res.status(201).json({ success: true, message: 'Mensaje enviado exitosamente', data: mensaje });
