@@ -5729,11 +5729,12 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Rol Inicial <span class="text-red-500">*</span></label>
-                        <select id="regRol" required
+                        <select id="regRol" required onchange="actualizarDescripcionRol()"
                             class="w-full border border-slate-200 dark:border-gray-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 dark:bg-gray-950 text-gray-800 dark:text-gray-100 transition-all">
                             <option value="2">Usuario Estandar</option>
                             <option value="1">Administrador</option>
                         </select>
+                        <p id="regRolDesc" class="text-[10.5px] text-gray-500 mt-1.5 italic min-h-[16px] leading-tight"></p>
                     </div>
                 </div>
                 <div class="pt-4 flex justify-end gap-2">
@@ -5767,6 +5768,23 @@
             }
         }
 
+        function actualizarDescripcionRol() {
+            const selectRol = document.getElementById('regRol');
+            const descEl = document.getElementById('regRolDesc');
+            if (!selectRol || !descEl || typeof todosLosRolesCargados === 'undefined') return;
+            
+            const selectedId = parseInt(selectRol.value);
+            const rol = todosLosRolesCargados.find(r => r.id_rol === selectedId);
+            
+            if (rol && rol.descripcion_rol) {
+                descEl.textContent = rol.descripcion_rol;
+                descEl.classList.remove('hidden');
+            } else {
+                descEl.textContent = 'Rol sin descripción detallada.';
+                descEl.classList.remove('hidden');
+            }
+        }
+
         async function abrirModalCrearUsuario() {
             const root = document.getElementById('adminModalRegistroRoot');
             const card = document.getElementById('adminModalRegistroCard');
@@ -5795,6 +5813,24 @@
                     selectRol.innerHTML = todosLosRolesCargados.map(r => 
                         `<option value="${r.id_rol}">${escapeHtml(r.nombre_rol)}</option>`
                     ).join('');
+
+                    // Bloquear si no tiene permiso para asignar roles
+                    const puedeAsignar = window.Permisos && typeof window.Permisos.puedeAsignarRolesPermisos === 'function' ? window.Permisos.puedeAsignarRolesPermisos() : false;
+                    if (!puedeAsignar) {
+                        // Buscar el rol default (es_default=1) o el rol "Usuario Estandar" (id=2)
+                        const rolDefault = todosLosRolesCargados.find(r => r.es_default == 1) || todosLosRolesCargados.find(r => r.id_rol === 2) || todosLosRolesCargados[0];
+                        if (rolDefault) {
+                            selectRol.value = rolDefault.id_rol;
+                        }
+                        selectRol.disabled = true;
+                        selectRol.title = "No tienes permisos para asignar roles especiales. Se usará el rol predeterminado.";
+                    } else {
+                        selectRol.disabled = false;
+                        selectRol.removeAttribute('title');
+                    }
+                    
+                    // Actualizar descripción inicial
+                    actualizarDescripcionRol();
                 }
 
                 // Rellenar combobox de Tipo de ID dinámicamente según configuraciones activas
