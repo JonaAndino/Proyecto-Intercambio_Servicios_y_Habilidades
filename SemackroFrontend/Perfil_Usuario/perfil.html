@@ -3909,7 +3909,35 @@
             const usuarioIdFromStorage = sessionStorage.getItem('usuarioId') || localStorage.getItem('usuarioId');
             const usuarioIdPropio = usuarioIdFromStorage ? parseInt(usuarioIdFromStorage, 10) : null;
             usuarioId = usuarioIdPropio;
-            const readOnlyMode = !!(paramUserId && parseInt(paramUserId, 10) !== usuarioIdPropio);
+            const usuarioRol = (sessionStorage.getItem('usuarioRol') || localStorage.getItem('usuarioRol') || '').toLowerCase();
+            const usuarioRolId = sessionStorage.getItem('usuarioRolId') || localStorage.getItem('usuarioRolId');
+            let usuarioPermisos = [];
+            try { usuarioPermisos = JSON.parse(sessionStorage.getItem('usuarioPermisos') || localStorage.getItem('usuarioPermisos') || '[]'); } catch(e){}
+            const tienePermisoEditar = usuarioPermisos.length > 0 ? usuarioPermisos.includes('EDITAR_USUARIOS') : (usuarioRolId === '1' || usuarioRol.includes('admin'));
+            
+            const isDifferentUser = !!(paramUserId && parseInt(paramUserId, 10) !== usuarioIdPropio);
+            const readOnlyMode = isDifferentUser && !tienePermisoEditar;
+            
+            if (readOnlyMode) {
+                document.body.classList.add('mode-minimal');
+                if (!document.querySelector('style#minimal-mode-style-readonly')) {
+                    const style = document.createElement('style');
+                    style.id = 'minimal-mode-style-readonly';
+                    style.innerHTML = `
+                        .mode-minimal .logout-button, 
+                        .mode-minimal .action-buttons,
+                        .mode-minimal .tour-start-button,
+                        .mode-minimal .camera-icon,
+                        .mode-minimal .add-skill-button-primary,
+                        .mode-minimal .add-skill-button-secondary,
+                        .mode-minimal .file-upload-area { display: none !important; }
+                        .mode-minimal .editable:hover::after { display: none !important; }
+                        .mode-minimal .editable { cursor: default !important; pointer-events: none !important; background: transparent !important; }
+                        .mode-minimal .profile-pic-container { cursor: default !important; }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
 
             if (paramUserId && parseInt(paramUserId, 10) !== usuarioId) {
                 // Modo solo lectura: ver perfil de otro usuario
@@ -4345,7 +4373,11 @@
                     const currentParamUserId = currentUrlParams.get('usuario_id');
                     const currentUsuarioIdFromStorage = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
                     const usuarioRol = (sessionStorage.getItem('usuarioRol') || localStorage.getItem('usuarioRol') || '').toLowerCase();
-                    const esAdmin = usuarioRol.includes('admin');
+                    const usuarioRolId = sessionStorage.getItem('usuarioRolId') || localStorage.getItem('usuarioRolId');
+                    let usuarioPermisos = [];
+                    try { usuarioPermisos = JSON.parse(sessionStorage.getItem('usuarioPermisos') || localStorage.getItem('usuarioPermisos') || '[]'); } catch(e){}
+                    const tienePermisoEditar = usuarioPermisos.length > 0 ? usuarioPermisos.includes('EDITAR_USUARIOS') : (usuarioRolId === '1' || usuarioRol.includes('admin'));
+                    const esAdmin = tienePermisoEditar;
                     const esMiPropioPerfil = esAdmin || !currentParamUserId || parseInt(currentParamUserId, 10) === parseInt(currentUsuarioIdFromStorage, 10);
 
                     if (esMiPropioPerfil && (badge.textContent.includes('No verificado') || badge.textContent.includes(notVerifiedText))) {
@@ -8455,7 +8487,11 @@
             const paramUserId = urlParams.get('usuario_id');
             const usuarioIdFromStorage = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
             const usuarioRol = (sessionStorage.getItem('usuarioRol') || localStorage.getItem('usuarioRol') || '').toLowerCase();
-            const esAdmin = usuarioRol.includes('admin');
+            const usuarioRolId = sessionStorage.getItem('usuarioRolId') || localStorage.getItem('usuarioRolId');
+            let usuarioPermisos = [];
+            try { usuarioPermisos = JSON.parse(sessionStorage.getItem('usuarioPermisos') || localStorage.getItem('usuarioPermisos') || '[]'); } catch(e){}
+            const tienePermisoEditar = usuarioPermisos.length > 0 ? usuarioPermisos.includes('EDITAR_USUARIOS') : (usuarioRolId === '1' || usuarioRol.includes('admin'));
+            const esAdmin = tienePermisoEditar;
             const esPerfilPropio = esAdmin || !paramUserId || parseInt(paramUserId, 10) === parseInt(usuarioIdFromStorage, 10);
             if (!esPerfilPropio) {
                 const grupo = toggle.closest('.privacy-toggle-group');
@@ -8517,7 +8553,11 @@
             const paramUserId = urlParams.get('usuario_id');
             const usuarioIdFromStorage = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
             const usuarioRol = (sessionStorage.getItem('usuarioRol') || localStorage.getItem('usuarioRol') || '').toLowerCase();
-            const esAdmin = usuarioRol.includes('admin');
+            const usuarioRolId = sessionStorage.getItem('usuarioRolId') || localStorage.getItem('usuarioRolId');
+            let usuarioPermisos = [];
+            try { usuarioPermisos = JSON.parse(sessionStorage.getItem('usuarioPermisos') || localStorage.getItem('usuarioPermisos') || '[]'); } catch(e){}
+            const tienePermisoEditar = usuarioPermisos.length > 0 ? usuarioPermisos.includes('EDITAR_USUARIOS') : (usuarioRolId === '1' || usuarioRol.includes('admin'));
+            const esAdmin = tienePermisoEditar;
             const esPerfilPropio = esAdmin || !paramUserId || parseInt(paramUserId, 10) === parseInt(usuarioIdFromStorage, 10);
 
             if (!esPerfilPropio) {
