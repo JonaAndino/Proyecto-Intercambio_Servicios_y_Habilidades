@@ -4560,6 +4560,10 @@ async function mostrarFormularioSolicitudDetallada(
     // Mostrar el modal
     document.getElementById('solicitudIntercambioModalRoot').style.display = 'flex';
     setTimeout(() => { document.getElementById('solicitudIntercambioCard').classList.remove('scale-95', 'opacity-0'); }, 10);
+  } catch (error) {
+    console.error("Error general en mostrarFormularioSolicitudDetallada:", error);
+    Toast.error(t("common.error"), "Ocurrió un error al cargar el formulario de solicitud");
+  }
 }
 
 // Variable global para almacenar solicitudes actuales
