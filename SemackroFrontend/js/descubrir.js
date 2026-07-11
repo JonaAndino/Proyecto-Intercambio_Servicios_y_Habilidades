@@ -5346,13 +5346,18 @@ async function cancelarSolicitud(solicitudId) {
   try {
     const result = await Swal.fire({
       title: "¿Cancelar solicitud?",
-      text: "Esta acción eliminará la solicitud enviada",
+      html: `<p style="color: #4b5563; font-size: 15px;">Esta acción eliminará la solicitud enviada</p>`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#6b7280",
       confirmButtonText: "Sí, cancelar",
       cancelButtonText: "No",
+      customClass: {
+        popup: "rounded-3xl shadow-2xl border border-gray-100",
+        confirmButton: "rounded-xl font-medium px-5 py-2.5",
+        cancelButton: "rounded-xl font-medium px-5 py-2.5"
+      }
     });
 
     if (!result.isConfirmed) return;
@@ -5363,6 +5368,9 @@ async function cancelarSolicitud(solicitudId) {
       didOpen: () => {
         Swal.showLoading();
       },
+      customClass: {
+        popup: "rounded-3xl shadow-2xl border border-gray-100"
+      }
     });
 
     const response = await fetch(
@@ -5381,9 +5389,13 @@ async function cancelarSolicitud(solicitudId) {
       Swal.fire({
         icon: "success",
         title: "Solicitud cancelada",
-        text: "La solicitud ha sido cancelada exitosamente",
+        html: `<p style="color: #4b5563; font-size: 15px;">La solicitud ha sido cancelada exitosamente</p>`,
         confirmButtonColor: "#3b82f6",
         timer: 2000,
+        customClass: {
+          popup: "rounded-3xl shadow-2xl border border-gray-100",
+          confirmButton: "rounded-xl font-medium px-5 py-2.5"
+        }
       });
 
       // Recargar solicitudes
@@ -5392,8 +5404,12 @@ async function cancelarSolicitud(solicitudId) {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: data.message || "No se pudo cancelar la solicitud",
+        html: `<p style="color: #4b5563; font-size: 15px;">${data.message || "No se pudo cancelar la solicitud"}</p>`,
         confirmButtonColor: "#3b82f6",
+        customClass: {
+          popup: "rounded-3xl shadow-2xl border border-gray-100",
+          confirmButton: "rounded-xl font-medium px-5 py-2.5"
+        }
       });
     }
   } catch (error) {
@@ -5401,8 +5417,12 @@ async function cancelarSolicitud(solicitudId) {
     Swal.fire({
       icon: "error",
       title: "Error",
-      text: "Ocurrió un error al cancelar la solicitud",
+      html: `<p style="color: #4b5563; font-size: 15px;">Ocurrió un error al cancelar la solicitud</p>`,
       confirmButtonColor: "#3b82f6",
+      customClass: {
+        popup: "rounded-3xl shadow-2xl border border-gray-100",
+        confirmButton: "rounded-xl font-medium px-5 py-2.5"
+      }
     });
   }
 }
