@@ -4355,6 +4355,19 @@ async function mostrarFormularioSolicitudDetallada(
   receptorId,
   nombreReceptor,
 ) {
+  // Verificar permisos antes de continuar
+  if (window.Permisos && typeof window.Permisos.puedeIntercambiar === 'function') {
+    if (!window.Permisos.puedeIntercambiar()) {
+      Swal.fire({
+        icon: "error",
+        title: "Acceso Denegado",
+        text: "No tienes permisos para solicitar o concretar intercambios.",
+        confirmButtonColor: "#3b82f6",
+      });
+      return;
+    }
+  }
+
   try {
     // Cargar habilidades del solicitante (lo que ofrece)
     const habilidadesOfrecidasResp = await fetch(
