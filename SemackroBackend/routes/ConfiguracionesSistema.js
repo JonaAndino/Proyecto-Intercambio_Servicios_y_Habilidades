@@ -260,7 +260,27 @@ router.get('/permisos', async (req, res) => {
     }
 });
 
-// Actualizar nombre de un permiso (PUT /configuraciones/permisos/:clave)
+// Reasignar rol a múltiples usuarios (PUT /configuraciones/roles/reasignar-usuarios)
+router.put('/roles/reasignar-usuarios', async (req, res) => {
+    const { asignaciones } = req.body; // array de { usuario_id, nuevo_rol_id }
+    
+    if (!Array.isArray(asignaciones)) {
+        return res.status(400).json({ success: false, message: 'Las asignaciones deben ser un array' });
+    }
+
+    try {
+        // Ejecutar las actualizaciones en un bucle
+        for (let asig of asignaciones) {
+            await db.execute('UPDATE d_usuarios_roles SET rol_id = ? WHERE usuario_id = ?', [asig.nuevo_rol_id, asig.usuario_id]);
+        }
+        res.json({ success: true, message: 'Usuarios reasignados correctamente' });
+    } catch (error) {
+        console.error('Error al reasignar usuarios:', error.message);
+        res.status(500).json({ success: false, error: 'Error al reasignar usuarios' });
+    }
+});
+
+\n// Actualizar nombre de un permiso (PUT /configuraciones/permisos/:clave)
 router.put('/permisos/:clave', async (req, res) => {
     const { clave } = req.params;
     const { nombre } = req.body;
@@ -375,26 +395,6 @@ router.get('/roles/:id/usuarios', async (req, res) => {
     } catch (error) {
         console.error('Error al obtener usuarios del rol:', error.message);
         res.status(500).json({ success: false, error: 'Error al obtener usuarios' });
-    }
-});
-
-// Reasignar rol a múltiples usuarios (PUT /configuraciones/roles/reasignar-usuarios)
-router.put('/roles/reasignar-usuarios', async (req, res) => {
-    const { asignaciones } = req.body; // array de { usuario_id, nuevo_rol_id }
-    
-    if (!Array.isArray(asignaciones)) {
-        return res.status(400).json({ success: false, message: 'Las asignaciones deben ser un array' });
-    }
-
-    try {
-        // Ejecutar las actualizaciones en un bucle
-        for (let asig of asignaciones) {
-            await db.execute('UPDATE d_usuarios_roles SET rol_id = ? WHERE usuario_id = ?', [asig.nuevo_rol_id, asig.usuario_id]);
-        }
-        res.json({ success: true, message: 'Usuarios reasignados correctamente' });
-    } catch (error) {
-        console.error('Error al reasignar usuarios:', error.message);
-        res.status(500).json({ success: false, error: 'Error al reasignar usuarios' });
     }
 });
 
