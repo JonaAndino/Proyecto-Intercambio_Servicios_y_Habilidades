@@ -5817,12 +5817,17 @@
                     // Bloquear si no tiene permiso para asignar roles
                     const puedeAsignar = window.Permisos && typeof window.Permisos.puedeAsignarRolesPermisos === 'function' ? window.Permisos.puedeAsignarRolesPermisos() : false;
                     if (!puedeAsignar) {
-                        // Buscar el rol default (es_default=1) o el rol "Usuario Estandar" por nombre (que es el rol básico seguro)
-                        const rolDefault = todosLosRolesCargados.find(r => r.es_default == 1) 
-                            || todosLosRolesCargados.find(r => r.nombre_rol.toLowerCase().includes('estandar')) 
-                            || todosLosRolesCargados.find(r => r.nombre_rol.toLowerCase().includes('estándar')) 
-                            || todosLosRolesCargados.find(r => r.id_rol == 2) 
-                            || todosLosRolesCargados[todosLosRolesCargados.length - 1]; // Fallback al último (normalmente el de menores privilegios)
+                        // Buscar un rol seguro (excluyendo administradores)
+                        const rolesSeguros = todosLosRolesCargados.filter(r => !r.nombre_rol.toLowerCase().includes('admin'));
+                        
+                        let rolDefault = rolesSeguros.find(r => r.es_default == 1) 
+                            || rolesSeguros.find(r => r.nombre_rol.toLowerCase().includes('estandar')) 
+                            || rolesSeguros.find(r => r.nombre_rol.toLowerCase().includes('estándar')) 
+                            || rolesSeguros.find(r => r.id_rol == 2) 
+                            || rolesSeguros[0]; 
+
+                        if (!rolDefault) rolDefault = todosLosRolesCargados[0]; // Último recurso absoluto
+
                         if (rolDefault) {
                             selectRol.value = rolDefault.id_rol;
                         }
