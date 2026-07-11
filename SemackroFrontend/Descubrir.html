@@ -94,41 +94,7 @@
                     return;
                 }
 
-                // 1. Obtener todas las personas para poder mostrar nombres e imágenes
-                let personasMap = {};
-                try {
-                    const respP = await fetch(`${API_BASE}/api/personas`);
-                    if (respP.ok) {
-                        const jsonP = await respP.json();
-                        if (jsonP && jsonP.success && Array.isArray(jsonP.data)) {
-                            jsonP.data.forEach(p => {
-                                const pid = p.id_Perfil_Persona || p.id_Perfil || p.id;
-                                if (pid) personasMap[String(pid)] = p;
-                            });
-                        }
-                    }
-                } catch (e) {
-                    console.warn('No se pudo cargar mapa de personas', e);
-                }
-
-                // 2. Obtener TODAS las calificaciones detalladas
-                let calificacionesMap = {};
-                try {
-                    const resCal = await fetch(`${API_BASE}/intercambios/calificaciones/${perfilId}?page=1&limit=1000`);
-                    if (resCal.ok) {
-                        const jsonCal = await resCal.json();
-                        if (jsonCal.success && Array.isArray(jsonCal.data)) {
-                            jsonCal.data.forEach(c => {
-                                // Mapeamos por el id del intercambio
-                                if (c.id_intercambio) calificacionesMap[String(c.id_intercambio)] = c;
-                            });
-                        }
-                    }
-                } catch (e) {
-                    console.warn('No se pudieron obtener calificaciones detalladas', e);
-                }
-
-                // 3. Obtener TODOS los intercambios finalizados
+                // 1. Obtener TODOS los intercambios finalizados
                 let intercambiosBrutos = [];
                 try {
                     const resAll = await fetch(`${API_BASE}/intercambios/historial/${perfilId}?page=1&limit=1000`);
@@ -143,14 +109,8 @@
                 }
 
                 // Unificar y enriquecer los datos
-                // Lógica: datos del "otro usuario" vienen del endpoint /historial (otro_usuario)
-                // Datos de reseña (puntuacion, comentario) vienen del endpoint /calificaciones (cal)
-                // Cruce por id_intercambio — igual que perfil.html
                 todosLosIntercambios = intercambiosBrutos.map(it => {
                     const idIntercambio = it.id_intercambio ?? it.id_intercambio_final ?? it.id ?? null;
-
-                    // Buscar la calificación recibida en este intercambio (igual que perfil.html usa reviewsData)
-                    const cal = idIntercambio ? calificacionesMap[String(idIntercambio)] : null;
 
                     // Datos del otro usuario — el backend ya resuelve quién es (persona1 o persona2)
                     let nombreCompleto = it.otro_usuario?.nombre || 'Usuario';
@@ -159,36 +119,9 @@
                     let profesion = '';
                     let ubicacion = '';
 
-                    // Enriquecer con datos de perfil si están disponibles en personasMap
-                    if (idOtro && personasMap[String(idOtro)]) {
-                        const p = personasMap[String(idOtro)];
-                        if (p.nombre_Persona) nombreCompleto = `${p.nombre_Persona} ${p.apellido_Persona || ''}`.trim();
-                        imagen = p.imagenUrl_Persona || imagen;
-                        profesion = p.titulo_Profesion || '';
-                        ubicacion = p.ciudad_Persona || '';
-                    }
-
-                    // Fecha: del historial primero, luego de la calificación
-                    const fechaRaw = it.fecha || it.fecha_finalizacion || (cal ? cal.fecha_calificacion : null) || null;
-
-                    // === Reseña recibida ===
-                    // Igual que perfil.html: cal.puntuacion y cal.comentario son los campos del endpoint /calificaciones
-                    // it.calificacion_recibida e it.comentario_recibido vienen directamente del endpoint /historial
-                    let estrellas = null;
-                    if (cal != null && cal.puntuacion != null) {
-                        estrellas = cal.puntuacion;
-                    } else if (it.calificacion_recibida != null) {
-                        estrellas = it.calificacion_recibida;
-                    }
-
-                    let comentario = '';
-                    if (cal != null && cal.comentario != null && cal.comentario !== '') {
-                        // Fuente principal: igual que perfil.html usa cal.comentario
-                        comentario = cal.comentario;
-                    } else if (it.comentario_recibido != null && it.comentario_recibido !== '') {
-                        // Fallback: lo que ya trae el historial
-                        comentario = it.comentario_recibido;
-                    }
+                    const fechaRaw = it.fecha || it.fecha_finalizacion || null;
+                    let estrellas = it.calificacion_recibida || null;
+                    let comentario = it.comentario_recibido || '';
 
                     const partes = nombreCompleto.trim().split(' ');
                     return {
