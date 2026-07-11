@@ -217,7 +217,7 @@ const server = http.createServer(app);
 // Configuración básica de CORS para Socket.io (ajusta orígenes en producción)
 const io = new Server(server, {
     cors: {
-        origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'http://127.0.0.1:5050', 'http://localhost:5050', 'http://localhost:3000', 'http://localhost:3001', 'https://semackro.vercel.app', 'https://tu-dominio.com', 'https://www.tu-dominio.com'],
+        origin: '*',
         methods: ['GET', 'POST']
     }
 });
