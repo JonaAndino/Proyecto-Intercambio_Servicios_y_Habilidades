@@ -28,7 +28,7 @@ router.post('/', async (req, res) => {
 // Obtener todas las solicitudes (admin)
 router.get('/', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM solicitud_verificacion');
+        const [rows] = await db.query("SELECT * FROM solicitud_verificacion ORDER BY CASE WHEN estado = 'pendiente' THEN 0 ELSE 1 END, fecha_solicitud DESC");
         res.json(rows);
     } catch (err) {
         res.status(500).json({ error: 'Error al obtener las solicitudes' });
