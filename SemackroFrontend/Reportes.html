@@ -5729,7 +5729,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Rol Inicial <span class="text-red-500">*</span></label>
-                        <select id="regRol" required onchange="actualizarDescripcionRol()"
+                        <select id="regRol" required onchange="mostrarDescripcionRolSeleccionado()"
                             class="w-full border border-slate-200 dark:border-gray-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 dark:bg-gray-950 text-gray-800 dark:text-gray-100 transition-all">
                             <option value="2">Usuario Estandar</option>
                             <option value="1">Administrador</option>
@@ -5768,7 +5768,7 @@
             }
         }
 
-        function actualizarDescripcionRol() {
+        function mostrarDescripcionRolSeleccionado() {
             const selectRol = document.getElementById('regRol');
             const descEl = document.getElementById('regRolDesc');
             if (!selectRol || !descEl || typeof todosLosRolesCargados === 'undefined') return;
@@ -5817,8 +5817,12 @@
                     // Bloquear si no tiene permiso para asignar roles
                     const puedeAsignar = window.Permisos && typeof window.Permisos.puedeAsignarRolesPermisos === 'function' ? window.Permisos.puedeAsignarRolesPermisos() : false;
                     if (!puedeAsignar) {
-                        // Buscar el rol default (es_default=1) o el rol "Usuario Estandar" (id=2)
-                        const rolDefault = todosLosRolesCargados.find(r => r.es_default == 1) || todosLosRolesCargados.find(r => r.id_rol === 2) || todosLosRolesCargados[0];
+                        // Buscar el rol default (es_default=1) o el rol "Usuario Estandar" por nombre (que es el rol básico seguro)
+                        const rolDefault = todosLosRolesCargados.find(r => r.es_default == 1) 
+                            || todosLosRolesCargados.find(r => r.nombre_rol.toLowerCase().includes('estandar')) 
+                            || todosLosRolesCargados.find(r => r.nombre_rol.toLowerCase().includes('estándar')) 
+                            || todosLosRolesCargados.find(r => r.id_rol == 2) 
+                            || todosLosRolesCargados[todosLosRolesCargados.length - 1]; // Fallback al último (normalmente el de menores privilegios)
                         if (rolDefault) {
                             selectRol.value = rolDefault.id_rol;
                         }
@@ -5830,7 +5834,7 @@
                     }
                     
                     // Actualizar descripción inicial
-                    actualizarDescripcionRol();
+                    mostrarDescripcionRolSeleccionado();
                 }
 
                 // Rellenar combobox de Tipo de ID dinámicamente según configuraciones activas
