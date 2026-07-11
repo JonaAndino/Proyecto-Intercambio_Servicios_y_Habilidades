@@ -5467,29 +5467,36 @@ function mostrarNotificacionChatFlotante(mensaje) {
     if (!container) {
         container = document.createElement('div');
         container.id = 'chat-notifications-container';
-        // fixed, bottom-4, right-4, z-50 y pointer-events-none (para no bloquear clicks de abajo)
-        container.className = 'fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none';
+        // Estilos puros vanilla CSS para posicionamiento y capa z-index
+        container.style.cssText = "position: fixed; bottom: 16px; right: 16px; z-index: 999999; display: flex; flex-direction: column; gap: 8px; pointer-events: none;";
         document.body.appendChild(container);
     }
 
     const toast = document.createElement('div');
-    toast.className = 'bg-white rounded-lg shadow-xl border border-gray-200 p-3 w-80 transform transition-all duration-300 translate-y-10 opacity-0 pointer-events-auto flex items-start gap-3 cursor-pointer hover:bg-gray-50';
+    // Estilos puros vanilla CSS para el contenedor de la tarjeta
+    toast.style.cssText = "background-color: white; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); border: 1px solid #e5e7eb; padding: 12px; width: 320px; transition: all 0.3s ease; transform: translateY(40px); opacity: 0; pointer-events: auto; display: flex; align-items: start; gap: 12px; cursor: pointer; box-sizing: border-box; justify-content: space-between;";
     
+    // Efecto hover vanilla CSS
+    toast.onmouseenter = () => { toast.style.backgroundColor = '#f9fafb'; };
+    toast.onmouseleave = () => { toast.style.backgroundColor = 'white'; };
+
     const nombre = mensaje.senderName || 'Nuevo mensaje';
     const initials = nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-    const avatarHtml = `<div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold shrink-0">${initials}</div>`;
+    
+    // Avatar con estilos inline
+    const avatarHtml = `<div style="width: 40px; height: 40px; border-radius: 9999px; background-color: #dbeafe; display: flex; align-items: center; justify-content: center; color: #2563eb; font-weight: bold; flex-shrink: 0; font-family: sans-serif;">${initials}</div>`;
     
     let texto = mensaje.contenido || 'Archivo adjunto...';
     if (texto.length > 50) texto = texto.substring(0, 50) + '...';
 
     toast.innerHTML = `
         ${avatarHtml}
-        <div class="flex-1 min-w-0">
-            <h4 class="text-sm font-semibold text-gray-900 truncate">${nombre}</h4>
-            <p class="text-xs text-gray-500 truncate">${texto}</p>
+        <div style="flex: 1; min-width: 0; font-family: sans-serif; display: flex; flex-direction: column; justify-content: center; height: 40px; padding-left: 8px;">
+            <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${nombre}</h4>
+            <p style="margin: 0; font-size: 12px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${texto}</p>
         </div>
-        <button class="text-gray-400 hover:text-gray-600 shrink-0 p-1" onclick="event.stopPropagation(); this.closest('div.w-80').remove()">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <button style="color: #9ca3af; background: none; border: none; cursor: pointer; flex-shrink: 0; padding: 4px; display: flex; align-items: center; justify-content: center;" onclick="event.stopPropagation(); this.parentElement.remove()">
+            <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
     `;
 
@@ -5507,14 +5514,19 @@ function mostrarNotificacionChatFlotante(mensaje) {
 
     container.appendChild(toast);
 
+    // Animar entrada de manera nativa sin depender de clases Tailwind
     requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-10', 'opacity-0');
+        setTimeout(() => {
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+        }, 50);
     });
 
     // Auto remover a los 5 segundos
     setTimeout(() => {
         if (toast.parentNode) {
-            toast.classList.add('translate-y-10', 'opacity-0');
+            toast.style.transform = 'translateY(40px)';
+            toast.style.opacity = '0';
             setTimeout(() => { if (toast.parentNode) toast.remove(); }, 300);
         }
     }, 5000);
