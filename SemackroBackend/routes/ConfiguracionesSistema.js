@@ -365,7 +365,7 @@ router.get('/roles/:id/usuarios', async (req, res) => {
 
     try {
         const [usuarios] = await db.execute(`
-            SELECT u.id_usuario, u.nombre, u.correo, p.nombre_Persona, p.apellido_Persona, p.imagenUrl_Persona 
+            SELECT u.id_usuario, u.correo, p.nombre_Persona, p.apellido_Persona, p.imagenUrl_Persona 
             FROM Usuarios u 
             JOIN d_usuarios_roles ur ON u.id_usuario = ur.usuario_id 
             LEFT JOIN Personas p ON u.id_usuario = p.id_Usuario

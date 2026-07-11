@@ -6207,9 +6207,11 @@
 
             let html = '';
             usuariosAReasignar.forEach(u => {
+                // Si nombre_Persona no existe (porque no ha completado el perfil), sacamos de su correo el prefijo
+                let fallbackNombre = u.correo ? u.correo.split('@')[0] : 'Desconocido';
                 const nombreCompleto = u.nombre_Persona 
                     ? escapeHtml(u.nombre_Persona + ' ' + (u.apellido_Persona || '')) 
-                    : escapeHtml(u.nombre || 'Desconocido');
+                    : escapeHtml(fallbackNombre);
                 
                 const imgUrlFull = u.imagenUrl_Persona ? (u.imagenUrl_Persona.startsWith('http') ? u.imagenUrl_Persona : `${window.APP_CONFIG.BACKEND_URL}${u.imagenUrl_Persona}`) : '';
                 const imgHTML = u.imagenUrl_Persona 
@@ -6217,20 +6219,20 @@
                     : `<span class="iconify text-slate-500 dark:text-gray-400 text-lg" data-icon="mdi:user"></span>`;
                 
                 const btnVerPerfil = puedeVerPerfil 
-                    ? `<button onclick="abrirEdicionPerfil(${u.id_usuario})" class="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 rounded-lg hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 transition-all shadow-sm text-xs mt-1" title="Ver Perfil"><span class="iconify mr-1" data-icon="mdi:account-eye"></span>Ver Perfil</button>` 
+                    ? `<button onclick="abrirEdicionPerfil(${u.id_usuario})" class="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 rounded-lg hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 transition-all shadow-sm text-xs flex-shrink-0 flex items-center gap-1 ml-2" title="Ver Perfil"><span class="iconify" data-icon="mdi:account-eye"></span>Ver Perfil</button>` 
                     : '';
 
                 html += `
                     <div class="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm hover:shadow-md transition-shadow">
-                        <div class="flex items-center gap-3 overflow-hidden">
+                        <div class="flex items-center gap-3 overflow-hidden flex-1 w-full">
                             <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
                                 ${imgHTML}
                             </div>
-                            <div class="min-w-0">
+                            <div class="min-w-0 flex-1">
                                 <p class="text-sm font-bold text-slate-800 dark:text-white truncate">${nombreCompleto}</p>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 truncate">${escapeHtml(u.correo)}</p>
-                                ${btnVerPerfil}
                             </div>
+                            ${btnVerPerfil}
                         </div>
                         <div class="w-full sm:w-auto flex-shrink-0">
                             <select id="select_reasignar_user_${u.id_usuario}" class="w-full sm:w-48 user-reasign-select bg-slate-50 dark:bg-gray-700 border border-slate-200 dark:border-gray-600 text-slate-800 dark:text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
