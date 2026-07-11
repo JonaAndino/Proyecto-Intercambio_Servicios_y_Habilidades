@@ -1063,7 +1063,7 @@
                                     item.id = 'sidebar-report-item';
                                     item.href = '#';
                                     item.setAttribute('data-view', 'VER_METRICAS');
-                                    item.setAttribute('onclick', "navigateTo('reportes'); return false;");
+                                    item.setAttribute('onclick', "navigateTo('VER_METRICAS'); return false;");
                                     item.className = 'sidebar-item flex items-center space-x-3 p-3 rounded-lg text-gray-700';
                                     item.innerHTML = `
                                         <span class="iconify w-6 h-6 text-blue-600" data-icon="mdi:shield-crown" style="font-size:24px;"></span>
@@ -1354,7 +1354,7 @@
         </div>
 
         <!-- Vista: Reportes (carga Reportes.html dentro del layout) -->
-        <div id="reportesView" class="view-section" style="display: none; height: calc(100vh - 50px); overflow: hidden;">
+        <div id="VER_METRICASView" class="view-section" style="display: none; height: calc(100vh - 50px); overflow: hidden;">
             <iframe src="./Reportes.html" id="reportesIframe"
                 style="width: 100%; height: 100%; border: none; display: block; background-color: #f3f4f6;"
                 title="Panel de administración">
