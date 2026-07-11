@@ -2758,6 +2758,26 @@ async function viewProfile(perfilId) {
   console.log("viewProfile() llamado con perfilId:", perfilId);
   window.perfilBackToView = (typeof currentView !== 'undefined' ? currentView : "descubrir");
 
+  // === PRIVACY CHECK START ===
+  try {
+      const miId = localStorage.getItem('usuarioId') || sessionStorage.getItem('usuarioId');
+      if (typeof allUsers !== 'undefined' && Array.isArray(allUsers)) {
+          const userInList = allUsers.find(u => Number(u.id) === Number(perfilId) || Number(u.id_Perfil_Persona) === Number(perfilId));
+          if (userInList) {
+              const isDifferentUser = !!(userInList.usuarioId && parseInt(userInList.usuarioId, 10) !== parseInt(miId, 10));
+              if (isDifferentUser && (userInList.perfil_publico_Persona == 0 || userInList.perfil_publico_Persona === false)) {
+                  if (window.Toast) {
+                      Toast.error('Perfil Privado', 'Este usuario tiene su perfil configurado como privado y no se puede ver su información detallada.');
+                  } else {
+                      alert('Este usuario tiene su perfil privado.');
+                  }
+                  return; // Stop and don't hide grid
+              }
+          }
+      }
+  } catch(e) { console.error('Error comprobando privacidad en UI:', e); }
+  // === PRIVACY CHECK END ===
+
   try {
     // Ocultar el grid de usuarios
     const descubrirView = document.getElementById("descubrirView");
