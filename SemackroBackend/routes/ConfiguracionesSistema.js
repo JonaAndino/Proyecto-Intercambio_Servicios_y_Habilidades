@@ -337,6 +337,45 @@ router.put('/roles/:id', async (req, res) => {
     }
 });
 
+// Obtener usuarios asignados a un rol (GET /configuraciones/roles/:id/usuarios)
+router.get('/roles/:id/usuarios', async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ success: false, message: 'ID de rol no válido' });
+
+    try {
+        const [usuarios] = await db.execute(`
+            SELECT u.id_usuario, u.nombre, u.correo 
+            FROM Usuarios u 
+            JOIN d_usuarios_roles ur ON u.id_usuario = ur.usuario_id 
+            WHERE ur.rol_id = ?
+        `, [id]);
+        res.json({ success: true, data: usuarios });
+    } catch (error) {
+        console.error('Error al obtener usuarios del rol:', error.message);
+        res.status(500).json({ success: false, error: 'Error al obtener usuarios' });
+    }
+});
+
+// Reasignar rol a múltiples usuarios (PUT /configuraciones/roles/reasignar-usuarios)
+router.put('/roles/reasignar-usuarios', async (req, res) => {
+    const { asignaciones } = req.body; // array de { usuario_id, nuevo_rol_id }
+    
+    if (!Array.isArray(asignaciones)) {
+        return res.status(400).json({ success: false, message: 'Las asignaciones deben ser un array' });
+    }
+
+    try {
+        // Ejecutar las actualizaciones en un bucle
+        for (let asig of asignaciones) {
+            await db.execute('UPDATE d_usuarios_roles SET rol_id = ? WHERE usuario_id = ?', [asig.nuevo_rol_id, asig.usuario_id]);
+        }
+        res.json({ success: true, message: 'Usuarios reasignados correctamente' });
+    } catch (error) {
+        console.error('Error al reasignar usuarios:', error.message);
+        res.status(500).json({ success: false, error: 'Error al reasignar usuarios' });
+    }
+});
+
 // Eliminar un rol (DELETE /configuraciones/roles/:id)
 router.delete('/roles/:id', async (req, res) => {
     const id = parseInt(req.params.id);
