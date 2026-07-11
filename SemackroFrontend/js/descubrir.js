@@ -1207,6 +1207,10 @@ function esPerfilVerificado(estadoVerificacion) {
 }
 
 async function obtenerEstadoVerificacionPerfil(idPerfilPersona, estadoFallback = "") {
+  if (!idPerfilPersona || idPerfilPersona === "null") {
+    return normalizarEstadoVerificacion(estadoFallback) || "no_verificado";
+  }
+
   const estadoLocal = normalizarEstadoVerificacion(estadoFallback);
   if (estadoLocal) {
     return estadoLocal;
@@ -1236,6 +1240,17 @@ async function obtenerEstadoVerificacionPerfil(idPerfilPersona, estadoFallback =
     verificationStatusCache.set(cacheKey, "no_verificado");
     return "no_verificado";
   }
+}
+
+// Function to limit concurrent requests to avoid server overload (HTTP 500)
+async function processInBatches(items, batchSize, fn) {
+  const results = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const batchResults = await Promise.all(batch.map(fn));
+    results.push(...batchResults);
+  }
+  return results;
 }
 
 async function cargarDatosUsuario() {
@@ -1543,8 +1558,8 @@ async function aplicarFiltros() {
       );
     });
 
-    // 3. Procesar usuarios en paralelo
-    const usuariosPromises = personasFiltradas.map(async (persona) => {
+    // 3. Procesar usuarios en lotes para no saturar la base de datos
+    const resultados = await processInBatches(personasFiltradas, 5, async (persona) => {
       try {
         const estadoVerificacion = await obtenerEstadoVerificacionPerfil(
           persona.id_Perfil_Persona,
@@ -1644,7 +1659,6 @@ async function aplicarFiltros() {
       }
     });
 
-    const resultados = await Promise.all(usuariosPromises);
     let usuariosFiltrados = resultados.filter((u) => u !== null);
 
     // 4. Aplicar filtro de búsqueda si existe
@@ -1773,8 +1787,8 @@ async function cargarUsuariosReales() {
 
     console.log(`Procesando ${personasFiltradas.length} usuarios...`);
 
-    // 2. Procesar usuarios en paralelo (mucho más rápido)
-    const usuariosPromises = personasFiltradas.map(async (persona) => {
+    // 2. Procesar usuarios en lotes para no saturar la base de datos
+    const resultados = await processInBatches(personasFiltradas, 5, async (persona) => {
       try {
         const estadoVerificacion = await obtenerEstadoVerificacionPerfil(
           persona.id_Perfil_Persona,
@@ -1878,9 +1892,6 @@ async function cargarUsuariosReales() {
         return null;
       }
     });
-
-    // Esperar a que todos los usuarios se procesen en paralelo
-    const resultados = await Promise.all(usuariosPromises);
 
     // Filtrar nulos y asignar
     usuariosReales = resultados.filter((u) => u !== null);
