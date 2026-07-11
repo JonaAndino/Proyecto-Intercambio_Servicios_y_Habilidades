@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS Permisos (
 
 -- 2. Insertar los permisos base del sistema
 INSERT IGNORE INTO Permisos (id_permiso, clave_permiso, nombre_permiso) VALUES
-(1, 'VER_METRICAS', 'Ver reportes y métricas de uso'),
+(1, 'VER_METRICAS', 'Panel de administración'),
 (2, 'MODERAR_USUARIOS', 'Bloquear y moderar usuarios de la comunidad'),
 (3, 'GESTIONAR_CONFIGURACION', 'Editar configuraciones y tablas maestras'),
 (4, 'ACEPTAR_INTERCAMBIOS', 'Solicitar y concretar intercambios de habilidades'),

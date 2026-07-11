@@ -87,15 +87,14 @@ INSERT IGNORE INTO opciones (nombre, link, orden) VALUES
 ('Mensajes', 'mensajes', 4),
 ('Solicitudes de trabajo', 'solicitudesEnviadas', 5),
 ('Mis favoritos', 'favoritos', 6),
-('Historial', 'historial', 7),
-('Reportes', 'reportes', 8);
+('Historial', 'historial', 7);
 
 -- Asignar opciones al Administrador (rol 1)
 INSERT IGNORE INTO d_roles_opciones (rol_id, opcion_id) 
 SELECT 1, opcion_id FROM opciones;
 
 -- Asignar opciones al Tecnico (rol 2) y Cliente (rol 3)
-INSERT IGNORE INTO d_roles_opciones (rol_id, opcion_id) 
-SELECT 2, opcion_id FROM opciones WHERE link != 'reportes';
-INSERT IGNORE INTO d_roles_opciones (rol_id, opcion_id) 
-SELECT 3, opcion_id FROM opciones WHERE link != 'reportes';
+INSERT IGNORE INTO d_roles_opciones (rol_id, opcion_id)
+SELECT 2, opcion_id FROM opciones;
+INSERT IGNORE INTO d_roles_opciones (rol_id, opcion_id)
+SELECT 3, opcion_id FROM opciones;
