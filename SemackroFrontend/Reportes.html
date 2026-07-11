@@ -6268,7 +6268,7 @@
                                     <span class="iconify text-xl" data-icon="${iconoSVG}"></span>
                                 </div>
                                 <div class="flex-1">
-                                    <span class="block text-sm font-semibold ${colorTitulo}">${escapeHtml(p.nombre)}</span>
+                                    <span class="block text-sm font-semibold ${colorTitulo}">${escapeHtml(p.clave === 'VER_HISTORIAL_PERSONAL' ? 'Visualizar tabla global de postulaciones' : p.nombre)}</span>
                                     <span class="block text-xs text-gray-400 dark:text-gray-500 mt-0.5">${escapeHtml(p.clave)} | Rol Base: ${strBaseRol}${textoExcepcion}</span>
                                 </div>
                             </div>

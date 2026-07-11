@@ -3408,8 +3408,10 @@
         // Inicializar listeners de modales de administración y chequear rol
         document.addEventListener('DOMContentLoaded', () => {
             const isAdmin = window.Permisos ? window.Permisos.esAdmin() : localStorage.getItem('usuarioRolId') === '1';
+            const tienePermisoTabla = window.Permisos && typeof window.Permisos.puedeVerHistorial === 'function' ? window.Permisos.puedeVerHistorial() : isAdmin;
+            
             const tabsContainer = document.getElementById('adminOtTabsContainer');
-            if (isAdmin && tabsContainer) {
+            if (tienePermisoTabla && tabsContainer) {
                 tabsContainer.classList.remove('hidden');
             }
 

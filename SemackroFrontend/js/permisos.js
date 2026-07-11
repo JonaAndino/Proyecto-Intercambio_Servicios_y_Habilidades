@@ -72,10 +72,10 @@ window.Permisos = {
         return permisos.includes('ACEPTAR_INTERCAMBIOS');
     },
 
-    /** ¿Puede ver historial personal? */
+    /** ¿Puede ver el panel global de postulaciones (antes historial)? */
     puedeVerHistorial() {
         const permisos = this._obtenerPermisos();
-        if (permisos.length === 0) return true; // Todos pueden por defecto
+        if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
         return permisos.includes('VER_HISTORIAL_PERSONAL');
     },
 
