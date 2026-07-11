@@ -4180,6 +4180,22 @@
                 const personaDB = dataPersona.data;
                 perfilPersonaId = personaDB.id_Perfil_Persona;
 
+                // === PRIVACY CHECK START ===
+                if (isDifferentUser && (personaDB.perfil_publico_Persona == 0 || personaDB.perfil_publico_Persona === false)) {
+                    if (window.parent && window.parent.Toast) {
+                        window.parent.Toast.error('Perfil Privado', 'Este usuario tiene su perfil configurado como privado.');
+                    } else if (window.Toast) {
+                        Toast.error('Perfil Privado', 'Este usuario tiene su perfil configurado como privado.');
+                    } else {
+                        alert('Este usuario tiene su perfil privado.');
+                    }
+                    
+                    const mainContent = document.getElementById('mainContent') || document.body;
+                    mainContent.innerHTML = "<div style='text-align:center; padding: 100px 20px; color: #6b7280; font-family: system-ui, sans-serif;'><span class='iconify' data-icon='mdi:shield-lock-outline' style='font-size: 5rem; display: block; margin: 0 auto 15px; color: #9ca3af;'></span><h2 style='font-size: 1.5rem; font-weight: 600; color: #374151; margin-bottom: 10px;'>Perfil Privado</h2><p style='font-size: 1.1rem;'>Este usuario ha configurado su perfil como privado y no se puede ver su información detallada.</p></div>";
+                    return;
+                }
+                // === PRIVACY CHECK END ===
+
                 // 2. Consultar dirección (sin mostrar error 404 en consola)
                 let direccionDB = null;
                 try {
@@ -8554,7 +8570,10 @@
                     }
                     usuario.perfil_publico = nuevoEstado;
                     if (window.Toast) {
-                        Toast.success('Éxito', t('privacyUpdated') || 'Privacidad del perfil actualizada.');
+                        const mensaje = nuevoEstado 
+                            ? 'Usted ha activado su perfil público. Ahora todos pueden ver su información.' 
+                            : 'Usted ha activado su perfil privado. Ahora nadie podrá entrar a ver su información detallada.';
+                        Toast.success('Privacidad Actualizada', mensaje);
                     }
                 } catch (error) {
                     toggle.checked = !nuevoEstado;

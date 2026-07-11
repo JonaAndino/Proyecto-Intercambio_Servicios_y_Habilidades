@@ -1742,6 +1742,7 @@ async function cargarUsuariosReales() {
           avatarInitials: (persona.nombre_Persona || "U")[0].toUpperCase(),
           urlFondoBanner: persona.url_fondo_banner || null,
           estadoVerificacion: persona.estado_verificacion || persona.estadoVerificacion || persona.verificado,
+          perfil_publico_Persona: persona.perfil_publico_Persona,
           detailsFetched: false
         };
       });

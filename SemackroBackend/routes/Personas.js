@@ -143,6 +143,7 @@ router.get('/', async (req, res) => {
                 p.mascota,
                 p.url_fondo_banner,
                 p.telefono_Persona,
+                p.perfil_publico_Persona,
                 u.activo,
                 u.correo,
                 u.intentos_fallidos,
@@ -211,6 +212,7 @@ router.get('/:id', async (req, res) => {
                 p.mascota,
                 p.url_fondo_banner,
                 p.telefono_Persona,
+                p.perfil_publico_Persona,
                 u.correo,
                 u.nombre AS nombre_usuario_cuenta,
                 u.activo
@@ -496,6 +498,7 @@ router.get('/categoria/:idCategoria', async (req, res) => {
                 p.mascota,
                 p.url_fondo_banner,
                 p.telefono_Persona,
+                p.perfil_publico_Persona,
                 u.activo,
                 u.correo,
                 u.intentos_fallidos,
