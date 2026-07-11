@@ -1787,121 +1787,45 @@ async function cargarUsuariosReales() {
 
     console.log(`Procesando ${personasFiltradas.length} usuarios...`);
 
-    // 2. Procesar usuarios en lotes para no saturar la base de datos
-    const resultados = await processInBatches(personasFiltradas, 5, async (persona) => {
-      try {
-        const estadoVerificacion = await obtenerEstadoVerificacionPerfil(
-          persona.id_Perfil_Persona,
-          persona.estado_verificacion || persona.estadoVerificacion || persona.verificado,
-        );
-
-        if (!esPerfilVerificado(estadoVerificacion)) {
-          return null;
-        }
-
-        // Hacer ambas peticiones en paralelo
-        const [resHabilidades, resDireccion] = await Promise.all([
-          fetch(
-            `${API_BASE}/habilidades/persona/${persona.id_Perfil_Persona}`,
-          ).catch(() => null),
-          fetch(
-            `${API_BASE}/direcciones/persona/${persona.id_Perfil_Persona}`,
-          ).catch(() => null),
-        ]);
-
-        // Procesar habilidades
-        let habilidades = [];
-        if (resHabilidades && resHabilidades.ok) {
-          const dataHabilidades = await resHabilidades.json();
-          if (dataHabilidades.success && dataHabilidades.data) {
-            habilidades = dataHabilidades.data
-              .filter((h) => h.tipoEstado_Habilidad === "Ofrece")
-              .map((h) => h.nombre_Habilidad)
-              .slice(0, 4);
-          }
-        }
-
-        // Procesar dirección
-        let location = "Sin ubicación";
-        if (resDireccion && resDireccion.ok) {
-          const dataDireccion = await resDireccion.json();
-          if (dataDireccion.success && dataDireccion.data) {
-            const direccion = Array.isArray(dataDireccion.data)
-              ? dataDireccion.data[0]
-              : dataDireccion.data;
-
-            const ciudad = direccion.ciudad_Direccion || direccion.ciudad || "";
-            const pais = direccion.pais_Direccion || direccion.pais || "";
-            location =
-              [ciudad, pais].filter(Boolean).join(", ") || "Sin ubicación";
-          }
-        }
-
-        // Obtener estadísticas reales
-        let rating = 0;
-        let exchanges = 0;
-
-        try {
-          const resEstadisticas = await fetch(
-            `${API_BASE}/intercambios/estadisticas/${persona.id_Perfil_Persona}`,
-          );
-          if (resEstadisticas.ok) {
-            const dataEstadisticas = await resEstadisticas.json();
-            if (dataEstadisticas.success && dataEstadisticas.data) {
-              rating = dataEstadisticas.data.promedio_calificacion || 0;
-              exchanges =
-                dataEstadisticas.data.total_intercambios_completados || 0;
-            }
-          }
-        } catch (e) {
-          console.error("Error al obtener estadísticas:", e);
-        }
-
-        // Crear objeto de usuario
+    // Mapeo RÁPIDO (Sin fetch extra, Lazy Loading se encarga después)
+    usuariosReales = personasFiltradas
+      .filter((persona) => {
+        const estadoVerif = persona.estado_verificacion || persona.estadoVerificacion || persona.verificado;
+        const norm = normalizarEstadoVerificacion(estadoVerif);
+        return norm === "aprobado" || norm === "verificado";
+      })
+      .map((persona) => {
         return {
           id: persona.id_Perfil_Persona,
           usuarioId: persona.id_Usuario,
-          name:
-            `${persona.nombre_Persona || ""} ${persona.apellido_Persona || ""}`.trim() ||
-            "Usuario",
-          profession:
-            persona.descripcionPerfil_Persona || "Usuario SEMACKRO",
-          genero:
-            persona.genero_Persona || persona.genero || persona.genero_Usuario || "",
-          availability:
-            persona.disponibilidad_Persona || persona.disponibilidad || "",
-          location: location,
-          skills: habilidades,
+          name: `${persona.nombre_Persona || ""} ${persona.apellido_Persona || ""}`.trim() || "Usuario",
+          profession: persona.descripcionPerfil_Persona || "Usuario SEMACKRO",
+          genero: persona.genero_Persona || persona.genero || persona.genero_Usuario || "",
+          availability: persona.disponibilidad_Persona || persona.disponibilidad || "",
+          location: persona.location_resumida || "Sin ubicación",
+          location_sort: persona.location_resumida || "Sin ubicación",
+          skills: [], // Lazy
+          skills_count: Number(persona.habilidades_count || 0),
           bio: persona.descripcionPerfil_Persona || "Sin descripción",
-          experienceYears: Number(
-            persona.anios_experiencia || persona.anios_experiencia_Persona || 0,
-          ),
-          rating: rating,
-          exchanges: exchanges,
+          experienceYears: Number(persona.anios_experiencia || persona.anios_experiencia_Persona || 0),
+          rating: 0, // Lazy
+          exchanges: 0, // Lazy
           online: Math.random() > 0.5,
           avatar: persona.imagenUrl_Persona || null,
           avatarInitials: (persona.nombre_Persona || "U")[0].toUpperCase(),
           urlFondoBanner: persona.url_fondo_banner || null,
-          estadoVerificacion,
+          estadoVerificacion: persona.estado_verificacion || persona.estadoVerificacion || persona.verificado,
+          detailsFetched: false
         };
-      } catch (error) {
-        console.error(
-          `Error al procesar persona ${persona.id_Perfil_Persona}:`,
-          error,
-        );
-        return null;
-      }
-    });
+      });
 
-    // Filtrar nulos y asignar
-    usuariosReales = resultados.filter((u) => u !== null);
     allUsers = [...usuariosReales]; // Guardar copia completa
 
     console.timeEnd("Carga de usuarios");
     console.log(` ${usuariosReales.length} usuarios cargados exitosamente`);
 
     // 3. Renderizar usuarios reales con paginación
-    renderUserCardsReal();
+    await renderUserCardsReal();
   } catch (error) {
     console.error("Error al cargar usuarios:", error);
     usersGrid.innerHTML =
@@ -1917,20 +1841,16 @@ function sortUsers(users, sortType) {
 
   switch (sortType) {
     case "recent":
-      // Ordenar por ID descendente (más recientes primero)
       return sorted.sort((a, b) => b.id - a.id);
 
     case "name":
-      // Ordenar alfabéticamente por nombre
       return sorted.sort((a, b) => a.name.localeCompare(b.name));
 
     case "skills":
-      // Ordenar por cantidad de habilidades (más primero)
-      return sorted.sort((a, b) => b.skills.length - a.skills.length);
+      return sorted.sort((a, b) => b.skills_count - a.skills_count);
 
     case "location":
-      // Ordenar por ubicación alfabéticamente
-      return sorted.sort((a, b) => a.location.localeCompare(b.location));
+      return sorted.sort((a, b) => a.location_sort.localeCompare(b.location_sort));
 
     default:
       return sorted;
@@ -2461,7 +2381,42 @@ function showNotification(message, type = "info") {
 }
 
 // Función para renderizar las tarjetas con datos reales
-function renderUserCardsReal() {
+async function cargarDetallesLazy(usersToFetch) {
+  const usersToProcess = usersToFetch.filter(u => !u.detailsFetched);
+  if (usersToProcess.length === 0) return;
+
+  await processInBatches(usersToProcess, 5, async (user) => {
+    try {
+      const [resHabilidades, resEstadisticas] = await Promise.all([
+        fetch(`${API_BASE}/habilidades/persona/${user.id}`).catch(() => null),
+        fetch(`${API_BASE}/intercambios/estadisticas/${user.id}`).catch(() => null),
+      ]);
+
+      if (resHabilidades && resHabilidades.ok) {
+        const dataHabilidades = await resHabilidades.json();
+        if (dataHabilidades.success && dataHabilidades.data) {
+          user.skills = dataHabilidades.data
+            .filter((h) => h.tipoEstado_Habilidad === "Ofrece")
+            .map((h) => h.nombre_Habilidad)
+            .slice(0, 4);
+        }
+      }
+
+      if (resEstadisticas && resEstadisticas.ok) {
+        const dataEstadisticas = await resEstadisticas.json();
+        if (dataEstadisticas.success && dataEstadisticas.data) {
+          user.rating = dataEstadisticas.data.promedio_calificacion || 0;
+          user.exchanges = dataEstadisticas.data.total_intercambios_completados || 0;
+        }
+      }
+      user.detailsFetched = true;
+    } catch (error) {
+      console.error(`Error al cargar detalles lazy de persona ${user.id}:`, error);
+    }
+  });
+}
+
+async function renderUserCardsReal() {
   if (allUsers.length === 0) {
     let mensaje = "No hay perfiles verificados disponibles";
     let icono = `<svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2505,6 +2460,10 @@ function renderUserCardsReal() {
 
   // Actualizar contador
   updateResultsCount();
+
+  // Mostrar spinner de carga de detalles
+  usersGrid.innerHTML = '<div class="col-span-full flex flex-col items-center justify-center py-10"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div><p class="text-gray-500">Cargando...</p></div>';
+  await cargarDetallesLazy(paginatedUsers);
 
   // Renderizar tarjetas
   const usuarioActualId = parseInt(localStorage.getItem("usuarioId"));

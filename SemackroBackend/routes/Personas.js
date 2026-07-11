@@ -149,7 +149,10 @@ router.get('/', async (req, res) => {
                 u.bloqueado_hasta,
                 r.id_rol,
                 r.nombre_rol AS rol,
-                u.motivo_bloqueo
+                u.motivo_bloqueo,
+                (SELECT COUNT(*) FROM Habilidades_Ofrecidas_Necesitadas hp WHERE hp.id_Perfil_Persona = p.id_Perfil_Persona AND hp.tipoEstado_Habilidad = 'Ofrece') AS habilidades_count,
+                (SELECT CONCAT(IFNULL(d.ciudad_Direccion, ''), IF(d.ciudad_Direccion IS NOT NULL AND d.pais_Direccion IS NOT NULL, ', ', ''), IFNULL(d.pais_Direccion, '')) FROM Direcciones d WHERE d.id_Perfil_Persona = p.id_Perfil_Persona LIMIT 1) AS location_resumida,
+                (SELECT sv.estado FROM solicitud_verificacion sv WHERE sv.id_Perfil = p.id_Perfil_Persona ORDER BY sv.fecha_solicitud DESC LIMIT 1) AS estado_verificacion
             FROM Usuarios u
             LEFT JOIN Personas p ON p.id_Usuario = u.id_usuario
             LEFT JOIN d_usuarios_roles ur ON u.id_usuario = ur.usuario_id
@@ -469,13 +472,50 @@ router.get('/categoria/:idCategoria', async (req, res) => {
     }
 
     try {
-        // Llamar al procedimiento almacenado para obtener personas por categoría
-        const query = 'CALL sp_Personas_ObtenerPorCategoria(?)';
+        // Consulta directa para traer conteos y ubicación evitando llamadas secundarias en Frontend
+        const query = `
+            SELECT DISTINCT 
+                p.id_Perfil_Persona,
+                COALESCE(p.nombre_Persona, u.nombre) AS nombre_Persona,
+                p.apellido_Persona,
+                p.fechaNac_Persona,
+                p.genero_Persona,
+                p.estadoCivil_Persona,
+                p.tipoIdentificacion_Persona,
+                p.identificacion_Persona,
+                p.imagenUrl_Persona,
+                p.imagen1Url_Persona,
+                p.imagen2Url_Persona,
+                p.imagen3Url_Persona,
+                p.descripcionPerfil_Persona,
+                p.disponibilidad,
+                p.url_Dni,
+                IFNULL(p.anios_experiencia, 0) AS anios_experiencia,
+                u.id_usuario AS id_Usuario,
+                p.mascota,
+                p.url_fondo_banner,
+                p.telefono_Persona,
+                u.activo,
+                u.correo,
+                u.intentos_fallidos,
+                u.bloqueado_hasta,
+                r.id_rol,
+                r.nombre_rol AS rol,
+                u.motivo_bloqueo,
+                (SELECT COUNT(*) FROM Habilidades_Ofrecidas_Necesitadas hp WHERE hp.id_Perfil_Persona = p.id_Perfil_Persona AND hp.tipoEstado_Habilidad = 'Ofrece') AS habilidades_count,
+                (SELECT CONCAT(IFNULL(d.ciudad_Direccion, ''), IF(d.ciudad_Direccion IS NOT NULL AND d.pais_Direccion IS NOT NULL, ', ', ''), IFNULL(d.pais_Direccion, '')) FROM Direcciones d WHERE d.id_Perfil_Persona = p.id_Perfil_Persona LIMIT 1) AS location_resumida,
+                (SELECT sv.estado FROM solicitud_verificacion sv WHERE sv.id_Perfil = p.id_Perfil_Persona ORDER BY sv.fecha_solicitud DESC LIMIT 1) AS estado_verificacion
+            FROM Personas p
+            INNER JOIN Habilidades_Ofrecidas_Necesitadas h ON p.id_Perfil_Persona = h.id_Perfil_Persona
+            LEFT JOIN Usuarios u ON p.id_Usuario = u.id_usuario
+            LEFT JOIN d_usuarios_roles ur ON u.id_usuario = ur.usuario_id
+            LEFT JOIN Roles r ON ur.rol_id = r.id_rol
+            WHERE h.id_categorias_Habilidades_Servicios = ?
+              AND h.tipoEstado_Habilidad = 'Ofrece'
+            ORDER BY p.id_Perfil_Persona DESC
+        `;
 
-        const [results] = await db.execute(query, [idCategoria]);
-
-        // Los procedimientos almacenados devuelven un array de arrays
-        const personas = results[0] || [];
+        const [personas] = await db.execute(query, [idCategoria]);
 
         res.json({
             success: true,
