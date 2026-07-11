@@ -4381,41 +4381,51 @@
         }
 
         // Agregar variable
-        async function agregarVariable() {
-            const { value: formValues } = await Swal.fire({
-                title: 'Agregar Nueva Variable',
-                html: `
-                    <div class="flex flex-col gap-3 text-left">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">CLAVE (Mayúsculas, ej: JWT_SECRET)</label>
-                            <input id="swal-input-clave" class="w-full px-3 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-sm" placeholder="EJ_VARIABLE_NAME">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">VALOR</label>
-                            <input id="swal-input-valor" class="w-full px-3 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-mono text-sm" placeholder="Tu clave o credencial">
-                        </div>
-                    </div>
-                `,
-                focusConfirm: false,
-                showCancelButton: true,
-                confirmButtonText: 'Confirmar',
-                cancelButtonText: 'Cancelar',
-                preConfirm: () => {
-                    const claveInput = document.getElementById('swal-input-clave').value.trim();
-                    const valorInput = document.getElementById('swal-input-valor').value.trim();
-                    if (!claveInput || !valorInput) {
-                        Swal.showValidationMessage('Debes ingresar la clave y el valor');
-                    }
-                    return { clave: claveInput, valor: valorInput };
-                }
-            });
+        // --- LOGICA MODALES VARIABLES DE ENTORNO ---
+        window.cerrarModalVariable = function() {
+            document.getElementById('variableCard').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { document.getElementById('variableModalRoot').style.display = 'none'; }, 200);
+        };
 
-            if (formValues) {
-                const exist = variablesEntorno.some(v => v.clave === formValues.clave);
-                if (exist) {
-                    Swal.fire('Error', 'Ya existe una variable con esa clave', 'error');
+        window.cerrarModalConfirmarEliminarVariable = function() {
+            document.getElementById('confirmEliminarVariableCard').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { document.getElementById('confirmEliminarVariableModalRoot').style.display = 'none'; }, 200);
+        };
+
+        window.cerrarModalCopiarVariables = function() {
+            document.getElementById('copiarVariablesCard').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { document.getElementById('copiarVariablesModalRoot').style.display = 'none'; }, 200);
+        };
+
+        // Agregar variable
+        window.agregarVariable = function() {
+            document.getElementById('variableModalTitle').textContent = 'Agregar Nueva Variable';
+            document.getElementById('containerVariableClave').style.display = 'block';
+            document.getElementById('labelVariableValor').textContent = 'VALOR';
+            document.getElementById('inputVariableClave').value = '';
+            document.getElementById('inputVariableValor').value = '';
+
+            const btnConfirmar = document.getElementById('btnConfirmarVariable');
+            btnConfirmar.onclick = async function() {
+                const claveInput = document.getElementById('inputVariableClave').value.trim();
+                const valorInput = document.getElementById('inputVariableValor').value.trim();
+                
+                if (!claveInput || !valorInput) {
+                    Toast.warning('Atención', 'Debes ingresar la clave y el valor');
                     return;
                 }
+
+                const formValues = { clave: claveInput, valor: valorInput };
+
+                const exist = variablesEntorno.some(v => v.clave === formValues.clave);
+                if (exist) {
+                    Toast.error('Error', 'Ya existe una variable con esa clave');
+                    return;
+                }
+
+                const textoOriginal = btnConfirmar.innerHTML;
+                btnConfirmar.innerHTML = '<span class="iconify animate-spin text-lg" data-icon="mdi:loading"></span> Guardando...';
+                btnConfirmar.disabled = true;
 
                 variablesEntorno.push(formValues);
                 
@@ -4429,32 +4439,41 @@
                     console.warn('API no disponible para guardar variable de forma remota:', e);
                 }
 
+                btnConfirmar.innerHTML = textoOriginal;
+                btnConfirmar.disabled = false;
+                window.cerrarModalVariable();
+
                 Toast.success('Variable agregada', 'La variable se ha registrado correctamente');
                 filtrarVariables();
-            }
+            };
+
+            document.getElementById('variableModalRoot').style.display = 'flex';
+            setTimeout(() => { document.getElementById('variableCard').classList.remove('scale-95', 'opacity-0'); }, 10);
         }
 
         // Editar variable
-        async function editarVariable(clave) {
+        window.editarVariable = async function(clave) {
             const variable = variablesEntorno.find(v => v.clave === clave);
             if (!variable) return;
 
-            const { value: nuevoValor } = await Swal.fire({
-                title: `Editar Variable: ${clave}`,
-                input: 'text',
-                inputLabel: 'Nuevo Valor',
-                inputValue: variable.valor,
-                showCancelButton: true,
-                confirmButtonText: 'Guardar',
-                cancelButtonText: 'Cancelar',
-                inputValidator: (value) => {
-                    if (!value) {
-                        return 'Debes ingresar un valor';
-                    }
-                }
-            });
+            document.getElementById('variableModalTitle').textContent = `Editar Variable: ${clave}`;
+            document.getElementById('containerVariableClave').style.display = 'none';
+            document.getElementById('labelVariableValor').textContent = 'NUEVO VALOR';
+            document.getElementById('inputVariableValor').value = variable.valor;
 
-            if (nuevoValor) {
+            const btnConfirmar = document.getElementById('btnConfirmarVariable');
+            btnConfirmar.onclick = async function() {
+                const nuevoValor = document.getElementById('inputVariableValor').value.trim();
+                
+                if (!nuevoValor) {
+                    Toast.warning('Atención', 'Debes ingresar un valor');
+                    return;
+                }
+
+                const textoOriginal = btnConfirmar.innerHTML;
+                btnConfirmar.innerHTML = '<span class="iconify animate-spin text-lg" data-icon="mdi:loading"></span> Guardando...';
+                btnConfirmar.disabled = true;
+
                 variable.valor = nuevoValor;
 
                 try {
@@ -4467,24 +4486,28 @@
                     console.warn('API no disponible para actualizar variable de forma remota:', e);
                 }
 
+                btnConfirmar.innerHTML = textoOriginal;
+                btnConfirmar.disabled = false;
+                window.cerrarModalVariable();
+
                 Toast.success('Variable actualizada', 'El valor ha sido modificado con éxito');
                 filtrarVariables();
-            }
+            };
+
+            document.getElementById('variableModalRoot').style.display = 'flex';
+            setTimeout(() => { document.getElementById('variableCard').classList.remove('scale-95', 'opacity-0'); }, 10);
         }
 
         // Eliminar variable
-        async function eliminarVariable(clave) {
-            const isConfirmed = await Swal.fire({
-                title: '¿Eliminar Variable?',
-                text: `¿Estás seguro de eliminar la variable "${clave}"?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                confirmButtonText: 'Eliminar',
-                cancelButtonText: 'Cancelar'
-            });
+        window.eliminarVariable = async function(clave) {
+            document.getElementById('eliminarVariableText').textContent = `¿Estás seguro de eliminar la variable "${clave}"?`;
+            
+            const btnConfirmar = document.getElementById('btnConfirmarEliminarVariableAccion');
+            btnConfirmar.onclick = async function() {
+                const textoOriginal = btnConfirmar.innerHTML;
+                btnConfirmar.innerHTML = '<span class="iconify animate-spin text-lg" data-icon="mdi:loading"></span> Eliminando...';
+                btnConfirmar.disabled = true;
 
-            if (isConfirmed.isConfirmed) {
                 variablesEntorno = variablesEntorno.filter(v => v.clave !== clave);
 
                 try {
@@ -4495,13 +4518,20 @@
                     console.warn('API no disponible para eliminar variable de forma remota:', e);
                 }
 
+                btnConfirmar.innerHTML = textoOriginal;
+                btnConfirmar.disabled = false;
+                window.cerrarModalConfirmarEliminarVariable();
+
                 Toast.success('Variable eliminada', 'La variable se ha eliminado correctamente');
                 filtrarVariables();
-            }
+            };
+
+            document.getElementById('confirmEliminarVariableModalRoot').style.display = 'flex';
+            setTimeout(() => { document.getElementById('confirmEliminarVariableCard').classList.remove('scale-95', 'opacity-0'); }, 10);
         }
 
         // Filtrar variables por buscador
-        function filtrarVariables() {
+        window.filtrarVariables = function() {
             const query = document.getElementById('buscarVariableInput').value.toLowerCase().trim();
             if (!query) {
                 renderVariablesTable(variablesEntorno);
@@ -4512,47 +4542,36 @@
         }
 
         // Copiar todas las variables al portapapeles
-        async function copiarTodasVariables() {
+        window.copiarTodasVariables = async function() {
             if (!variablesEntorno || variablesEntorno.length === 0) {
-                Toast.fire({
-                    icon: 'warning',
-                    title: 'No hay variables para copiar'
-                });
+                Toast.warning('Atención', 'No hay variables para copiar');
                 return;
             }
 
-            const result = await Swal.fire({
-                title: 'Copiar Variables de Entorno',
-                text: 'Selecciona el formato para copiar las variables al portapapeles:',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Formato .env (RAW)',
-                denyButtonText: 'Formato CSV',
-                showDenyButton: true,
-                confirmButtonColor: '#2563EB',
-                denyButtonColor: '#10B981',
-                cancelButtonColor: '#6B7280'
-            });
+            document.getElementById('copiarVariablesModalRoot').style.display = 'flex';
+            setTimeout(() => { document.getElementById('copiarVariablesCard').classList.remove('scale-95', 'opacity-0'); }, 10);
+        }
 
+        window.ejecutarCopiarVariables = async function(formato) {
             let textToCopy = '';
-            if (result.isConfirmed) {
+            if (formato === 'env') {
                 // Formato .env (RAW)
                 textToCopy = variablesEntorno.map(v => `${v.clave}="${v.valor.replace(/"/g, '\\"')}"`).join('\n');
-            } else if (result.isDenied) {
+            } else if (formato === 'csv') {
                 // Formato CSV
                 textToCopy = 'Clave,Valor\n' + variablesEntorno.map(v => `"${v.clave.replace(/"/g, '""')}","${v.valor.replace(/"/g, '""')}"`).join('\n');
-            } else {
-                return; // Cancelado o cerrado
             }
 
             try {
                 await navigator.clipboard.writeText(textToCopy);
+                window.cerrarModalCopiarVariables();
                 Toast.success('Copiado', 'Variables copiadas al portapapeles');
             } catch (err) {
                 console.error('Error al copiar:', err);
-                Swal.fire('Error', 'No se pudo copiar al portapapeles.', 'error');
+                window.cerrarModalCopiarVariables();
+                Toast.error('Error', 'No se pudo copiar al portapapeles.');
             }
-        }
+        };
 
         // Event listeners para toggles
         document.addEventListener('DOMContentLoaded', () => {
@@ -6848,6 +6867,81 @@
                 <button onclick="guardarPermisosRolSeleccionado()" type="button" class="flex-1 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-bold shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer">
                     <span>Guardar Permisos</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL PERSONALIZADO: Crear/Editar Variable de Entorno     -->
+    <!-- ========================================================= -->
+    <div id="variableModalRoot" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+        <div id="variableBackdrop" class="fixed inset-0 bg-transparent transition-opacity" onclick="cerrarModalVariable()"></div>
+        <div id="variableCard" class="relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md shadow-2xl border border-slate-100 dark:border-gray-700 flex flex-col mt-8 z-10 transition-all transform scale-95 opacity-0">
+            <div class="h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-2">
+                <button onclick="cerrarModalVariable()" class="absolute top-2 right-4 text-white hover:scale-110 transition-transform z-20 cursor-pointer" aria-label="Cerrar modal">
+                    <span class="iconify text-2xl" data-icon="mdi:close-circle"></span>
+                </button>
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-6 text-center" id="variableModalTitle">Agregar Nueva Variable</h3>
+                <div class="text-left space-y-4">
+                    <div id="containerVariableClave">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">CLAVE (Mayúsculas, ej: JWT_SECRET)</label>
+                        <input id="inputVariableClave" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-gray-200 outline-none transition-all font-mono" placeholder="EJ_VARIABLE_NAME">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1" id="labelVariableValor">VALOR</label>
+                        <input id="inputVariableValor" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-gray-200 outline-none transition-all font-mono" placeholder="Tu clave o credencial">
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 w-full mt-8">
+                    <button onclick="cerrarModalVariable()" class="flex-1 px-4 py-2.5 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors">Cancelar</button>
+                    <button id="btnConfirmarVariable" class="flex-1 px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-blue-500/30">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL PERSONALIZADO: Confirmar Eliminación de Variable    -->
+    <!-- ========================================================= -->
+    <div id="confirmEliminarVariableModalRoot" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+        <div id="confirmEliminarVariableBackdrop" class="fixed inset-0 bg-transparent transition-opacity" onclick="cerrarModalConfirmarEliminarVariable()"></div>
+        <div id="confirmEliminarVariableCard" class="relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md shadow-2xl border border-slate-100 dark:border-gray-700 flex flex-col mt-8 z-10 transition-all transform scale-95 opacity-0">
+            <div class="p-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
+                    <span class="iconify text-red-500 text-3xl" data-icon="mdi:alert-outline"></span>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2">¿Eliminar Variable?</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6" id="eliminarVariableText">¿Estás seguro de eliminar la variable?</p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 w-full">
+                    <button onclick="cerrarModalConfirmarEliminarVariable()" class="flex-1 px-4 py-2.5 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors">Cancelar</button>
+                    <button id="btnConfirmarEliminarVariableAccion" class="flex-1 px-4 py-2.5 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 active:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-red-500/30">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL PERSONALIZADO: Copiar Variables de Entorno          -->
+    <!-- ========================================================= -->
+    <div id="copiarVariablesModalRoot" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+        <div id="copiarVariablesBackdrop" class="fixed inset-0 bg-transparent transition-opacity" onclick="cerrarModalCopiarVariables()"></div>
+        <div id="copiarVariablesCard" class="relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md shadow-2xl border border-slate-100 dark:border-gray-700 flex flex-col mt-8 z-10 transition-all transform scale-95 opacity-0">
+            <div class="p-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-4">
+                    <span class="iconify text-blue-500 text-3xl" data-icon="mdi:content-copy"></span>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2">Copiar Variables de Entorno</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Selecciona el formato para copiar las variables al portapapeles:</p>
+                
+                <div class="flex flex-col gap-3 w-full">
+                    <button onclick="ejecutarCopiarVariables('env')" class="w-full px-4 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-blue-500/30">Formato .env (RAW)</button>
+                    <button onclick="ejecutarCopiarVariables('csv')" class="w-full px-4 py-2.5 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 active:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-emerald-500/30">Formato CSV</button>
+                    <button onclick="cerrarModalCopiarVariables()" class="w-full px-4 py-2.5 mt-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-gray-600 transition-colors">Cancelar</button>
+                </div>
             </div>
         </div>
     </div>
