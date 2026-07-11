@@ -6213,7 +6213,8 @@
                     return map[clave] || 'mdi:checkbox-marked-circle-outline';
                 };
 
-                const isPermisoAdmin = (clave) => clave === clave.toUpperCase();
+                const permisosNormales = ['ACEPTAR_INTERCAMBIOS', 'VER_HISTORIAL_PERSONAL'];
+                const isPermisoAdmin = (clave) => !permisosNormales.includes(clave);
                 const permisosUsuario = todosLosPermisosDisponibles.filter(p => !isPermisoAdmin(p.clave));
                 const permisosAdmin = todosLosPermisosDisponibles.filter(p => isPermisoAdmin(p.clave));
 
@@ -6447,7 +6448,8 @@
 
             const container = document.getElementById('permisosCheckboxesContainer');
             if (container) {
-                const isPermisoAdmin = (clave) => clave === clave.toUpperCase();
+                const permisosNormales = ['ACEPTAR_INTERCAMBIOS', 'VER_HISTORIAL_PERSONAL'];
+                const isPermisoAdmin = (clave) => !permisosNormales.includes(clave);
                 const permisosUsuario = todosLosPermisosDisponibles.filter(p => !isPermisoAdmin(p.clave));
                 const permisosAdmin = todosLosPermisosDisponibles.filter(p => isPermisoAdmin(p.clave));
 
