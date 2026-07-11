@@ -2306,7 +2306,7 @@ function mostrarFavoritos(favoritos) {
                         </button>
 
                         <!-- Banner superior con gradiente -->
-                        <div class="user-card-banner ${bannerGradientClass} relative overflow-hidden" style="${urlFondoBanner ? `background-image: url(${urlFondoBanner}); background-size: cover; background-position: center;` : ''}">
+                        <div class="user-card-banner ${bannerGradientClass} relative overflow-hidden" style="${urlFondoBanner ? `background-image: url('${urlFondoBanner.startsWith('http') ? urlFondoBanner : `${API_BASE.replace('/api', '')}/${urlFondoBanner.startsWith('/') ? urlFondoBanner.substring(1) : urlFondoBanner}`}'); background-size: cover; background-position: center;` : ''}">
                             <div class="absolute top-2 left-4 opacity-15 text-white font-mono text-[8px] tracking-widest pointer-events-none select-none">
                                 ☁️ ☁️
                             </div>
@@ -2521,7 +2521,7 @@ function renderUserCardsReal() {
           }
 
                     <!-- Banner superior con gradiente -->
-                    <div class="user-card-banner ${bannerGradientClass} relative overflow-hidden" style="${user.urlFondoBanner ? `background-image: url(${user.urlFondoBanner}); background-size: cover; background-position: center;` : ''}">
+                    <div class="user-card-banner ${bannerGradientClass} relative overflow-hidden" style="${user.urlFondoBanner ? `background-image: url('${user.urlFondoBanner.startsWith('http') ? user.urlFondoBanner : `${API_BASE.replace('/api', '')}/${user.urlFondoBanner.startsWith('/') ? user.urlFondoBanner.substring(1) : user.urlFondoBanner}`}'); background-size: cover; background-position: center;` : ''}">
                         <div class="absolute top-2 left-4 opacity-15 text-white font-mono text-[8px] tracking-widest pointer-events-none select-none">
                             ☁️ ☁️
                         </div>
@@ -3063,7 +3063,7 @@ async function cargarPerfilEnSeccion(perfilId) {
             <div class="max-w-5xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden relative border border-gray-100">
 
                 <!-- Banner y Avatar -->
-                <div class="profile-modal-banner">
+                <div class="profile-modal-banner" style="${persona.url_fondo_banner ? `background-image: url('${persona.url_fondo_banner.startsWith('http') ? persona.url_fondo_banner : `${API_BASE.replace('/api', '')}/${persona.url_fondo_banner.startsWith('/') ? persona.url_fondo_banner.substring(1) : persona.url_fondo_banner}`}'); background-size: cover; background-position: center;` : ''}">
                     <div class="profile-modal-avatar" style="cursor: ${persona.imagenUrl_Persona ? "zoom-in" : "default"};" ${persona.imagenUrl_Persona ? `onclick="openImageFullscreen('${persona.imagenUrl_Persona}')"` : ""}>
                         ${persona.imagenUrl_Persona
         ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}">`
@@ -3392,7 +3392,7 @@ async function cargarPerfilEnModal(perfilId) {
 
     container.innerHTML = `
             <!-- Banner y Avatar -->
-            <div class="profile-modal-banner">
+            <div class="profile-modal-banner" style="${persona.url_fondo_banner ? `background-image: url('${persona.url_fondo_banner.startsWith('http') ? persona.url_fondo_banner : `${API_BASE.replace('/api', '')}/${persona.url_fondo_banner.startsWith('/') ? persona.url_fondo_banner.substring(1) : persona.url_fondo_banner}`}'); background-size: cover; background-position: center;` : ''}">
                 <div class="profile-modal-avatar" style="cursor: ${persona.imagenUrl_Persona ? "zoom-in" : "default"};" ${persona.imagenUrl_Persona ? `onclick="openImageFullscreen('${persona.imagenUrl_Persona}')"` : ""}>
                     ${persona.imagenUrl_Persona
         ? `<img src="${persona.imagenUrl_Persona}" alt="${nombreCompleto}">`
@@ -4698,6 +4698,7 @@ async function mostrarFormularioSolicitudDetallada(
                             t("requestModal.alreadySent") || "Solicitud ya enviada",
                             `${t("requestModal.alreadySentMessage") || "Ya has enviado una solicitud a"} ${nombreReceptor}. ${t("requestModal.viewPending") || "Puedes ver tus solicitudes pendientes en el menú lateral."}`
                         );
+                        document.getElementById('modalSolicitudDinamicoRoot').remove(); // Cerrar modal al fallar por duplicado
                     } else {
                         Toast.error(
                             t("common.error") || "Error",
