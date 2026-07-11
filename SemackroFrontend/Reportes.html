@@ -5881,6 +5881,14 @@
                 if (!res.ok || !json.success) throw new Error(json.error || 'Error al obtener roles');
                 
                 todosLosRolesCargados = json.data;
+                
+                // Sincronizar roles con la tabla del Directorio general
+                if (typeof _rolesDirectorio !== 'undefined') {
+                    _rolesDirectorio = todosLosRolesCargados.map(r => ({ id_rol: r.id_rol, nombre_rol: r.nombre_rol }));
+                    if (typeof renderizarTablaTecnicos === 'function') {
+                        renderizarTablaTecnicos();
+                    }
+                }
 
                 tbody.innerHTML = todosLosRolesCargados.map((rol) => {
                     const countPermisos = rol.permisos ? rol.permisos.length : 0;
@@ -6021,7 +6029,7 @@
 
             Swal.fire({
                 title: `¿Eliminar el rol "${rol.nombre_rol}"?`,
-                text: "Los usuarios que tengan este rol perderán sus accesos especiales.",
+                text: "Esta acción no se puede deshacer. (Nota: El sistema no te permitirá eliminarlo si hay usuarios que aún tienen este rol asignado).",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',

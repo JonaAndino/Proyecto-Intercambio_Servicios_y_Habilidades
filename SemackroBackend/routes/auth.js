@@ -641,6 +641,9 @@ router.put('/usuarios/:id_usuario/rol', async (req, res) => {
             await pool.execute('INSERT INTO d_usuarios_roles (usuario_id, rol_id) VALUES (?, ?)', [id_usuario, id_rol]);
         }
 
+        // Limpiar los permisos individuales (excepciones) anteriores para que asuma limpios los del nuevo rol
+        await pool.execute('DELETE FROM d_usuarios_opciones WHERE usuario_id = ?', [id_usuario]);
+
         res.status(200).json({ success: true, mensaje: 'Rol de usuario actualizado con éxito.' });
     } catch (error) {
         console.error('Error al actualizar rol del usuario:', error);
