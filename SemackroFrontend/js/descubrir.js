@@ -1084,7 +1084,7 @@ let miPerfilIdGlobal = null;
 let usuariosReales = [];
 
 // Variables de paginación y ordenamiento
-let currentPage = 1;
+let currentPage = parseInt(localStorage.getItem('descubrir_page')) || 1;
 let usersPerPage = 9;
 let currentSort = "recent";
 let allUsers = []; // Copia completa de usuarios para ordenamiento
@@ -2481,6 +2481,11 @@ function renderUserCardsReal() {
 
   // Aplicar ordenamiento
   const sortedUsers = sortUsers(allUsers, currentSort);
+
+  // Asegurar que la página actual sea válida y guardar en localStorage
+  const totalPages = Math.ceil(sortedUsers.length / usersPerPage);
+  if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+  try { localStorage.setItem('descubrir_page', currentPage); } catch(e) {}
 
   // Calcular indices de paginación
   const startIndex = (currentPage - 1) * usersPerPage;
