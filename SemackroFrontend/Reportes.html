@@ -2528,6 +2528,14 @@
                     btnCrearNuevo.style.display = 'none';
                 }
 
+                // Ocultar pestaña de Roles y Permisos si no tiene el permiso
+                const btnConfigRoles = document.getElementById('btnConfigTab-rolesPermisos');
+                if (btnConfigRoles && window.Permisos && typeof window.Permisos.puedeAsignarRolesPermisos === 'function') {
+                    if (!window.Permisos.puedeAsignarRolesPermisos()) {
+                        btnConfigRoles.style.display = 'none';
+                    }
+                }
+
                 // 3. Mostrar/Ocultar pestañas superiores en el TabBar
                 const btnTabReportes = document.getElementById('tabReportes');
                 const btnTabConfig = document.getElementById('tabConfiguraciones');
@@ -3798,6 +3806,11 @@
 
         // Navegación entre pestañas de configuración
         function switchConfigTab(tabName) {
+            if (tabName === 'rolesPermisos' && window.Permisos && typeof window.Permisos.puedeAsignarRolesPermisos === 'function' && !window.Permisos.puedeAsignarRolesPermisos()) {
+                if (typeof Toast !== 'undefined') Toast.error("No tienes permisos para gestionar roles y permisos.");
+                return;
+            }
+
             const tabs = ['general', 'modalidades', 'categorias', 'globalSkills', 'variables', 'motivosBloqueo', 'rolesPermisos'];
             
             tabs.forEach(tab => {
