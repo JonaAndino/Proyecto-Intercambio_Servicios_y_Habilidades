@@ -2534,11 +2534,20 @@
                 
                 const tieneCualquierAccesoReportes = tieneAccesoReportes || tieneAccesoVerificacion || tieneAccesoDirectorio;
 
-                if (btnTabReportes && !tieneCualquierAccesoReportes) {
-                    btnTabReportes.style.display = 'none';
+                if (btnTabReportes) {
+                    if (!tieneCualquierAccesoReportes) {
+                        btnTabReportes.style.display = 'none';
+                    } else {
+                        btnTabReportes.style.display = '';
+                    }
                 }
-                if (btnTabConfig && !tieneAccesoConfiguracion) {
-                    btnTabConfig.style.display = 'none';
+                
+                if (btnTabConfig) {
+                    if (!tieneAccesoConfiguracion) {
+                        btnTabConfig.style.display = 'none';
+                    } else {
+                        btnTabConfig.style.display = '';
+                    }
                 }
 
                 // 4. Mostrar/Ocultar sección general de reportes (si aplica)
