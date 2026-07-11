@@ -1488,6 +1488,16 @@
                         <option value="bloqueado_temporal">Bloqueado temporal</option>
                         <option value="bloqueado_permanente">Bloqueado permanente</option>
                     </select>
+                    <!-- NUEVO: Selector de Columnas -->
+                    <div class="relative" id="columnToggleContainer">
+                        <button onclick="toggleColumnMenu()" class="flex items-center gap-1 px-3 py-2 rounded-xl border border-black/20 dark:border-white/10 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-semibold transition-all shadow-sm">
+                            <span class="iconify" data-icon="mdi:view-column"></span>
+                            Columnas
+                        </button>
+                        <div id="columnMenu" class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 p-3 flex-col gap-2 max-h-72 overflow-y-auto">
+                            <!-- Las opciones se generan con JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1521,6 +1531,85 @@
             <!-- Paginación FUERA del card para que nunca sea recortada -->
             <div id="directorioPaginacion" class="w-full mt-1 rounded-xl border border-black/5 dark:border-white/5 bg-gray-50/80 dark:bg-gray-800/50 overflow-hidden"></div>
         </div>
+
+        <!-- CSS y JS para Ocultar/Mostrar Columnas -->
+        <style id="dynamicColumnStyles"></style>
+        <script>
+            const directorioColumns = [
+                { index: 1, label: 'Foto', visible: true },
+                { index: 2, label: 'Nombre completo', visible: true },
+                { index: 3, label: 'Correo', visible: true },
+                { index: 4, label: 'Teléfono', visible: true },
+                { index: 5, label: 'Rol', visible: true },
+                { index: 6, label: 'Expertise', visible: true },
+                { index: 7, label: 'Ubicación', visible: true },
+                { index: 8, label: 'Disponibilidad', visible: true },
+                { index: 9, label: 'Intentos fallidos', visible: true },
+                { index: 10, label: 'Bloqueo', visible: true },
+                { index: 11, label: 'Acciones', visible: true }
+            ];
+
+            function toggleColumnMenu() {
+                const menu = document.getElementById('columnMenu');
+                if (menu.classList.contains('hidden')) {
+                    menu.classList.remove('hidden');
+                    menu.classList.add('flex');
+                    renderColumnMenu();
+                } else {
+                    menu.classList.add('hidden');
+                    menu.classList.remove('flex');
+                }
+            }
+
+            // Cerrar el menú si se hace clic fuera
+            document.addEventListener('click', function(event) {
+                const container = document.getElementById('columnToggleContainer');
+                const menu = document.getElementById('columnMenu');
+                if (container && menu && !container.contains(event.target)) {
+                    menu.classList.add('hidden');
+                    menu.classList.remove('flex');
+                }
+            });
+
+            function renderColumnMenu() {
+                const menu = document.getElementById('columnMenu');
+                menu.innerHTML = '<div class="text-xs font-bold text-gray-400 mb-2 px-1 uppercase tracking-wider">Mostrar Columnas</div>';
+                
+                directorioColumns.forEach(col => {
+                    const label = document.createElement('label');
+                    label.className = 'flex items-center gap-3 px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer transition-colors';
+                    label.innerHTML = `
+                        <input type="checkbox" ${col.visible ? 'checked' : ''} onchange="toggleColumnVisibility(${col.index}, this.checked)" class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-200">${col.label}</span>
+                    `;
+                    menu.appendChild(label);
+                });
+            }
+
+            function toggleColumnVisibility(index, isVisible) {
+                const col = directorioColumns.find(c => c.index === index);
+                if (col) {
+                    col.visible = isVisible;
+                    applyColumnStyles();
+                }
+            }
+
+            function applyColumnStyles() {
+                const styleEl = document.getElementById('dynamicColumnStyles');
+                let css = '';
+                directorioColumns.forEach(col => {
+                    if (!col.visible) {
+                        css += `
+                            #directorioTableContainer th:nth-child(${col.index}), 
+                            #tablaTecnicosH3 td:nth-child(${col.index}) { 
+                                display: none !important; 
+                            }
+                        `;
+                    }
+                });
+                styleEl.textContent = css;
+            }
+        </script>
 
     </div> <!-- Fin sheetReportes -->
 
