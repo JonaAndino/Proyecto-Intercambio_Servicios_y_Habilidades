@@ -260,6 +260,27 @@ router.get('/permisos', async (req, res) => {
     }
 });
 
+// Actualizar nombre de un permiso (PUT /configuraciones/permisos/:clave)
+router.put('/permisos/:clave', async (req, res) => {
+    const { clave } = req.params;
+    const { nombre } = req.body;
+
+    if (!nombre || nombre.trim() === '') {
+        return res.status(400).json({ success: false, message: 'El nombre es requerido' });
+    }
+
+    try {
+        const [result] = await db.execute('UPDATE opciones SET nombre = ? WHERE link = ?', [nombre.trim(), clave]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Permiso no encontrado' });
+        }
+        res.json({ success: true, message: 'Permiso actualizado correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar permiso:', error.message);
+        res.status(500).json({ success: false, error: 'Error al actualizar permiso' });
+    }
+});
+
 // Obtener todos los roles con sus permisos (GET /configuraciones/roles)
 router.get('/roles', async (req, res) => {
     try {
