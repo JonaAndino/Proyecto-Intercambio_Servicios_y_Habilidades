@@ -4358,12 +4358,11 @@ async function mostrarFormularioSolicitudDetallada(
   // Verificar permisos antes de continuar
   if (window.Permisos && typeof window.Permisos.puedeIntercambiar === 'function') {
     if (!window.Permisos.puedeIntercambiar()) {
-      Swal.fire({
-        icon: "error",
-        title: "Acceso Denegado",
-        text: "No tienes permisos para solicitar o concretar intercambios.",
-        confirmButtonColor: "#3b82f6",
-      });
+      if (typeof Toast !== 'undefined') {
+        Toast.error("Acceso Denegado", "No tienes permisos para solicitar o concretar intercambios.");
+      } else {
+        alert("Acceso Denegado: No tienes permisos para solicitar o concretar intercambios.");
+      }
       return;
     }
   }
@@ -4424,194 +4423,143 @@ async function mostrarFormularioSolicitudDetallada(
     // Obtener fecha mínima (hoy)
     const hoy = new Date().toISOString().split("T")[0];
 
-    // Mostrar formulario con SweetAlert2
-    const { value: formValues } = await Swal.fire({
-      title: t("requestModal.title"),
-      html: `
-                        <div style="text-align: left; padding: 10px;">
-                            <p style="color: #6b7280; font-size: 14px; margin-bottom: 20px;">
-                                ${t("requestModal.sendingTo")} <strong style="color: #1e40af;">${nombreReceptor}</strong>
-                            </p>
+    // --- LOGICA MODAL PERSONALIZADO ---
+    window.cerrarModalSolicitudIntercambio = function() {
+      document.getElementById('solicitudIntercambioCard').classList.add('scale-95', 'opacity-0');
+      setTimeout(() => { document.getElementById('solicitudIntercambioModalRoot').style.display = 'none'; }, 200);
+    };
 
-                            <!-- Habilidad que ofreces -->
-                            <div style="margin-bottom: 16px;">
-                                <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
-                                    ${t("requestModal.skillOffered")}
-                                </label>
-                                <select id="habilidadOfrecida" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; background-color: white;">
-                                    <option value="">${t("requestModal.selectSkill")}</option>
-                                    ${opcionesOfrecidas}
-                                </select>
-                            </div>
-
-                            <!-- Categoría de Habilidad de Interés (Sustituye a Habilidad que te interesa) -->
-                            <div style="margin-bottom: 16px;">
-                                <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
-                                    ${t("requestModal.skillInterested")}
-                                </label>
-                                <select id="habilidadSolicitada" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; background-color: white;">
-                                    <option value="">${t("requestModal.selectSkill")}</option>
-                                    ${opcionesCategorias}
-                                </select>
-                            </div>
-
-                            <!-- Fecha y hora en la misma fila -->
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-                                <div>
-                                    <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
-                                        ${t("requestModal.proposedDate")}
-                                    </label>
-                                    <input type="date" id="fechaPropuesta" min="${hoy}" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151;">
-                                </div>
-                                <div>
-                                    <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
-                                        ${t("requestModal.proposedTime")}
-                                    </label>
-                                    <input type="time" id="horaPropuesta" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151;">
-                                </div>
-                            </div>
-
-                            <!-- Duración y modalidad en la misma fila -->
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-                                <div>
-                                    <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
-                                        ${t("requestModal.duration")}
-                                    </label>
-                                    <input type="number" id="duracionEstimada" min="15" step="15" placeholder="${t("requestModal.durationPlaceholder")}" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151;">
-                                </div>
-                                <div>
-                                    <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
-                                        ${t("requestModal.modality")}
-                                    </label>
-                                    <select id="modalidad" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; background-color: white;">
-                                        <option value="">${t("requestModal.selectModality")}</option>
-                                        <option value="Virtual">${t("requestModal.virtual")}</option>
-                                        <option value="Presencial">${t("requestModal.inPerson")}</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Mensaje adicional -->
-                            <div style="margin-bottom: 16px;">
-                                <label style="display: block; font-weight: 600; color: #374151; margin-bottom: 6px; font-size: 14px;">
-                                    ${t("requestModal.additionalMessage")}
-                                </label>
-                                <textarea id="mensajeAdicional" rows="3" placeholder="${t("requestModal.messagePlaceholder")}" style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; color: #374151; resize: vertical; font-family: inherit;"></textarea>
-                            </div>
-                        </div>
-                    `,
-      width: "650px",
-      showCancelButton: true,
-      confirmButtonText: t("requestModal.sendRequest"),
-      cancelButtonText: t("common.cancel"),
-      confirmButtonColor: "#3b82f6",
-      cancelButtonColor: "#6b7280",
-      customClass: {
-        popup: "rounded-xl",
-        confirmButton: "px-6 py-3 rounded-lg font-semibold",
-        cancelButton: "px-6 py-3 rounded-lg font-semibold",
-      },
-      didOpen: async () => {
-        const select = document.getElementById("modalidad");
-        if (select) {
-          try {
-            const res = await fetch(`${API_BASE}/configuraciones/modalidades`);
-            const json = await res.json();
-            if (res.ok && json.success && json.data) {
-              const activas = json.data.filter(m => m.activo === 1 || m.activo === true);
-              if (activas.length > 0) {
-                select.innerHTML = `<option value="">${t("requestModal.selectModality")}</option>`;
+    // Llenar datos
+    document.getElementById('solicitudNombreReceptor').textContent = escapeHtml(nombreReceptor);
+    
+    // Select de Habilidad Ofrecida
+    const selectOfrecida = document.getElementById('habilidadOfrecida');
+    selectOfrecida.innerHTML = `<option value="">${t("requestModal.selectSkill")}</option>${opcionesOfrecidas}`;
+    
+    // Select de Habilidad Solicitada
+    const selectSolicitada = document.getElementById('habilidadSolicitada');
+    selectSolicitada.innerHTML = `<option value="">${t("requestModal.selectSkill")}</option>${opcionesCategorias}`;
+    
+    // Fecha y hora
+    const inputFecha = document.getElementById('fechaPropuesta');
+    inputFecha.min = hoy;
+    inputFecha.value = '';
+    document.getElementById('horaPropuesta').value = '';
+    
+    // Duración
+    document.getElementById('duracionEstimada').value = '';
+    
+    // Modalidad
+    const selectModalidad = document.getElementById('modalidad');
+    selectModalidad.innerHTML = `<option value="">${t("requestModal.selectModality")}</option>`;
+    try {
+        const resMod = await fetch(`${API_BASE}/configuraciones/modalidades`);
+        const jsonMod = await resMod.json();
+        if (resMod.ok && jsonMod.success && jsonMod.data) {
+            const activas = jsonMod.data.filter(m => m.activo === 1 || m.activo === true);
+            if (activas.length > 0) {
                 activas.forEach(m => {
-                  select.innerHTML += `<option value="${escapeHtml(m.nombre)}">${escapeHtml(m.nombre)}</option>`;
+                    selectModalidad.innerHTML += `<option value="${escapeHtml(m.nombre)}">${escapeHtml(m.nombre)}</option>`;
                 });
-              }
+            } else {
+                selectModalidad.innerHTML += `<option value="Virtual">${t("requestModal.virtual")}</option><option value="Presencial">${t("requestModal.inPerson")}</option>`;
             }
-          } catch (err) {
-            console.error("Error al cargar modalidades dinámicas:", err);
+        } else {
+            selectModalidad.innerHTML += `<option value="Virtual">${t("requestModal.virtual")}</option><option value="Presencial">${t("requestModal.inPerson")}</option>`;
+        }
+    } catch (err) {
+        console.error("Error al cargar modalidades dinámicas:", err);
+        selectModalidad.innerHTML += `<option value="Virtual">${t("requestModal.virtual")}</option><option value="Presencial">${t("requestModal.inPerson")}</option>`;
+    }
+    
+    // Mensaje adicional
+    document.getElementById('mensajeAdicional').value = '';
+    
+    // Configurar botón confirmar
+    const btnConfirmar = document.getElementById('btnConfirmarSolicitudIntercambio');
+    btnConfirmar.onclick = async function() {
+      const formValues = {
+        habilidadOfrecida: document.getElementById("habilidadOfrecida").value || null,
+        habilidadSolicitada: document.getElementById("habilidadSolicitada").value || null,
+        fechaPropuesta: document.getElementById("fechaPropuesta").value || null,
+        horaPropuesta: document.getElementById("horaPropuesta").value || null,
+        duracionEstimada: document.getElementById("duracionEstimada").value || null,
+        modalidad: document.getElementById("modalidad").value || null,
+        mensajeAdicional: document.getElementById("mensajeAdicional").value || null,
+      };
+
+      const textoOriginal = btnConfirmar.innerHTML;
+      btnConfirmar.innerHTML = '<span class="iconify animate-spin text-lg inline-block align-middle" data-icon="mdi:loading"></span> Enviando...';
+      btnConfirmar.disabled = true;
+
+      try {
+        const response = await fetch(
+          `${API_BASE}/solicitudes-intercambio/enviar-detallada`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              solicitanteId: solicitanteId,
+              receptorId: receptorId,
+              fechaPropuesta: formValues.fechaPropuesta,
+              horaPropuesta: formValues.horaPropuesta,
+              duracionEstimada: formValues.duracionEstimada
+                ? parseInt(formValues.duracionEstimada)
+                : null,
+              idHabilidadSolicitada: formValues.habilidadSolicitada,
+              idHabilidadOfrecida: formValues.habilidadOfrecida,
+              mensajeAdicional: formValues.mensajeAdicional,
+              modalidad: formValues.modalidad,
+            }),
+          },
+        );
+
+        const data = await response.json();
+
+        if (data.success) {
+          Toast.success(
+            t("requestModal.sent"),
+            `${t("requestModal.sentMessage")} ${nombreReceptor}`,
+          );
+
+          // Recargar usuarios y solicitudes enviadas
+          cargarUsuariosReales();
+          cargarSolicitudesEnviadas();
+          window.cerrarModalSolicitudIntercambio();
+        } else {
+          // Mensaje más amigable si ya existe una solicitud
+          const esYaEnviada =
+            data.message &&
+            (data.message.includes("ya existe") ||
+              data.message.includes("pendiente") ||
+              data.message.includes("conexión establecida"));
+
+          if (esYaEnviada) {
+            Toast.info(
+              t("requestModal.alreadySent"),
+              `${t("requestModal.alreadySentMessage")} ${nombreReceptor}. ${t("requestModal.viewPending")}`,
+            );
+          } else {
+            Toast.error(
+              t("common.error"),
+              data.message || t("requestModal.errorSending"),
+            );
           }
         }
-      },
-      preConfirm: () => {
-        return {
-          habilidadOfrecida:
-            document.getElementById("habilidadOfrecida").value || null,
-          habilidadSolicitada:
-            document.getElementById("habilidadSolicitada").value || null,
-          fechaPropuesta:
-            document.getElementById("fechaPropuesta").value || null,
-          horaPropuesta: document.getElementById("horaPropuesta").value || null,
-          duracionEstimada:
-            document.getElementById("duracionEstimada").value || null,
-          modalidad: document.getElementById("modalidad").value || null,
-          mensajeAdicional:
-            document.getElementById("mensajeAdicional").value || null,
-        };
-      },
-    });
-
-    if (!formValues) return; // Usuario canceló
-
-    // Enviar solicitud detallada (sin loading swal pesado, Toast es asíncrono)
-
-    // Enviar solicitud detallada
-    const response = await fetch(
-      `${API_BASE}/solicitudes-intercambio/enviar-detallada`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          solicitanteId: solicitanteId,
-          receptorId: receptorId,
-          fechaPropuesta: formValues.fechaPropuesta,
-          horaPropuesta: formValues.horaPropuesta,
-          duracionEstimada: formValues.duracionEstimada
-            ? parseInt(formValues.duracionEstimada)
-            : null,
-          idHabilidadSolicitada: formValues.habilidadSolicitada,
-          idHabilidadOfrecida: formValues.habilidadOfrecida,
-          mensajeAdicional: formValues.mensajeAdicional,
-          modalidad: formValues.modalidad,
-        }),
-      },
-    );
-
-    const data = await response.json();
-
-    if (data.success) {
-      Toast.success(
-        t("requestModal.sent"),
-        `${t("requestModal.sentMessage")} ${nombreReceptor}`,
-      );
-
-      // Recargar usuarios y solicitudes enviadas
-      cargarUsuariosReales();
-      cargarSolicitudesEnviadas();
-    } else {
-      // Mensaje más amigable si ya existe una solicitud
-      const esYaEnviada =
-        data.message &&
-        (data.message.includes("ya existe") ||
-          data.message.includes("pendiente") ||
-          data.message.includes("conexión establecida"));
-
-      if (esYaEnviada) {
-        Toast.info(
-          t("requestModal.alreadySent"),
-          `${t("requestModal.alreadySentMessage")} ${nombreReceptor}. ${t("requestModal.viewPending")}`,
-        );
-      } else {
-        Toast.error(
-          t("requestModal.couldNotSend"),
-          data.message || t("requestModal.couldNotSend"),
-        );
+      } catch (error) {
+        console.error("Error al enviar solicitud:", error);
+        Toast.error(t("common.error"), "Ocurrió un error al procesar la solicitud");
       }
-    }
-  } catch (error) {
-    console.error("Error en formulario solicitud detallada:", error);
-    Toast.error("Error", "Ocurrió un error al procesar la solicitud");
-  }
+
+      btnConfirmar.innerHTML = textoOriginal;
+      btnConfirmar.disabled = false;
+    };
+
+    // Mostrar el modal
+    document.getElementById('solicitudIntercambioModalRoot').style.display = 'flex';
+    setTimeout(() => { document.getElementById('solicitudIntercambioCard').classList.remove('scale-95', 'opacity-0'); }, 10);
 }
 
 // Variable global para almacenar solicitudes actuales

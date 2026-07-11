@@ -3458,6 +3458,82 @@
     <script src="js/permisos.js?v=2"></script>
     <script src="js/session-security.js?v=2"></script>
     <script src="js/descubrir.js?v=6"></script>
+    <!-- ========================================================= -->
+    <!-- MODAL PERSONALIZADO: Solicitud de Intercambio             -->
+    <!-- ========================================================= -->
+    <div id="solicitudIntercambioModalRoot" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+        <div id="solicitudIntercambioBackdrop" class="fixed inset-0 bg-transparent transition-opacity" onclick="cerrarModalSolicitudIntercambio()"></div>
+        <div id="solicitudIntercambioCard" class="relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-100 dark:border-gray-700 flex flex-col mt-8 z-10 transition-all transform scale-95 opacity-0 text-left">
+            <div class="h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-2">
+                <button onclick="cerrarModalSolicitudIntercambio()" class="absolute top-2 right-4 text-white hover:scale-110 transition-transform z-20 cursor-pointer" aria-label="Cerrar modal">
+                    <span class="iconify text-2xl" data-icon="mdi:close-circle"></span>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[80vh]">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2 text-center" data-i18n="requestModal.title">Solicitud de intercambio</h3>
+                <p class="text-gray-500 dark:text-gray-400 text-sm mb-6 text-center">
+                    <span data-i18n="requestModal.sendingTo">Enviando solicitud a</span> <strong class="text-blue-600 dark:text-blue-400" id="solicitudNombreReceptor"></strong>
+                </p>
+
+                <div class="space-y-4">
+                    <!-- Habilidad que ofreces -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.skillOffered">Habilidad que ofreces</label>
+                        <select id="habilidadOfrecida" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-gray-200 outline-none transition-all">
+                            <option value="" data-i18n="requestModal.selectSkill">Selecciona una habilidad</option>
+                        </select>
+                    </div>
+
+                    <!-- Habilidad que te interesa -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.skillInterested">Habilidad que te interesa</label>
+                        <select id="habilidadSolicitada" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-gray-200 outline-none transition-all">
+                            <option value="" data-i18n="requestModal.selectSkill">Selecciona una habilidad</option>
+                        </select>
+                    </div>
+
+                    <!-- Fecha y hora -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.proposedDate">Fecha propuesta</label>
+                            <input type="date" id="fechaPropuesta" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-gray-200 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.proposedTime">Hora propuesta</label>
+                            <input type="time" id="horaPropuesta" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-gray-200 outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <!-- Duración y modalidad -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.duration">Duración (minutos)</label>
+                            <input type="number" id="duracionEstimada" min="15" step="15" placeholder="Ej: 60" data-i18n="[placeholder]requestModal.durationPlaceholder" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-gray-200 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.modality">Modalidad</label>
+                            <select id="modalidad" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-gray-200 outline-none transition-all">
+                                <option value="" data-i18n="requestModal.selectModality">Selecciona (opcional)</option>
+                                <option value="Virtual" data-i18n="requestModal.virtual">Virtual</option>
+                                <option value="Presencial" data-i18n="requestModal.inPerson">Presencial</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Mensaje adicional -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1" data-i18n="requestModal.additionalMessage">Mensaje adicional</label>
+                        <textarea id="mensajeAdicional" rows="3" placeholder="Escribe un mensaje personalizado (opcional)" data-i18n="[placeholder]requestModal.messagePlaceholder" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-slate-700 dark:text-gray-200 outline-none transition-all resize-none"></textarea>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 w-full mt-8">
+                    <button id="btnConfirmarSolicitudIntercambio" class="flex-1 px-4 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm shadow-blue-500/30" data-i18n="requestModal.sendRequest">Enviar solicitud</button>
+                    <button onclick="cerrarModalSolicitudIntercambio()" class="flex-1 px-4 py-3 bg-slate-100 dark:bg-gray-700 border border-slate-200 dark:border-gray-600 text-slate-700 dark:text-gray-200 font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors" data-i18n="common.cancel">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
         <!-- Sistema de Traducción -->
         <script src="js/translations.js?v=3"></script>
