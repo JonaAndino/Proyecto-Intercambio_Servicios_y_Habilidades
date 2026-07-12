@@ -5554,6 +5554,16 @@ function inicializarSocketMensajeria() {
       if (userId) {
         window._mensajeriaSocket.emit('register', { userId: String(userId) });
       }
+
+      // Registrar también el personaId (id_Perfil_Persona) para asegurar compatibilidad con la base de datos de mensajería
+      if (typeof obtenerPersonaIdActual === 'function') {
+        obtenerPersonaIdActual().then(personaId => {
+          if (personaId) {
+            console.log('Registrando también personaId en el socket:', personaId);
+            window._mensajeriaSocket.emit('register', { userId: String(personaId) });
+          }
+        }).catch(err => console.warn('Error al registrar personaId en socket:', err));
+      }
     });
 
     // Escuchar nuevos mensajes globales
