@@ -498,6 +498,23 @@ router.post('/enviar', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Se requiere contenido o al menos un adjunto' });
         }
 
+        // Obtener el nombre e imagen de quien envía el mensaje para enviarlo al socket
+        let senderName = 'Nuevo mensaje';
+        let senderAvatar = '';
+        try {
+            const [senderRows] = await pool.query(
+                'SELECT nombre_Persona, apellido_Persona, imagenUrl_Persona FROM Personas WHERE id_Perfil_Persona = ? LIMIT 1',
+                [personaEnviaId]
+            );
+            if (senderRows && senderRows[0]) {
+                const s = senderRows[0];
+                senderName = `${s.nombre_Persona || ''} ${s.apellido_Persona || ''}`.trim() || 'Nuevo mensaje';
+                senderAvatar = s.imagenUrl_Persona || '';
+            }
+        } catch (errSender) {
+            console.warn('Error resolviendo emisor para socket:', errSender.message);
+        }
+
         // Si se proporciona personaRecibeId, intentar insertar directamente (si la DB tiene la columna)
         if (personaRecibeId) {
             try {
@@ -525,7 +542,8 @@ router.post('/enviar', async (req, res) => {
                         io.to(`user_${personaRecibeId}`).emit('nuevo_mensaje', {
                             ...mensaje,
                             conversacionId: conversacionId,
-                            senderName: req.body.senderName || ''
+                            senderName: senderName,
+                            senderAvatar: senderAvatar
                         });
                         console.log('Emitiendo a sala:', `user_${personaRecibeId}`);
                     }
@@ -613,7 +631,8 @@ router.post('/enviar', async (req, res) => {
                         id_conversacion: conversacionId,
                         conversacionId: conversacionId,
                         id_persona_envia: personaEnviaId,
-                        senderName: req.body.senderName || 'Nuevo mensaje'
+                        senderName: senderName,
+                        senderAvatar: senderAvatar
                     });
                     console.log(`Emitido evento nuevo_mensaje a sala user_${recibeId}`);
                 });

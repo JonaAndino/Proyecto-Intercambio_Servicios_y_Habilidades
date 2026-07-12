@@ -5483,8 +5483,17 @@ function mostrarNotificacionChatFlotante(mensaje) {
     const nombre = mensaje.senderName || 'Nuevo mensaje';
     const initials = nombre.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
     
-    // Avatar con estilos inline
-    const avatarHtml = `<div style="width: 40px; height: 40px; border-radius: 9999px; background-color: #dbeafe; display: flex; align-items: center; justify-content: center; color: #2563eb; font-weight: bold; flex-shrink: 0; font-family: sans-serif;">${initials}</div>`;
+    // Avatar con estilos inline (con fallback si tiene imagen de perfil)
+    let avatarHtml = `<div style="width: 40px; height: 40px; border-radius: 9999px; background-color: #dbeafe; display: flex; align-items: center; justify-content: center; color: #2563eb; font-weight: bold; flex-shrink: 0; font-family: sans-serif;">${initials}</div>`;
+    if (mensaje.senderAvatar) {
+        const avatarUrl = mensaje.senderAvatar.startsWith('http') ? mensaje.senderAvatar : `${window.APP_CONFIG.BACKEND_URL}${mensaje.senderAvatar}`;
+        avatarHtml = `
+            <div style="position: relative; width: 40px; height: 40px; flex-shrink: 0;">
+                <img src="${avatarUrl}" style="width: 40px; height: 40px; border-radius: 9999px; object-fit: cover;" alt="${nombre}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <div style="display: none; position: absolute; top: 0; left: 0; width: 40px; height: 40px; border-radius: 9999px; background-color: #dbeafe; align-items: center; justify-content: center; color: #2563eb; font-weight: bold; font-family: sans-serif;">${initials}</div>
+            </div>
+        `;
+    }
     
     let texto = mensaje.contenido || 'Archivo adjunto...';
     if (texto.length > 50) texto = texto.substring(0, 50) + '...';
