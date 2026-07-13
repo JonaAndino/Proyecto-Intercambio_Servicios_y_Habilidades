@@ -4222,3 +4222,13 @@
             background: rgba(253, 224, 71, 0.15) !important; /* yellow-300 muy transparente */
             color: #fde047 !important; /* yellow-300 */
         }
+
+        /* Reducción de escala global para la vista de Descubrir y sus tarjetas en pantallas medianas y grandes */
+        @media (min-width: 768px) {
+            #descubrirView {
+                zoom: 0.88; /* Escala global al 88% */
+            }
+            #usersGrid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+            }
+        }
