@@ -4237,4 +4237,18 @@
             #solicitudesEnviadasGrid {
                 grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
             }
+            /* Apilar botones de acción verticalmente para evitar amontonamiento en tarjetas compactas */
+            .user-card-content .grid.grid-cols-2.mt-4 {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 0.5rem !important;
+            }
+            .user-card-content .grid.grid-cols-2.mt-4 button {
+                width: 100% !important;
+                padding-block: 0.55rem !important;
+                padding-inline: 0.5rem !important;
+                font-size: 0.85rem !important;
+                height: auto !important;
+                line-height: 1.2 !important;
+            }
         }
