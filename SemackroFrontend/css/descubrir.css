@@ -4223,12 +4223,18 @@
             color: #fde047 !important; /* yellow-300 */
         }
 
-        /* Reducción de escala global para la vista de Descubrir y sus tarjetas en pantallas medianas y grandes */
+        /* Reducción de escala global para las vistas principales y sus tarjetas en pantallas medianas y grandes */
         @media (min-width: 768px) {
-            #descubrirView {
+            #descubrirView,
+            #favoritosView,
+            #ordenesTrabajoView,
+            #solicitudesEnviadasView {
                 zoom: 0.88; /* Escala global al 88% */
             }
-            #usersGrid {
+            #usersGrid,
+            #favoritosGrid,
+            #ordenesTrabajoGrid,
+            #solicitudesEnviadasGrid {
                 grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
             }
         }
