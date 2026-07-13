@@ -397,16 +397,29 @@ function ProfileHeader({ persona, ubicacion, onSolicitar, onReportar, perfilId, 
                 <div className="perfil-header-flex">
                     <div className="perfil-avatar">
                         {persona.imagenUrl_Persona ? (
-                            <img 
-                                src={persona.imagenUrl_Persona} 
-                                alt={nombreCompleto}
-                                onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.parentElement.innerHTML = iniciales;
-                                }}
-                            />
+                            <>
+                                <img 
+                                    src={persona.imagenUrl_Persona} 
+                                    alt={nombreCompleto}
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        const sibling = e.target.nextElementSibling;
+                                        if (sibling) {
+                                            sibling.style.display = 'block';
+                                        }
+                                    }}
+                                />
+                                <img 
+                                    src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=f1f5f9`} 
+                                    alt={nombreCompleto}
+                                    style={{ display: 'none' }}
+                                />
+                            </>
                         ) : (
-                            <span>{iniciales}</span>
+                            <img 
+                                src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=f1f5f9`} 
+                                alt={nombreCompleto}
+                            />
                         )}
                     </div>
                     

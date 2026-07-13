@@ -720,14 +720,26 @@ function initPerfilNuevo() {
       className: "perfil-header-flex"
     }, /*#__PURE__*/React.createElement("div", {
       className: "perfil-avatar"
-    }, persona.imagenUrl_Persona ? /*#__PURE__*/React.createElement("img", {
+    }, persona.imagenUrl_Persona ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("img", {
       src: persona.imagenUrl_Persona,
       alt: nombreCompleto,
       onError: e => {
         e.target.style.display = 'none';
-        e.target.parentElement.innerHTML = iniciales;
+        const sibling = e.target.nextElementSibling;
+        if (sibling) {
+          sibling.style.display = 'block';
+        }
       }
-    }) : /*#__PURE__*/React.createElement("span", null, iniciales)), /*#__PURE__*/React.createElement("div", {
+    }), /*#__PURE__*/React.createElement("img", {
+      src: `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=f1f5f9`,
+      alt: nombreCompleto,
+      style: {
+        display: 'none'
+      }
+    })) : /*#__PURE__*/React.createElement("img", {
+      src: `https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(nombreCompleto)}&backgroundColor=f1f5f9`,
+      alt: nombreCompleto
+    })), /*#__PURE__*/React.createElement("div", {
       className: "perfil-header-info"
     }, /*#__PURE__*/React.createElement("h1", {
       className: "perfil-header-nombre"
@@ -1579,15 +1591,14 @@ function initPerfilNuevo() {
           const usuarioIdFromStorage = sessionStorage.getItem('usuarioId') || localStorage.getItem('usuarioId');
           const usuarioIdPropio = usuarioIdFromStorage ? parseInt(usuarioIdFromStorage, 10) : null;
           const isDifferentUser = !!(personaData.id_Usuario && parseInt(personaData.id_Usuario, 10) !== usuarioIdPropio);
-          
           if (isDifferentUser && (personaData.perfil_publico_Persona == 0 || personaData.perfil_publico_Persona === false)) {
-              if (window.Toast) {
-                  window.Toast.error('Perfil Privado', 'Este usuario tiene su perfil configurado como privado y no se puede ver su información detallada.');
-              } else {
-                  alert('Este usuario tiene su perfil privado.');
-              }
-              if (onVolver) onVolver();
-              return;
+            if (window.Toast) {
+              window.Toast.error('Perfil Privado', 'Este usuario tiene su perfil configurado como privado y no se puede ver su información detallada.');
+            } else {
+              alert('Este usuario tiene su perfil privado.');
+            }
+            if (onVolver) onVolver();
+            return;
           }
           // === PRIVACY CHECK END ===
 
