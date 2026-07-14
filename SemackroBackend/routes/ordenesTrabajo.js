@@ -300,14 +300,54 @@ function normalizarEstadoOT(valor) {
     }
 })();
 
+const { expandirHabilidades } = require('../utils/diccionarioAfinidad');
+
 // --------------------------------------------------
 // GET /api/ordenes-trabajo
-//   Sin param  → todas las órdenes con conteo de postulaciones
+//   Sin param o con param usuario_id
+//   Si se envía usuario_id, se filtra por afinidad de habilidades
 // --------------------------------------------------
 router.get('/', async (req, res) => {
     try {
-        const [rows] = await db.query(
-            `SELECT ot.*,
+        const { usuario_id } = req.query;
+        let terms = [];
+
+        // Si tenemos usuario_id, buscar sus habilidades para filtrar
+        if (usuario_id) {
+            // Obtener perfil persona
+            const [personas] = await db.query(`SELECT id_Perfil_Persona FROM Personas WHERE id_Usuario = ?`, [usuario_id]);
+            if (personas.length > 0) {
+                const idPerfil = personas[0].id_Perfil_Persona;
+                // Obtener habilidades
+                const [habilidades] = await db.query(`SELECT h.nombre_Habilidad FROM Habilidades_Ofrecidas_Necesitadas h WHERE h.id_Perfil_Persona = ? AND h.tipoEstado_Habilidad = 'Ofrece'`, [idPerfil]);
+                if (habilidades.length > 0) {
+                    const nombresHabilidades = habilidades.map(h => h.nombre_Habilidad);
+                    terms = expandirHabilidades(nombresHabilidades);
+                }
+            }
+        }
+
+        let whereClause = "";
+        let queryParams = [];
+
+        // Si es un usuario normal con habilidades, aplicar filtro afinidad
+        if (terms.length > 0) {
+            const likeClauses = terms.map(() => `(ot.titulo LIKE ? OR ot.especialidad LIKE ? OR ot.descripcion LIKE ?)`).join(' OR ');
+            whereClause = `WHERE ${likeClauses}`;
+            // Crear el array plano de parámetros [ %term1%, %term1%, %term1%, %term2%, %term2%, %term2% ... ]
+            terms.forEach(t => {
+                const likeTerm = `%${t}%`;
+                queryParams.push(likeTerm, likeTerm, likeTerm);
+            });
+        } else if (usuario_id) {
+            // Si tiene usuario_id pero NO tiene habilidades, forzar que no vea NADA (como pidió el usuario: "quitaremos de su vista todo lo que no ocupa ver")
+            // A menos que decida que es mejor mostrar todo. Lo dejaremos en que si no tiene habilidades, muestra sugerencias vacías
+            // Pero para no romper cosas si el front manda usuario_id sin tener skills, pondremos 1=0.
+            whereClause = "WHERE 1=0";
+        }
+
+        const query = `
+             SELECT ot.*,
                     u.correo AS correo_usuario,
                     CONCAT(p.nombre_Persona, ' ', IFNULL(p.apellido_Persona,'')) AS nombre_usuario,
                     p.imagenUrl_Persona AS imagen_usuario,
@@ -317,8 +357,11 @@ router.get('/', async (req, res) => {
              FROM OrdenesTrabajo ot
              LEFT JOIN Usuarios u ON ot.usuario_id = u.id_usuario
              LEFT JOIN Personas p ON p.id_Usuario = u.id_usuario
-             ORDER BY ot.fecha_creacion DESC`
-        );
+             ${whereClause}
+             ORDER BY ot.fecha_creacion DESC
+        `;
+
+        const [rows] = await db.query(query, queryParams);
         res.json({ success: true, data: rows });
     } catch (err) {
         console.error('[OT GET /]', err);

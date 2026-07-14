@@ -10531,8 +10531,13 @@ async function cargarOrdenesTrabajo() {
     const token = localStorage.getItem('token') || localStorage.getItem('authToken');
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-    // Todos los roles obtienen todas las órdenes; el filtro de visibilidad se aplica en cliente
-    const res = await fetch(`${API_BASE}/ordenes-trabajo`, { headers });
+    // Si es un usuario normal (no admin), enviamos su usuario_id para que el backend filtre sugerencias afines
+    const uid = localStorage.getItem('usuarioId');
+    const url = (!esAdmin && uid) 
+      ? `${API_BASE}/ordenes-trabajo?usuario_id=${uid}` 
+      : `${API_BASE}/ordenes-trabajo`;
+
+    const res = await fetch(url, { headers });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
 
