@@ -10232,7 +10232,7 @@ window.addEventListener("beforeunload", () => {
   };
 
   // Detectar mensajes de videollamada entrante
-  window.detectarLlamadaEntrante = function (mensaje, nombreRemitente) {
+  window.detectarLlamadaEntrante = function (mensaje, nombreRemitente, fotoRemitente = null) {
     // Formato: 📹 VIDEOLLAMADA::roomId::nombreUsuario
     if (mensaje && mensaje.startsWith("📹 VIDEOLLAMADA::")) {
       const partes = mensaje.split("::");
@@ -10241,7 +10241,7 @@ window.addEventListener("beforeunload", () => {
         const callerName = partes[2] || nombreRemitente || "Usuario";
 
         pendingIncomingCall = { roomId, callerName };
-        mostrarNotificacionLlamada(callerName);
+        mostrarNotificacionLlamada(callerName, fotoRemitente);
         return true;
       }
     }
@@ -10249,10 +10249,11 @@ window.addEventListener("beforeunload", () => {
   };
 
   // Mostrar notificación de llamada entrante
-  function mostrarNotificacionLlamada(callerName) {
+  function mostrarNotificacionLlamada(callerName, fotoRemitente = null) {
     // Usar el nuevo sistema Toast en lugar del HTML antiguo
     Toast.call(
       callerName,
+      fotoRemitente,
       () => {
         // Callback Contestar
         if (pendingIncomingCall) {
@@ -10383,6 +10384,7 @@ window.addEventListener("beforeunload", () => {
                 detectarLlamadaEntrante(
                   ultimoMensaje.contenido,
                   ultimoMensaje.nombre_remitente,
+                  ultimoMensaje.foto_perfil || ultimoMensaje.foto_remitente || null
                 );
               } else {
                 console.log("[JITSI] Ignorado: Es mi propia llamada saliente.");

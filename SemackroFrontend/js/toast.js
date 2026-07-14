@@ -94,7 +94,14 @@ const Toast = {
     warning(title, message, duration) { this.show(title, message, 'warning', duration); },
 
     // Notificación de Llamada Entrante (Estilo iOS/Android)
-    call(callerName, onAccept, onReject) {
+    call(callerName, callerAvatar, onAccept, onReject) {
+        // Soporte para firma antigua (callerName, onAccept, onReject)
+        if (typeof callerAvatar === 'function') {
+            onReject = onAccept;
+            onAccept = callerAvatar;
+            callerAvatar = null;
+        }
+
         this.init();
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
@@ -104,10 +111,17 @@ const Toast = {
         toast.style.padding = '16px';
         toast.style.gap = '12px';
         
+        let avatarHtml = '';
+        if (callerAvatar) {
+            avatarHtml = `<img src="${callerAvatar}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" onerror="this.onerror=null; this.src='https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(callerName)}';">`;
+        } else {
+            avatarHtml = `<img src="https://api.dicebear.com/9.x/lorelei/svg?seed=${encodeURIComponent(callerName)}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+        }
+        
         toast.innerHTML = `
             <div style="display:flex; align-items:center; gap:12px; width:100%;">
                 <div style="width:48px; height:48px; min-width:48px; background:#3b82f6; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
-                     <span class="iconify" data-icon="mdi:video" style="font-size:24px;"></span>
+                     ${avatarHtml}
                 </div>
                 <div style="flex:1;">
                     <div style="font-weight:700; color:#111827; font-size:1rem; line-height:1.2;">${callerName}</div>
