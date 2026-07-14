@@ -10711,9 +10711,9 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
         <!-- Detalles -->
         <div class="px-5 py-3 flex-1 space-y-2 text-sm text-gray-600">
           ${ubicacion ? `
-          <div class="flex items-center gap-2">
-            <span class="iconify text-gray-400" data-icon="mdi:map-marker-outline" style="font-size:16px;"></span>
-            <span>${ubicacion}</span>
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="iconify text-gray-400 shrink-0" data-icon="mdi:map-marker-outline" style="font-size:16px;"></span>
+            <span class="truncate" title="${ubicacion}">${ubicacion}</span>
           </div>` : ''}
           <div class="flex items-center gap-2">
             <span class="iconify text-gray-400" data-icon="mdi:calendar-range" style="font-size:16px;"></span>
