@@ -1314,6 +1314,13 @@ async function cargarDatosUsuario() {
     const nombreCompleto =
       `${nombreMostrar || ""} ${apellidoMostrar || ""}`.trim();
     sidebarUserName.textContent = nombreCompleto || "Usuario";
+    
+    // Guardar globals para videollamadas y otros módulos
+    window.usuarioActualNombre = nombreCompleto || "Usuario";
+    window.usuarioActualImagen = avatarUrl;
+    localStorage.setItem('nombrePersona', nombreCompleto);
+    localStorage.setItem('imagenPerfil', avatarUrl);
+    localStorage.setItem('usuario_actual', JSON.stringify(personaDB));
   } catch (error) {
     console.error("Error al cargar datos del usuario:", error);
   }
