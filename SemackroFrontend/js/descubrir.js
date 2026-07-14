@@ -12146,30 +12146,30 @@ window.seekAudio = function(e, id) {
 };
 // === FUNCION PARA CANCELAR POSTULACION ===
 async function cancelarPostulacionUsuario(idOrden) {
-  if (!confirm(縀st醩 seguro de que deseas cancelar tu postulaci髇 a esta orden?)) return;
+  if (!confirm("驴Est谩s seguro de que deseas cancelar tu postulaci贸n a esta orden?")) return;
   
-  const usuarioId = localStorage.getItem(usuarioId);
+  const usuarioId = localStorage.getItem("usuarioId");
   if (!usuarioId) return;
 
   try {
-    const res = await fetch(${API_BASE}/ordenes-trabajo//cancelar-postulacion, {
-      method: DELETE,
+    const res = await fetch(`${API_BASE}/ordenes-trabajo/${idOrden}/cancelar-postulacion`, {
+      method: "DELETE",
       headers: {
-        Content-Type: pplication/json,
-        Authorization: Bearer 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
       },
       body: JSON.stringify({ usuario_id: usuarioId })
     });
     const json = await res.json();
     if (json.success) {
-      if (typeof _cargarMisPostulaciones === unction) await _cargarMisPostulaciones();
-      if (typeof window.cargarOrdenes === unction) await window.cargarOrdenes();
-      alert(Postulaci髇 cancelada correctamente.);
+      if (typeof _cargarMisPostulaciones === "function") await _cargarMisPostulaciones();
+      if (typeof window.cargarOrdenes === "function") await window.cargarOrdenes();
+      alert("Postulaci贸n cancelada correctamente.");
     } else {
-      alert(Error:  + (json.mensaje || No se pudo cancelar.));
+      alert("Error: " + (json.mensaje || "No se pudo cancelar."));
     }
   } catch (err) {
     console.error(err);
-    alert(Error de conexi髇 al cancelar la postulaci髇.);
+    alert("Error de conexi贸n al cancelar la postulaci贸n.");
   }
 }
