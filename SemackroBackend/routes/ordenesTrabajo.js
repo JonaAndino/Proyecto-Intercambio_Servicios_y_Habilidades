@@ -318,10 +318,20 @@ router.get('/', async (req, res) => {
             const [personas] = await db.query(`SELECT id_Perfil_Persona FROM Personas WHERE id_Usuario = ?`, [usuario_id]);
             if (personas.length > 0) {
                 const idPerfil = personas[0].id_Perfil_Persona;
-                // Obtener habilidades
-                const [habilidades] = await db.query(`SELECT h.nombre_Habilidad FROM Habilidades_Ofrecidas_Necesitadas h WHERE h.id_Perfil_Persona = ? AND h.tipoEstado_Habilidad = 'Ofrece'`, [idPerfil]);
+                // Obtener habilidades y la categoría a la que pertenecen
+                const [habilidades] = await db.query(`
+                    SELECT h.nombre_Habilidad, c.nombre_categoria_Habilidad 
+                    FROM Habilidades_Ofrecidas_Necesitadas h
+                    LEFT JOIN Categorias_Habilidades_Servicios c ON h.id_categorias_Habilidades_Servicios = c.id_categoria_Habilidad_Servicio
+                    WHERE h.id_Perfil_Persona = ? AND h.tipoEstado_Habilidad = 'Ofrece'
+                `, [idPerfil]);
+                
                 if (habilidades.length > 0) {
-                    const nombresHabilidades = habilidades.map(h => h.nombre_Habilidad);
+                    const nombresHabilidades = [];
+                    habilidades.forEach(h => {
+                        if (h.nombre_Habilidad) nombresHabilidades.push(h.nombre_Habilidad);
+                        if (h.nombre_categoria_Habilidad) nombresHabilidades.push(h.nombre_categoria_Habilidad);
+                    });
                     terms = expandirHabilidades(nombresHabilidades);
                 }
             }
@@ -333,17 +343,19 @@ router.get('/', async (req, res) => {
         // Si es un usuario normal con habilidades, aplicar filtro afinidad
         if (terms.length > 0) {
             const likeClauses = terms.map(() => `(ot.titulo LIKE ? OR ot.especialidad LIKE ? OR ot.descripcion LIKE ?)`).join(' OR ');
-            whereClause = `WHERE ${likeClauses}`;
+            // Agregamos OR ot.usuario_id = ? para que siempre vean las órdenes que ellos mismos crearon
+            whereClause = `WHERE (${likeClauses}) OR ot.usuario_id = ?`;
             // Crear el array plano de parámetros [ %term1%, %term1%, %term1%, %term2%, %term2%, %term2% ... ]
             terms.forEach(t => {
                 const likeTerm = `%${t}%`;
                 queryParams.push(likeTerm, likeTerm, likeTerm);
             });
+            queryParams.push(usuario_id);
         } else if (usuario_id) {
-            // Si tiene usuario_id pero NO tiene habilidades, forzar que no vea NADA (como pidió el usuario: "quitaremos de su vista todo lo que no ocupa ver")
-            // A menos que decida que es mejor mostrar todo. Lo dejaremos en que si no tiene habilidades, muestra sugerencias vacías
-            // Pero para no romper cosas si el front manda usuario_id sin tener skills, pondremos 1=0.
-            whereClause = "WHERE 1=0";
+            // Si tiene usuario_id pero NO tiene habilidades, no mostramos sugerencias de otros,
+            // PERO SI mostramos las órdenes que el propio usuario creó.
+            whereClause = "WHERE ot.usuario_id = ?";
+            queryParams.push(usuario_id);
         }
 
         const query = `

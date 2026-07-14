@@ -10767,7 +10767,12 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
           <button onclick="cancelarOrden(${idOrden})"
             class="flex-1 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 text-xs font-medium transition flex items-center justify-center gap-1">
             <span class="iconify" data-icon="mdi:close-circle-outline" style="font-size:14px;"></span> ${t('workOrders.actionCancel') || 'Cancelar'}
-          </button>` : (!esAdmin && !estadoPost && o.estado === 'pendiente' && (o.total_postulaciones || 0) < (o.max_postulantes || 1)) ? `
+          </button>` : String(o.usuario_id) === String(localStorage.getItem('usuarioId')) && o.estado !== 'cancelada' && o.estado !== 'completada' ? `
+          <button onclick="editarOrden(${idOrden})" class="flex-1 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium transition flex items-center justify-center gap-1"><span class="iconify" data-icon="mdi:pencil-outline" style="font-size:14px;"></span> Editar</button>
+          <button onclick="cancelarOrden(${idOrden})" class="flex-1 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 text-xs font-medium transition flex items-center justify-center gap-1"><span class="iconify" data-icon="mdi:close-circle-outline" style="font-size:14px;"></span> Cancelar</button>` 
+          : String(o.usuario_id) === String(localStorage.getItem('usuarioId')) ? `
+          <span class="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-xs font-bold text-center">Mi Orden</span>`
+          : (!esAdmin && !estadoPost && o.estado === 'pendiente' && (o.total_postulaciones || 0) < (o.max_postulantes || 1)) ? `
           <button onclick="postularseOrden(${idOrden})"
             class="flex-1 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-600 text-xs font-semibold transition flex items-center justify-center gap-1">
             <span class="iconify" data-icon="mdi:account-plus-outline" style="font-size:14px;"></span> ${t('workOrders.actionApply') || 'Postularme'}

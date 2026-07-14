@@ -3341,10 +3341,9 @@
         // Inicializar listeners de modales de administración y chequear rol
         document.addEventListener('DOMContentLoaded', () => {
             const isAdmin = window.Permisos ? window.Permisos.esAdmin() : localStorage.getItem('usuarioRolId') === '1';
-            const tienePermisoTabla = window.Permisos && typeof window.Permisos.puedeVerHistorial === 'function' ? window.Permisos.puedeVerHistorial() : isAdmin;
-            
+            // tabsContainer es solo para admins (permite cambiar a la vista de tabla global)
             const tabsContainer = document.getElementById('adminOtTabsContainer');
-            if (tienePermisoTabla && tabsContainer) {
+            if (isAdmin && tabsContainer) {
                 tabsContainer.classList.remove('hidden');
             }
 
