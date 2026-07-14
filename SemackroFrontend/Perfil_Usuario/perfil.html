@@ -1109,13 +1109,11 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(17, 24, 39, 0.4);
+            background: rgba(0, 0, 0, 0.5); /* Fondo menos opaco */
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             animation: fadeIn 0.3s ease;
         }
 
@@ -1154,7 +1152,7 @@
         }
 
         .modal-title::before {
-            content: '\\2728'; /* Sparkles emoji */
+            content: '✨'; /* Sparkles emoji directo para evitar problemas de escape */
             font-size: 20px;
         }
 
