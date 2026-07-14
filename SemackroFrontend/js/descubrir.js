@@ -9771,13 +9771,16 @@ window.addEventListener("beforeunload", () => {
     currentJitsiRoomId = roomId;
 
     // Obtener nombre del usuario actual
-    let nombreUsuario = "Usuario";
+    let nombreUsuario = window.usuarioActualNombre || localStorage.getItem('nombrePersona') || localStorage.getItem('nombre') || "Usuario SEMACKRO";
+    
+    // Obtener foto de perfil
+    let fotoUsuario = window.usuarioActualImagen || localStorage.getItem('imagenPerfil') || null;
     try {
-      // Intentar obtener el nombre del usuario actual
-      nombreUsuario = window.usuarioActualNombre || "Usuario SEMACKRO";
-    } catch (e) {
-      console.warn("No se pudo obtener nombre de usuario:", e);
-    }
+      const u = JSON.parse(localStorage.getItem('usuario_actual') || "{}");
+      if (u.imagenUrl_Persona || u.imagen) {
+        fotoUsuario = u.imagenUrl_Persona || u.imagen;
+      }
+    } catch (e) {}
 
     // Abrir modal de inmediato para dar feedback visual aunque la señalizacion tarde.
     abrirJitsiModal(roomId, nombreUsuario, conv.nombre_contacto || "Contacto");
@@ -9822,6 +9825,7 @@ window.addEventListener("beforeunload", () => {
           receiver_id: receptorId,
           payload: JSON.stringify({
             caller_name: nombreUsuario,
+            caller_avatar: fotoUsuario,
             room_id: roomId,
           }),
         }),
@@ -9904,6 +9908,7 @@ window.addEventListener("beforeunload", () => {
           detectarLlamadaEntrante(
             `📹 VIDEOLLAMADA::${incomingRoomId}::${callerName}`,
             callerName,
+            payload.caller_avatar || notif.caller_photo || null
           );
         }
       } catch (err) {
