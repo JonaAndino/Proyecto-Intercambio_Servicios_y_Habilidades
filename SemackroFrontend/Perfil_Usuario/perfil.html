@@ -1109,7 +1109,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5); /* Fondo menos opaco */
+            background: transparent; /* Totalmente transparente */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1149,11 +1149,6 @@
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .modal-title::before {
-            content: '✨'; /* Sparkles emoji directo para evitar problemas de escape */
-            font-size: 20px;
         }
 
         .modal-input {
