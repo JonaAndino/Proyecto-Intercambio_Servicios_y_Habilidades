@@ -10693,8 +10693,8 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
     return `
       <div class="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col overflow-hidden border border-gray-100">
         <!-- Cabecera con estado -->
-        <div class="px-5 pt-5 pb-3 flex items-start justify-between">
-          <h3 class="font-bold text-gray-800 text-base leading-tight flex-1 mr-3">${titulo}</h3>
+        <div class="px-5 pt-5 pb-3 flex items-start justify-between min-w-0">
+          <h3 class="font-bold text-gray-800 text-base leading-tight flex-1 mr-3 truncate" title="${titulo}">${titulo}</h3>
           <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${est.color} shrink-0">
             <span class="w-1.5 h-1.5 rounded-full ${est.dot}"></span>
             ${est.label()}
@@ -10703,7 +10703,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
         ${restriccionBadge}
 
         <!-- Descripción -->
-        ${descripcion ? `<p class="px-5 text-gray-500 text-sm line-clamp-2">${descripcion}</p>` : ''}
+        <p class="px-5 text-gray-500 text-sm truncate" title="${descripcion}">${descripcion || '&nbsp;'}</p>
 
         <!-- Badge estado postulación del usuario -->
         ${postBadge}
