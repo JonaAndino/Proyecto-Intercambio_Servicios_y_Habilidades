@@ -10776,6 +10776,9 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
           <button onclick="postularseOrden(${idOrden})"
             class="flex-1 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-600 text-xs font-semibold transition flex items-center justify-center gap-1">
             <span class="iconify" data-icon="mdi:account-plus-outline" style="font-size:14px;"></span> ${t('workOrders.actionApply') || 'Postularme'}
+          </button>` : (!esAdmin && estadoPost === 'pendiente') ? `
+          <button onclick="cancelarPostulacionUsuario(${idOrden})" class="flex-1 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-semibold transition flex items-center justify-center gap-1">
+            <span class="iconify" data-icon="mdi:close-circle-outline" style="font-size:14px;"></span> Cancelar PostulaciÃ³n
           </button>` : (!esAdmin && !estadoPost && o.estado === 'pendiente') ? `
           <span class="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-400 text-xs font-medium text-center">${t('workOrders.fullCapacity') || 'Cupo lleno'}</span>` : ''}
         </div>
@@ -12141,3 +12144,32 @@ window.seekAudio = function(e, id) {
   const percent = (e.clientX - rect.left) / rect.width;
   audio.currentTime = percent * audio.duration;
 };
+// === FUNCION PARA CANCELAR POSTULACION ===
+async function cancelarPostulacionUsuario(idOrden) {
+  if (!confirm(¿Estás seguro de que deseas cancelar tu postulación a esta orden?)) return;
+  
+  const usuarioId = localStorage.getItem(usuarioId);
+  if (!usuarioId) return;
+
+  try {
+    const res = await fetch(${API_BASE}/ordenes-trabajo//cancelar-postulacion, {
+      method: DELETE,
+      headers: {
+        Content-Type: pplication/json,
+        Authorization: Bearer 
+      },
+      body: JSON.stringify({ usuario_id: usuarioId })
+    });
+    const json = await res.json();
+    if (json.success) {
+      if (typeof _cargarMisPostulaciones === unction) await _cargarMisPostulaciones();
+      if (typeof window.cargarOrdenes === unction) await window.cargarOrdenes();
+      alert(Postulación cancelada correctamente.);
+    } else {
+      alert(Error:  + (json.mensaje || No se pudo cancelar.));
+    }
+  } catch (err) {
+    console.error(err);
+    alert(Error de conexión al cancelar la postulación.);
+  }
+}

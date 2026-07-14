@@ -671,6 +671,37 @@ router.post('/:id/postular', async (req, res) => {
     }
 });
 
+// --------------------------------------------------
+// DELETE /api/ordenes-trabajo/:id/cancelar-postulacion
+// --------------------------------------------------
+router.delete('/:id/cancelar-postulacion', async (req, res) => {
+    try {
+        const idOrden = req.params.id;
+        const { usuario_id } = req.body;
+        
+        if (!usuario_id) {
+            return res.status(400).json({ success: false, mensaje: 'Usuario requerido.' });
+        }
+
+        // Buscar postulacion
+        const [post] = await db.query(
+            `SELECT id_postulacion FROM PostulacionesOrdenes WHERE id_orden = ? AND usuario_id = ?`,
+            [idOrden, usuario_id]
+        );
+
+        if (post.length === 0) {
+            return res.status(404).json({ success: false, mensaje: 'No se encontró la postulación.' });
+        }
+
+        await db.query(`DELETE FROM PostulacionesOrdenes WHERE id_postulacion = ?`, [post[0].id_postulacion]);
+        
+        res.json({ success: true, mensaje: 'Postulación cancelada correctamente.' });
+    } catch (err) {
+        console.error('[OT DELETE /:id/cancelar-postulacion]', err);
+        res.status(500).json({ success: false, mensaje: 'Error al cancelar postulación.', error: err.message });
+    }
+});
+
 // PATCH /api/ordenes-trabajo/:id/postulaciones/:postId  → admin acepta o rechaza
 router.patch('/:id/postulaciones/:postId', async (req, res) => {
     const { estado } = req.body;
