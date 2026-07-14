@@ -1007,7 +1007,7 @@ function closeLogoutModal(event) {
 function confirmLogout() {
   // Limpiar localStorage y sessionStorage
   const clavesSesion = [
-      'authToken', 'token', 'usuarioId', 'correoUsuario', 
+      'authToken', 'token', 'usuarioId', 'id_usuario', 'correoUsuario', 
       'usuarioRolId', 'usuarioRol', 'usuarioPermisos', 'firebaseUser'
   ];
   clavesSesion.forEach(clave => {
@@ -5564,14 +5564,14 @@ function inicializarSocketMensajeria() {
         window._mensajeriaSocket.emit('register', { userId: String(userId) });
       }
 
-      // Registrar también el personaId (id_Perfil_Persona) para asegurar compatibilidad con la base de datos de mensajería
+      // Unirse también a la sala de su personaId para recibir eventos directos de mensajería sin sobrescribir el tracking de en_linea
       if (typeof obtenerPersonaIdActual === 'function') {
         obtenerPersonaIdActual().then(personaId => {
           if (personaId) {
-            console.log('Registrando también personaId en el socket:', personaId);
-            window._mensajeriaSocket.emit('register', { userId: String(personaId) });
+            console.log('Uniéndose también a la sala de personaId:', personaId);
+            window._mensajeriaSocket.emit('join', `user_${personaId}`);
           }
-        }).catch(err => console.warn('Error al registrar personaId en socket:', err));
+        }).catch(err => console.warn('Error al unirse a sala de personaId:', err));
       }
     });
 
