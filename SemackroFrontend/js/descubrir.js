@@ -10554,7 +10554,7 @@ async function cargarOrdenesTrabajo() {
           const rPost = await fetch(`${API_BASE}/ordenes-trabajo/mis-postulaciones?usuario_id=${usuarioId}`, { headers });
           if (rPost.ok) {
             const jPost = await rPost.json();
-            (jPost.data || []).forEach(p => { misPostulacionesMap[p.id_orden] = p.estado; });
+            (jPost.data || []).forEach(p => { misPostulacionesMap[p.id_orden] = p.estado_postulacion; });
             _misPostulacionesMap = misPostulacionesMap;
           }
         } catch (e) { /* silencioso */ }
@@ -12162,8 +12162,9 @@ async function cancelarPostulacionUsuario(idOrden) {
     });
     const json = await res.json();
     if (json.success) {
-      if (typeof _cargarMisPostulaciones === "function") await _cargarMisPostulaciones();
-      if (typeof window.cargarOrdenes === "function") await window.cargarOrdenes();
+      sessionStorage.removeItem('cache_ot_data');
+      sessionStorage.removeItem('cache_ot_ts');
+      if (typeof window.cargarOrdenesTrabajo === "function") await window.cargarOrdenesTrabajo();
       alert("Postulación cancelada correctamente.");
     } else {
       alert("Error: " + (json.mensaje || "No se pudo cancelar."));
