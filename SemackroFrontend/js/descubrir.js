@@ -10778,7 +10778,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
             <span class="iconify" data-icon="mdi:account-plus-outline" style="font-size:14px;"></span> ${t('workOrders.actionApply') || 'Postularme'}
           </button>` : (!esAdmin && estadoPost === 'pendiente') ? `
           <button onclick="cancelarPostulacionUsuario(${idOrden})" class="flex-1 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-semibold transition flex items-center justify-center gap-1">
-            <span class="iconify" data-icon="mdi:close-circle-outline" style="font-size:14px;"></span> Cancelar Postulación
+            Cancelar Postulación
           </button>` : (!esAdmin && !estadoPost && o.estado === 'pendiente') ? `
           <span class="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-400 text-xs font-medium text-center">${t('workOrders.fullCapacity') || 'Cupo lleno'}</span>` : ''}
         </div>
@@ -12145,32 +12145,61 @@ window.seekAudio = function(e, id) {
   audio.currentTime = percent * audio.duration;
 };
 // === FUNCION PARA CANCELAR POSTULACION ===
-async function cancelarPostulacionUsuario(idOrden) {
-  if (!confirm("¿Estás seguro de que deseas cancelar tu postulación a esta orden?")) return;
-  
-  const usuarioId = localStorage.getItem("usuarioId");
-  if (!usuarioId) return;
+window.cancelarPostulacionUsuario = function(idOrden) {
+  const modalId = 'ot-cancel-postulacion-modal';
+  const existing = document.getElementById(modalId);
+  if (existing) existing.remove();
 
-  try {
-    const res = await fetch(`${API_BASE}/ordenes-trabajo/${idOrden}/cancelar-postulacion`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      },
-      body: JSON.stringify({ usuario_id: usuarioId })
-    });
-    const json = await res.json();
-    if (json.success) {
-      sessionStorage.removeItem('cache_ot_data');
-      sessionStorage.removeItem('cache_ot_ts');
-      if (typeof window.cargarOrdenesTrabajo === "function") await window.cargarOrdenesTrabajo();
-      alert("Postulación cancelada correctamente.");
-    } else {
-      alert("Error: " + (json.mensaje || "No se pudo cancelar."));
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="${modalId}" class="fixed inset-0 z-[10001] flex items-center justify-center bg-transparent">
+      <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 border border-gray-100">
+        <h3 class="text-lg font-bold text-gray-900 mb-2">Cancelar postulación</h3>
+        <p class="text-sm text-gray-500 mb-6">¿Estás seguro de que deseas cancelar tu postulación a esta orden?</p>
+        <div class="flex gap-3 w-full">
+          <button id="ot-cancel-post-no" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors">Cancelar</button>
+          <button id="ot-cancel-post-yes" class="flex-1 px-4 py-2.5 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 shadow-md transition-all">Aceptar</button>
+        </div>
+      </div>
+    </div>`);
+
+  const modal = document.getElementById(modalId);
+  
+  document.getElementById('ot-cancel-post-no').onclick = () => {
+    modal.remove();
+  };
+
+  document.getElementById('ot-cancel-post-yes').onclick = async () => {
+    modal.remove();
+    const usuarioId = localStorage.getItem("usuarioId");
+    if (!usuarioId) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/ordenes-trabajo/${idOrden}/cancelar-postulacion`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": \`Bearer \${localStorage.getItem("token")}\`
+        },
+        body: JSON.stringify({ usuario_id: usuarioId })
+      });
+      const json = await res.json();
+      if (json.success) {
+        sessionStorage.removeItem('cache_ot_data');
+        sessionStorage.removeItem('cache_ot_ts');
+        if (typeof window.cargarOrdenesTrabajo === "function") await window.cargarOrdenesTrabajo();
+        if (window.Toast) {
+          window.Toast.success("Cancelada", "Postulación cancelada correctamente.");
+        }
+      } else {
+        if (window.Toast) {
+          window.Toast.error("Error", json.mensaje || "No se pudo cancelar.");
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      if (window.Toast) {
+        window.Toast.error("Error", "No se pudo cancelar la postulación.");
+      }
     }
-  } catch (err) {
-    console.error(err);
-    alert("Error de conexión al cancelar la postulación.");
-  }
+  };
 }
