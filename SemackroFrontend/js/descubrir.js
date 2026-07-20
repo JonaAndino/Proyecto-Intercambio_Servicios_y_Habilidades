@@ -10803,7 +10803,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
             }
             return btnHtml;
           })()}
-          ${(!((window.Permisos ? window.Permisos.tienePermiso('EDITAR_POSTULACIONES_GLOBALES') : esAdmin) || (String(o.usuario_id) === String(localStorage.getItem('usuarioId')) && (window.Permisos ? window.Permisos.tienePermiso('editarOrdenesTrabajo') : true))) && String(o.usuario_id) === String(localStorage.getItem('usuarioId'))) ? `
+          ${(esDueno && !puedeEditarPropia && !puedeEliminarPropia) ? `
           <span class="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-xs font-bold text-center">Mi Orden</span>`
           : (!esAdmin && !estadoPost && o.estado === 'pendiente' && (o.total_postulaciones || 0) < (o.max_postulantes || 1) && (window.Permisos ? window.Permisos.tienePermiso('postularseOrdenesTrabajo') : true)) ? `
           <button onclick="postularseOrden(${idOrden})"
