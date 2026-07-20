@@ -2687,10 +2687,13 @@
                 } else {
                     if (panelVacio) panelVacio.classList.add('hidden');
                     // Ensure the active tab is one that is visible
-                    if (firstVisibleTab) {
-                        // By default 'general' is active. If 'general' is not visible, switch to first available
-                        const generalBtn = document.getElementById('btnConfigTab-general');
-                        if (generalBtn && generalBtn.style.display === 'none' && typeof switchConfigTab === 'function') {
+                    if (firstVisibleTab && typeof switchConfigTab === 'function') {
+                        const savedTab = localStorage.getItem('activeConfigTab');
+                        const btnSaved = savedTab ? document.getElementById(`btnConfigTab-${savedTab}`) : null;
+                        
+                        if (savedTab && btnSaved && btnSaved.style.display !== 'none') {
+                            switchConfigTab(savedTab);
+                        } else {
                             switchConfigTab(firstVisibleTab);
                         }
                     }
@@ -4066,6 +4069,8 @@
                     return;
                 }
             }
+
+            localStorage.setItem('activeConfigTab', tabName);
 
             const tabs = ['general', 'modalidades', 'categorias', 'globalSkills', 'variables', 'motivosBloqueo', 'rolesPermisos'];
             
