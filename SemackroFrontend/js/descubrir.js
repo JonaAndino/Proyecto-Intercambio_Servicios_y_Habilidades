@@ -2406,6 +2406,7 @@ async function renderUserCardsReal() {
 
   // Renderizar tarjetas
   const usuarioActualId = parseInt(localStorage.getItem("usuarioId"));
+  const tienePermisoFavoritos = window.Permisos ? (sessionStorage.getItem('usuarioRolId') === '1' || (window.Permisos._obtenerPermisos().length > 0 ? window.Permisos._obtenerPermisos().includes('favoritos') : true)) : true;
 
   usersGrid.innerHTML = paginatedUsers
     .map(
@@ -2420,8 +2421,8 @@ async function renderUserCardsReal() {
 
         return `
                 <div class="user-card" onclick="viewProfile(${user.id})">
-                    <!-- Botón de favoritos (ocultar si es el propio usuario) -->
-                    ${user.usuarioId !== usuarioActualId
+                    <!-- Botón de favoritos (ocultar si es el propio usuario o si no tiene permiso) -->
+                    ${user.usuarioId !== usuarioActualId && tienePermisoFavoritos
             ? `
                     <button type="button"
                             onclick="toggleFavorite(event, ${user.id}, '${user.name.replace(/'/g, "\\'")}')"
@@ -10507,15 +10508,17 @@ async function cargarOrdenesTrabajo() {
   if (!grid) return;
 
   const esAdmin = window.Permisos ? window.Permisos.esAdmin() : false;
+  const canVerPostulaciones = window.Permisos ? (window.Permisos._obtenerPermisos().includes('VER_POSTULACIONES_GLOBALES') || esAdmin) : esAdmin;
 
-  // Cargar órdenes administrativas en paralelo si es administrador
-  if (esAdmin && typeof window.adminCargarOrdenes === 'function') {
+  // Cargar órdenes administrativas en paralelo si es administrador o tiene permiso
+  if (canVerPostulaciones && typeof window.adminCargarOrdenes === 'function') {
     window.adminCargarOrdenes();
   }
 
   // Mostrar u ocultar botón "Nueva Orden" y control geo-filtro según rol
   const btnNuevaOrden = document.getElementById('btnNuevaOrden');
-  if (btnNuevaOrden) btnNuevaOrden.style.display = esAdmin ? '' : 'none';
+  const puedeCrearOrden = window.Permisos ? (window.Permisos.tienePermiso('crearOrdenesTrabajo') || window.Permisos.tienePermiso('CREAR_POSTULACIONES_GLOBALES')) : esAdmin;
+  if (btnNuevaOrden) btnNuevaOrden.style.display = puedeCrearOrden ? '' : 'none';
 
   const geoContainer = document.getElementById('adminGeoFilterContainer');
   if (geoContainer) geoContainer.classList.toggle('hidden', !esAdmin);
@@ -10781,18 +10784,26 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
             class="flex-1 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-medium transition flex items-center justify-center gap-1">
             <span class="iconify" data-icon="mdi:eye-outline" style="font-size:14px;"></span> ${t('workOrders.actionView') || 'Ver'}
           </button>
-          ${esAdmin && o.estado !== 'cancelada' && o.estado !== 'completada' ? `
-          <button onclick="editarOrden(${idOrden})"
-            class="flex-1 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium transition flex items-center justify-center gap-1">
-            <span class="iconify" data-icon="mdi:pencil-outline" style="font-size:14px;"></span> ${t('workOrders.actionEdit') || 'Editar'}
-          </button>
-          <button onclick="cancelarOrden(${idOrden})"
-            class="flex-1 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 text-xs font-medium transition flex items-center justify-center gap-1">
-            <span class="iconify" data-icon="mdi:close-circle-outline" style="font-size:14px;"></span> ${t('workOrders.actionCancel') || 'Cancelar'}
-          </button>` : String(o.usuario_id) === String(localStorage.getItem('usuarioId')) && o.estado !== 'cancelada' && o.estado !== 'completada' ? `
-          <button onclick="editarOrden(${idOrden})" class="flex-1 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium transition flex items-center justify-center gap-1"><span class="iconify" data-icon="mdi:pencil-outline" style="font-size:14px;"></span> Editar</button>
-          <button onclick="cancelarOrden(${idOrden})" class="flex-1 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 text-xs font-medium transition flex items-center justify-center gap-1"><span class="iconify" data-icon="mdi:close-circle-outline" style="font-size:14px;"></span> Cancelar</button>` 
-          : String(o.usuario_id) === String(localStorage.getItem('usuarioId')) ? `
+          ${(function(){
+            const esDueno = String(o.usuario_id) === String(localStorage.getItem('usuarioId'));
+            const puedeEditarAdmin = window.Permisos ? window.Permisos.tienePermiso('EDITAR_POSTULACIONES_GLOBALES') : esAdmin;
+            const puedeEliminarAdmin = window.Permisos ? window.Permisos.tienePermiso('ELIMINAR_POSTULACIONES_GLOBALES') : esAdmin;
+            const puedeEditarPropia = window.Permisos ? window.Permisos.tienePermiso('editarOrdenesTrabajo') : true;
+            const puedeEliminarPropia = window.Permisos ? window.Permisos.tienePermiso('eliminarOrdenesTrabajo') : true;
+
+            const puedeEditar = (puedeEditarAdmin || (esDueno && puedeEditarPropia)) && o.estado !== 'cancelada' && o.estado !== 'completada';
+            const puedeEliminar = (puedeEliminarAdmin || (esDueno && puedeEliminarPropia)) && o.estado !== 'cancelada' && o.estado !== 'completada';
+
+            let btnHtml = '';
+            if (puedeEditar) {
+                btnHtml += `<button onclick="editarOrden(${idOrden})" class="flex-1 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium transition flex items-center justify-center gap-1"><span class="iconify" data-icon="mdi:pencil-outline" style="font-size:14px;"></span> ${t('workOrders.actionEdit') || 'Editar'}</button>`;
+            }
+            if (puedeEliminar) {
+                btnHtml += `<button onclick="cancelarOrden(${idOrden})" class="flex-1 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 text-xs font-medium transition flex items-center justify-center gap-1"><span class="iconify" data-icon="mdi:close-circle-outline" style="font-size:14px;"></span> ${t('workOrders.actionCancel') || 'Cancelar'}</button>`;
+            }
+            return btnHtml;
+          })()}
+          ${(!((window.Permisos ? window.Permisos.tienePermiso('EDITAR_POSTULACIONES_GLOBALES') : esAdmin) || (String(o.usuario_id) === String(localStorage.getItem('usuarioId')) && (window.Permisos ? window.Permisos.tienePermiso('editarOrdenesTrabajo') : true))) && String(o.usuario_id) === String(localStorage.getItem('usuarioId'))) ? `
           <span class="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-xs font-bold text-center">Mi Orden</span>`
           : (!esAdmin && !estadoPost && o.estado === 'pendiente' && (o.total_postulaciones || 0) < (o.max_postulantes || 1)) ? `
           <button onclick="postularseOrden(${idOrden})"

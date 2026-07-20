@@ -6,6 +6,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { enviarNotificacionContextual } = require('../config/email');
+const verificarPermiso = require('../middlewares/verificarPermiso');
 
 const ESTADOS_OT_VALIDOS = ['pendiente', 'en_progreso', 'completada', 'cancelada'];
 
@@ -453,7 +454,7 @@ router.get('/:id', async (req, res) => {
 // --------------------------------------------------
 // POST /api/ordenes-trabajo  → Crear nueva orden
 // --------------------------------------------------
-router.post('/', async (req, res) => {
+router.post('/', verificarPermiso(['crearOrdenesTrabajo', 'CREAR_POSTULACIONES_GLOBALES']), async (req, res) => {
     const { usuario_id, titulo, descripcion, ubicacion_obra, fecha_inicio, fecha_fin, especialidad, presupuesto_estimado, max_postulantes, restringir_por_ubicacion } = req.body;
 
     if (!usuario_id || !titulo || !fecha_inicio || !fecha_fin) {
@@ -481,7 +482,7 @@ router.post('/', async (req, res) => {
 // --------------------------------------------------
 // PUT /api/ordenes-trabajo/:id  → Actualizar orden completa
 // --------------------------------------------------
-router.put('/:id', async (req, res) => {
+router.put('/:id', verificarPermiso(['editarOrdenesTrabajo', 'EDITAR_POSTULACIONES_GLOBALES']), async (req, res) => {
     const { titulo, descripcion, ubicacion_obra, fecha_inicio, fecha_fin, especialidad, presupuesto_estimado, estado, max_postulantes, restringir_por_ubicacion } = req.body;
 
     if (!titulo || !fecha_inicio || !fecha_fin) {
@@ -519,7 +520,7 @@ router.put('/:id', async (req, res) => {
 // --------------------------------------------------
 // PATCH /api/ordenes-trabajo/:id  → Cambiar solo el estado
 // --------------------------------------------------
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', verificarPermiso(['editarOrdenesTrabajo', 'EDITAR_POSTULACIONES_GLOBALES']), async (req, res) => {
     const { estado, restringir_por_ubicacion } = req.body;
 
     const setClauses = [];
@@ -558,7 +559,7 @@ router.patch('/:id', async (req, res) => {
 // --------------------------------------------------
 // DELETE /api/ordenes-trabajo/:id  → Eliminar orden
 // --------------------------------------------------
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verificarPermiso(['eliminarOrdenesTrabajo', 'ELIMINAR_POSTULACIONES_GLOBALES']), async (req, res) => {
     try {
         const [result] = await db.query(
             `DELETE FROM OrdenesTrabajo WHERE id_orden = ?`,
@@ -703,7 +704,7 @@ router.delete('/:id/cancelar-postulacion', async (req, res) => {
 });
 
 // PATCH /api/ordenes-trabajo/:id/postulaciones/:postId  → admin acepta o rechaza
-router.patch('/:id/postulaciones/:postId', async (req, res) => {
+router.patch('/:id/postulaciones/:postId', verificarPermiso(['aceptarIntercambio', 'EDITAR_POSTULACIONES_GLOBALES']), async (req, res) => {
     const { estado } = req.body;
     if (!['aceptada', 'rechazada'].includes(estado)) {
         return res.status(400).json({ success: false, mensaje: "Estado debe ser 'aceptada' o 'rechazada'." });

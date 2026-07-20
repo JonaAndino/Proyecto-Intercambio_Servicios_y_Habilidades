@@ -3370,10 +3370,24 @@
         // Inicializar listeners de modales de administración y chequear rol
         document.addEventListener('DOMContentLoaded', () => {
             const isAdmin = window.Permisos ? window.Permisos.esAdmin() : localStorage.getItem('usuarioRolId') === '1';
-            // tabsContainer es solo para admins (permite cambiar a la vista de tabla global)
+            const canVerPostulaciones = window.Permisos ? (window.Permisos._obtenerPermisos().includes('VER_POSTULACIONES_GLOBALES') || isAdmin) : isAdmin;
+            const canVerOrdenes = window.Permisos ? (window.Permisos._obtenerPermisos().includes('ordenesTrabajo') || isAdmin) : true;
+            
+            // tabsContainer es para los que pueden ver la tabla global
             const tabsContainer = document.getElementById('adminOtTabsContainer');
-            if (isAdmin && tabsContainer) {
+            if (canVerPostulaciones && tabsContainer) {
                 tabsContainer.classList.remove('hidden');
+                
+                // Si NO puede ver sus propias órdenes, ocultar esa pestaña y forzar la vista global
+                if (!canVerOrdenes) {
+                    const btnUserTab = document.getElementById('btnOtTab-user');
+                    if (btnUserTab) btnUserTab.style.display = 'none';
+                    
+                    // Esperar un momento a que switchOtViewTab esté disponible
+                    setTimeout(() => {
+                        if (typeof switchOtViewTab === 'function') switchOtViewTab('admin');
+                    }, 100);
+                }
             }
 
             // Listeners de modales admin

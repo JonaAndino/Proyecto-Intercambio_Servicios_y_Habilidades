@@ -6900,7 +6900,9 @@ async function cargarYRenderizarRolesConfig() {
                     const resPerm = await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/configuraciones/permisos`);
                     if (resPerm.ok) {
                         const jsonPerm = await resPerm.json();
-                        if (jsonPerm.success) todosLosPermisosDisponibles = jsonPerm.data;
+                        if (jsonPerm.success) {
+                            todosLosPermisosDisponibles = jsonPerm.data;
+                        }
                     }
                 }
 
@@ -7361,26 +7363,36 @@ async function cargarYRenderizarRolesConfig() {
 
                 window.MAPEO_AVANZADO = {
                 // MENU DE NAVEGACION
-                'descubrir': { master: 'Menú de Navegación', sub: 'Descubrir', nombre: 'Acceso a Descubrir', icon: 'mdi:compass-outline', badgeText: 'NAVEGAR', badgeColor: 'bg-blue-50 text-blue-600 border border-blue-200 rounded-md' },
-                'perfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Acceso a Perfil', icon: 'mdi:account-outline', badgeText: 'NAVEGAR', badgeColor: 'bg-blue-50 text-blue-600 border border-blue-200 rounded-md' },
-                'ordenesTrabajo': { master: 'Menú de Navegación', sub: 'Postulaciones / Trabajos', nombre: 'Acceso a Órdenes de Trabajo', icon: 'mdi:briefcase-outline', badgeText: 'NAVEGAR', badgeColor: 'bg-blue-50 text-blue-600 border border-blue-200 rounded-md' },
-                'mensajes': { master: 'Menú de Navegación', sub: 'Mensajes', nombre: 'Acceso a Mensajes', icon: 'mdi:message-outline', badgeText: 'NAVEGAR', badgeColor: 'bg-blue-50 text-blue-600 border border-blue-200 rounded-md' },
-                'solicitudesEnviadas': { master: 'Menú de Navegación', sub: 'Solicitudes de trabajo', nombre: 'Acceso a Solicitudes', icon: 'mdi:file-document-outline', badgeText: 'NAVEGAR', badgeColor: 'bg-blue-50 text-blue-600 border border-blue-200 rounded-md' },
-                'favoritos': { master: 'Menú de Navegación', sub: 'Mis favoritos', nombre: 'Acceso a Favoritos', icon: 'mdi:heart-outline', badgeText: 'NAVEGAR', badgeColor: 'bg-blue-50 text-blue-600 border border-blue-200 rounded-md' },
-                'historial': { master: 'Menú de Navegación', sub: 'Historial global', nombre: 'Acceso a Historial', icon: 'mdi:history', badgeText: 'NAVEGAR', badgeColor: 'bg-blue-50 text-blue-600 border border-blue-200 rounded-md' },
-                'reportes': { master: 'Menú de Navegación', sub: 'Reportes', nombre: 'Acceso a Reportes', icon: 'mdi:chart-bar', badgeText: 'NAVEGAR', badgeColor: 'bg-blue-50 text-blue-600 border border-blue-200 rounded-md' },
+                'descubrir': { master: 'Menú de Navegación', sub: 'Descubrir', nombre: 'Acceso a Descubrir', icon: 'mdi:compass-outline', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
+                'perfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Acceso a Perfil', icon: 'mdi:account-outline', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
+                // ORDENES DE TRABAJO (Acordeón 1)
+                'ordenesTrabajo': { master: 'Menú de Navegación', sub: 'Órdenes de Trabajo', nombre: 'Ver órdenes en formato de cartas', icon: 'mdi:briefcase-outline', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
+                'crearOrdenesTrabajo': { master: 'Menú de Navegación', sub: 'Órdenes de Trabajo', nombre: 'Crear órdenes de trabajo', icon: 'mdi:plus-circle-outline', badgeText: 'CREAR', badgeColor: 'bg-emerald-50 text-emerald-500 border border-emerald-200 rounded-md' },
+                'editarOrdenesTrabajo': { master: 'Menú de Navegación', sub: 'Órdenes de Trabajo', nombre: 'Editar órdenes de trabajo', icon: 'mdi:pencil-outline', badgeText: 'EDITAR', badgeColor: 'bg-amber-50 text-amber-500 border border-amber-200 rounded-md' },
+                'eliminarOrdenesTrabajo': { master: 'Menú de Navegación', sub: 'Órdenes de Trabajo', nombre: 'Eliminar órdenes de trabajo', icon: 'mdi:delete-outline', badgeText: 'ELIMINAR', badgeColor: 'bg-red-50 text-red-500 border border-red-200 rounded-md' },
+
+                // POSTULACIONES EN FORMATO DE LISTA (Acordeón 2)
+                'VER_POSTULACIONES_GLOBALES': { master: 'Menú de Navegación', sub: 'Postulaciones en Formato de Lista', nombre: 'Ver postulaciones', icon: 'mdi:history', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
+                'CREAR_POSTULACIONES_GLOBALES': { master: 'Menú de Navegación', sub: 'Postulaciones en Formato de Lista', nombre: 'Crear postulaciones', icon: 'mdi:plus-circle-outline', badgeText: 'CREAR', badgeColor: 'bg-emerald-50 text-emerald-500 border border-emerald-200 rounded-md' },
+                'EDITAR_POSTULACIONES_GLOBALES': { master: 'Menú de Navegación', sub: 'Postulaciones en Formato de Lista', nombre: 'Editar postulaciones', icon: 'mdi:pencil-outline', badgeText: 'EDITAR', badgeColor: 'bg-amber-50 text-amber-500 border border-amber-200 rounded-md' },
+                'ELIMINAR_POSTULACIONES_GLOBALES': { master: 'Menú de Navegación', sub: 'Postulaciones en Formato de Lista', nombre: 'Eliminar postulaciones', icon: 'mdi:delete-outline', badgeText: 'ELIMINAR', badgeColor: 'bg-red-50 text-red-500 border border-red-200 rounded-md' },
+
+                'mensajes': { master: 'Menú de Navegación', sub: 'Mensajes', nombre: 'Acceso a Mensajes', icon: 'mdi:message-outline', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
+                'solicitudesEnviadas': { master: 'Menú de Navegación', sub: 'Solicitudes de trabajo', nombre: 'Acceso a Solicitudes', icon: 'mdi:file-document-outline', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
+                'favoritos': { master: 'Menú de Navegación', sub: 'Mis favoritos', nombre: 'Acceso a Favoritos', icon: 'mdi:heart-outline', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
+                'historial': { master: 'Menú de Navegación', sub: 'Historial global', nombre: 'Acceso a Historial', icon: 'mdi:history', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
+                'reportes': { master: 'Menú de Navegación', sub: 'Reportes', nombre: 'Acceso a Reportes', icon: 'mdi:chart-bar', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
+                'ACEPTAR_INTERCAMBIOS': { master: 'Menú de Navegación', sub: 'Descubrir', nombre: 'Aceptar y gestionar intercambios', icon: 'mdi:handshake-outline', badgeText: 'EDITAR', badgeColor: 'bg-amber-50 text-amber-500 border border-amber-200 rounded-md' },
 
                 // ADMINISTRADOR
                 // -> 1. PANEL DE ADMINISTRACIÓN
                 'VER_METRICAS': { master: 'Administrador', sub: 'Panel de Administración', subsub: 'Métricas', nombre: 'Ver tabla de métricas', icon: 'mdi:chart-pie', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
-                'VER_POSTULACIONES_GLOBALES': { master: 'Administrador', sub: 'Postulaciones', subsub: null, nombre: 'Ver postulaciones en formato de lista', icon: 'mdi:history', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
                 
                 'VER_REPORTES_USUARIOS': { master: 'Administrador', sub: 'Panel de Administración', subsub: 'Usuarios Reportados', nombre: 'Ver usuarios reportados', icon: 'mdi:alert-circle-outline', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
                 'BLOQUEAR_REPORTADOS': { master: 'Administrador', sub: 'Panel de Administración', subsub: 'Usuarios Reportados', nombre: 'Bloquear usuarios reportados', icon: 'mdi:account-cancel-outline', badgeText: 'BLOQUEAR', badgeColor: 'bg-red-50 text-red-500 border border-red-200 rounded-md' },
                 
                 'VER_SOLICITUDES_VERIFICACION': { master: 'Administrador', sub: 'Panel de Administración', subsub: 'Solicitudes de Verificación', nombre: 'Ver solicitudes de verificación', icon: 'mdi:check-decagram-outline', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
                 'GESTIONAR_VERIFICACIONES': { master: 'Administrador', sub: 'Panel de Administración', subsub: 'Solicitudes de Verificación', nombre: 'Aprobar o rechazar verificaciones', icon: 'mdi:check-circle-outline', badgeText: 'VERIFICAR', badgeColor: 'bg-emerald-50 text-emerald-500 border border-emerald-200 rounded-md' },
-                'ACEPTAR_INTERCAMBIOS': { master: 'Menú de Navegación', sub: 'Descubrir', nombre: 'Aceptar y gestionar intercambios', icon: 'mdi:handshake-outline', badgeText: 'NAVEGAR', badgeColor: 'bg-blue-50 text-blue-600 border border-blue-200 rounded-md' },
                 
                 'VER_DIRECTORIO': { master: 'Administrador', sub: 'Panel de Administración', subsub: 'Directorio General', nombre: 'Ver listado del directorio', icon: 'mdi:account-group-outline', badgeText: 'VER', badgeColor: 'bg-slate-50 text-slate-600 border border-slate-200 rounded-md' },
                 'CREAR_CUENTAS': { master: 'Administrador', sub: 'Panel de Administración', subsub: 'Directorio General', nombre: 'Crear nuevas cuentas', icon: 'mdi:account-plus-outline', badgeText: 'CREAR', badgeColor: 'bg-emerald-50 text-emerald-500 border border-emerald-200 rounded-md' },

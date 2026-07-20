@@ -95,7 +95,7 @@ window.Permisos = {
     /** ¿Puede solicitar y concretar intercambios? */
     puedeIntercambiar() {
         const permisos = this._obtenerPermisos();
-        if (permisos.length === 0) return true; // Todos pueden por defecto
+        if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
         return permisos.includes('ACEPTAR_INTERCAMBIOS');
     },
 
@@ -166,7 +166,8 @@ window.Permisos = {
      * @returns {boolean}
      */
     puedeAccederVista(viewName) {
-        const vistasBasicas = ['descubrir', 'perfil', 'mensajes', 'favoritos', 'historial', 'ordenesTrabajo', 'solicitudesEnviadas'];
+        // Solo las vistas más críticas no pueden restringirse desde el panel
+        const vistasBasicas = ['descubrir', 'perfil'];
         if (vistasBasicas.includes(viewName)) return true;
 
         // El panel de administración es accesible para cualquier personal autorizado
@@ -177,6 +178,11 @@ window.Permisos = {
         if (permisos.length === 0) {
             // Fallback para administradores legacy sin JSON de permisos
             return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
+        }
+
+        // Si es ordenesTrabajo, permitir si tiene ordenesTrabajo O VER_POSTULACIONES_GLOBALES
+        if (viewName === 'ordenesTrabajo') {
+            return permisos.includes('ordenesTrabajo') || permisos.includes('VER_POSTULACIONES_GLOBALES');
         }
 
         return permisos.includes(viewName);

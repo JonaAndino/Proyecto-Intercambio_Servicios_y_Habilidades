@@ -80,12 +80,12 @@
         };
         window.Permisos.puedeIntercambiar = function() {
             const permisos = this._obtenerPermisos();
-            if (permisos.length === 0) return true;
+            if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1';
             return permisos.includes('ACEPTAR_INTERCAMBIOS');
         };
         window.Permisos.puedeVerHistorial = function() {
             const permisos = this._obtenerPermisos();
-            if (permisos.length === 0) return true;
+            if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1';
             return permisos.includes('VER_POSTULACIONES_GLOBALES');
         };
         window.Permisos.puedeVerDirectorio = function() {
@@ -165,8 +165,15 @@
                     const viewName = item.getAttribute('data-view');
                     const permName = item.getAttribute('data-permission') || viewName;
                     if (viewName) {
+                        let tienePermiso = permisos.includes(permName);
+                        
+                        // Excepción: si es ordenesTrabajo, mostrar también si tiene VER_POSTULACIONES_GLOBALES
+                        if (permName === 'ordenesTrabajo' && permisos.includes('VER_POSTULACIONES_GLOBALES')) {
+                            tienePermiso = true;
+                        }
+
                         // Si no tiene el permiso, lo ocultamos
-                        if (!permisos.includes(permName)) {
+                        if (!tienePermiso) {
                             item.style.display = 'none';
                         } else if (!firstAvailableView) {
                             firstAvailableView = viewName;

@@ -26,8 +26,15 @@ const verificarPermiso = (permisoRequerido) => {
             // Obtenemos los permisos del usuario usando el SP o query equivalente
             // En este caso, usaremos la lógica estándar para consultar los permisos del usuario por su rol.
             
+            // Si el parámetro es un array, verificamos que tenga al menos UNO de los permisos en el array (OR).
+            const permisosArray = Array.isArray(permisoRequerido) ? permisoRequerido : [permisoRequerido];
+            
+            if (permisosArray.length === 0) return next();
+
+            const placeholders = permisosArray.map(() => '?').join(',');
+            
             const query = `
-                SELECT 
+                SELECT o.link,
                     IFNULL(duo.concedido, IF(dro.opcion_id IS NOT NULL, 1, 0)) AS tiene_permiso
                 FROM opciones o
                 LEFT JOIN d_usuarios_opciones duo ON o.opcion_id = duo.opcion_id AND duo.usuario_id = ?
@@ -37,14 +44,18 @@ const verificarPermiso = (permisoRequerido) => {
                     JOIN d_usuarios_roles dur ON dro.rol_id = dur.rol_id
                     WHERE dur.usuario_id = ?
                 ) dro ON o.opcion_id = dro.opcion_id
-                WHERE o.link = ?
+                WHERE o.link IN (${placeholders})
             `;
             
-            const [rows] = await db.execute(query, [req.user.usuarioId, req.user.usuarioId, permisoRequerido]);
+            const params = [req.user.usuarioId, req.user.usuarioId, ...permisosArray];
+            const [rows] = await db.execute(query, params);
 
-            if (rows.length === 0 || rows[0].tiene_permiso != 1) {
+            // Verifica si al menos una de las filas retornadas tiene 'tiene_permiso' == 1
+            const tieneAlgunPermiso = rows.some(row => row.tiene_permiso == 1);
+
+            if (!tieneAlgunPermiso) {
                 // Si no tiene el permiso, denegar
-                return res.status(403).json({ error: `Acceso denegado. Requiere el permiso: ${permisoRequerido}` });
+                return res.status(403).json({ error: `Acceso denegado. Requiere al menos uno de los permisos: ${permisosArray.join(', ')}` });
             }
 
             // Si llegamos aquí, el usuario tiene el permiso
