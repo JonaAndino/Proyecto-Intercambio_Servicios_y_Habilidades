@@ -2849,12 +2849,13 @@
                     <td class="py-3 px-3 border-r border-gray-150 dark:border-gray-800 text-center" title="${o.restringir_por_ubicacion ? 'Solo zona: ' + o.ubicacion_obra : 'Visible para todos'}">
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" class="sr-only peer" ${o.restringir_por_ubicacion ? 'checked' : ''}
-                                onchange="adminToggleRestriccionUbicacion(${idOrden}, this.checked)">
+                                ${(window.Permisos && window.Permisos.tienePermiso('EDITAR_POSTULACIONES_GLOBALES')) ? `onchange="adminToggleRestriccionUbicacion(${idOrden}, this.checked)"` : 'disabled'}>
                             <div class="w-9 h-5 bg-gray-200 peer-checked:bg-amber-500 rounded-full peer relative after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
                         </label>
                     </td>
                     <td class="py-3 px-4 text-center">
                         <div class="flex items-center justify-center gap-1">
+                            ${(window.Permisos && window.Permisos.tienePermiso('EDITAR_POSTULACIONES_GLOBALES')) ? `
                             <button onclick="adminAbrirModalEditar(${idOrden})" title="Editar"
                                 class="p-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 transition" >
                                 <span class="iconify" data-icon="mdi:pencil-outline" style="font-size:14px;"></span>
@@ -2868,10 +2869,13 @@
                                 <option value="completada">Completada</option>
                                 <option value="cancelada">Cancelada</option>
                             </select>
+                            ` : ''}
+                            ${(window.Permisos && window.Permisos.tienePermiso('ELIMINAR_POSTULACIONES_GLOBALES')) ? `
                             <button onclick="adminEliminarOrden(${idOrden})" title="Eliminar"
                                 class="p-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 dark:bg-red-955/20 dark:text-red-400 transition">
                                 <span class="iconify" data-icon="mdi:trash-can-outline" style="font-size:14px;"></span>
                             </button>
+                            ` : ''}
                         </div>
                     </td>
                 </tr>`;
