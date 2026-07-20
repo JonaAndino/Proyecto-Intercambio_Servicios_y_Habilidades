@@ -10805,7 +10805,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
           })()}
           ${(!((window.Permisos ? window.Permisos.tienePermiso('EDITAR_POSTULACIONES_GLOBALES') : esAdmin) || (String(o.usuario_id) === String(localStorage.getItem('usuarioId')) && (window.Permisos ? window.Permisos.tienePermiso('editarOrdenesTrabajo') : true))) && String(o.usuario_id) === String(localStorage.getItem('usuarioId'))) ? `
           <span class="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-xs font-bold text-center">Mi Orden</span>`
-          : (!esAdmin && !estadoPost && o.estado === 'pendiente' && (o.total_postulaciones || 0) < (o.max_postulantes || 1)) ? `
+          : (!esAdmin && !estadoPost && o.estado === 'pendiente' && (o.total_postulaciones || 0) < (o.max_postulantes || 1) && (window.Permisos ? window.Permisos.tienePermiso('postularseOrdenesTrabajo') : true)) ? `
           <button onclick="postularseOrden(${idOrden})"
             class="flex-1 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-600 text-xs font-semibold transition flex items-center justify-center gap-1">
             <span class="iconify" data-icon="mdi:account-plus-outline" style="font-size:14px;"></span> ${t('workOrders.actionApply') || 'Postularme'}

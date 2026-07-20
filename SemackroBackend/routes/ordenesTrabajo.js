@@ -624,7 +624,7 @@ router.get('/:id/postulacion-status', async (req, res) => {
 });
 
 // POST /api/ordenes-trabajo/:id/postular  → técnico se postula
-router.post('/:id/postular', async (req, res) => {
+router.post('/:id/postular', verificarPermiso(['postularseOrdenesTrabajo']), async (req, res) => {
     const { usuario_id, mensaje } = req.body;
     if (!usuario_id) return res.status(400).json({ success: false, mensaje: 'usuario_id requerido.' });
 

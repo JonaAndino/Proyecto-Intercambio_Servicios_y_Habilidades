@@ -26,6 +26,7 @@ const permissions = [
     { clave: 'crearOrdenesTrabajo', nombre: 'Crear Órdenes de Trabajo', orden: 112 },
     { clave: 'editarOrdenesTrabajo', nombre: 'Editar Órdenes de Trabajo', orden: 113 },
     { clave: 'eliminarOrdenesTrabajo', nombre: 'Eliminar Órdenes de Trabajo', orden: 114 },
+    { clave: 'postularseOrdenesTrabajo', nombre: 'Postularse a Órdenes de Trabajo', orden: 115 },
     { clave: 'CREAR_POSTULACIONES_GLOBALES', nombre: 'Crear Postulaciones', orden: 115 },
     { clave: 'EDITAR_POSTULACIONES_GLOBALES', nombre: 'Editar Postulaciones', orden: 116 },
     { clave: 'ELIMINAR_POSTULACIONES_GLOBALES', nombre: 'Eliminar Postulaciones', orden: 117 },
