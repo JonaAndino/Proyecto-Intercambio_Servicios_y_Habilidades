@@ -10786,13 +10786,11 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
           </button>
           ${(function(){
             const esDueno = String(o.usuario_id) === String(localStorage.getItem('usuarioId'));
-            const puedeEditarAdmin = window.Permisos ? window.Permisos.tienePermiso('EDITAR_POSTULACIONES_GLOBALES') : esAdmin;
-            const puedeEliminarAdmin = window.Permisos ? window.Permisos.tienePermiso('ELIMINAR_POSTULACIONES_GLOBALES') : esAdmin;
             const puedeEditarPropia = window.Permisos ? window.Permisos.tienePermiso('editarOrdenesTrabajo') : true;
             const puedeEliminarPropia = window.Permisos ? window.Permisos.tienePermiso('eliminarOrdenesTrabajo') : true;
 
-            const puedeEditar = (puedeEditarAdmin || (esDueno && puedeEditarPropia)) && o.estado !== 'cancelada' && o.estado !== 'completada';
-            const puedeEliminar = (puedeEliminarAdmin || (esDueno && puedeEliminarPropia)) && o.estado !== 'cancelada' && o.estado !== 'completada';
+            const puedeEditar = (esDueno && puedeEditarPropia) && o.estado !== 'cancelada' && o.estado !== 'completada';
+            const puedeEliminar = (esDueno && puedeEliminarPropia) && o.estado !== 'cancelada' && o.estado !== 'completada';
 
             let btnHtml = '';
             if (puedeEditar) {
@@ -10801,19 +10799,21 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
             if (puedeEliminar) {
                 btnHtml += `<button onclick="cancelarOrden(${idOrden})" class="flex-1 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 text-xs font-medium transition flex items-center justify-center gap-1"><span class="iconify" data-icon="mdi:close-circle-outline" style="font-size:14px;"></span> ${t('workOrders.actionCancel') || 'Cancelar'}</button>`;
             }
+
+            if (esDueno && !puedeEditar && !puedeEliminar) {
+                btnHtml += `<span class="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-xs font-bold text-center">Mi Orden</span>`;
+            } else if (!esDueno) {
+                if (!esAdmin && !estadoPost && o.estado === 'pendiente' && (o.total_postulaciones || 0) < (o.max_postulantes || 1) && (window.Permisos ? window.Permisos.tienePermiso('postularseOrdenesTrabajo') : true)) {
+                    btnHtml += `<button onclick="postularseOrden(${idOrden})" class="flex-1 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-600 text-xs font-semibold transition flex items-center justify-center gap-1"><span class="iconify" data-icon="mdi:account-plus-outline" style="font-size:14px;"></span> ${t('workOrders.actionApply') || 'Postularme'}</button>`;
+                } else if (!esAdmin && estadoPost === 'pendiente') {
+                    btnHtml += `<button onclick="cancelarPostulacionUsuario(${idOrden})" class="flex-1 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-semibold transition flex items-center justify-center gap-1">Cancelar Postulación</button>`;
+                } else if (!esAdmin && !estadoPost && o.estado === 'pendiente' && (o.total_postulaciones || 0) >= (o.max_postulantes || 1) && (window.Permisos ? window.Permisos.tienePermiso('postularseOrdenesTrabajo') : true)) {
+                    btnHtml += `<span class="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-400 text-xs font-medium text-center">${t('workOrders.fullCapacity') || 'Cupo lleno'}</span>`;
+                }
+            }
+
             return btnHtml;
           })()}
-          ${(esDueno && !puedeEditarPropia && !puedeEliminarPropia) ? `
-          <span class="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-500 text-xs font-bold text-center">Mi Orden</span>`
-          : (!esAdmin && !estadoPost && o.estado === 'pendiente' && (o.total_postulaciones || 0) < (o.max_postulantes || 1) && (window.Permisos ? window.Permisos.tienePermiso('postularseOrdenesTrabajo') : true)) ? `
-          <button onclick="postularseOrden(${idOrden})"
-            class="flex-1 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 text-green-600 text-xs font-semibold transition flex items-center justify-center gap-1">
-            <span class="iconify" data-icon="mdi:account-plus-outline" style="font-size:14px;"></span> ${t('workOrders.actionApply') || 'Postularme'}
-          </button>` : (!esAdmin && estadoPost === 'pendiente') ? `
-          <button onclick="cancelarPostulacionUsuario(${idOrden})" class="flex-1 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-semibold transition flex items-center justify-center gap-1">
-            Cancelar Postulación
-          </button>` : (!esAdmin && !estadoPost && o.estado === 'pendiente' && (o.total_postulaciones || 0) >= (o.max_postulantes || 1) && (window.Permisos ? window.Permisos.tienePermiso('postularseOrdenesTrabajo') : true)) ? `
-          <span class="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-400 text-xs font-medium text-center">${t('workOrders.fullCapacity') || 'Cupo lleno'}</span>` : ''}
         </div>
       </div>`;
   }).join('');
