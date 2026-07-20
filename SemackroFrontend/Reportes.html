@@ -7489,7 +7489,17 @@ async function cargarYRenderizarRolesConfig() {
 
             window.renderizarModalPermisos = () => {
                 const jerarquia = { 
-                    'Menú de Navegación': {}, 
+                    'Menú de Navegación': {
+                        'Descubrir': { _items: [], _subsubs: {} },
+                        'Mi perfil': { _items: [], _subsubs: {} },
+                        'Órdenes de Trabajo': { _items: [], _subsubs: {} },
+                        'Postulaciones en Formato de Lista': { _items: [], _subsubs: {} },
+                        'Mensajes': { _items: [], _subsubs: {} },
+                        'Solicitudes de trabajo': { _items: [], _subsubs: {} },
+                        'Mis favoritos': { _items: [], _subsubs: {} },
+                        'Historial global': { _items: [], _subsubs: {} },
+                        'Reportes': { _items: [], _subsubs: {} }
+                    }, 
                     'Administrador': {
                         'Panel de Administración': { _items: [], _subsubs: {} },
                         'Configuraciones': { 
