@@ -70,7 +70,13 @@
         window.Permisos.puedeConfigurar = function() {
             const permisos = this._obtenerPermisos();
             if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1';
-            return permisos.includes('GESTIONAR_CONFIGURACION');
+            return permisos.includes('GESTIONAR_CONFIGURACION')
+                || permisos.includes('configGenerales:ver')
+                || permisos.includes('modalidades:ver')
+                || permisos.includes('categorias:ver')
+                || permisos.includes('variables:ver')
+                || permisos.includes('motivosBloqueo:ver')
+                || permisos.includes('rolesPermisos:ver');
         };
         window.Permisos.puedeIntercambiar = function() {
             const permisos = this._obtenerPermisos();
@@ -80,7 +86,7 @@
         window.Permisos.puedeVerHistorial = function() {
             const permisos = this._obtenerPermisos();
             if (permisos.length === 0) return true;
-            return permisos.includes('VER_HISTORIAL_PERSONAL');
+            return permisos.includes('VER_POSTULACIONES_GLOBALES');
         };
         window.Permisos.puedeVerDirectorio = function() {
             const permisos = this._obtenerPermisos();
@@ -92,7 +98,14 @@
             if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1';
             return permisos.includes('VER_METRICAS')
                 || permisos.includes('MODERAR_USUARIOS')
+                || permisos.includes('VER_REPORTES_USUARIOS')
                 || permisos.includes('GESTIONAR_CONFIGURACION')
+                || permisos.includes('configGenerales:ver')
+                || permisos.includes('modalidades:ver')
+                || permisos.includes('categorias:ver')
+                || permisos.includes('variables:ver')
+                || permisos.includes('motivosBloqueo:ver')
+                || permisos.includes('rolesPermisos:ver')
                 || permisos.includes('VER_DIRECTORIO')
                 || permisos.includes('VER_SOLICITUDES_VERIFICACION');
         };
@@ -174,6 +187,13 @@
                     }, 100);
                 }
             }
+        }
+
+        // Retirar el shield anti-FOUC: ya se aplicaron los permisos
+        const shield = document.getElementById('app-loading-shield');
+        if (shield) {
+            shield.classList.add('fade-out');
+            setTimeout(() => shield.remove(), 260);
         }
     });
 })();

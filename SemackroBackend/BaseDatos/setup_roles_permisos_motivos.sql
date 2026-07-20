@@ -16,7 +16,7 @@ INSERT IGNORE INTO Permisos (id_permiso, clave_permiso, nombre_permiso) VALUES
 (2, 'MODERAR_USUARIOS', 'Bloquear y moderar usuarios de la comunidad'),
 (3, 'GESTIONAR_CONFIGURACION', 'Editar configuraciones y tablas maestras'),
 (4, 'ACEPTAR_INTERCAMBIOS', 'Solicitar y concretar intercambios de habilidades'),
-(5, 'VER_HISTORIAL_PERSONAL', 'Visualizar historial de trabajos personales'),
+(5, 'VER_POSTULACIONES_GLOBALES', 'Visualizar historial de trabajos personales'),
 (6, 'VER_DIRECTORIO', 'Ver listado y tabla del directorio general'),
 (7, 'CREAR_CUENTAS', 'Crear y enrolar nuevas cuentas de usuario'),
 (8, 'EDITAR_USUARIOS', 'Editar perfiles y datos de usuarios'),
@@ -47,7 +47,7 @@ SELECT 1, id_permiso FROM Permisos;
 
 -- Usuario Estandar (id_rol = 2) -> Aceptar intercambios e historial de trabajos
 INSERT IGNORE INTO Roles_Permisos (id_rol, id_permiso)
-SELECT 2, id_permiso FROM Permisos WHERE clave_permiso IN ('ACEPTAR_INTERCAMBIOS', 'VER_HISTORIAL_PERSONAL');
+SELECT 2, id_permiso FROM Permisos WHERE clave_permiso IN ('ACEPTAR_INTERCAMBIOS', 'VER_POSTULACIONES_GLOBALES');
 
 -- 7. Tabla de Motivos de Bloqueo Predefinidos
 CREATE TABLE IF NOT EXISTS Motivos_Bloqueo_Predefinidos (

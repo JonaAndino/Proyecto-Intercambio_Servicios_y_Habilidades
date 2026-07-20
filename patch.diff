@@ -1,0 +1,24 @@
+--- SemackroFrontend/js/descubrir.js
++++ SemackroFrontend/js/descubrir.js
+@@ -12146,15 +12146,15 @@
+ };
+ // === FUNCION PARA CANCELAR POSTULACION ===
+ async function cancelarPostulacionUsuario(idOrden) {
+-  if (!confirm(Ests seguro de que deseas cancelar tu postulacin a esta orden?)) return;
++  if (!confirm('¿Estás seguro de que deseas cancelar tu postulación a esta orden?')) return;
+   
+-  const usuarioId = localStorage.getItem(usuarioId);
++  const usuarioId = localStorage.getItem('usuarioId');
+   if (!usuarioId) return;
+ 
+   try {
+-    const res = await fetch(${API_BASE}/ordenes-trabajo//cancelar-postulacion, {
+-      method: DELETE,
++    const res = await fetch(`${API_BASE}/ordenes-trabajo/${idOrden}/cancelar-postulacion`, {
++      method: 'DELETE',
+       headers: {
+-        Content-Type:  pplication/json,
+-        Authorization: Bearer 
++        'Content-Type': 'application/json',
++        'Authorization': `Bearer ${localStorage.getItem('token')}`
+       },

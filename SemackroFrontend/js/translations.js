@@ -335,7 +335,7 @@ const translations = {
                     'config.tabTitle': 'Configuraciones',
                     'config.title': 'Configuraciones del Sistema',
                     'config.subtitle': 'Gestiona las opciones globales de la plataforma',
-                    'config.generalSettings': 'Configuraciones Generales',
+                    'config.generalSettings': 'Ajustes Globales',
                     'config.jwtDuration': 'Duración del token de recuperación',
                     'config.driverPerfil': 'Habilitar driver en perfil de usuario',
                     'config.driverDescubrir': 'Habilitar driver en página de descubrir',

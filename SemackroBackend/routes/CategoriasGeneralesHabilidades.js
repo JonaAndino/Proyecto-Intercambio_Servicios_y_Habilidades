@@ -3,6 +3,7 @@ const router = express.Router();
 
 // Importar configuración centralizada de la base de datos
 const db = require('../db');
+const verificarPermiso = require('../middlewares/verificarPermiso');
 
 // ----------------------------------------------------
 // ENDPOINT: Obtener todas las categorías (GET /categorias)
@@ -65,7 +66,7 @@ router.get('/:id', async (req, res) => {
 // ----------------------------------------------------
 // ENDPOINT: Agregar una categoría (POST /categorias)
 // ----------------------------------------------------
-router.post('/', async (req, res) => {
+router.post('/', verificarPermiso('categorias:crear'), async (req, res) => {
     const { nombre } = req.body;
     
     if (!nombre || !nombre.trim()) {
@@ -100,7 +101,7 @@ router.post('/', async (req, res) => {
 // ----------------------------------------------------
 // ENDPOINT: Actualizar una categoría (PUT /categorias/:id)
 // ----------------------------------------------------
-router.put('/:id', async (req, res) => {
+router.put('/:id', verificarPermiso('categorias:editar'), async (req, res) => {
     const id = parseInt(req.params.id);
     const { nombre } = req.body;
     
@@ -143,7 +144,7 @@ router.put('/:id', async (req, res) => {
 // ----------------------------------------------------
 // ENDPOINT: Eliminar una categoría (DELETE /categorias/:id)
 // ----------------------------------------------------
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verificarPermiso('categorias:eliminar'), async (req, res) => {
     const id = parseInt(req.params.id);
     
     if (isNaN(id)) {

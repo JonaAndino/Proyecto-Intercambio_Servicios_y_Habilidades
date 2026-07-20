@@ -1,0 +1,163 @@
+        window.abrirModalPermisosIndividuales = async function(idUsuario, nombre, idRol) {
+            idUsuarioEditandoPermisos = idUsuario;
+            document.getElementById('permisosIndivNombre').textContent = `Permisos de ${nombre}`;
+            
+            const container = document.getElementById('permisosIndivCheckboxesContainer');
+            container.innerHTML = '<div class="p-4 text-center text-sm text-gray-500">Cargando permisos...</div>';
+            document.getElementById('permisosIndivModalRoot').style.display = 'flex';
+            setTimeout(() => { document.getElementById('permisosIndivCard').classList.add('scale-100', 'opacity-100'); }, 10);
+
+            try {
+                // Si la lista global de permisos está vacía (porque no se abrió la pestaña de roles antes), cargarla:
+                if (todosLosPermisosDisponibles.length === 0) {
+                    const resPerm = await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/configuraciones/permisos`);
+                    if (resPerm.ok) {
+                        const jsonPerm = await resPerm.json();
+                        if (jsonPerm.success) todosLosPermisosDisponibles = jsonPerm.data;
+                    }
+                }
+
+                // Si la lista de roles está vacía, cargarla para saber los permisos de cada rol
+                if (todosLosRolesCargados.length === 0) {
+                    const resRoles = await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/configuraciones/roles`);
+                    if (resRoles.ok) {
+                        const jsonRoles = await resRoles.json();
+                        if (jsonRoles.success) {
+                            todosLosRolesCargados = jsonRoles.data;
+                            // El backend ya devuelve r.permisos como un array
+                        }
+                    }
+                }
+
+                // Obtener permisos específicos del usuario
+                const resUsr = await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/configuraciones/usuarios/${idUsuario}/permisos`);
+                const dataUsr = resUsr.ok ? await resUsr.json() : { data: [] };
+                const excepciones = dataUsr.data || [];
+                
+                // Obtener los permisos del ROL para saber el estado "Neutro" (Por defecto)
+                const rolIdFormat = parseInt(idRol, 10);
+                const rol = todosLosRolesCargados.find(r => r.id_rol === rolIdFormat) || { permisos: [] };
+
+                const getIconoOpcion = (clave) => {
+                    const map = {
+                        'descubrir': 'mdi:compass-outline',
+                        'perfil': 'mdi:account-outline',
+                        'ordenesTrabajo': 'mdi:briefcase-outline',
+                        'mensajes': 'mdi:message-outline',
+                        'solicitudesEnviadas': 'mdi:file-document-outline',
+                        'favoritos': 'mdi:heart-outline',
+                        'historial': 'mdi:history',
+                        'reportes': 'mdi:chart-bar',
+                        'VER_METRICAS': 'mdi:chart-pie',
+                        'VER_REPORTES_USUARIOS': 'mdi:account-alert',
+                        'MODERAR_USUARIOS': 'mdi:shield-account-outline',
+                        'GESTIONAR_CONFIGURACION': 'mdi:cog-outline',
+                        'ACEPTAR_INTERCAMBIOS': 'mdi:handshake-outline',
+                        'VER_HISTORIAL_PERSONAL': 'mdi:history',
+                        'VER_DIRECTORIO': 'mdi:folder-account-outline',
+                        'CREAR_CUENTAS': 'mdi:account-plus-outline',
+                        'EDITAR_USUARIOS': 'mdi:account-edit-outline',
+                        'ASIGNAR_ROLES_PERMISOS': 'mdi:shield-key-outline',
+                        'VER_SOLICITUDES_VERIFICACION': 'mdi:check-decagram-outline'
+                    };
+                    return map[clave] || 'mdi:checkbox-marked-circle-outline';
+                };
+
+                const isPermisoAdmin = (clave) => clave === clave.toUpperCase();
+                const permisosUsuario = todosLosPermisosDisponibles.filter(p => !isPermisoAdmin(p.clave));
+                const permisosAdmin = todosLosPermisosDisponibles.filter(p => isPermisoAdmin(p.clave));
+
+                const generarHTMLPermiso = (p) => {
+                    const iconoSVG = getIconoOpcion(p.clave);
+                    const exc = excepciones.find(e => e.link === p.clave);
+                    const rolLoTiene = rol.permisos && rol.permisos.includes(p.clave);
+                    
+                    // Estado: '' (neutro), '1' (concedido), '0' (denegado)
+                    let val = '';
+                    if (exc) {
+                        val = exc.concedido ? '1' : '0';
+                    }
+
+                    // Determinar el estado final calculado
+                    let estadoFinal = rolLoTiene;
+                    if (exc) estadoFinal = exc.concedido;
+
+                    let colorFondo = 'border-slate-150 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-900/30';
+                    let colorTitulo = 'text-slate-800 dark:text-gray-300';
+                    let colorIcono = 'text-gray-400';
+                    let colorFinal = 'text-gray-500';
+                    
+                    if (estadoFinal) {
+                        if (val === '1') {
+                            colorFondo = 'border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20';
+                            colorTitulo = 'text-green-800 dark:text-green-200';
+                            colorIcono = 'text-green-500';
+                            colorFinal = 'text-green-600';
+                        } else {
+                            colorFondo = 'border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/20';
+                            colorTitulo = 'text-purple-800 dark:text-purple-200';
+                            colorIcono = 'text-purple-500';
+                            colorFinal = 'text-purple-600';
+                        }
+                    } else {
+                        if (val === '0') {
+                            colorFondo = 'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/20';
+                            colorTitulo = 'text-red-800 dark:text-red-200';
+                            colorIcono = 'text-red-500';
+                            colorFinal = 'text-red-600';
+                        }
+                    }
+                    
+                    const strBaseRol = rolLoTiene ? '<span class="text-green-500 font-bold">Concedido</span>' : '<span class="text-gray-400 font-bold">Denegado</span>';
+                    const textoExcepcion = val === '1' ? ' <span class="text-green-600 font-black ml-1">➔ FORZADO CONCEDIDO</span>' : (val === '0' ? ' <span class="text-red-600 font-black ml-1">➔ FORZADO DENEGADO</span>' : '');
+
+                    return `
+                        <div class="flex flex-col xl:flex-row items-start xl:items-center justify-between p-3 rounded-xl border ${colorFondo} transition-colors gap-2" data-rol-tiene="${rolLoTiene}">
+                            <div class="flex items-start gap-3 w-full">
+                                <div class="mt-0.5 ${colorIcono}">
+                                    <span class="iconify text-xl" data-icon="${iconoSVG}"></span>
+                                </div>
+                                <div class="flex-1">
+                                    <input type="text" value="${escapeHtml(p.nombre)}" onclick="event.stopPropagation()" onchange="guardarNombrePermisoGlobal('${p.clave}', this.value)" class="block w-full bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none focus:ring-0 text-sm font-semibold ${colorTitulo} transition-colors cursor-text pb-0.5 mb-0.5" />
+                                    <span class="block text-xs text-gray-400 dark:text-gray-500 mt-0.5">${escapeHtml(p.clave)} | Rol Base: ${strBaseRol}${textoExcepcion}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-row xl:flex-col items-center xl:items-end justify-between xl:justify-end gap-1 w-full xl:w-auto mt-2 xl:mt-0 pt-2 xl:pt-0 border-t xl:border-0 border-slate-200 dark:border-gray-700/50">
+                                <span class="text-[10px] font-bold uppercase tracking-wider ${colorFinal}">Final: ${estadoFinal ? 'SI TIENE ACCESO' : 'SIN ACCESO'}</span>
+                                <select onchange="actualizarVisualFilaPermiso(this)" class="permiso-indiv-select text-xs border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800 text-slate-700 dark:text-gray-300 focus:outline-none focus:border-purple-500 cursor-pointer" data-clave="${escapeHtml(p.clave)}">
+                                    <option value="" ${val === '' ? 'selected' : ''}>Neutro (Usar Rol)</option>
+                                    <option value="1" ${val === '1' ? 'selected' : ''}>Forzar Concedido</option>
+                                    <option value="0" ${val === '0' ? 'selected' : ''}>Forzar Denegado</option>
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                };
+
+                const headerUserHTML = permisosUsuario.length > 0 ? `
+                    <div class="col-span-1 md:col-span-2 mt-1 mb-1">
+                        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest border-b border-slate-200 dark:border-gray-700 pb-2 flex items-center gap-2">
+                            <span class="iconify text-lg" data-icon="mdi:account-group"></span> Permisos de Usuario Normal
+                        </h4>
+                    </div>
+                ` : '';
+
+                const htmlUsuario = permisosUsuario.map(generarHTMLPermiso).join('');
+
+                const headerAdminHTML = permisosAdmin.length > 0 ? `
+                    <div class="col-span-1 md:col-span-2 mt-4 mb-1">
+                        <h4 class="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest border-b border-blue-200 dark:border-blue-800/50 pb-2 flex items-center gap-2">
+                            <span class="iconify text-lg" data-icon="mdi:shield-account"></span> Permisos de Administrador
+                        </h4>
+                    </div>
+                ` : '';
+                
+                const htmlAdmin = permisosAdmin.map(generarHTMLPermiso).join('');
+
+                container.innerHTML = headerUserHTML + htmlUsuario + headerAdminHTML + htmlAdmin;
+
+            } catch (error) {
+                console.error('Error al cargar permisos del usuario', error);
+                container.innerHTML = '<div class="p-4 text-center text-sm text-red-500">Error al cargar permisos</div>';
+            }
+        };

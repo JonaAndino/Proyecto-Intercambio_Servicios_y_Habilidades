@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const db = require('../db');
+const verificarPermiso = require('../middlewares/verificarPermiso');
 
 // ----------------------------------------------------
 // ENDPOINT: Obtener todas las configuraciones (GET /configuraciones)
@@ -44,7 +45,7 @@ router.get('/', async (req, res) => {
 // ----------------------------------------------------
 // ENDPOINT: Actualizar una configuración (PUT /configuraciones)
 // ----------------------------------------------------
-router.put('/', async (req, res) => {
+router.put('/', verificarPermiso('configGenerales:editar'), async (req, res) => {
     const { clave, valor } = req.body;
     
     if (!clave) {
@@ -93,7 +94,7 @@ router.get('/modalidades', async (req, res) => {
 // ----------------------------------------------------
 // ENDPOINT: Agregar una modalidad (POST /configuraciones/modalidades)
 // ----------------------------------------------------
-router.post('/modalidades', async (req, res) => {
+router.post('/modalidades', verificarPermiso('modalidades:crear'), async (req, res) => {
     const { nombre } = req.body;
     
     if (!nombre) {
@@ -122,7 +123,7 @@ router.post('/modalidades', async (req, res) => {
 // ----------------------------------------------------
 // ENDPOINT: Actualizar una modalidad (PUT /configuraciones/modalidades/:id)
 // ----------------------------------------------------
-router.put('/modalidades/:id', async (req, res) => {
+router.put('/modalidades/:id', verificarPermiso('modalidades:editar'), async (req, res) => {
     const id = parseInt(req.params.id);
     const { nombre, activo } = req.body;
     
@@ -159,7 +160,7 @@ router.put('/modalidades/:id', async (req, res) => {
 // ----------------------------------------------------
 // ENDPOINT: Eliminar una modalidad (DELETE /configuraciones/modalidades/:id)
 // ----------------------------------------------------
-router.delete('/modalidades/:id', async (req, res) => {
+router.delete('/modalidades/:id', verificarPermiso('modalidades:eliminar'), async (req, res) => {
     const id = parseInt(req.params.id);
     
     if (isNaN(id)) {
@@ -201,7 +202,7 @@ router.get('/motivos-bloqueo', async (req, res) => {
 });
 
 // Agregar motivo (POST /configuraciones/motivos-bloqueo)
-router.post('/motivos-bloqueo', async (req, res) => {
+router.post('/motivos-bloqueo', verificarPermiso('motivosBloqueo:crear'), async (req, res) => {
     const { motivo } = req.body;
     if (!motivo) {
         return res.status(400).json({ success: false, message: 'El motivo es requerido' });
@@ -216,7 +217,7 @@ router.post('/motivos-bloqueo', async (req, res) => {
 });
 
 // Editar motivo (PUT /configuraciones/motivos-bloqueo/:id)
-router.put('/motivos-bloqueo/:id', async (req, res) => {
+router.put('/motivos-bloqueo/:id', verificarPermiso('motivosBloqueo:editar'), async (req, res) => {
     const id = parseInt(req.params.id);
     const { motivo } = req.body;
     if (isNaN(id)) return res.status(400).json({ success: false, message: 'ID inválido' });
@@ -231,7 +232,7 @@ router.put('/motivos-bloqueo/:id', async (req, res) => {
 });
 
 // Eliminar motivo (DELETE /configuraciones/motivos-bloqueo)
-router.delete('/motivos-bloqueo', async (req, res) => {
+router.delete('/motivos-bloqueo', verificarPermiso('motivosBloqueo:eliminar'), async (req, res) => {
     const { motivo } = req.body;
     if (!motivo) {
         return res.status(400).json({ success: false, message: 'El motivo a eliminar es requerido' });
@@ -261,7 +262,7 @@ router.get('/permisos', async (req, res) => {
 });
 
 // Reasignar rol a múltiples usuarios (PUT /configuraciones/roles/reasignar-usuarios)
-router.put('/roles/reasignar-usuarios', async (req, res) => {
+router.put('/roles/reasignar-usuarios', verificarPermiso('rolesPermisos:editar'), async (req, res) => {
     const { asignaciones } = req.body; // array de { usuario_id, nuevo_rol_id }
     
     if (!Array.isArray(asignaciones)) {
@@ -281,7 +282,7 @@ router.put('/roles/reasignar-usuarios', async (req, res) => {
 });
 
 // Actualizar nombre de un permiso (PUT /configuraciones/permisos/:clave)
-router.put('/permisos/:clave', async (req, res) => {
+router.put('/permisos/:clave', verificarPermiso('rolesPermisos:editar'), async (req, res) => {
     const { clave } = req.params;
     const { nombre } = req.body;
 
@@ -329,7 +330,7 @@ router.get('/roles', async (req, res) => {
 });
 
 // Crear un nuevo rol personalizado (POST /configuraciones/roles)
-router.post('/roles', async (req, res) => {
+router.post('/roles', verificarPermiso('rolesPermisos:crear'), async (req, res) => {
     const { nombre_rol, descripcion_rol } = req.body;
     if (!nombre_rol) {
         return res.status(400).json({ success: false, message: 'El nombre del rol es requerido' });
@@ -341,8 +342,8 @@ router.post('/roles', async (req, res) => {
         );
         const nuevoId = result.insertId;
         
-        // Asignar el permiso básico predeterminado: VER_HISTORIAL_PERSONAL
-        const [opcion] = await db.execute('SELECT opcion_id FROM opciones WHERE link = "VER_HISTORIAL_PERSONAL" LIMIT 1');
+        // Asignar el permiso básico predeterminado: VER_POSTULACIONES_GLOBALES
+        const [opcion] = await db.execute('SELECT opcion_id FROM opciones WHERE link = "VER_POSTULACIONES_GLOBALES" LIMIT 1');
         if (opcion.length > 0) {
             await db.execute('INSERT IGNORE INTO d_roles_opciones (rol_id, opcion_id) VALUES (?, ?)', [nuevoId, opcion[0].opcion_id]);
         }
@@ -355,7 +356,7 @@ router.post('/roles', async (req, res) => {
 });
 
 // Actualizar nombre y descripción de un rol (PUT /configuraciones/roles/:id)
-router.put('/roles/:id', async (req, res) => {
+router.put('/roles/:id', verificarPermiso('rolesPermisos:editar'), async (req, res) => {
     const id = parseInt(req.params.id);
     const { nombre_rol, descripcion_rol } = req.body;
     
@@ -399,18 +400,15 @@ router.get('/roles/:id/usuarios', async (req, res) => {
 });
 
 // Eliminar un rol (DELETE /configuraciones/roles/:id)
-router.delete('/roles/:id', async (req, res) => {
+router.delete('/roles/:id', verificarPermiso('rolesPermisos:eliminar'), async (req, res) => {
     const id = parseInt(req.params.id);
     if (isNaN(id)) {
         return res.status(400).json({ success: false, message: 'ID de rol no válido' });
     }
 
     try {
-        // Verificar si es un rol por defecto
-        const [rows] = await db.execute('SELECT es_default FROM Roles WHERE id_rol = ?', [id]);
-        if (rows.length > 0 && rows[0].es_default === 1) {
-            return res.status(400).json({ success: false, error: 'No se puede eliminar un rol por defecto del sistema' });
-        }
+        // El check de es_default se ha eliminado para permitir borrar roles base.
+        // Se mantiene la verificación de usuarios asignados.
 
         // Verificar si hay usuarios asignados a este rol
         const [users] = await db.execute('SELECT COUNT(*) as count FROM d_usuarios_roles WHERE rol_id = ?', [id]);
@@ -427,7 +425,7 @@ router.delete('/roles/:id', async (req, res) => {
 });
 
 // Guardar permisos asignados a un rol (PUT /configuraciones/roles/:id/permisos)
-router.put('/roles/:id/permisos', async (req, res) => {
+router.put('/roles/:id/permisos', verificarPermiso('rolesPermisos:editar'), async (req, res) => {
     const id = parseInt(req.params.id);
     const { permisos } = req.body;
 
@@ -475,7 +473,7 @@ router.get('/variables', async (req, res) => {
 });
 
 // Guardar nueva variable de entorno
-router.post('/variables', async (req, res) => {
+router.post('/variables', verificarPermiso('variables:crear'), async (req, res) => {
     const { clave, valor } = req.body;
     if (!clave || !valor) {
         return res.status(400).json({ success: false, message: 'La clave y el valor son requeridos' });
@@ -493,7 +491,7 @@ router.post('/variables', async (req, res) => {
 });
 
 // Actualizar variable de entorno
-router.put('/variables/:clave', async (req, res) => {
+router.put('/variables/:clave', verificarPermiso('variables:editar'), async (req, res) => {
     const { clave } = req.params;
     const { valor } = req.body;
     if (!valor) {
@@ -512,7 +510,7 @@ router.put('/variables/:clave', async (req, res) => {
 });
 
 // Eliminar variable de entorno
-router.delete('/variables/:clave', async (req, res) => {
+router.delete('/variables/:clave', verificarPermiso('variables:eliminar'), async (req, res) => {
     const { clave } = req.params;
     try {
         await db.execute("DELETE FROM Configuraciones_Sistema WHERE clave = ? AND tipo = 'variable_entorno'", [clave]);
@@ -548,7 +546,7 @@ router.get('/usuarios/:id/permisos', async (req, res) => {
 });
 
 // Actualizar permisos individuales de un usuario
-router.put('/usuarios/:id/permisos', async (req, res) => {
+router.put('/usuarios/:id/permisos', verificarPermiso('rolesPermisos:editar'), async (req, res) => {
     const id = parseInt(req.params.id);
     const { permisos } = req.body; // array de objetos: { link: 'mensajes', concedido: true/false }
 

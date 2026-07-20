@@ -41,7 +41,7 @@ window.Permisos = {
         }
         return permisos.includes('VER_METRICAS')
             && permisos.includes('MODERAR_USUARIOS')
-            && permisos.includes('GESTIONAR_CONFIGURACION');
+            && permisos.includes('rolesPermisos:ver');
     },
 
     /** ¿Puede ver reportes y métricas de uso? */
@@ -49,6 +49,27 @@ window.Permisos = {
         const permisos = this._obtenerPermisos();
         if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
         return permisos.includes('VER_METRICAS');
+    },
+
+    /** ¿Puede ver y gestionar usuarios reportados? */
+    puedeGestionarReportesUsuarios() {
+        const permisos = this._obtenerPermisos();
+        if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
+        return permisos.includes('VER_REPORTES_USUARIOS');
+    },
+
+    /** ¿Puede ver solicitudes de verificación? */
+    puedeVerVerificaciones() {
+        const permisos = this._obtenerPermisos();
+        if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
+        return permisos.includes('VER_SOLICITUDES_VERIFICACION');
+    },
+
+    /** ¿Puede bloquear usuarios desde la tabla de reportados? */
+    puedeBloquearReportados() {
+        const permisos = this._obtenerPermisos();
+        if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
+        return permisos.includes('BLOQUEAR_REPORTADOS');
     },
 
     /** ¿Puede bloquear y moderar usuarios? */
@@ -62,7 +83,13 @@ window.Permisos = {
     puedeConfigurar() {
         const permisos = this._obtenerPermisos();
         if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
-        return permisos.includes('GESTIONAR_CONFIGURACION');
+        return permisos.includes('GESTIONAR_CONFIGURACION')
+            || permisos.includes('configGenerales:ver')
+            || permisos.includes('modalidades:ver')
+            || permisos.includes('categorias:ver')
+            || permisos.includes('variables:ver')
+            || permisos.includes('motivosBloqueo:ver')
+            || permisos.includes('rolesPermisos:ver');
     },
 
     /** ¿Puede solicitar y concretar intercambios? */
@@ -76,7 +103,7 @@ window.Permisos = {
     puedeVerHistorial() {
         const permisos = this._obtenerPermisos();
         if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
-        return permisos.includes('VER_HISTORIAL_PERSONAL');
+        return permisos.includes('VER_POSTULACIONES_GLOBALES');
     },
 
     /** ¿Puede ver el Directorio General? */
@@ -92,7 +119,8 @@ window.Permisos = {
         if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
         return permisos.includes('VER_METRICAS')
             || permisos.includes('MODERAR_USUARIOS')
-            || permisos.includes('GESTIONAR_CONFIGURACION')
+            || permisos.includes('VER_REPORTES_USUARIOS')
+            || this.puedeConfigurar()
             || permisos.includes('VER_DIRECTORIO')
             || permisos.includes('VER_SOLICITUDES_VERIFICACION');
     },
@@ -125,6 +153,13 @@ window.Permisos = {
         return permisos.includes('VER_SOLICITUDES_VERIFICACION');
     },
 
+    /** ¿Puede aprobar o rechazar solicitudes de verificación? */
+    puedeGestionarVerificaciones() {
+        const permisos = this._obtenerPermisos();
+        if (permisos.length === 0) return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
+        return permisos.includes('GESTIONAR_VERIFICACIONES');
+    },
+
     /**
      * Verifica si el usuario tiene permiso para acceder a una vista de la SPA
      * @param {string} viewName - El nombre de la vista (ej. 'panel-admin')
@@ -134,22 +169,16 @@ window.Permisos = {
         const vistasBasicas = ['descubrir', 'perfil', 'mensajes', 'favoritos', 'historial', 'ordenesTrabajo', 'solicitudesEnviadas'];
         if (vistasBasicas.includes(viewName)) return true;
 
-        const permisos = this._obtenerPermisos();
-        
-        // Mapeo de vistas específicas a permisos requeridos
-        const viewPermMap = {
-            'panel-admin': 'VER_METRICAS'
-        };
+        // El panel de administración es accesible para cualquier personal autorizado
+        if (viewName === 'panel-admin') return this.esAdminOPersonalAutorizado();
 
-        const requiredPerm = viewPermMap[viewName] || viewName;
-        
+        const permisos = this._obtenerPermisos();
+
         if (permisos.length === 0) {
             // Fallback para administradores legacy sin JSON de permisos
-            const isLegacyAdmin = sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
-            if (viewName === 'panel-admin' && isLegacyAdmin) return true;
-            return false;
+            return sessionStorage.getItem('usuarioRolId') === '1' || localStorage.getItem('usuarioRolId') === '1';
         }
 
-        return permisos.includes(requiredPerm);
+        return permisos.includes(viewName);
     }
 };
