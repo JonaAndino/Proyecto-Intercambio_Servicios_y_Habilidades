@@ -10812,7 +10812,7 @@ function renderizarOrdenes(ordenes, esAdmin, misPostulacionesMap, page) {
           </button>` : (!esAdmin && estadoPost === 'pendiente') ? `
           <button onclick="cancelarPostulacionUsuario(${idOrden})" class="flex-1 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-semibold transition flex items-center justify-center gap-1">
             Cancelar Postulación
-          </button>` : (!esAdmin && !estadoPost && o.estado === 'pendiente') ? `
+          </button>` : (!esAdmin && !estadoPost && o.estado === 'pendiente' && (o.total_postulaciones || 0) >= (o.max_postulantes || 1) && (window.Permisos ? window.Permisos.tienePermiso('postularseOrdenesTrabajo') : true)) ? `
           <span class="flex-1 py-1.5 rounded-lg bg-gray-100 text-gray-400 text-xs font-medium text-center">${t('workOrders.fullCapacity') || 'Cupo lleno'}</span>` : ''}
         </div>
       </div>`;
