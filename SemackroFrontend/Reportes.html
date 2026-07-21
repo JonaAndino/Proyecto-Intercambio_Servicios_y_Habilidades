@@ -1299,6 +1299,14 @@
 </head>
 
 <body class="bg-white text-gray-900 transition-colors duration-300">
+    <!-- Tailwind Safelist for Dynamic Badges -->
+    <div class="hidden bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-gray-700 
+                bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 
+                bg-amber-50 dark:bg-amber-900/30 text-amber-500 dark:text-amber-400 border-amber-200 dark:border-amber-800 
+                bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border-red-200 dark:border-red-800 
+                bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 
+                bg-purple-50 dark:bg-purple-900/30 text-purple-500 dark:text-purple-400 border-purple-200 dark:border-purple-800 
+                bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 border-blue-200 dark:border-blue-800"></div>
 
 <!-- ╔══════════════════════════════════════════════════════════════╗
      ║  LIBRO EXCEL  –  SEMACKROADMIN                                ║
@@ -7382,15 +7390,15 @@ async function cargarYRenderizarRolesConfig() {
                 // MENU DE NAVEGACION
                 'descubrir': { master: 'Menú de Navegación', sub: 'Descubrir', nombre: 'Acceso a Descubrir', icon: 'mdi:compass-outline', badgeText: 'VER', badgeColor: 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border border-slate-200 dark:border-gray-700 rounded-md' },
                 'perfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Acceso a Perfil', icon: 'mdi:account-outline', badgeText: 'VER', badgeColor: 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border border-slate-200 dark:border-gray-700 rounded-md' },
-                'editarDatosPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Editar datos personales y contacto', icon: 'mdi:account-edit-outline', badgeText: 'EDITAR', badgeColor: 'bg-blue-50 text-blue-500 border border-blue-200 rounded-md' },
-                'gestionarImagenesPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Gestionar avatar, banner y galería', icon: 'mdi:image-multiple-outline', badgeText: 'EDITAR', badgeColor: 'bg-blue-50 text-blue-500 border border-blue-200 rounded-md' },
+                'editarDatosPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Editar datos personales y contacto', icon: 'mdi:account-edit-outline', badgeText: 'EDITAR', badgeColor: 'bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-md' },
+                'gestionarImagenesPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Gestionar avatar, banner y galería', icon: 'mdi:image-multiple-outline', badgeText: 'EDITAR', badgeColor: 'bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-md' },
                 'gestionarVerificacionPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Enviar verificación de identidad', icon: 'mdi:shield-check-outline', badgeText: 'VERIFICAR', badgeColor: 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-md' },
-                'gestionarHabilidadesPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Añadir, editar o eliminar habilidades', icon: 'mdi:star-circle-outline', badgeText: 'EDITAR', badgeColor: 'bg-blue-50 text-blue-500 border border-blue-200 rounded-md' },
-                'gestionarCertificacionesPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Gestionar educación y certificaciones', icon: 'mdi:certificate-outline', badgeText: 'EDITAR', badgeColor: 'bg-blue-50 text-blue-500 border border-blue-200 rounded-md' },
+                'gestionarHabilidadesPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Añadir, editar o eliminar habilidades', icon: 'mdi:star-circle-outline', badgeText: 'EDITAR', badgeColor: 'bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-md' },
+                'gestionarCertificacionesPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Gestionar educación y certificaciones', icon: 'mdi:certificate-outline', badgeText: 'EDITAR', badgeColor: 'bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-md' },
                 'responderResenasPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Responder a reseñas recibidas', icon: 'mdi:comment-quote-outline', badgeText: 'RESPONDER', badgeColor: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-md' },
                 'gestionarEstadisticasPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Mostrar u ocultar estadísticas y métricas', icon: 'mdi:chart-bar', badgeText: 'MOSTRAR', badgeColor: 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-md' },
                 'gestionarUbicacionPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Mostrar u ocultar ubicación', icon: 'mdi:map-marker', badgeText: 'MOSTRAR', badgeColor: 'bg-teal-50 text-teal-500 border border-teal-200 rounded-md' },
-                'gestionarEstadoPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Modificar visibilidad y estado (En obra)', icon: 'mdi:toggle-switch-outline', badgeText: 'MODIFICAR', badgeColor: 'bg-blue-50 text-blue-500 border border-blue-200 rounded-md' },
+                'gestionarEstadoPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Modificar visibilidad y estado (En obra)', icon: 'mdi:toggle-switch-outline', badgeText: 'MODIFICAR', badgeColor: 'bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-md' },
                 'gestionarTourPerfil': { master: 'Menú de Navegación', sub: 'Mi perfil', nombre: 'Repetir tour del perfil', icon: 'mdi:map-marker-path', badgeText: 'VER', badgeColor: 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border border-slate-200 dark:border-gray-700 rounded-md' },
                 // ORDENES DE TRABAJO (Acordeón 1)
                 'ordenesTrabajo': { master: 'Menú de Navegación', sub: 'Órdenes de Trabajo', nombre: 'Ver órdenes en formato de cartas', icon: 'mdi:briefcase-outline', badgeText: 'VER', badgeColor: 'bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border border-slate-200 dark:border-gray-700 rounded-md' },
