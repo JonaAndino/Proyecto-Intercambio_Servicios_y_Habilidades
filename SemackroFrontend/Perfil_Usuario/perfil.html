@@ -4082,9 +4082,7 @@
                 }
                 if (!window.pEstado) {
                     restrictCSS += `
-                        #availabilityToggle, #perfilPublicoToggle { display: none !important; pointer-events: none !important; }
-                        #availabilityToggle + div, #perfilPublicoToggle + div { opacity: 0.5; pointer-events: none; }
-                        .toggle-container label { pointer-events: none; }
+                        .status-toggle-group label.switch, .privacy-toggle-group label.switch { display: none !important; pointer-events: none !important; }
                     `;
                 }
                 if (!window.pTour) {
