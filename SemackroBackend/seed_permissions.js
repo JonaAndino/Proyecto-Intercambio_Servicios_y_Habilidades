@@ -40,7 +40,9 @@ const permissions = [
     { clave: 'gestionarHabilidadesPerfil', nombre: 'Gestionar habilidades', orden: 121 },
     { clave: 'gestionarCertificacionesPerfil', nombre: 'Gestionar certificaciones y educación', orden: 122 },
     { clave: 'responderResenasPerfil', nombre: 'Responder reseñas', orden: 123 },
-    { clave: 'eliminarCuentaPerfil', nombre: 'Eliminar cuenta', orden: 124 }
+    { clave: 'eliminarCuentaPerfil', nombre: 'Eliminar cuenta', orden: 124 },
+    { clave: 'gestionarEstadoPerfil', nombre: 'Gestionar visibilidad y estado', orden: 125 },
+    { clave: 'gestionarTourPerfil', nombre: 'Gestionar tour del perfil', orden: 126 }
 ];
 
 async function seedPermissions() {

@@ -4020,25 +4020,27 @@
                     document.head.appendChild(style);
                 }
             } else {
-                // Permisos Granulares para el propietario o admin
-                const esAdminLocal = window.Permisos ? window.Permisos.esAdmin() : false;
-                const pDatos = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('editarDatosPerfil') : true);
-                const pImagenes = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarImagenesPerfil') : true);
-                const pVerif = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarVerificacionPerfil') : true);
-                const pHabilidades = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarHabilidadesPerfil') : true);
-                const pCert = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarCertificacionesPerfil') : true);
-                const pResenas = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('responderResenasPerfil') : true);
-                const pEliminar = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('eliminarCuentaPerfil') : true);
+                // Permisos Granulares para el propietario o admin (Globales para uso en context menus)
+                window.esAdminLocal = window.Permisos ? window.Permisos.esAdmin() : false;
+                window.pDatos = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('editarDatosPerfil') : true);
+                window.pImagenes = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarImagenesPerfil') : true);
+                window.pVerif = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarVerificacionPerfil') : true);
+                window.pHabilidades = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarHabilidadesPerfil') : true);
+                window.pCert = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarCertificacionesPerfil') : true);
+                window.pResenas = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('responderResenasPerfil') : true);
+                window.pEliminar = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('eliminarCuentaPerfil') : true);
+                window.pEstado = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarEstadoPerfil') : true);
+                window.pTour = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarTourPerfil') : true);
                 
                 let restrictCSS = '';
-                if (!pDatos) {
+                if (!window.pDatos) {
                     restrictCSS += `
                         .editable:hover::after { display: none !important; }
                         .editable { cursor: default !important; pointer-events: none !important; background: transparent !important; }
                         button[onclick="abrirModalCambiarPassword()"] { display: none !important; }
                     `;
                 }
-                if (!pImagenes) {
+                if (!window.pImagenes) {
                     restrictCSS += `
                         .camera-icon { display: none !important; }
                         .profile-pic-container { cursor: default !important; pointer-events: none !important; }
@@ -4047,31 +4049,43 @@
                         button[onclick="handleEditProfileImage()"], button[onclick="handleDeleteProfileImage()"] { display: none !important; }
                     `;
                 }
-                if (!pVerif) {
+                if (!window.pVerif) {
                     restrictCSS += `
                         button[onclick="abrirModalVerificacion()"], #btn-verificar-identidad { display: none !important; }
                     `;
                 }
-                if (!pHabilidades) {
+                if (!window.pHabilidades) {
                     restrictCSS += `
                         .add-skill-button-primary, .add-skill-button-secondary { display: none !important; }
                         button[onclick="handleEditSkill()"], button[onclick="handleDeleteSkill()"], .skill-action-btn { display: none !important; }
                     `;
                 }
-                if (!pCert) {
+                if (!window.pCert) {
                     restrictCSS += `
                         .certificacion-form { display: none !important; }
                         button[onclick^="eliminarCertificacion"] { display: none !important; }
                     `;
                 }
-                if (!pResenas) {
+                if (!window.pResenas) {
                     restrictCSS += `
                         button[onclick^="replyToReview"], button[onclick^="editReviewResponse"], button[onclick^="showDeleteReplyConfirm"] { display: none !important; }
                     `;
                 }
-                if (!pEliminar) {
+                if (!window.pEliminar) {
                     restrictCSS += `
                         button[onclick="confirmarEliminarCuenta()"] { display: none !important; }
+                    `;
+                }
+                if (!window.pEstado) {
+                    restrictCSS += `
+                        #availabilityToggle, #perfilPublicoToggle { display: none !important; pointer-events: none !important; }
+                        #availabilityToggle + div, #perfilPublicoToggle + div { opacity: 0.5; pointer-events: none; }
+                        .toggle-container label { pointer-events: none; }
+                    `;
+                }
+                if (!window.pTour) {
+                    restrictCSS += `
+                        .tour-start-button { display: none !important; }
                     `;
                 }
                 if (restrictCSS && !document.querySelector('style#granular-permissions-style')) {
@@ -5091,9 +5105,9 @@
         // CONTEXT MENÚ PARA RESEÑAS
         // ======================
         function showReviewContextMenu(x, y, reviewId, reviewIndex, hasReply, replyId) {
+            if (window.pResenas === false) return; 
             reviewContextMenuData = { reviewId, reviewIndex, replyId };
 
-            // Cerrar menú anterior si existe
             const oldMenu = document.getElementById('reviewContextMenu');
             if (oldMenu) oldMenu.remove();
 
@@ -7651,6 +7665,7 @@
         // CONTEXT MENUS
         // ======================
         function showSkillContextMenu(x, y, type, index) {
+            if (window.pHabilidades === false) return;
             contextMenuData = { type, index };
             const menu = document.getElementById('contextMenu');
             const backdrop = document.getElementById('contextMenuBackdrop');
@@ -7662,6 +7677,7 @@
         }
 
         function showImageContextMenu(x, y, index) {
+            if (window.pImagenes === false) return;
             imageContextMenuIndex = index;
             const menu = document.getElementById('imageContextMenu');
             const backdrop = document.getElementById('contextMenuBackdrop');
@@ -7673,6 +7689,7 @@
         }
 
         function showProfileContextMenu(x, y) {
+            if (window.pImagenes === false) return;
             const menu = document.getElementById('profileContextMenu');
             const backdrop = document.getElementById('contextMenuBackdrop');
 
