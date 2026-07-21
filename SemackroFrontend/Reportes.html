@@ -7420,8 +7420,8 @@ async function cargarYRenderizarRolesConfig() {
         };
 
         window.marcarTodoNadaIndiv = function(masterName, estado) {
-            if (!window.todosLosPermisosDisponibles) return;
-            window.todosLosPermisosDisponibles.forEach(p => {
+            if (!todosLosPermisosDisponibles) return;
+            todosLosPermisosDisponibles.forEach(p => {
                 let map = window.MAPEO_AVANZADO[p.clave];
                 if (!map) {
                     map = { master: 'Administrador' };
