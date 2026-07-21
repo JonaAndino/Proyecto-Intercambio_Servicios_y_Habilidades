@@ -439,15 +439,28 @@ router.put('/roles/:id/permisos', verificarPermiso('rolesPermisos:editar'), asyn
     try {
         // Obtener IDs de las opciones correspondientes
         const [opcionesDB] = await db.execute('SELECT opcion_id, link FROM opciones');
+        const mapOpciones = new Map();
+        opcionesDB.forEach(o => mapOpciones.set(o.link, o.opcion_id));
         
-        // Empezar actualización de permisos
+        // Borrar permisos actuales
         await db.execute('DELETE FROM d_roles_opciones WHERE rol_id = ?', [id]);
 
-        for (let clave of permisos) {
-            const op = opcionesDB.find(o => o.link === clave);
-            if (op) {
-                await db.execute('INSERT IGNORE INTO d_roles_opciones (rol_id, opcion_id) VALUES (?, ?)', [id, op.opcion_id]);
+        // Batch INSERT: construir una sola query con todos los permisos
+        const valores = [];
+        const placeholders = [];
+        for (const clave of permisos) {
+            const opId = mapOpciones.get(clave);
+            if (opId) {
+                placeholders.push('(?, ?)');
+                valores.push(id, opId);
             }
+        }
+
+        if (placeholders.length > 0) {
+            await db.execute(
+                `INSERT IGNORE INTO d_roles_opciones (rol_id, opcion_id) VALUES ${placeholders.join(', ')}`,
+                valores
+            );
         }
 
         res.json({ success: true, message: 'Permisos actualizados correctamente' });
@@ -562,15 +575,22 @@ router.put('/usuarios/:id/permisos', verificarPermiso('rolesPermisos:editar'), a
         // Borramos todos los permisos individuales actuales del usuario
         await db.execute('DELETE FROM d_usuarios_opciones WHERE usuario_id = ?', [id]);
 
-        // Insertamos los nuevos
-        for (let p of permisos) {
+        // Batch INSERT: construir una sola query con todos los permisos
+        const valores = [];
+        const placeholders = [];
+        for (const p of permisos) {
             const opcion_id = mapOpciones.get(p.link);
             if (opcion_id) {
-                await db.execute(
-                    'INSERT INTO d_usuarios_opciones (usuario_id, opcion_id, concedido) VALUES (?, ?, ?)',
-                    [id, opcion_id, p.concedido ? 1 : 0]
-                );
+                placeholders.push('(?, ?, ?)');
+                valores.push(id, opcion_id, p.concedido ? 1 : 0);
             }
+        }
+
+        if (placeholders.length > 0) {
+            await db.execute(
+                `INSERT INTO d_usuarios_opciones (usuario_id, opcion_id, concedido) VALUES ${placeholders.join(', ')}`,
+                valores
+            );
         }
 
         res.json({ success: true, message: 'Permisos de usuario actualizados correctamente' });
