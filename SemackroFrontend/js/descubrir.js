@@ -5210,6 +5210,8 @@ function mostrarSolicitudesEnviadas(solicitudes) {
     return;
   }
 
+  const pCancelarSolicitud = window.Permisos ? (window.Permisos.tienePermiso('cancelarSolicitudesTrabajo') || window.Permisos.esAdmin()) : true;
+
   grid.innerHTML = solicitudes
     .map((solicitud) => {
       const nombreCompleto =
@@ -5262,11 +5264,13 @@ function mostrarSolicitudesEnviadas(solicitudes) {
                                     </svg>
                                     ${t("sentRequests.waitingResponse")}
                                 </span>
+                                ${pCancelarSolicitud ? `
                                 <button
                                     onclick="cancelarSolicitud(${solicitud.id_solicitud})"
                                     class="px-3 py-1 text-xs text-red-600 hover:bg-red-50 rounded-lg transition font-semibold">
                                     ${t("sentRequests.cancel")}
                                 </button>
+                                ` : ''}
                             </div>
                         </div>
                     </div>

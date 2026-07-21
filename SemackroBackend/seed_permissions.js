@@ -43,7 +43,8 @@ const permissions = [
     { clave: 'gestionarEstadisticasPerfil', nombre: 'Mostrar estadísticas y métricas', orden: 124 },
     { clave: 'gestionarUbicacionPerfil', nombre: 'Mostrar ubicación', orden: 125 },
     { clave: 'gestionarEstadoPerfil', nombre: 'Visibilidad de perfil', orden: 126 },
-    { clave: 'gestionarTourPerfil', nombre: 'Gestionar tour del perfil', orden: 126 }
+    { clave: 'gestionarTourPerfil', nombre: 'Gestionar tour del perfil', orden: 127 },
+    { clave: 'cancelarSolicitudesTrabajo', nombre: 'Cancelar solicitudes de trabajo', orden: 128 }
 ];
 
 async function seedPermissions() {
