@@ -6729,10 +6729,16 @@ async function cargarYRenderizarRolesConfig() {
             btn.disabled = true;
 
             try {
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+                const headersJSON = { 'Content-Type': 'application/json' };
+                if (token) headersJSON['Authorization'] = 'Bearer ' + token;
+                const headersDelete = {};
+                if (token) headersDelete['Authorization'] = 'Bearer ' + token;
+
                 // 1. Reasignar usuarios
                 const resReasignar = await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/configuraciones/roles/reasignar-usuarios`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headersJSON,
                     body: JSON.stringify({ asignaciones })
                 });
                 const jsonReasignar = await resReasignar.json();
@@ -6740,7 +6746,8 @@ async function cargarYRenderizarRolesConfig() {
 
                 // 2. Eliminar Rol original
                 const resEliminar = await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/configuraciones/roles/${rolAEditarParaEliminacion}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: headersDelete
                 });
                 const jsonEliminar = await resEliminar.json();
                 if (!resEliminar.ok || !jsonEliminar.success) throw new Error(jsonEliminar.error || 'Fallo al eliminar rol después de reasignar');
