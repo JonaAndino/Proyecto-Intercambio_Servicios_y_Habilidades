@@ -6859,27 +6859,59 @@ async function cargarYRenderizarRolesConfig() {
 
         // Rename Logic
         window.nombresPersonalizados = JSON.parse(localStorage.getItem('nombres_personalizados_semackro') || '{}');
-        window.renombrarElemento = function(clave, nombreActual) {
-            var nuevoNombre = prompt('Ingresa el nuevo nombre (déjalo vacío para restaurar el original):', nombreActual);
-            if (nuevoNombre !== null) {
-                if (nuevoNombre.trim() === '') {
-                    delete window.nombresPersonalizados[clave];
-                } else {
-                    window.nombresPersonalizados[clave] = nuevoNombre.trim();
-                }
-                localStorage.setItem('nombres_personalizados_semackro', JSON.stringify(window.nombresPersonalizados));
-                if (window.renderizarModalPermisos) window.renderizarModalPermisos();
-                if (window.renderizarModalPermisosIndividuales) window.renderizarModalPermisosIndividuales();
+        window.guardarNombrePersonalizado = function(clave, nuevoNombre) {
+            if (nuevoNombre.trim() === '') {
+                delete window.nombresPersonalizados[clave];
+            } else {
+                window.nombresPersonalizados[clave] = nuevoNombre.trim();
             }
+            localStorage.setItem('nombres_personalizados_semackro', JSON.stringify(window.nombresPersonalizados));
         };
-        // Delegated click handler for rename buttons
+        // Delegated click handler for rename buttons — inline edit
         document.addEventListener('click', function(e) {
             var btn = e.target.closest('[data-rename-key]');
             if (!btn) return;
             e.stopPropagation();
+            e.preventDefault();
             var clave = btn.getAttribute('data-rename-key');
-            var nombreActual = window.nombresPersonalizados[clave] || clave;
-            window.renombrarElemento(clave, nombreActual);
+            // Find the text element (previous sibling span/text node)
+            var parent = btn.parentElement;
+            var textEl = parent.querySelector('span') || parent.childNodes[0];
+            if (!textEl || textEl.querySelector('input')) return;
+            var textoOriginal = textEl.textContent.trim();
+            // Create inline input
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.value = textoOriginal;
+            input.className = 'inline-rename-input';
+            input.style.cssText = 'font-size:inherit;font-weight:inherit;color:inherit;background:rgba(59,130,246,0.08);border:1.5px solid #3b82f6;border-radius:6px;padding:1px 6px;outline:none;width:' + Math.max(120, textoOriginal.length * 9) + 'px;';
+            // Hide original text and pencil
+            textEl.style.display = 'none';
+            btn.style.display = 'none';
+            parent.insertBefore(input, btn);
+            input.focus();
+            input.select();
+            var guardado = false;
+            function guardar() {
+                if (guardado) return;
+                guardado = true;
+                var val = input.value.trim();
+                if (val && val !== textoOriginal) {
+                    window.guardarNombrePersonalizado(clave, val);
+                    textEl.textContent = val;
+                } else if (!val) {
+                    delete window.nombresPersonalizados[clave];
+                    localStorage.setItem('nombres_personalizados_semackro', JSON.stringify(window.nombresPersonalizados));
+                }
+                textEl.style.display = '';
+                btn.style.display = '';
+                input.remove();
+            }
+            input.addEventListener('blur', guardar);
+            input.addEventListener('keydown', function(ev) {
+                if (ev.key === 'Enter') { ev.preventDefault(); guardar(); }
+                if (ev.key === 'Escape') { guardado = true; textEl.style.display = ''; btn.style.display = ''; input.remove(); }
+            });
         });
 
         window.abrirModalPermisosIndividuales = async function(idUsuario, nombre, idRol) {
