@@ -7444,7 +7444,7 @@ async function cargarYRenderizarRolesConfig() {
             }));
 
             try {
-                const token = localStorage.getItem('token_semackro');
+                const token = localStorage.getItem('token') || localStorage.getItem('authToken');
                 const headers = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = 'Bearer ' + token;
 
