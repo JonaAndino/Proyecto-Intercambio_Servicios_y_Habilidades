@@ -4029,6 +4029,8 @@
                 window.pCert = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarCertificacionesPerfil') : true);
                 window.pResenas = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('responderResenasPerfil') : true);
                 window.pResponder = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('responderResenasPerfil') : true);
+                window.pEstadisticas = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarEstadisticasPerfil') : true);
+                window.pUbicacion = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarUbicacionPerfil') : true);
                 window.pEstado = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarEstadoPerfil') : true);
                 window.pTour = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarTourPerfil') : true);
                 
@@ -4078,6 +4080,27 @@
                 if (!window.pResenas) {
                     restrictCSS += `
                         button[onclick^="replyToReview"], button[onclick^="editReviewResponse"], button[onclick^="showDeleteReplyConfirm"] { display: none !important; }
+                    `;
+                }
+                if (!window.pEstadisticas) {
+                    restrictCSS += `
+                        .stats-section h2.section-title-secondary,
+                        .stats-grid,
+                        .pixel-chart,
+                        #profileMetricsContainer { display: none !important; }
+                    `;
+                }
+                if (!window.pUbicacion) {
+                    restrictCSS += `
+                        .map-container h3,
+                        #locationBtn,
+                        #locationMessage,
+                        #map { display: none !important; }
+                    `;
+                }
+                if (!window.pEstadisticas && !window.pUbicacion) {
+                    restrictCSS += `
+                        .stats-section { display: none !important; }
                     `;
                 }
                 if (!window.pEstado) {
