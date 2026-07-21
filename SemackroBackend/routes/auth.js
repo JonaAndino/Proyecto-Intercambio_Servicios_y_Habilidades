@@ -87,9 +87,6 @@ router.post('/registro', async (req, res) => {
         const contrasena_hash = await bcrypt.hash(contrasena, saltRounds);
 
         // 5. GUARDAR NUEVO USUARIO EN DB (Paso K del Diagrama)
-        const finalRolId = (id_rol === 1 || id_rol === 2) ? id_rol : 2;
-        const finalRolNombre = finalRolId === 1 ? 'Administrador' : 'Usuario Estandar';
-
         const [result] = await pool.execute(
             'INSERT INTO Usuarios (correo, contrasena_hash) VALUES (?, ?)',
             [correo, contrasena_hash]
@@ -97,11 +94,25 @@ router.post('/registro', async (req, res) => {
 
         const nuevoUsuarioId = result.insertId;
 
-        // Insertar en la nueva tabla d_usuarios_roles
-        await pool.execute(
-            'INSERT INTO d_usuarios_roles (usuario_id, rol_id) VALUES (?, ?)',
-            [nuevoUsuarioId, finalRolId]
-        );
+        // 5.1 ASIGNACIÓN DE ROL POR DEFECTO
+        const [rolesCountResult] = await pool.execute('SELECT COUNT(*) as totalRoles FROM Roles');
+        const rolesCount = rolesCountResult[0].totalRoles;
+
+        if (rolesCount > 0) {
+            // Buscar el rol por defecto en configuraciones
+            const [configRows] = await pool.execute('SELECT valor FROM configuraciones WHERE clave = ?', ['rol_defecto_registro']);
+            if (configRows.length > 0 && configRows[0].valor) {
+                const rolPorDefecto = parseInt(configRows[0].valor);
+                // Validar que el rol existe
+                const [defExists] = await pool.execute('SELECT id_rol FROM Roles WHERE id_rol = ?', [rolPorDefecto]);
+                if (defExists.length > 0) {
+                    await pool.execute(
+                        'INSERT INTO d_usuarios_roles (usuario_id, rol_id) VALUES (?, ?)',
+                        [nuevoUsuarioId, rolPorDefecto]
+                    );
+                }
+            }
+        }
 
         // 6. CREAR REGISTRO EN TABLA PERSONAS con los datos proporcionados
         // Vamos a dividir el nombre completo en nombre y apellido (solo como aproximación, el primer espacio es el separador)
