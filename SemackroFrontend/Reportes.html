@@ -7420,15 +7420,25 @@ async function cargarYRenderizarRolesConfig() {
         };
 
         window.marcarTodoNadaIndiv = function(masterName, estado) {
-            Object.keys(window.MAPEO_AVANZADO).forEach(clave => {
-                const p = window.MAPEO_AVANZADO[clave];
-                if (!masterName || p.master === masterName) {
-                    const idx = window.excepcionesCargadas.findIndex(e => e.link === clave);
+            if (!window.todosLosPermisosDisponibles) return;
+            window.todosLosPermisosDisponibles.forEach(p => {
+                let map = window.MAPEO_AVANZADO[p.clave];
+                if (!map) {
+                    map = { master: 'Administrador' };
+                }
+                
+                let finalMaster = map.master;
+                if (finalMaster !== 'Menú de Navegación' && finalMaster !== 'Administrador') {
+                    finalMaster = 'Administrador';
+                }
+
+                if (!masterName || finalMaster === masterName) {
+                    const idx = window.excepcionesCargadas.findIndex(e => e.link === p.clave);
                     if (estado === null) {
                         if (idx !== -1) window.excepcionesCargadas.splice(idx, 1);
                     } else {
                         if (idx !== -1) window.excepcionesCargadas[idx].concedido = estado;
-                        else window.excepcionesCargadas.push({ link: clave, concedido: estado });
+                        else window.excepcionesCargadas.push({ link: p.clave, concedido: estado });
                     }
                 }
             });
