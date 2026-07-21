@@ -171,64 +171,85 @@ router.get('/login/rol/correo/:correo', async (req, res) => {
 
         const id_usuario = idResult[0].id_usuario;
 
-        // Ahora obtener el rol desde d_usuarios_roles (asumiendo que tiene al menos un rol)
-        const [rowsRol] = await pool.execute(`
-            SELECT r.id_rol, r.nombre_rol as rol
-            FROM d_usuarios_roles dur
-            JOIN Roles r ON dur.rol_id = r.id_rol
-            WHERE dur.usuario_id = ?
-            LIMIT 1
-        `, [id_usuario]);
-        const rolResult = Array.isArray(rowsRol) && rowsRol.length > 0 ? rowsRol[0] : null;
+        // VERIFICAR MODO INSTALACION (0 roles)
+        const [rolesCountResult] = await pool.execute('SELECT COUNT(*) as totalRoles FROM Roles');
+        const isApocalypseMode = rolesCountResult[0].totalRoles === 0;
 
-        if (!rolResult) {
-            return res.status(404).json({ error: 'No se encontró rol para el usuario.' });
+        let rolResult = null;
+        let id_rol = null;
+
+        if (!isApocalypseMode) {
+            // Ahora obtener el rol desde d_usuarios_roles (asumiendo que tiene al menos un rol)
+            const [rowsRol] = await pool.execute(`
+                SELECT r.id_rol, r.nombre_rol as rol
+                FROM d_usuarios_roles dur
+                JOIN Roles r ON dur.rol_id = r.id_rol
+                WHERE dur.usuario_id = ?
+                LIMIT 1
+            `, [id_usuario]);
+            rolResult = Array.isArray(rowsRol) && rowsRol.length > 0 ? rowsRol[0] : null;
+
+            if (!rolResult) {
+                return res.status(404).json({ error: 'No se encontró rol para el usuario.' });
+            }
+            id_rol = rolResult.id_rol;
+        } else {
+            // Modo Instalación: Asignamos rol virtual
+            rolResult = { rol: 'Super Administrador (Modo Instalación)' };
         }
-
-        const id_rol = rolResult.id_rol;
 
         // Obtener las opciones de menú y mapear sus links como permisos para compatibilidad con el frontend
         let opciones = [];
         let permisos = [];
         try {
-            // 1. Obtener opciones del ROL
-            const [opcionesRolRows] = await pool.execute(
-                `SELECT o.opcion_id as id_opcion, o.nombre as nombre_opcion, o.link, o.orden 
-                 FROM d_roles_opciones ro 
-                 JOIN opciones o ON ro.opcion_id = o.opcion_id 
-                 WHERE ro.rol_id = ?`,
-                [id_rol]
-            );
-            
-            // 2. Obtener excepciones del USUARIO INDIVIDUAL
-            const [opcionesUsuarioRows] = await pool.execute(
-                `SELECT o.opcion_id as id_opcion, o.nombre as nombre_opcion, o.link, o.orden, uo.concedido
-                 FROM d_usuarios_opciones uo
-                 JOIN opciones o ON uo.opcion_id = o.opcion_id
-                 WHERE uo.usuario_id = ?`,
-                [id_usuario]
-            );
+            if (isApocalypseMode) {
+                // 1. Obtener absolutamente TODAS las opciones
+                const [todasOpciones] = await pool.execute(
+                    `SELECT opcion_id as id_opcion, nombre as nombre_opcion, link, orden FROM opciones`
+                );
+                
+                opciones = todasOpciones.sort((a, b) => (a.orden || 0) - (b.orden || 0));
+                permisos = opciones.map(o => o.link).filter(Boolean);
+            } else {
+                // 1. Obtener opciones del ROL
+                const [opcionesRolRows] = await pool.execute(
+                    `SELECT o.opcion_id as id_opcion, o.nombre as nombre_opcion, o.link, o.orden 
+                     FROM d_roles_opciones ro 
+                     JOIN opciones o ON ro.opcion_id = o.opcion_id 
+                     WHERE ro.rol_id = ?`,
+                    [id_rol]
+                );
+                
+                // 2. Obtener excepciones del USUARIO INDIVIDUAL
+                const [opcionesUsuarioRows] = await pool.execute(
+                    `SELECT o.opcion_id as id_opcion, o.nombre as nombre_opcion, o.link, o.orden, uo.concedido
+                     FROM d_usuarios_opciones uo
+                     JOIN opciones o ON uo.opcion_id = o.opcion_id
+                     WHERE uo.usuario_id = ?`,
+                    [id_usuario]
+                );
 
-            // 3. Mezclar priorizando excepciones individuales
-            const opcionesMap = new Map();
-            opcionesRolRows.forEach(o => opcionesMap.set(o.id_opcion, o));
-            
-            opcionesUsuarioRows.forEach(uo => {
-                if (uo.concedido) {
-                    opcionesMap.set(uo.id_opcion, {
-                        id_opcion: uo.id_opcion,
-                        nombre_opcion: uo.nombre_opcion,
-                        link: uo.link,
-                        orden: uo.orden
-                    });
-                } else {
-                    opcionesMap.delete(uo.id_opcion); // Si concedido es false, quitamos el permiso (incluso si el rol lo daba)
-                }
-            });
+                // 3. Mezclar priorizando excepciones individuales
+                const opcionesMap = new Map();
+                opcionesRolRows.forEach(o => opcionesMap.set(o.id_opcion, o));
+                
+                opcionesUsuarioRows.forEach(uo => {
+                    if (uo.concedido) {
+                        opcionesMap.set(uo.id_opcion, {
+                            id_opcion: uo.id_opcion,
+                            nombre_opcion: uo.nombre_opcion,
+                            link: uo.link,
+                            orden: uo.orden
+                        });
+                    } else {
+                        opcionesMap.delete(uo.id_opcion); // Si concedido es false, quitamos el permiso (incluso si el rol lo daba)
+                    }
+                });
 
-            opciones = Array.from(opcionesMap.values()).sort((a, b) => (a.orden || 0) - (b.orden || 0));
-            // Usamos 'link' como la antigua 'clave_permiso'
-            permisos = opciones.map(o => o.link).filter(Boolean);
+                opciones = Array.from(opcionesMap.values()).sort((a, b) => (a.orden || 0) - (b.orden || 0));
+                // Usamos 'link' como la antigua 'clave_permiso'
+                permisos = opciones.map(o => o.link).filter(Boolean);
+            }
         } catch (opcErr) {
             console.warn('No se pudieron obtener opciones/permisos combinados:', opcErr.message);
         }

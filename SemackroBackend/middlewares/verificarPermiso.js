@@ -22,7 +22,14 @@ const verificarPermiso = (permisoRequerido) => {
             const decoded = jwt.verify(token, JWT_SECRET);
             req.user = decoded; // { usuarioId, correo, etc. }
 
-            // 2. Verificar el permiso en la base de datos
+            // 2. Verificar si el sistema está en "Modo de Instalación" (0 roles)
+            const [rolesCountResult] = await db.execute('SELECT COUNT(*) as totalRoles FROM Roles');
+            if (rolesCountResult[0].totalRoles === 0) {
+                // Si no hay roles creados en el sistema, TODOS los usuarios tienen control total (Requerimiento)
+                return next();
+            }
+
+            // 3. Verificar el permiso en la base de datos
             // Obtenemos los permisos del usuario usando el SP o query equivalente
             // En este caso, usaremos la lógica estándar para consultar los permisos del usuario por su rol.
             
