@@ -7215,7 +7215,7 @@ async function cargarYRenderizarRolesConfig() {
                                         <div class="flex items-center justify-between pl-20 pr-6 py-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800/80 transition-colors ${isSubSubOpen ? 'bg-slate-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'}" onclick="window.toggleAcordeonSubSubIndiv(event, '${subsubKey}')">
                                             <div class="flex items-center gap-3">
                                                 
-                                                <h6 class="font-bold text-black dark:text-white text-[13.5px] flex items-center gap-1">${escapeHtml(window.nombresPersonalizados[subsubKey] || subsubName)}<button type="button" data-rename-key="${subsubKey}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity" onclick="event.stopPropagation()"><span class="iconify text-[12px]" data-icon="mdi:pencil-outline"></span></button></h6>
+                                                <h6 class="font-bold text-black dark:text-white text-[13.5px] flex items-center gap-1">${escapeHtml(window.nombresPersonalizados[subsubKey] || subsubName)}<button type="button" data-rename-key="${subsubKey}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity"><span class="iconify text-[12px]" data-icon="mdi:pencil-outline"></span></button></h6>
                                                 ${hasActiveSubSub ? '<div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm"></div>' : ''}
                                             </div>
                                             <span class="subsub-chevron iconify text-slate-400 text-lg transition-transform ${isSubSubOpen ? 'rotate-180 text-slate-600' : ''}" data-icon="mdi:chevron-down"></span>
@@ -7234,7 +7234,7 @@ async function cargarYRenderizarRolesConfig() {
                                 <div class="bg-white dark:bg-gray-900 border-b border-slate-100 dark:border-gray-800 last:border-0 overflow-hidden transition-all">
                                     <div class="flex items-center justify-between pl-14 pr-6 py-5 cursor-pointer hover:bg-slate-100 transition-colors ${subBg}" onclick=\"window.toggleAcordeonSubIndiv(event, '${subKey}')\">
                                         <div class="flex items-center gap-3">
-                                            <h5 class="font-bold text-black text-[14.5px] flex items-center gap-1">${escapeHtml(window.nombresPersonalizados[subKey] || subName)}<button type="button" data-rename-key="${subKey}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity" onclick="event.stopPropagation()"><span class="iconify text-[12px]" data-icon="mdi:pencil-outline"></span></button></h5>
+                                            <h5 class="font-bold text-black text-[14.5px] flex items-center gap-1">${escapeHtml(window.nombresPersonalizados[subKey] || subName)}<button type="button" data-rename-key="${subKey}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity"><span class="iconify text-[12px]" data-icon="mdi:pencil-outline"></span></button></h5>
                                             ${hasActiveSub ? '<div class="w-2 h-2 rounded-full bg-emerald-500 shadow-sm"></div>' : ''}
                                         </div>
                                         <div class="flex items-center gap-2">
@@ -7262,7 +7262,7 @@ async function cargarYRenderizarRolesConfig() {
                                         <div class="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-600 shrink-0">
                                             <span class="iconify text-lg" data-icon="${iconMaster}"></span>
                                         </div>
-                                        <h4 class="font-bold text-black text-[15px] flex items-center gap-1">${escapeHtml(window.nombresPersonalizados[masterName] || masterName)}<button type="button" data-rename-key="${masterName}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity" onclick="event.stopPropagation()"><span class="iconify text-[14px]" data-icon="mdi:pencil-outline"></span></button></h4>
+                                        <h4 class="font-bold text-black text-[15px] flex items-center gap-1">${escapeHtml(window.nombresPersonalizados[masterName] || masterName)}<button type="button" data-rename-key="${masterName}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity"><span class="iconify text-[14px]" data-icon="mdi:pencil-outline"></span></button></h4>
                                     </div>
                                     <div class="flex items-center gap-4">
                                         <span class="text-blue-500 text-[11px] font-bold">${cantSelMaster}/${cantTotalMaster}</span>
@@ -7693,7 +7693,7 @@ async function cargarYRenderizarRolesConfig() {
                                         <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-400 dark:text-slate-500 shrink-0 relative z-10">
                                             <span class="iconify text-lg" data-icon="${p.icon}"></span>
                                         </div>
-                                        <span class="text-[14px] font-bold text-black dark:text-white block">${escapeHtml(window.nombresPersonalizados[p.clave] || p.nombre)}</span><button type="button" data-rename-key="${p.clave}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity ml-1" style="display:inline" onclick="event.stopPropagation()"><span class="iconify text-[13px]" data-icon="mdi:pencil-outline"></span></button>
+                                        <span class="text-[14px] font-bold text-black dark:text-white block">${escapeHtml(window.nombresPersonalizados[p.clave] || p.nombre)}</span><button type="button" data-rename-key="${p.clave}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity ml-1" style="display:inline"><span class="iconify text-[13px]" data-icon="mdi:pencil-outline"></span></button>
                                     </div>
                                     <div class="flex items-center gap-6 shrink-0 ml-4">
                                         <span class="w-[90px] py-1.5 text-[10px] font-extrabold tracking-wider uppercase text-center flex-shrink-0 ${p.badgeColor}">${p.badgeText}</span>
@@ -7727,7 +7727,7 @@ async function cargarYRenderizarRolesConfig() {
                                     <div class="flex items-center justify-between pl-20 pr-6 py-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors ${isSubSubOpen ? 'bg-slate-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'} relative z-10" onclick="toggleAcordeonSubSub(event, '${subsubKey}')">
                                         <div class="flex items-center gap-3">
                                             
-                                            <h6 class="font-bold text-black dark:text-white text-[13.5px] flex items-center gap-1">${escapeHtml(window.nombresPersonalizados[subsubKey] || subsubName)}<button type="button" data-rename-key="${subsubKey}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity" onclick="event.stopPropagation()"><span class="iconify text-[12px]" data-icon="mdi:pencil-outline"></span></button></h6>
+                                            <h6 class="font-bold text-black dark:text-white text-[13.5px] flex items-center gap-1">${escapeHtml(window.nombresPersonalizados[subsubKey] || subsubName)}<button type="button" data-rename-key="${subsubKey}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity"><span class="iconify text-[12px]" data-icon="mdi:pencil-outline"></span></button></h6>
                                             ${hasActiveSubSub ? '<div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm"></div>' : ''}
                                         </div>
                                         <span class="subsub-chevron iconify text-slate-400 dark:text-slate-500 text-lg transition-transform ${isSubSubOpen ? 'rotate-180 text-slate-600 dark:text-slate-300' : ''}" data-icon="mdi:chevron-down"></span>
@@ -7746,7 +7746,7 @@ async function cargarYRenderizarRolesConfig() {
                             <div class="bg-white dark:bg-gray-900 border-b border-slate-100 dark:border-gray-800 last:border-0 overflow-hidden transition-all">
                                 <div class="flex items-center justify-between pl-14 pr-6 py-5 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors ${subBg}" onclick="toggleAcordeonSub(event, '${subKey}')">
                                     <div class="flex items-center gap-3">
-                                        <h5 class="font-bold text-black dark:text-white text-[14.5px] flex items-center gap-1">${escapeHtml(window.nombresPersonalizados[subKey] || subName)}<button type="button" data-rename-key="${subKey}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity" onclick="event.stopPropagation()"><span class="iconify text-[12px]" data-icon="mdi:pencil-outline"></span></button></h5>
+                                        <h5 class="font-bold text-black dark:text-white text-[14.5px] flex items-center gap-1">${escapeHtml(window.nombresPersonalizados[subKey] || subName)}<button type="button" data-rename-key="${subKey}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity"><span class="iconify text-[12px]" data-icon="mdi:pencil-outline"></span></button></h5>
                                         ${hasActiveSub ? '<div class="w-2 h-2 rounded-full bg-emerald-500 shadow-sm"></div>' : ''}
                                     </div>
                                     <div class="flex items-center gap-2">
@@ -7774,7 +7774,7 @@ async function cargarYRenderizarRolesConfig() {
                                     <div class="w-9 h-9 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center text-slate-600 dark:text-slate-400 shrink-0">
                                         <span class="iconify text-lg" data-icon="${iconMaster}"></span>
                                     </div>
-                                    <h4 class="font-bold text-black dark:text-white text-[15px] flex items-center gap-1">${escapeHtml(window.nombresPersonalizados[masterName] || masterName)}<button type="button" data-rename-key="${masterName}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity" onclick="event.stopPropagation()"><span class="iconify text-[14px]" data-icon="mdi:pencil-outline"></span></button></h4>
+                                    <h4 class="font-bold text-black dark:text-white text-[15px] flex items-center gap-1">${escapeHtml(window.nombresPersonalizados[masterName] || masterName)}<button type="button" data-rename-key="${masterName}" class="rename-btn opacity-0 hover:opacity-100 text-slate-400 hover:text-blue-500 transition-opacity"><span class="iconify text-[14px]" data-icon="mdi:pencil-outline"></span></button></h4>
                                 </div>
                                 <div class="flex items-center gap-4">
                                     <span class="text-blue-500 dark:text-blue-400 text-[11px] font-bold">${cantSelMaster}/${cantTotalMaster}</span>
