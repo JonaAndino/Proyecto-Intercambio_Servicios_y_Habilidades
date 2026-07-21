@@ -8776,13 +8776,13 @@ function mostrarInfoMensaje(datos) {
   overlay.id = '__infoMsgModal__';
   overlay.style.cssText = `
     position: fixed; inset: 0; z-index: 20000;
-    background: rgba(15,23,42,0.45); backdrop-filter: blur(4px);
+    background: transparent;
     display: flex; align-items: center; justify-content: center;
     padding: 16px;
   `;
 
   overlay.innerHTML = `
-    <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700/80 rounded-2xl p-6 sm:p-7 max-w-[360px] w-full shadow-2xl text-gray-800 dark:text-slate-200 font-sans transition-all duration-200">
+    <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700/80 rounded-2xl p-6 sm:p-7 max-w-[360px] w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] text-gray-800 dark:text-slate-200 font-sans transition-all duration-200">
       <div class="flex items-center gap-2 mb-4">
         <span class="iconify text-indigo-500 dark:text-indigo-400" data-icon="mdi:information" data-width="22" style="flex-shrink:0;"></span>
         <h3 class="m-0 text-base font-bold text-gray-900 dark:text-white">Información del mensaje</h3>
