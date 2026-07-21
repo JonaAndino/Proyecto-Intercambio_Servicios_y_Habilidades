@@ -1300,8 +1300,8 @@
 
 <body class="bg-white text-gray-900 transition-colors duration-300">
     <!-- Tailwind Safelist for Dynamic Badges -->
-    <div class="hidden bg-slate-100 bg-white dark:bg-slate-800 dark:bg-slate-900 dark:bg-gray-800 dark:bg-gray-900
-                hover:bg-slate-50 dark:hover:bg-slate-700 dark:hover:bg-gray-800 dark:hover:bg-gray-800/80
+    <div class="hidden bg-slate-100 bg-white dark:bg-gray-800 dark:bg-gray-900 dark:bg-gray-800 dark:bg-gray-900
+                hover:bg-slate-50 dark:hover:bg-gray-700 dark:hover:bg-gray-800 dark:hover:bg-gray-800/80
                 bg-slate-50 dark:bg-gray-800 text-slate-600 dark:text-gray-300 border-slate-200 dark:border-gray-700 
                 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 
                 bg-amber-50 dark:bg-amber-900/30 text-amber-500 dark:text-amber-400 border-amber-200 dark:border-amber-800 
@@ -2000,7 +2000,7 @@
                 
                 <!-- Panel Vacío (cuando no hay permisos) -->
                 <div id="configPanel-vacio" role="tabpanel" class="hidden h-full flex flex-col items-center justify-center text-center space-y-4 pt-20">
-                    <div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 mx-auto">
+                    <div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-400 dark:text-slate-500 mx-auto">
                         <span class="iconify text-3xl" data-icon="mdi:shield-lock-outline"></span>
                     </div>
                     <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300">Acceso Restringido</h3>
@@ -7181,7 +7181,7 @@ async function cargarYRenderizarRolesConfig() {
                                 
                                 htmlSubSubs += `
                                     <div class="bg-white dark:bg-gray-900 border-t border-slate-100 dark:border-gray-800 overflow-hidden">
-                                        <div class="flex items-center justify-between pl-20 pr-6 py-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800/80 transition-colors ${isSubSubOpen ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900'}" onclick="window.toggleAcordeonSubSubIndiv(event, '${subsubKey}')">
+                                        <div class="flex items-center justify-between pl-20 pr-6 py-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800/80 transition-colors ${isSubSubOpen ? 'bg-slate-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'}" onclick="window.toggleAcordeonSubSubIndiv(event, '${subsubKey}')">
                                             <div class="flex items-center gap-3">
                                                 
                                                 <h6 class="font-bold text-black dark:text-white text-[13.5px]">${subsubName}</h6>
@@ -7190,7 +7190,7 @@ async function cargarYRenderizarRolesConfig() {
                                             <span class="subsub-chevron iconify text-slate-400 text-lg transition-transform ${isSubSubOpen ? 'rotate-180 text-slate-600' : ''}" data-icon="mdi:chevron-down"></span>
                                         </div>
                                         <div class="subsub-grid accordion-grid ${isSubSubOpen ? 'is-open' : ''}">
-                                            <div class="overflow-hidden bg-white border-t ${isSubSubOpen ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900'}">
+                                            <div class="overflow-hidden bg-white border-t ${isSubSubOpen ? 'bg-slate-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'}">
                                                 ${htmlPermisosSubSub}
                                             </div>
                                         </div>
@@ -7198,7 +7198,7 @@ async function cargarYRenderizarRolesConfig() {
                                 `;
                             }
 
-                            const subBg = isSubOpen ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900';
+                            const subBg = isSubOpen ? 'bg-slate-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900';
                             htmlSubs += `
                                 <div class="bg-white dark:bg-gray-900 border-b border-slate-100 dark:border-gray-800 last:border-0 overflow-hidden transition-all">
                                     <div class="flex items-center justify-between pl-14 pr-6 py-5 cursor-pointer hover:bg-slate-100 transition-colors ${subBg}" onclick=\"window.toggleAcordeonSubIndiv(event, '${subKey}')\">
@@ -7222,7 +7222,7 @@ async function cargarYRenderizarRolesConfig() {
 
                         const isMasterOpen = window.acordeonesMasterAbiertosIndiv[masterName];
                         const iconMaster = ICONOS_MASTER[masterName] || 'mdi:shield-star-outline';
-                        const masterBg = isMasterOpen ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900';
+                        const masterBg = isMasterOpen ? 'bg-slate-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900';
 
                         htmlMaster += `
                             <div class="mb-4 rounded-2xl ${masterBg} border border-slate-200 overflow-hidden transition-all">
@@ -7693,7 +7693,7 @@ async function cargarYRenderizarRolesConfig() {
                                 <div class="tree-node relative bg-white dark:bg-gray-900 border-t border-slate-100 dark:border-gray-800 overflow-hidden" style="--half-height: 28px;">
                                     <div class="tree-line-v absolute w-[2px] bg-slate-200 dark:bg-gray-700 top-0 bottom-0" style="left: 40px;"></div>
                                     <div class="tree-line-h absolute h-[2px] bg-slate-200 dark:bg-gray-700 top-[28px]" style="left: 40px; width: 24px;"></div>
-                                    <div class="flex items-center justify-between pl-20 pr-6 py-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors ${isSubSubOpen ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900'} relative z-10" onclick="toggleAcordeonSubSub(event, '${subsubKey}')">
+                                    <div class="flex items-center justify-between pl-20 pr-6 py-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors ${isSubSubOpen ? 'bg-slate-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'} relative z-10" onclick="toggleAcordeonSubSub(event, '${subsubKey}')">
                                         <div class="flex items-center gap-3">
                                             
                                             <h6 class="font-bold text-black dark:text-white text-[13.5px]">${subsubName}</h6>
@@ -7702,7 +7702,7 @@ async function cargarYRenderizarRolesConfig() {
                                         <span class="subsub-chevron iconify text-slate-400 dark:text-slate-500 text-lg transition-transform ${isSubSubOpen ? 'rotate-180 text-slate-600 dark:text-slate-300' : ''}" data-icon="mdi:chevron-down"></span>
                                     </div>
                                     <div class="subsub-grid accordion-grid ${isSubSubOpen ? 'is-open' : ''}">
-                                        <div class="overflow-hidden bg-white dark:bg-gray-900 border-t ${isSubSubOpen ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900'}">
+                                        <div class="overflow-hidden bg-white dark:bg-gray-900 border-t ${isSubSubOpen ? 'bg-slate-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'}">
                                             ${htmlPermisosSubSub}
                                         </div>
                                     </div>
@@ -7710,7 +7710,7 @@ async function cargarYRenderizarRolesConfig() {
                             `;
                         }
 
-                        const subBg = isSubOpen ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900';
+                        const subBg = isSubOpen ? 'bg-slate-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900';
                         htmlSubs += `
                             <div class="bg-white dark:bg-gray-900 border-b border-slate-100 dark:border-gray-800 last:border-0 overflow-hidden transition-all">
                                 <div class="flex items-center justify-between pl-14 pr-6 py-5 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors ${subBg}" onclick="toggleAcordeonSub(event, '${subKey}')">
@@ -7734,11 +7734,11 @@ async function cargarYRenderizarRolesConfig() {
 
                     const isMasterOpen = window.acordeonesMasterAbiertos[masterName];
                     const iconMaster = ICONOS_MASTER[masterName] || 'mdi:shield-star-outline';
-                    const masterBg = isMasterOpen ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900';
+                    const masterBg = isMasterOpen ? 'bg-slate-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900';
 
                     htmlMaster += `
                         <div class="mb-4 rounded-2xl ${masterBg} border border-slate-200 dark:border-gray-800 overflow-hidden transition-all">
-                            <div class="flex items-center justify-between px-6 py-4 cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-700" onclick="toggleAcordeonMaster(event, '${masterName}')">
+                            <div class="flex items-center justify-between px-6 py-4 cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-gray-700" onclick="toggleAcordeonMaster(event, '${masterName}')">
                                 <div class="flex items-center gap-4">
                                     <div class="w-9 h-9 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center text-slate-600 dark:text-slate-400 shrink-0">
                                         <span class="iconify text-lg" data-icon="${iconMaster}"></span>
