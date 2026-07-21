@@ -2643,6 +2643,40 @@ if (_token && localStorage.getItem('usuarioId')) {
 // EVENT LISTENERS PARA PAGINACIÓN Y ORDENAMIENTO
 // ========================================
 document.addEventListener("DOMContentLoaded", () => {
+  // Configuración dinámica de CSS para permisos de chat
+  if (window.Permisos) {
+      let chatCSS = '';
+      
+      if (!window.Permisos.tienePermiso('enviarMensajeTexto') && !window.Permisos.esAdmin()) {
+          chatCSS += '#message-input-dashboard, #send-message-btn-dashboard, .chat-send-btn { display: none !important; }';
+      }
+      if (!window.Permisos.tienePermiso('enviarMensajeAudio') && !window.Permisos.esAdmin()) {
+          chatCSS += '#voice-mic-btn, .chat-mic-btn, #voice-recording-container { display: none !important; }';
+      }
+      if (!window.Permisos.tienePermiso('enviarMensajeDocumento') && !window.Permisos.esAdmin()) {
+          chatCSS += 'label[for="file-input-dashboard"], .chat-attach-btn { display: none !important; }';
+      }
+      if (!window.Permisos.tienePermiso('eliminarMensajePropio') && !window.Permisos.esAdmin()) {
+          chatCSS += 'button[data-accion-msg="borrar-mi"] { display: none !important; }';
+      }
+      if (!window.Permisos.tienePermiso('eliminarMensajeTodos') && !window.Permisos.esAdmin()) {
+          chatCSS += 'button[data-accion-msg="borrar-todos"] { display: none !important; }';
+      }
+      if (!window.Permisos.tienePermiso('hacerVideollamada') && !window.Permisos.esAdmin()) {
+          chatCSS += '#VideoLlamada { display: none !important; }';
+      }
+      if (!window.Permisos.tienePermiso('finalizarIntercambio') && !window.Permisos.esAdmin()) {
+          chatCSS += '#finalizarIntercambioBtn { display: none !important; }';
+      }
+
+      if (chatCSS) {
+          const styleEl = document.createElement('style');
+          styleEl.id = 'chat-permissions-css';
+          styleEl.innerHTML = chatCSS;
+          document.head.appendChild(styleEl);
+      }
+  }
+
   // Selector de ordenamiento
   const sortSelect = document.getElementById("sortSelect");
   if (sortSelect) {
