@@ -1711,6 +1711,20 @@
 
                     <!-- Listado Unificado de Configuraciones Generales -->
                     <div class="bg-white dark:bg-gray-800/40 rounded-2xl border border-gray-200 dark:border-gray-800 divide-y divide-gray-150 dark:divide-gray-800">
+                        <!-- Fila 0: Rol por Defecto -->
+                        <div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors first:rounded-t-2xl last:rounded-b-2xl">
+                            <div class="flex-1">
+                                <label class="block text-sm font-bold text-gray-800 dark:text-gray-200">Rol por defecto (Auto-registro)</label>
+                                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Asigna automáticamente este rol a los nuevos usuarios que se registran por su cuenta. Si no se elige ninguno, entrarán sin accesos.</p>
+                            </div>
+                            <div class="flex gap-2 shrink-0 self-start sm:self-auto">
+                                <select id="configRolDefectoValue" class="w-48 px-3 py-1.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-semibold">
+                                    <option value="">-- Ninguno --</option>
+                                    <!-- Options populated dynamically -->
+                                </select>
+                            </div>
+                        </div>
+
                         <!-- Fila 1: Duración del Token -->
                         <div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors first:rounded-t-2xl last:rounded-b-2xl">
                             <div class="flex-1">
@@ -4152,7 +4166,33 @@
                 const data = await res.json();
                 const configs = data.data;
 
+                // Cargar roles para el combo box
+                try {
+                    const resRoles = await authFetch(`${window.APP_CONFIG.BACKEND_URL}/api/configuraciones/roles`);
+                    if (resRoles.ok) {
+                        const jsonRoles = await resRoles.json();
+                        const selectRol = document.getElementById('configRolDefectoValue');
+                        if (selectRol) {
+                            selectRol.innerHTML = '<option value="">-- Ninguno --</option>';
+                            if (jsonRoles.success && jsonRoles.data) {
+                                jsonRoles.data.forEach(rol => {
+                                    const opt = document.createElement('option');
+                                    opt.value = rol.id_rol;
+                                    opt.textContent = rol.nombre_rol;
+                                    selectRol.appendChild(opt);
+                                });
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error cargando roles para combo:', e);
+                }
+
                 // Rellenar campos
+                if (configs['rol_defecto_registro']) {
+                    const selectRol = document.getElementById('configRolDefectoValue');
+                    if (selectRol) selectRol.value = configs['rol_defecto_registro'].valor;
+                }
                 if (configs['jwt_reset_password_duration']) {
                     const { value, unit } = secondsToValueAndUnit(configs['jwt_reset_password_duration'].valor);
                     document.getElementById('configJwtDurationValue').value = value;
@@ -4221,6 +4261,15 @@
                 const driverDescubrir = document.getElementById('configDriverDescubrir').checked;
 
                 // Guardar cada config
+                const configRolDefecto = document.getElementById('configRolDefectoValue');
+                if (configRolDefecto) {
+                    await authFetch(CONFIG_API, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ clave: 'rol_defecto_registro', valor: configRolDefecto.value })
+                    });
+                }
+
                 await authFetch(CONFIG_API, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
