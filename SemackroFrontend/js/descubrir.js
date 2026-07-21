@@ -2647,25 +2647,34 @@ document.addEventListener("DOMContentLoaded", () => {
   if (window.Permisos) {
       let chatCSS = '';
       
-      if (!window.Permisos.tienePermiso('enviarMensajeTexto') && !window.Permisos.esAdmin()) {
-          chatCSS += '#message-input-dashboard, #send-message-btn-dashboard, .chat-send-btn { display: none !important; }';
+      const esAdmin = window.Permisos.esAdmin();
+      const canText = window.Permisos.tienePermiso('enviarMensajeTexto') || esAdmin;
+      const canAudio = window.Permisos.tienePermiso('enviarMensajeAudio') || esAdmin;
+      const canDoc = window.Permisos.tienePermiso('enviarMensajeDocumento') || esAdmin;
+
+      if (!canText) {
+          chatCSS += '#message-input-dashboard, .chat-input-field { display: none !important; }';
       }
-      if (!window.Permisos.tienePermiso('enviarMensajeAudio') && !window.Permisos.esAdmin()) {
+      if (!canAudio) {
           chatCSS += '#voice-mic-btn, .chat-mic-btn, #voice-recording-container { display: none !important; }';
       }
-      if (!window.Permisos.tienePermiso('enviarMensajeDocumento') && !window.Permisos.esAdmin()) {
+      if (!canDoc) {
           chatCSS += 'label[for="file-input-dashboard"], .chat-attach-btn { display: none !important; }';
       }
-      if (!window.Permisos.tienePermiso('eliminarMensajePropio') && !window.Permisos.esAdmin()) {
+      if (!canText && !canAudio && !canDoc) {
+          chatCSS += '#send-message-btn-dashboard, .chat-send-btn { display: none !important; }';
+      }
+
+      if (!window.Permisos.tienePermiso('eliminarMensajePropio') && !esAdmin) {
           chatCSS += 'button[data-accion-msg="borrar-mi"] { display: none !important; }';
       }
-      if (!window.Permisos.tienePermiso('eliminarMensajeTodos') && !window.Permisos.esAdmin()) {
+      if (!window.Permisos.tienePermiso('eliminarMensajeTodos') && !esAdmin) {
           chatCSS += 'button[data-accion-msg="borrar-todos"] { display: none !important; }';
       }
-      if (!window.Permisos.tienePermiso('hacerVideollamada') && !window.Permisos.esAdmin()) {
+      if (!window.Permisos.tienePermiso('hacerVideollamada') && !esAdmin) {
           chatCSS += '#VideoLlamada { display: none !important; }';
       }
-      if (!window.Permisos.tienePermiso('finalizarIntercambio') && !window.Permisos.esAdmin()) {
+      if (!window.Permisos.tienePermiso('finalizarIntercambio') && !esAdmin) {
           chatCSS += '#finalizarIntercambioBtn { display: none !important; }';
       }
 
