@@ -410,12 +410,21 @@ router.delete('/roles/:id', verificarPermiso('rolesPermisos:eliminar'), async (r
         // El check de es_default se ha eliminado para permitir borrar roles base.
         // Se mantiene la verificación de usuarios asignados.
 
+        // Contar el total de roles en el sistema
+        const [totalRolesResult] = await db.execute('SELECT COUNT(*) as total FROM Roles');
+        const totalRoles = totalRolesResult[0].total;
+
         // Verificar si hay usuarios asignados a este rol
         const [users] = await db.execute('SELECT COUNT(*) as count FROM d_usuarios_roles WHERE rol_id = ?', [id]);
-        if (users[0].count > 0) {
+        
+        // Si no es el último rol, aplicar la validación estricta
+        if (totalRoles > 1 && users[0].count > 0) {
             return res.status(400).json({ success: false, error: `No se puede eliminar el rol porque hay ${users[0].count} usuario(s) asignado(s) a él. Reasigne a estos usuarios antes de eliminar el rol.` });
         }
 
+        // Si es el último rol (totalRoles === 1), permitimos eliminar (entraremos en Modo Apocalipsis)
+        // Eliminamos primero las asignaciones para evitar violaciones de clave foránea si no hay CASCADE
+        await db.execute('DELETE FROM d_usuarios_roles WHERE rol_id = ?', [id]);
         await db.execute('DELETE FROM Roles WHERE id_rol = ?', [id]);
         res.json({ success: true, message: 'Rol eliminado correctamente' });
     } catch (error) {
