@@ -7436,9 +7436,13 @@ async function cargarYRenderizarRolesConfig() {
             });
 
             try {
+                const token = localStorage.getItem('token_semackro');
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = 'Bearer ' + token;
+
                 const res = await fetch(`${window.APP_CONFIG.BACKEND_URL}/api/configuraciones/usuarios/${idUsuarioEditandoPermisos}/permisos`, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify({ permisos: permisosNuevos })
                 });
                 
