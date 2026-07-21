@@ -48,6 +48,7 @@ const permissions = [
     { clave: 'enviarMensajeTexto', nombre: 'Enviar mensajes de texto', orden: 129 },
     { clave: 'enviarMensajeAudio', nombre: 'Enviar notas de voz', orden: 130 },
     { clave: 'enviarMensajeDocumento', nombre: 'Enviar documentos e imágenes', orden: 131 },
+    { clave: 'editarMensaje', nombre: 'Editar mensajes', orden: 131.5 },
     { clave: 'eliminarMensajePropio', nombre: 'Eliminar mensajes para mí', orden: 132 },
     { clave: 'eliminarMensajeTodos', nombre: 'Eliminar mensajes para todos', orden: 133 },
     { clave: 'hacerVideollamada', nombre: 'Realizar videollamadas', orden: 134 },

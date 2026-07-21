@@ -2671,6 +2671,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!window.Permisos.tienePermiso('eliminarMensajeTodos') && !esAdmin) {
           chatCSS += 'button[data-accion-msg="borrar-todos"] { display: none !important; }';
       }
+      if (!window.Permisos.tienePermiso('editarMensaje') && !esAdmin) {
+          chatCSS += 'button[data-accion-msg="editar"] { display: none !important; }';
+      }
       if (!window.Permisos.tienePermiso('hacerVideollamada') && !esAdmin) {
           chatCSS += '#VideoLlamada { display: none !important; }';
       }
