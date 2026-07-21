@@ -4044,13 +4044,15 @@
                     restrictCSS += `
                         .camera-icon { display: none !important; }
                         .profile-pic-container { cursor: default !important; pointer-events: none !important; }
-                        .file-upload-area { display: none !important; }
                         button[onclick="handleChangeImage()"], button[onclick="handleDeleteImage()"],
                         button[onclick="handleEditProfileImage()"], button[onclick="handleDeleteProfileImage()"] { display: none !important; }
                     `;
                 }
                 if (!window.pVerif) {
                     restrictCSS += `
+                        #removeIdCard { display: none !important; }
+                        .file-upload-area { pointer-events: none !important; cursor: default !important; }
+                        #idCardInput { pointer-events: none !important; }
                         button[onclick="abrirModalVerificacion()"], #btn-verificar-identidad { display: none !important; }
                     `;
                 }
