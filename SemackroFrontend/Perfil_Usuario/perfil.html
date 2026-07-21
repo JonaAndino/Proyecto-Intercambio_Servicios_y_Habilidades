@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de Usuario - SEMACKRO</title>
     <script src="../config.js"></script>
+    <script src="../js/permisos.js"></script>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -4016,6 +4017,67 @@
                             cursor: default;
                         }
                     `;
+                    document.head.appendChild(style);
+                }
+            } else {
+                // Permisos Granulares para el propietario o admin
+                const esAdminLocal = window.Permisos ? window.Permisos.esAdmin() : false;
+                const pDatos = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('editarDatosPerfil') : true);
+                const pImagenes = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarImagenesPerfil') : true);
+                const pVerif = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarVerificacionPerfil') : true);
+                const pHabilidades = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarHabilidadesPerfil') : true);
+                const pCert = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarCertificacionesPerfil') : true);
+                const pResenas = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('responderResenasPerfil') : true);
+                const pEliminar = esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('eliminarCuentaPerfil') : true);
+                
+                let restrictCSS = '';
+                if (!pDatos) {
+                    restrictCSS += `
+                        .editable:hover::after { display: none !important; }
+                        .editable { cursor: default !important; pointer-events: none !important; background: transparent !important; }
+                        button[onclick="abrirModalCambiarPassword()"] { display: none !important; }
+                    `;
+                }
+                if (!pImagenes) {
+                    restrictCSS += `
+                        .camera-icon { display: none !important; }
+                        .profile-pic-container { cursor: default !important; pointer-events: none !important; }
+                        .file-upload-area { display: none !important; }
+                        button[onclick="handleChangeImage()"], button[onclick="handleDeleteImage()"],
+                        button[onclick="handleEditProfileImage()"], button[onclick="handleDeleteProfileImage()"] { display: none !important; }
+                    `;
+                }
+                if (!pVerif) {
+                    restrictCSS += `
+                        button[onclick="abrirModalVerificacion()"], #btn-verificar-identidad { display: none !important; }
+                    `;
+                }
+                if (!pHabilidades) {
+                    restrictCSS += `
+                        .add-skill-button-primary, .add-skill-button-secondary { display: none !important; }
+                        button[onclick="handleEditSkill()"], button[onclick="handleDeleteSkill()"], .skill-action-btn { display: none !important; }
+                    `;
+                }
+                if (!pCert) {
+                    restrictCSS += `
+                        .certificacion-form { display: none !important; }
+                        button[onclick^="eliminarCertificacion"] { display: none !important; }
+                    `;
+                }
+                if (!pResenas) {
+                    restrictCSS += `
+                        button[onclick^="replyToReview"], button[onclick^="editReviewResponse"], button[onclick^="showDeleteReplyConfirm"] { display: none !important; }
+                    `;
+                }
+                if (!pEliminar) {
+                    restrictCSS += `
+                        button[onclick="confirmarEliminarCuenta()"] { display: none !important; }
+                    `;
+                }
+                if (restrictCSS && !document.querySelector('style#granular-permissions-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'granular-permissions-style';
+                    style.innerHTML = restrictCSS;
                     document.head.appendChild(style);
                 }
             }
