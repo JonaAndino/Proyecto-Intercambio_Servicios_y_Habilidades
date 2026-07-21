@@ -6874,11 +6874,12 @@ async function cargarYRenderizarRolesConfig() {
             e.stopPropagation();
             e.preventDefault();
             var clave = btn.getAttribute('data-rename-key');
-            // Find the text element (previous sibling span/text node)
             var parent = btn.parentElement;
-            var textEl = parent.querySelector('span') || parent.childNodes[0];
-            if (!textEl || textEl.querySelector('input')) return;
-            var textoOriginal = textEl.textContent.trim();
+            if (parent.querySelector('.inline-rename-input')) return;
+            var textEl = parent.querySelector('span');
+            if (!textEl) textEl = parent.firstChild;
+            if (!textEl) return;
+            var textoOriginal = (textEl.textContent || '').trim();
             // Create inline input
             var input = document.createElement('input');
             input.type = 'text';
