@@ -44,7 +44,14 @@ const permissions = [
     { clave: 'gestionarUbicacionPerfil', nombre: 'Mostrar ubicación', orden: 125 },
     { clave: 'gestionarEstadoPerfil', nombre: 'Visibilidad de perfil', orden: 126 },
     { clave: 'gestionarTourPerfil', nombre: 'Gestionar tour del perfil', orden: 127 },
-    { clave: 'cancelarSolicitudesTrabajo', nombre: 'Cancelar solicitudes de trabajo', orden: 128 }
+    { clave: 'cancelarSolicitudesTrabajo', nombre: 'Cancelar solicitudes de trabajo', orden: 128 },
+    { clave: 'enviarMensajeTexto', nombre: 'Enviar mensajes de texto', orden: 129 },
+    { clave: 'enviarMensajeAudio', nombre: 'Enviar notas de voz', orden: 130 },
+    { clave: 'enviarMensajeDocumento', nombre: 'Enviar documentos e imágenes', orden: 131 },
+    { clave: 'eliminarMensajePropio', nombre: 'Eliminar mensajes para mí', orden: 132 },
+    { clave: 'eliminarMensajeTodos', nombre: 'Eliminar mensajes para todos', orden: 133 },
+    { clave: 'hacerVideollamada', nombre: 'Realizar videollamadas', orden: 134 },
+    { clave: 'finalizarIntercambio', nombre: 'Finalizar intercambio', orden: 135 }
 ];
 
 async function seedPermissions() {
