@@ -4028,7 +4028,7 @@
                 window.pHabilidades = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarHabilidadesPerfil') : true);
                 window.pCert = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarCertificacionesPerfil') : true);
                 window.pResenas = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('responderResenasPerfil') : true);
-                window.pEliminar = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('eliminarCuentaPerfil') : true);
+                window.pResponder = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('responderResenasPerfil') : true);
                 window.pEstado = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarEstadoPerfil') : true);
                 window.pTour = window.esAdminLocal || (window.Permisos ? window.Permisos.tienePermiso('gestionarTourPerfil') : true);
                 
@@ -4078,11 +4078,6 @@
                 if (!window.pResenas) {
                     restrictCSS += `
                         button[onclick^="replyToReview"], button[onclick^="editReviewResponse"], button[onclick^="showDeleteReplyConfirm"] { display: none !important; }
-                    `;
-                }
-                if (!window.pEliminar) {
-                    restrictCSS += `
-                        button[onclick="confirmarEliminarCuenta()"] { display: none !important; }
                     `;
                 }
                 if (!window.pEstado) {

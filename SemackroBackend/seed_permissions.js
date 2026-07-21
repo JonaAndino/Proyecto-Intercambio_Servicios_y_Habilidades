@@ -39,9 +39,8 @@ const permissions = [
     { clave: 'gestionarVerificacionPerfil', nombre: 'Gestionar verificación de identidad', orden: 120 },
     { clave: 'gestionarHabilidadesPerfil', nombre: 'Gestionar habilidades', orden: 121 },
     { clave: 'gestionarCertificacionesPerfil', nombre: 'Gestionar certificaciones y educación', orden: 122 },
-    { clave: 'responderResenasPerfil', nombre: 'Responder reseñas', orden: 123 },
-    { clave: 'eliminarCuentaPerfil', nombre: 'Eliminar cuenta', orden: 124 },
-    { clave: 'gestionarEstadoPerfil', nombre: 'Gestionar visibilidad y estado', orden: 125 },
+    { clave: 'responderResenasPerfil', nombre: 'Responder a reseñas', orden: 123 },
+    { clave: 'gestionarEstadoPerfil', nombre: 'Visibilidad de perfil', orden: 125 },
     { clave: 'gestionarTourPerfil', nombre: 'Gestionar tour del perfil', orden: 126 }
 ];
 
