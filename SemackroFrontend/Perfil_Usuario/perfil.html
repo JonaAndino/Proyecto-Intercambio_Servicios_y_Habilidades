@@ -4046,13 +4046,20 @@
                         .profile-pic-container { cursor: default !important; pointer-events: none !important; }
                         button[onclick="handleChangeImage()"], button[onclick="handleDeleteImage()"],
                         button[onclick="handleEditProfileImage()"], button[onclick="handleDeleteProfileImage()"] { display: none !important; }
+                        
+                        /* Ocultar edicion de Banner */
+                        #fondoBannerContainer button, #fondoBannerContainer div { pointer-events: none !important; cursor: default !important; }
+                        #fondoBannerContainer button[type="button"] { display: none !important; }
+                        #fondoBannerUpload { pointer-events: none !important; }
+
+                        /* Ocultar edicion de Tarjeta Identidad */
+                        #removeIdCard { display: none !important; }
+                        .file-upload-area { pointer-events: none !important; cursor: default !important; }
+                        #idCardInput { pointer-events: none !important; }
                     `;
                 }
                 if (!window.pVerif) {
                     restrictCSS += `
-                        #removeIdCard { display: none !important; }
-                        .file-upload-area { pointer-events: none !important; cursor: default !important; }
-                        #idCardInput { pointer-events: none !important; }
                         button[onclick="abrirModalVerificacion()"], #btn-verificar-identidad { display: none !important; }
                     `;
                 }
