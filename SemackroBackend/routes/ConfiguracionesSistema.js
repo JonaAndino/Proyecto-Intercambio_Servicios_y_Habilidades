@@ -347,6 +347,13 @@ router.post('/roles', verificarPermiso('rolesPermisos:crear'), async (req, res) 
         if (opcion.length > 0) {
             await db.execute('INSERT IGNORE INTO d_roles_opciones (rol_id, opcion_id) VALUES (?, ?)', [nuevoId, opcion[0].opcion_id]);
         }
+
+        // PREVENCIÓN DE BLOQUEO (Evitar que el creador se quede afuera al salir del Modo Apocalipsis)
+        const [totalRolesResult] = await db.execute('SELECT COUNT(*) as total FROM Roles');
+        if (totalRolesResult[0].total === 1 && req.user && req.user.usuarioId) {
+            // Es el primer rol creado en todo el sistema. Se lo asignamos automáticamente al creador.
+            await db.execute('INSERT INTO d_usuarios_roles (usuario_id, rol_id) VALUES (?, ?)', [req.user.usuarioId, nuevoId]);
+        }
         
         res.json({ success: true, message: 'Rol creado correctamente', id_rol: nuevoId });
     } catch (error) {
