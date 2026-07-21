@@ -7246,20 +7246,20 @@ async function cargarYRenderizarRolesConfig() {
                     document.getElementById('permisosIndivCheckboxesContainer').innerHTML = `
                         <div class="flex flex-col gap-4">
                             <div class="flex items-center gap-3 mb-2">
-                                <div class="relative flex-1 bg-white border border-slate-200 rounded-2xl shadow-sm">
-                                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <div class="relative flex-1 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 dark:text-slate-500">
                                         <span class="iconify text-lg" data-icon="mdi:magnify"></span>
                                     </span>
-                                    <input type="text" placeholder="Buscar permiso..." value="${escapeHtml(window.terminoBusquedaPermisosIndiv)}" oninput="window.terminoBusquedaPermisosIndiv = this.value; if(this.value){Object.keys(window.acordeonesMasterAbiertosIndiv).forEach(k => window.acordeonesMasterAbiertosIndiv[k] = true); Object.keys(window.acordeonesSubAbiertosIndiv).forEach(k => window.acordeonesSubAbiertosIndiv[k] = true); Object.keys(window.acordeonesSubSubAbiertosIndiv).forEach(k => window.acordeonesSubSubAbiertosIndiv[k] = true);} window.renderizarModalPermisosIndiv();" class="w-full pl-11 pr-4 py-3 bg-transparent border-none text-[14px] font-medium focus:outline-none focus:ring-0 text-slate-700 placeholder-slate-400">
+                                    <input type="text" placeholder="Buscar permiso..." value="${escapeHtml(window.terminoBusquedaPermisosIndiv)}" oninput="window.terminoBusquedaPermisosIndiv = this.value; if(this.value){Object.keys(window.acordeonesMasterAbiertosIndiv).forEach(k => window.acordeonesMasterAbiertosIndiv[k] = true); Object.keys(window.acordeonesSubAbiertosIndiv).forEach(k => window.acordeonesSubAbiertosIndiv[k] = true); Object.keys(window.acordeonesSubSubAbiertosIndiv).forEach(k => window.acordeonesSubSubAbiertosIndiv[k] = true);} window.renderizarModalPermisosIndiv();" class="w-full pl-11 pr-4 py-3 bg-transparent border-none text-[14px] font-medium focus:outline-none focus:ring-0 text-slate-700 dark:text-gray-200 placeholder-slate-400 dark:placeholder-slate-500">
                                 </div>
-                                <div class="flex items-center gap-3 px-5 py-3 bg-white border border-slate-200 rounded-2xl text-[13px] font-bold text-slate-600 shadow-sm shrink-0">
-                                    <button type="button" onclick="window.excepcionesCargadas.forEach(e => e.concedido = true); window.renderizarModalPermisosIndiv();" class="hover:text-slate-900 transition-colors text-slate-700">Todo</button>
-                                    <span class="text-slate-200">|</span>
-                                    <button type="button" onclick="window.excepcionesCargadas.forEach(e => e.concedido = false); window.renderizarModalPermisosIndiv();" class="hover:text-slate-900 transition-colors text-slate-400">Nada</button>
+                                <div class="flex items-center gap-3 px-5 py-3 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-700 rounded-2xl text-[13px] font-bold text-slate-600 dark:text-slate-300 shadow-sm shrink-0">
+                                    <button type="button" onclick="window.excepcionesCargadas.forEach(e => e.concedido = true); window.renderizarModalPermisosIndiv();" class="hover:text-slate-900 dark:hover:text-white transition-colors text-slate-700 dark:text-slate-400">Todo</button>
+                                    <span class="text-slate-200 dark:text-gray-700">|</span>
+                                    <button type="button" onclick="window.excepcionesCargadas.forEach(e => e.concedido = false); window.renderizarModalPermisosIndiv();" class="hover:text-slate-900 dark:hover:text-white transition-colors text-slate-400 dark:text-slate-500">Nada</button>
                                 </div>
-                                <div class="flex items-center gap-2 px-5 py-3 border border-slate-200 bg-white rounded-2xl text-[13px] font-bold whitespace-nowrap shadow-sm shrink-0">
-                                    <span class="iconify text-emerald-500 text-base" data-icon="mdi:check-all"></span>
-                                    <span class="text-slate-700">${totalSeleccionados} excepciones</span>
+                                <div class="flex items-center gap-2 px-5 py-3 border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-2xl text-[13px] font-bold whitespace-nowrap shadow-sm shrink-0">
+                                    <span class="iconify text-emerald-500 dark:text-emerald-400 text-base" data-icon="mdi:check-all"></span>
+                                    <span class="text-slate-700 dark:text-gray-200">${totalSeleccionados} excepciones</span>
                                 </div>
                             </div>
                             <div>
@@ -7758,20 +7758,20 @@ async function cargarYRenderizarRolesConfig() {
                 document.getElementById('permisosCheckboxesContainer').innerHTML = `
                     <div class="flex flex-col gap-4">
                         <div class="flex items-center gap-3 mb-2">
-                            <div class="relative flex-1 bg-white border border-slate-200 rounded-2xl shadow-sm">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                            <div class="relative flex-1 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 dark:text-slate-500">
                                     <span class="iconify text-lg" data-icon="mdi:magnify"></span>
                                 </span>
-                                <input type="text" placeholder="Buscar permiso..." value="${escapeHtml(window.terminoBusquedaPermisos)}" oninput="buscarPermisosEnModal(this.value)" class="w-full pl-11 pr-4 py-3 bg-transparent border-none text-[14px] font-medium focus:outline-none focus:ring-0 text-slate-700 placeholder-slate-400">
+                                <input type="text" placeholder="Buscar permiso..." value="${escapeHtml(window.terminoBusquedaPermisos)}" oninput="buscarPermisosEnModal(this.value)" class="w-full pl-11 pr-4 py-3 bg-transparent border-none text-[14px] font-medium focus:outline-none focus:ring-0 text-slate-700 dark:text-gray-200 placeholder-slate-400 dark:placeholder-slate-500">
                             </div>
-                            <div class="flex items-center gap-3 px-5 py-3 bg-white border border-slate-200 rounded-2xl text-[13px] font-bold text-slate-600 shadow-sm shrink-0">
-                                <button type="button" onclick="seleccionarTodoGlobal(true)" class="hover:text-slate-900 transition-colors text-slate-700">Todo</button>
-                                <span class="text-slate-200">|</span>
-                                <button type="button" onclick="seleccionarTodoGlobal(false)" class="hover:text-slate-900 transition-colors text-slate-400">Nada</button>
+                            <div class="flex items-center gap-3 px-5 py-3 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-700 rounded-2xl text-[13px] font-bold text-slate-600 dark:text-slate-300 shadow-sm shrink-0">
+                                <button type="button" onclick="seleccionarTodoGlobal(true)" class="hover:text-slate-900 dark:hover:text-white transition-colors text-slate-700 dark:text-slate-400">Todo</button>
+                                <span class="text-slate-200 dark:text-gray-700">|</span>
+                                <button type="button" onclick="seleccionarTodoGlobal(false)" class="hover:text-slate-900 dark:hover:text-white transition-colors text-slate-400 dark:text-slate-500">Nada</button>
                             </div>
-                            <div class="flex items-center gap-2 px-5 py-3 border border-slate-200 bg-white rounded-2xl text-[13px] font-bold whitespace-nowrap shadow-sm shrink-0">
-                                <span class="iconify text-emerald-500 text-base" data-icon="mdi:check-all"></span>
-                                <span class="text-slate-700">${totalSeleccionados} seleccionados</span>
+                            <div class="flex items-center gap-2 px-5 py-3 border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-2xl text-[13px] font-bold whitespace-nowrap shadow-sm shrink-0">
+                                <span class="iconify text-emerald-500 dark:text-emerald-400 text-base" data-icon="mdi:check-all"></span>
+                                <span class="text-slate-700 dark:text-gray-200">${totalSeleccionados} seleccionados</span>
                             </div>
                         </div>
                         <div>
