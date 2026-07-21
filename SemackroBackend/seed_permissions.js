@@ -33,7 +33,14 @@ const permissions = [
     { clave: 'GESTIONAR_CONFIGURACION', nombre: 'Acceso al Panel de Configuraciones', orden: 20 },
     { clave: 'VER_METRICAS', nombre: 'Métricas', orden: 14 },
     { clave: 'VER_REPORTES_USUARIOS', nombre: 'Ver usuarios reportados', orden: 15 },
-    { clave: 'BLOQUEAR_REPORTADOS', nombre: 'Bloquear usuarios reportados', orden: 16 }
+    { clave: 'BLOQUEAR_REPORTADOS', nombre: 'Bloquear usuarios reportados', orden: 16 },
+    { clave: 'editarDatosPerfil', nombre: 'Editar datos de perfil', orden: 118 },
+    { clave: 'gestionarImagenesPerfil', nombre: 'Gestionar imágenes de perfil', orden: 119 },
+    { clave: 'gestionarVerificacionPerfil', nombre: 'Gestionar verificación de identidad', orden: 120 },
+    { clave: 'gestionarHabilidadesPerfil', nombre: 'Gestionar habilidades', orden: 121 },
+    { clave: 'gestionarCertificacionesPerfil', nombre: 'Gestionar certificaciones y educación', orden: 122 },
+    { clave: 'responderResenasPerfil', nombre: 'Responder reseñas', orden: 123 },
+    { clave: 'eliminarCuentaPerfil', nombre: 'Eliminar cuenta', orden: 124 }
 ];
 
 async function seedPermissions() {
