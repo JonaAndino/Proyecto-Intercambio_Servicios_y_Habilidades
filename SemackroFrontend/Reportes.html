@@ -7300,9 +7300,9 @@ async function cargarYRenderizarRolesConfig() {
                                     <div class="flex items-center gap-4">
                                         <span class="text-blue-500 text-[11px] font-bold">${cantSelMaster}/${cantTotalMaster}</span>
                                         <div class="flex items-center gap-2 text-[11px] font-bold text-slate-500" onclick="event.stopPropagation()">
-                                            <button type="button" onclick="window.excepcionesCargadas.forEach(e => e.concedido = true); window.renderizarModalPermisosIndiv();" class="hover:text-slate-800 text-slate-700 transition-colors">Todo</button>
+                                            <button type="button" onclick="window.marcarTodoNadaIndiv('${masterName}', true)" class="hover:text-slate-800 text-slate-700 transition-colors">Todo</button>
                                             <span class="text-slate-200">|</span>
-                                            <button type="button" onclick="window.excepcionesCargadas.forEach(e => e.concedido = false); window.renderizarModalPermisosIndiv();" class="hover:text-slate-800 text-slate-400 transition-colors">Nada</button>
+                                            <button type="button" onclick="window.marcarTodoNadaIndiv('${masterName}', false)" class="hover:text-slate-800 text-slate-400 transition-colors">Nada</button>
                                         </div>
                                         <span class="master-chevron iconify text-slate-400 text-xl transition-transform ${isMasterOpen ? 'rotate-180 text-slate-600' : ''}" data-icon="mdi:chevron-down"></span>
                                     </div>
@@ -7328,9 +7328,9 @@ async function cargarYRenderizarRolesConfig() {
                                     <input type="text" placeholder="Buscar permiso..." value="${escapeHtml(window.terminoBusquedaPermisosIndiv)}" oninput="window.terminoBusquedaPermisosIndiv = this.value; if(this.value){Object.keys(window.acordeonesMasterAbiertosIndiv).forEach(k => window.acordeonesMasterAbiertosIndiv[k] = true); Object.keys(window.acordeonesSubAbiertosIndiv).forEach(k => window.acordeonesSubAbiertosIndiv[k] = true); Object.keys(window.acordeonesSubSubAbiertosIndiv).forEach(k => window.acordeonesSubSubAbiertosIndiv[k] = true);} window.renderizarModalPermisosIndiv();" class="w-full pl-11 pr-4 py-3 bg-transparent border-none text-[14px] font-medium focus:outline-none focus:ring-0 text-slate-700 dark:text-gray-200 placeholder-slate-400 dark:placeholder-slate-500">
                                 </div>
                                 <div class="flex items-center gap-3 px-5 py-3 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-700 rounded-2xl text-[13px] font-bold text-slate-600 dark:text-slate-300 shadow-sm shrink-0">
-                                    <button type="button" onclick="window.excepcionesCargadas.forEach(e => e.concedido = true); window.renderizarModalPermisosIndiv();" class="hover:text-slate-900 dark:hover:text-white transition-colors text-slate-700 dark:text-slate-400">Todo</button>
+                                    <button type="button" onclick="window.marcarTodoNadaIndiv(null, true)" class="hover:text-slate-900 dark:hover:text-white transition-colors text-slate-700 dark:text-slate-400">Todo</button>
                                     <span class="text-slate-200 dark:text-gray-700">|</span>
-                                    <button type="button" onclick="window.excepcionesCargadas.forEach(e => e.concedido = false); window.renderizarModalPermisosIndiv();" class="hover:text-slate-900 dark:hover:text-white transition-colors text-slate-400 dark:text-slate-500">Nada</button>
+                                    <button type="button" onclick="window.marcarTodoNadaIndiv(null, false)" class="hover:text-slate-900 dark:hover:text-white transition-colors text-slate-400 dark:text-slate-500">Nada</button>
                                 </div>
                                 <div class="flex items-center gap-2 px-5 py-3 border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-2xl text-[13px] font-bold whitespace-nowrap shadow-sm shrink-0">
                                     <span class="iconify text-emerald-500 dark:text-emerald-400 text-base" data-icon="mdi:check-all"></span>
@@ -7419,21 +7419,29 @@ async function cargarYRenderizarRolesConfig() {
             }
         };
 
+        window.marcarTodoNadaIndiv = function(masterName, estado) {
+            Object.keys(window.MAPEO_AVANZADO).forEach(clave => {
+                const p = window.MAPEO_AVANZADO[clave];
+                if (!masterName || p.master === masterName) {
+                    const idx = window.excepcionesCargadas.findIndex(e => e.link === clave);
+                    if (estado === null) {
+                        if (idx !== -1) window.excepcionesCargadas.splice(idx, 1);
+                    } else {
+                        if (idx !== -1) window.excepcionesCargadas[idx].concedido = estado;
+                        else window.excepcionesCargadas.push({ link: clave, concedido: estado });
+                    }
+                }
+            });
+            if (window.renderizarModalPermisosIndiv) window.renderizarModalPermisosIndiv();
+        };
+
         window.guardarPermisosIndividuales = async function() {
             if (!idUsuarioEditandoPermisos) return;
             
-            const selects = document.querySelectorAll('.permiso-indiv-select');
-            const permisosNuevos = [];
-            
-            selects.forEach(sel => {
-                const val = sel.value;
-                if (val !== '') {
-                    permisosNuevos.push({
-                        link: sel.getAttribute('data-clave'),
-                        concedido: val === '1'
-                    });
-                }
-            });
+            const permisosNuevos = window.excepcionesCargadas.map(e => ({
+                link: e.link,
+                concedido: e.concedido
+            }));
 
             try {
                 const token = localStorage.getItem('token_semackro');
