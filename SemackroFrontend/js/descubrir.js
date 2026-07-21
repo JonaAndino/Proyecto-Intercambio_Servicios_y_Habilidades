@@ -7839,39 +7839,40 @@ async function finalizarIntercambioDashboard() {
 
   // Modal minimalista profesional (estilo Slack/Linear)
   const modalHtml = `
-                    <div id="finalizarIntercambioModal" class="fixed inset-0 bg-slate-900/70 z-[10000] flex items-center justify-center animate-fadeIn">
-                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-[440px] w-[92%] animate-scaleIn">
+                    <div id="finalizarIntercambioModal" class="fixed inset-0 bg-transparent z-[10000] flex items-center justify-center animate-fadeIn">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 dark:border-gray-700 max-w-[440px] w-[92%] animate-scaleIn overflow-hidden">
 
                             <!-- Contenido -->
-                            <div class="p-6 pb-5">
-                                <div class="flex items-start gap-3 mb-4">
-                                    <div class="w-10 h-10 min-w-[40px] bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center mt-0.5">
-                                        <span class="iconify" data-icon="mdi:alert" style="font-size: 22px; color: #f59e0b;"></span>
+                            <div class="p-7 pb-6">
+                                <div class="flex items-start gap-4 mb-5">
+                                    <div class="w-12 h-12 min-w-[48px] bg-red-50 dark:bg-red-900/30 rounded-full flex items-center justify-center mt-0.5">
+                                        <span class="iconify" data-icon="mdi:alert-circle-outline" style="font-size: 26px; color: #ef4444;"></span>
                                     </div>
-                                    <div class="flex-1 pt-0.5">
-                                        <h3 class="m-0 mb-1.5 text-lg font-semibold text-slate-900 dark:text-white leading-tight">
+                                    <div class="flex-1 pt-1">
+                                        <h3 class="m-0 mb-2 text-xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight">
                                             Finalizar intercambio
                                         </h3>
-                                        <p class="m-0 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                                            Estás a punto de finalizar el intercambio con <strong class="text-slate-700 dark:text-slate-300">${nombreContacto}</strong>
+                                        <p class="m-0 text-[15px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                                            ¿Estás seguro de que deseas finalizar el intercambio con <strong class="text-slate-800 dark:text-slate-200 font-semibold">${nombreContacto}</strong>?
                                         </p>
                                     </div>
                                 </div>
 
-                                <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mt-4">
-                                    <p class="m-0 text-xs text-amber-800 dark:text-amber-200 leading-relaxed">
-                                        La conversación será eliminada permanentemente
+                                <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 mt-2">
+                                    <p class="m-0 text-[13.5px] text-red-700 dark:text-red-300 flex items-center gap-2 font-medium">
+                                        <span class="iconify" data-icon="mdi:information-outline" style="font-size: 18px;"></span>
+                                        La conversación será eliminada permanentemente y no podrás recuperarla.
                                     </p>
                                 </div>
                             </div>
 
                             <!-- Footer con botones -->
-                            <div class="bg-slate-50 dark:bg-gray-700/50 border-t border-slate-200 dark:border-gray-600 p-4 flex gap-2.5 justify-end rounded-b-xl">
-                                <button id="btnCancelarFinalizar" class="px-4.5 py-2 bg-white dark:bg-gray-700 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-gray-600 rounded-lg font-medium text-sm cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-gray-600 active:scale-95">
+                            <div class="bg-slate-50 dark:bg-gray-700/30 border-t border-slate-100 dark:border-gray-700 p-5 flex gap-3 justify-end items-center">
+                                <button id="btnCancelarFinalizar" class="px-5 py-2.5 bg-white dark:bg-gray-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-gray-600 rounded-xl font-semibold text-[14px] cursor-pointer transition-all hover:bg-slate-100 dark:hover:bg-gray-600 active:scale-95 shadow-sm hover:shadow">
                                     Cancelar
                                 </button>
-                                <button id="btnConfirmarFinalizar" class="px-4.5 py-2 bg-red-500 hover:bg-red-600 text-white border-none rounded-lg font-medium text-sm cursor-pointer transition-all shadow-sm shadow-red-500/20 active:scale-95">
-                                    Sí, finalizar
+                                <button id="btnConfirmarFinalizar" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white border-none rounded-xl font-semibold text-[14px] cursor-pointer transition-all shadow-md shadow-red-600/30 hover:shadow-lg active:scale-95">
+                                    Sí, finalizar intercambio
                                 </button>
                             </div>
                         </div>
