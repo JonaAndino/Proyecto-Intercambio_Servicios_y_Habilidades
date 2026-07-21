@@ -106,6 +106,10 @@
         src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <style>
         /* Animaciones personalizadas para el modal de recuperación */
+        .tree-node:last-child > .tree-line-v {
+            bottom: auto !important;
+            height: var(--half-height, 50%) !important;
+        }
         @keyframes customFadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -7116,10 +7120,16 @@ async function cargarYRenderizarRolesConfig() {
                                 const finalAccessText = finalAccess ? 'ACCESO CONCEDIDO' : 'ACCESO DENEGADO';
                                 const finalAccessColor = finalAccess ? 'text-blue-600' : 'text-slate-400';
 
+                                const isSubSub = padding.includes('104px');
+                                const leftPos = isSubSub ? '72px' : '40px';
+                                const widthPos = isSubSub ? '16px' : '16px';
+
                                 return `
-                                    <div class="flex items-center justify-between py-4 hover:bg-slate-100 transition-colors border-b border-slate-100 last:border-0 ${padding}">
-                                        <div class="flex items-center gap-4 flex-1">
-                                            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                                    <div class="tree-node relative flex items-center justify-between py-4 hover:bg-slate-100 transition-colors border-b border-slate-100 last:border-0 ${padding}">
+                                        <div class="tree-line-v absolute w-[2px] bg-slate-200 top-0 bottom-0" style="left: ${leftPos};"></div>
+                                        <div class="tree-line-h absolute h-[2px] bg-slate-200 top-1/2" style="left: ${leftPos}; width: ${widthPos};"></div>
+                                        <div class="flex items-center gap-4 flex-1 relative z-10">
+                                            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 shrink-0 relative z-10">
                                                 <span class="iconify text-lg" data-icon="${p.icon}"></span>
                                             </div>
                                             <div>
@@ -7619,10 +7629,16 @@ async function cargarYRenderizarRolesConfig() {
                         // Function to render rows
                         const renderRow = (p, padding) => {
                             const activo = window.permisosSeleccionados.has(p.clave);
+                            const isSubSub = padding.includes('104px');
+                            const leftPos = isSubSub ? '72px' : '40px';
+                            const widthPos = isSubSub ? '16px' : '16px';
+                            
                             return `
-                                <div class="flex items-center justify-between py-4 hover:bg-slate-100 transition-colors border-b border-slate-100 last:border-0 ${padding}">
-                                    <div class="flex items-center gap-4 flex-1">
-                                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+                                <div class="tree-node relative flex items-center justify-between py-4 hover:bg-slate-100 transition-colors border-b border-slate-100 last:border-0 ${padding}">
+                                    <div class="tree-line-v absolute w-[2px] bg-slate-200 top-0 bottom-0" style="left: ${leftPos};"></div>
+                                    <div class="tree-line-h absolute h-[2px] bg-slate-200 top-1/2" style="left: ${leftPos}; width: ${widthPos};"></div>
+                                    <div class="flex items-center gap-4 flex-1 relative z-10">
+                                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 shrink-0 relative z-10">
                                             <span class="iconify text-lg" data-icon="${p.icon}"></span>
                                         </div>
                                         <span class="text-[14px] font-bold text-black w-full block">${escapeHtml(p.nombre)}</span>
@@ -7653,8 +7669,10 @@ async function cargarYRenderizarRolesConfig() {
                             const htmlPermisosSubSub = permisosSubSub.map(p => renderRow(p, 'pl-[104px] pr-6 bg-white')).join('');
                             
                             htmlSubSubs += `
-                                <div class="bg-white border-t border-slate-100 overflow-hidden">
-                                    <div class="flex items-center justify-between pl-20 pr-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors ${isSubSubOpen ? 'bg-slate-200' : 'bg-white'}" onclick="toggleAcordeonSubSub(event, '${subsubKey}')">
+                                <div class="tree-node relative bg-white border-t border-slate-100 overflow-hidden" style="--half-height: 28px;">
+                                    <div class="tree-line-v absolute w-[2px] bg-slate-200 top-0 bottom-0" style="left: 40px;"></div>
+                                    <div class="tree-line-h absolute h-[2px] bg-slate-200 top-[28px]" style="left: 40px; width: 24px;"></div>
+                                    <div class="flex items-center justify-between pl-20 pr-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors ${isSubSubOpen ? 'bg-slate-200' : 'bg-white'} relative z-10" onclick="toggleAcordeonSubSub(event, '${subsubKey}')">
                                         <div class="flex items-center gap-3">
                                             
                                             <h6 class="font-bold text-black text-[13.5px]">${subsubName}</h6>
