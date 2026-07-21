@@ -3719,12 +3719,19 @@
                                 ${escapeHtml(tData.telefono_Persona || '-')}
                             </td>
                             <td class="py-5 px-4">
-                                <select onchange="cambiarRolUsuario(${tData.id_Usuario}, this.value)" class="text-xs border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 bg-white dark:bg-gray-900 text-gray-750 dark:text-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:outline-none cursor-pointer" ${puedeAsignarRoles ? '' : 'disabled'}>
-                                    <option value="" disabled ${!tData.id_rol ? 'selected' : ''}>-- Sin Rol --</option>
-                                    ${(_rolesDirectorio || [{id_rol:2,nombre_rol:'Usuario Estandar'},{id_rol:1,nombre_rol:'Administrador'}]).map(r =>
-                                        `<option value="${r.id_rol}" ${tData.id_rol === r.id_rol ? 'selected' : ''}>${escapeHtml(r.nombre_rol)}</option>`
-                                    ).join('')}
-                                </select>
+                                ${ (() => {
+                                    const availableRoles = _rolesDirectorio || [{id_rol:2,nombre_rol:'Usuario Estandar'},{id_rol:1,nombre_rol:'Administrador'}];
+                                    const rolExists = availableRoles.some(r => r.id_rol === tData.id_rol);
+                                    const shouldSelectSinRol = !tData.id_rol || !rolExists;
+                                    return `
+                                    <select onchange="cambiarRolUsuario(${tData.id_Usuario}, this.value)" class="text-xs border border-gray-200 dark:border-gray-800 rounded-lg px-2 py-1 bg-white dark:bg-gray-900 text-gray-750 dark:text-gray-200 focus:ring-2 focus:ring-blue-500/20 focus:outline-none cursor-pointer" ${puedeAsignarRoles ? '' : 'disabled'}>
+                                        <option value="" disabled ${shouldSelectSinRol ? 'selected' : ''}>-- Sin Rol --</option>
+                                        ${availableRoles.map(r =>
+                                            `<option value="${r.id_rol}" ${tData.id_rol === r.id_rol ? 'selected' : ''}>${escapeHtml(r.nombre_rol)}</option>`
+                                        ).join('')}
+                                    </select>
+                                    `;
+                                })() }
                             </td>
                             <td class="py-5 px-4 text-xs text-gray-500 max-w-[200px] truncate leading-relaxed">
                                 ${escapeHtml(tData.especialidades || '-')}
