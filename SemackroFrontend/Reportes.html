@@ -6851,23 +6851,23 @@ async function cargarYRenderizarRolesConfig() {
             }
         };
 
-        window.abrirModalPermisosIndividuales = async function(idUsuario, nombre, idRol) {
-            
-            // Rename Logic
-            window.nombresPersonalizados = JSON.parse(localStorage.getItem('nombres_personalizados_semackro') || '{}');
-            window.renombrarElemento = (clave, nombreActual) => {
-                const nuevoNombre = prompt('Ingresa el nuevo nombre (déjalo vacío para restaurar el original):', nombreActual);
-                if (nuevoNombre !== null) {
-                    if (nuevoNombre.trim() === '') {
-                        delete window.nombresPersonalizados[clave];
-                    } else {
-                        window.nombresPersonalizados[clave] = nuevoNombre.trim();
-                    }
-                    localStorage.setItem('nombres_personalizados_semackro', JSON.stringify(window.nombresPersonalizados));
-                    if (window.renderizarModalPermisos) window.renderizarModalPermisos();
-                    if (window.renderizarModalPermisosIndividuales) window.renderizarModalPermisosIndividuales();
+        // Rename Logic
+        window.nombresPersonalizados = JSON.parse(localStorage.getItem('nombres_personalizados_semackro') || '{}');
+        window.renombrarElemento = (clave, nombreActual) => {
+            const nuevoNombre = prompt('Ingresa el nuevo nombre (déjalo vacío para restaurar el original):', nombreActual);
+            if (nuevoNombre !== null) {
+                if (nuevoNombre.trim() === '') {
+                    delete window.nombresPersonalizados[clave];
+                } else {
+                    window.nombresPersonalizados[clave] = nuevoNombre.trim();
                 }
-            };
+                localStorage.setItem('nombres_personalizados_semackro', JSON.stringify(window.nombresPersonalizados));
+                if (window.renderizarModalPermisos) window.renderizarModalPermisos();
+                if (window.renderizarModalPermisosIndividuales) window.renderizarModalPermisosIndividuales();
+            }
+        };
+
+        window.abrirModalPermisosIndividuales = async function(idUsuario, nombre, idRol) {
 
             if (!document.getElementById('accordion-styles')) {
                 const style = document.createElement('style');
