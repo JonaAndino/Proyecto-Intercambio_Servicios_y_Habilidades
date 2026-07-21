@@ -6401,29 +6401,31 @@ async function cargarYRenderizarRolesConfig() {
                            </button>` : '';
 
                     return `
-                        <tr class="hover:bg-slate-100 transition-colors border-b border-slate-100 last:border-0">
+                        <tr class="hover:bg-slate-50 dark:hover:bg-gray-800/50 transition-colors border-b border-slate-100 dark:border-gray-800 last:border-0">
                             <td class="py-4 px-6">
                                 <input type="text" value="${escapeHtml(rol.nombre_rol)}" onchange="renombrarRol(${rol.id_rol}, this.value)" ${attrDisabledRol}
-                                    class="px-5 py-2.5 rounded-full border border-slate-200 bg-white text-slate-800 text-[14.5px] font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-[80%] transition-all ${classDisabledRol}">
+                                    class="px-5 py-2.5 rounded-full border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-slate-800 dark:text-gray-200 text-[14.5px] font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-[80%] transition-all ${classDisabledRol}">
                             </td>
                             <td class="py-4 px-6">
                                 <input type="text" value="${escapeHtml(rol.descripcion_rol || '')}" onchange="actualizarDescripcionRol(${rol.id_rol}, this.value)" ${attrDisabledRol}
-                                    class="px-5 py-2.5 rounded-full border border-slate-200 bg-white text-slate-600 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-[95%] transition-all ${classDisabledRol}">
+                                    class="px-5 py-2.5 rounded-full border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-slate-600 dark:text-gray-400 text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-[95%] transition-all ${classDisabledRol}">
                             </td>
                             <td class="py-4 px-6 text-center">
-                                <div class="inline-flex items-center justify-center px-4 py-1.5 rounded-full border border-blue-100/50 bg-blue-50 text-blue-600 min-w-[48px]">
+                                <div class="inline-flex items-center justify-center px-4 py-1.5 rounded-full border border-blue-100/50 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 min-w-[48px]">
                                     <span class="text-[14px] font-extrabold">${countPermisos}</span>
                                 </div>
                             </td>
                             <td class="py-4 px-6">
                                 <div class="flex items-center justify-center gap-3">
                                     ${puedeEditarRol ? `
-                                    <button onclick="abrirModalEditarPermisos(${rol.id_rol})" class="px-5 py-2 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 text-[12.5px] font-extrabold transition-all flex items-center gap-2 cursor-pointer border border-blue-100/50">
+                                    <button onclick="abrirModalEditarPermisos(${rol.id_rol})" class="px-5 py-2 rounded-full bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-[12.5px] font-extrabold transition-all flex items-center gap-2 cursor-pointer border border-blue-100/50 dark:border-blue-800/50">
                                         <span class="iconify text-[17px]" data-icon="mdi:shield-key-outline"></span>
                                         Permisos
                                     </button>
                                     ` : ''}
-                                    ${btnEliminar}
+                                    ${puedeEliminarRol ? `<button onclick="eliminarRol(${rol.id_rol})" class="p-2 rounded-xl bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-500 dark:text-red-400 transition-all cursor-pointer" title="Eliminar">
+                                        <span class="iconify text-[18px]" data-icon="mdi:trash-can-outline"></span>
+                                    </button>` : ''}
                                     ${!puedeEditarRol && !puedeEliminarRol ? `<span class="text-gray-300 dark:text-gray-600 text-xs">—</span>` : ''}
                                 </div>
                             </td>
@@ -6872,18 +6874,18 @@ async function cargarYRenderizarRolesConfig() {
             const modalRoot = document.getElementById('permisosIndivModalRoot');
             modalRoot.innerHTML = `
                 <div id="permisosIndivBackdrop" class="fixed inset-0 bg-transparent transition-opacity z-[9998]" onclick="cerrarModalPermisosIndividuales()"></div>
-                <div id="permisosIndivCard" class="relative bg-white rounded-[32px] w-full max-w-[950px] max-h-[90vh] shadow-[0_20px_60px_rgb(0,0,0,0.15)] flex flex-col overflow-hidden z-[9999] transition-all m-auto">
-                    <div class="flex items-center justify-between px-8 py-6 shrink-0">
+                <div id="permisosIndivCard" class="relative bg-white dark:bg-gray-900 rounded-[32px] w-full max-w-[950px] max-h-[90vh] shadow-[0_20px_60px_rgb(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgb(0,0,0,0.5)] border border-slate-100 dark:border-gray-800 flex flex-col overflow-hidden z-[9999] transition-all m-auto scale-95 opacity-0">
+                    <div class="flex items-center justify-between px-8 py-6 shrink-0 border-b border-transparent dark:border-gray-800">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm">
+                            <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-500 dark:text-blue-400 shadow-sm">
                                 <span class="iconify text-2xl" data-icon="mdi:shield-account"></span>
                             </div>
                             <div>
-                                <h3 id="permisosIndivNombre" class="text-xl font-extrabold text-slate-800 tracking-tight">Permisos de Usuario: ${nombre}</h3>
-                                <p class="text-[13px] text-slate-400 mt-1 font-medium">Gestiona permisos personalizados para este usuario.</p>
+                                <h3 id="permisosIndivNombre" class="text-xl font-extrabold text-slate-800 dark:text-gray-100 tracking-tight">Permisos de Usuario: ${nombre}</h3>
+                                <p class="text-[13px] text-slate-400 dark:text-slate-500 mt-1 font-medium">Gestiona permisos personalizados para este usuario.</p>
                             </div>
                         </div>
-                        <button type="button" onclick="cerrarModalPermisosIndividuales()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 text-slate-500 transition-colors cursor-pointer" aria-label="Cerrar modal">
+                        <button type="button" onclick="cerrarModalPermisosIndividuales()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-500 dark:text-slate-400 transition-colors cursor-pointer" aria-label="Cerrar modal">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                     </div>
@@ -6892,8 +6894,8 @@ async function cargarYRenderizarRolesConfig() {
                             <span class="iconify text-4xl animate-spin text-blue-500" data-icon="mdi:loading"></span> 
                         </div>
                     </div>
-                    <div class="px-8 py-6 bg-white flex justify-end gap-3 shrink-0">
-                        <button type="button" onclick="cerrarModalPermisosIndividuales()" class="px-6 py-2.5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-sm font-bold transition-all cursor-pointer">Cancelar</button>
+                    <div class="px-8 py-6 bg-white dark:bg-gray-900 flex justify-end gap-3 shrink-0 border-t border-slate-100 dark:border-gray-800">
+                        <button type="button" onclick="cerrarModalPermisosIndividuales()" class="px-6 py-2.5 rounded-2xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-slate-300 text-sm font-bold transition-all cursor-pointer">Cancelar</button>
                         <button type="button" onclick="guardarPermisosIndividuales()" class="px-6 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition-all cursor-pointer shadow-md shadow-blue-500/20">
                             Guardar Excepciones
                         </button>
@@ -7642,20 +7644,20 @@ async function cargarYRenderizarRolesConfig() {
                             const widthPos = isSubSub ? '16px' : '16px';
                             
                             return `
-                                <div class="tree-node relative flex items-center justify-between py-4 hover:bg-slate-100 transition-colors border-b border-slate-100 last:border-0 ${padding}">
-                                    <div class="tree-line-v absolute w-[2px] bg-slate-200 top-0 bottom-0" style="left: ${leftPos};"></div>
-                                    <div class="tree-line-h absolute h-[2px] bg-slate-200 top-1/2" style="left: ${leftPos}; width: ${widthPos};"></div>
+                                <div class="tree-node relative flex items-center justify-between py-4 hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors border-b border-slate-100 dark:border-gray-800 last:border-0 ${padding}">
+                                    <div class="tree-line-v absolute w-[2px] bg-slate-200 dark:bg-gray-700 top-0 bottom-0" style="left: ${leftPos};"></div>
+                                    <div class="tree-line-h absolute h-[2px] bg-slate-200 dark:bg-gray-700 top-1/2" style="left: ${leftPos}; width: ${widthPos};"></div>
                                     <div class="flex items-center gap-4 flex-1 relative z-10">
-                                        <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 shrink-0 relative z-10">
+                                        <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-slate-400 dark:text-slate-500 shrink-0 relative z-10">
                                             <span class="iconify text-lg" data-icon="${p.icon}"></span>
                                         </div>
-                                        <span class="text-[14px] font-bold text-black w-full block">${escapeHtml(p.nombre)}</span>
+                                        <span class="text-[14px] font-bold text-black dark:text-white w-full block">${escapeHtml(p.nombre)}</span>
                                     </div>
                                     <div class="flex items-center gap-6 shrink-0 ml-4">
                                         <span class="w-[90px] py-1.5 text-[10px] font-extrabold tracking-wider uppercase text-center flex-shrink-0 ${p.badgeColor}">${p.badgeText}</span>
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" value="${p.clave}" ${activo ? 'checked' : ''} onchange="togglePermisoRol('${p.clave}', this.checked)" class="sr-only peer">
-                                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                            <div class="w-11 h-6 bg-slate-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                                         </label>
                                     </div>
                                 </div>
@@ -7677,19 +7679,19 @@ async function cargarYRenderizarRolesConfig() {
                             const htmlPermisosSubSub = permisosSubSub.map(p => renderRow(p, 'pl-[104px] pr-6 bg-white')).join('');
                             
                             htmlSubSubs += `
-                                <div class="tree-node relative bg-white border-t border-slate-100 overflow-hidden" style="--half-height: 28px;">
-                                    <div class="tree-line-v absolute w-[2px] bg-slate-200 top-0 bottom-0" style="left: 40px;"></div>
-                                    <div class="tree-line-h absolute h-[2px] bg-slate-200 top-[28px]" style="left: 40px; width: 24px;"></div>
-                                    <div class="flex items-center justify-between pl-20 pr-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors ${isSubSubOpen ? 'bg-slate-200' : 'bg-white'} relative z-10" onclick="toggleAcordeonSubSub(event, '${subsubKey}')">
+                                <div class="tree-node relative bg-white dark:bg-gray-900 border-t border-slate-100 dark:border-gray-800 overflow-hidden" style="--half-height: 28px;">
+                                    <div class="tree-line-v absolute w-[2px] bg-slate-200 dark:bg-gray-700 top-0 bottom-0" style="left: 40px;"></div>
+                                    <div class="tree-line-h absolute h-[2px] bg-slate-200 dark:bg-gray-700 top-[28px]" style="left: 40px; width: 24px;"></div>
+                                    <div class="flex items-center justify-between pl-20 pr-6 py-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors ${isSubSubOpen ? 'bg-slate-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900'} relative z-10" onclick="toggleAcordeonSubSub(event, '${subsubKey}')">
                                         <div class="flex items-center gap-3">
                                             
-                                            <h6 class="font-bold text-black text-[13.5px]">${subsubName}</h6>
+                                            <h6 class="font-bold text-black dark:text-white text-[13.5px]">${subsubName}</h6>
                                             ${hasActiveSubSub ? '<div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm"></div>' : ''}
                                         </div>
-                                        <span class="subsub-chevron iconify text-slate-400 text-lg transition-transform ${isSubSubOpen ? 'rotate-180 text-slate-600' : ''}" data-icon="mdi:chevron-down"></span>
+                                        <span class="subsub-chevron iconify text-slate-400 dark:text-slate-500 text-lg transition-transform ${isSubSubOpen ? 'rotate-180 text-slate-600 dark:text-slate-300' : ''}" data-icon="mdi:chevron-down"></span>
                                     </div>
                                     <div class="subsub-grid accordion-grid ${isSubSubOpen ? 'is-open' : ''}">
-                                        <div class="overflow-hidden bg-white border-t ${isSubSubOpen ? 'border-slate-50' : 'border-transparent'}">
+                                        <div class="overflow-hidden bg-white dark:bg-gray-900 border-t ${isSubSubOpen ? 'border-slate-100 dark:border-gray-800' : 'border-transparent'}">
                                             ${htmlPermisosSubSub}
                                         </div>
                                     </div>
@@ -7697,20 +7699,20 @@ async function cargarYRenderizarRolesConfig() {
                             `;
                         }
 
-                        const subBg = isSubOpen ? 'bg-slate-200' : 'bg-white';
+                        const subBg = isSubOpen ? 'bg-slate-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900';
                         htmlSubs += `
-                            <div class="bg-white border-b border-slate-100 last:border-0 overflow-hidden transition-all">
-                                <div class="flex items-center justify-between pl-14 pr-6 py-5 cursor-pointer hover:bg-slate-100 transition-colors ${subBg}" onclick="toggleAcordeonSub(event, '${subKey}')">
+                            <div class="bg-white dark:bg-gray-900 border-b border-slate-100 dark:border-gray-800 last:border-0 overflow-hidden transition-all">
+                                <div class="flex items-center justify-between pl-14 pr-6 py-5 cursor-pointer hover:bg-slate-50 dark:hover:bg-gray-800 transition-colors ${subBg}" onclick="toggleAcordeonSub(event, '${subKey}')">
                                     <div class="flex items-center gap-3">
-                                        <h5 class="font-bold text-black text-[14.5px]">${subName}</h5>
+                                        <h5 class="font-bold text-black dark:text-white text-[14.5px]">${subName}</h5>
                                         ${hasActiveSub ? '<div class="w-2 h-2 rounded-full bg-emerald-500 shadow-sm"></div>' : ''}
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <span class="sub-chevron iconify text-slate-400 text-xl transition-transform ${isSubOpen ? 'rotate-180 text-slate-600' : ''}" data-icon="mdi:chevron-down"></span>
+                                        <span class="sub-chevron iconify text-slate-400 dark:text-slate-500 text-xl transition-transform ${isSubOpen ? 'rotate-180 text-slate-600 dark:text-slate-300' : ''}" data-icon="mdi:chevron-down"></span>
                                     </div>
                                 </div>
                                 <div class="sub-grid accordion-grid ${isSubOpen ? 'is-open' : ''}">
-                                    <div class="overflow-hidden bg-white border-t ${isSubOpen ? 'border-slate-50' : 'border-transparent'}">
+                                    <div class="overflow-hidden bg-white dark:bg-gray-900 border-t ${isSubOpen ? 'border-slate-100 dark:border-gray-800' : 'border-transparent'}">
                                         ${htmlPermisos}
                                         ${htmlSubSubs}
                                     </div>
@@ -7721,29 +7723,29 @@ async function cargarYRenderizarRolesConfig() {
 
                     const isMasterOpen = window.acordeonesMasterAbiertos[masterName];
                     const iconMaster = ICONOS_MASTER[masterName] || 'mdi:shield-star-outline';
-                    const masterBg = isMasterOpen ? 'bg-slate-200' : 'bg-white';
+                    const masterBg = isMasterOpen ? 'bg-slate-100 dark:bg-gray-800' : 'bg-white dark:bg-gray-900';
 
                     htmlMaster += `
-                        <div class="mb-4 rounded-2xl ${masterBg} border border-slate-200 overflow-hidden transition-all">
-                            <div class="flex items-center justify-between px-6 py-4 cursor-pointer transition-colors hover:bg-slate-100" onclick="toggleAcordeonMaster(event, '${masterName}')">
+                        <div class="mb-4 rounded-2xl ${masterBg} border border-slate-200 dark:border-gray-800 overflow-hidden transition-all">
+                            <div class="flex items-center justify-between px-6 py-4 cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-gray-800/80" onclick="toggleAcordeonMaster(event, '${masterName}')">
                                 <div class="flex items-center gap-4">
-                                    <div class="w-9 h-9 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-600 shrink-0">
+                                    <div class="w-9 h-9 rounded-xl bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center text-slate-600 dark:text-slate-400 shrink-0">
                                         <span class="iconify text-lg" data-icon="${iconMaster}"></span>
                                     </div>
-                                    <h4 class="font-bold text-black text-[15px]">${masterName}</h4>
+                                    <h4 class="font-bold text-black dark:text-white text-[15px]">${masterName}</h4>
                                 </div>
                                 <div class="flex items-center gap-4">
-                                    <span class="text-blue-500 text-[11px] font-bold">${cantSelMaster}/${cantTotalMaster}</span>
-                                    <div class="flex items-center gap-2 text-[11px] font-bold text-slate-500" onclick="event.stopPropagation()">
-                                        <button type="button" onclick="seleccionarTodoMaster('${masterName}', true)" class="hover:text-slate-800 text-slate-700 transition-colors">Todo</button>
-                                        <span class="text-slate-200">|</span>
-                                        <button type="button" onclick="seleccionarTodoMaster('${masterName}', false)" class="hover:text-slate-800 text-slate-400 transition-colors">Nada</button>
+                                    <span class="text-blue-500 dark:text-blue-400 text-[11px] font-bold">${cantSelMaster}/${cantTotalMaster}</span>
+                                    <div class="flex items-center gap-2 text-[11px] font-bold text-slate-500 dark:text-slate-500" onclick="event.stopPropagation()">
+                                        <button type="button" onclick="seleccionarTodoMaster('${masterName}', true)" class="hover:text-slate-800 dark:hover:text-slate-300 text-slate-700 dark:text-slate-400 transition-colors">Todo</button>
+                                        <span class="text-slate-200 dark:text-gray-700">|</span>
+                                        <button type="button" onclick="seleccionarTodoMaster('${masterName}', false)" class="hover:text-slate-800 dark:hover:text-slate-300 text-slate-400 dark:text-slate-500 transition-colors">Nada</button>
                                     </div>
-                                    <span class="master-chevron iconify text-slate-400 text-xl transition-transform ${isMasterOpen ? 'rotate-180 text-slate-600' : ''}" data-icon="mdi:chevron-down"></span>
+                                    <span class="master-chevron iconify text-slate-400 dark:text-slate-500 text-xl transition-transform ${isMasterOpen ? 'rotate-180 text-slate-600 dark:text-slate-300' : ''}" data-icon="mdi:chevron-down"></span>
                                 </div>
                             </div>
                             <div class="master-grid accordion-grid ${isMasterOpen ? 'is-open' : ''}">
-                                <div class="overflow-hidden bg-white border-t ${isMasterOpen ? 'border-slate-200' : 'border-transparent'}">
+                                <div class="overflow-hidden bg-white dark:bg-gray-900 border-t ${isMasterOpen ? 'border-slate-200 dark:border-gray-800' : 'border-transparent'}">
                                     <div class="flex flex-col">
                                         ${htmlSubs}
                                     </div>
@@ -7919,26 +7921,26 @@ async function cargarYRenderizarRolesConfig() {
             const modalRoot = document.getElementById('permisosModalRoot');
             modalRoot.innerHTML = `
                 <div id="permisosBackdrop" class="fixed inset-0 bg-transparent transition-opacity z-[9998]" onclick="cerrarModalEditarPermisos()"></div>
-                <div id="permisosCard" class="relative bg-white rounded-[32px] w-full max-w-[950px] max-h-[90vh] shadow-[0_20px_60px_rgb(0,0,0,0.15)] flex flex-col overflow-hidden z-[9999] transition-all m-auto">
-                    <div class="flex items-center justify-between px-8 py-6 shrink-0">
+                <div id="permisosCard" class="relative bg-white dark:bg-gray-900 rounded-[32px] w-full max-w-[950px] max-h-[90vh] shadow-[0_20px_60px_rgb(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgb(0,0,0,0.5)] border border-slate-100 dark:border-gray-800 flex flex-col overflow-hidden z-[9999] transition-all m-auto scale-95 opacity-0">
+                    <div class="flex items-center justify-between px-8 py-6 shrink-0 border-b border-transparent dark:border-gray-800">
                         <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm">
+                            <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-500 dark:text-blue-400 shadow-sm">
                                 <span class="iconify text-2xl" data-icon="mdi:shield-key-outline"></span>
                             </div>
                             <div>
-                                <h3 id="permisosRoleNombre" class="text-xl font-extrabold text-slate-800 tracking-tight">Asignar permisos al rol: ${rol.nombre_rol}</h3>
-                                <p class="text-[13px] text-slate-400 mt-1 font-medium">Gestiona los accesos y privilegios de este rol.</p>
+                                <h3 id="permisosRoleNombre" class="text-xl font-extrabold text-slate-800 dark:text-gray-100 tracking-tight">Asignar permisos al rol: ${rol.nombre_rol}</h3>
+                                <p class="text-[13px] text-slate-400 dark:text-slate-500 mt-1 font-medium">Gestiona los accesos y privilegios de este rol.</p>
                             </div>
                         </div>
-                        <button type="button" onclick="cerrarModalEditarPermisos()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 text-slate-500 transition-colors cursor-pointer" aria-label="Cerrar modal">
+                        <button type="button" onclick="cerrarModalEditarPermisos()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-500 dark:text-slate-400 transition-colors cursor-pointer" aria-label="Cerrar modal">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                     </div>
                     <div class="px-8 pb-4 overflow-y-auto flex-1 custom-scrollbar" id="permisosCheckboxesContainer">
                         <!-- Se llena dinámicamente -->
                     </div>
-                    <div class="px-8 py-6 bg-white flex justify-end gap-3 shrink-0">
-                        <button type="button" onclick="cerrarModalEditarPermisos()" class="px-6 py-2.5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-sm font-bold transition-all cursor-pointer">Cancelar</button>
+                    <div class="px-8 py-6 bg-white dark:bg-gray-900 flex justify-end gap-3 shrink-0 border-t border-slate-100 dark:border-gray-800">
+                        <button type="button" onclick="cerrarModalEditarPermisos()" class="px-6 py-2.5 rounded-2xl border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-slate-100 dark:hover:bg-gray-700 text-slate-700 dark:text-slate-300 text-sm font-bold transition-all cursor-pointer">Cancelar</button>
                         <button type="button" onclick="guardarPermisosRol()" class="px-6 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition-all cursor-pointer shadow-md shadow-blue-500/20">
                             Guardar Permisos
                         </button>
