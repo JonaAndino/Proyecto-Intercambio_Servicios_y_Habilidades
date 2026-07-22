@@ -8103,7 +8103,7 @@ async function cargarYRenderizarRolesConfig() {
 
             window.seleccionarBasico = () => {
                 window.permisosSeleccionados.clear();
-                const subsBasicos = ['Descubrir', 'Mi perfil', 'Postulaciones en Formato de Lista', 'Mensajes', 'Solicitudes de trabajo', 'Mis favoritos', 'Historial'];
+                const subsBasicos = ['Descubrir', 'Mi perfil', 'Mensajes', 'Solicitudes de trabajo', 'Mis favoritos', 'Historial'];
                 
                 todosLosPermisosDisponibles.forEach(p => {
                     const mapeo = window.MAPEO_AVANZADO[p.clave];
@@ -8111,6 +8111,12 @@ async function cargarYRenderizarRolesConfig() {
                         window.permisosSeleccionados.add(p.clave);
                     }
                 });
+
+                // Añadir el permiso específico de "VER" órdenes de trabajo (y ninguno más de esa categoría)
+                if (todosLosPermisosDisponibles.some(p => p.clave === 'ordenesTrabajo')) {
+                    window.permisosSeleccionados.add('ordenesTrabajo');
+                }
+
                 window.renderizarModalPermisos();
             };
 
