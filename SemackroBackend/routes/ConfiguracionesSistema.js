@@ -56,7 +56,12 @@ router.put('/', verificarPermiso('configGenerales:editar'), async (req, res) => 
     }
 
     try {
-        await db.execute('UPDATE Configuraciones_Sistema SET valor = ? WHERE clave = ?', [String(valor), clave]);
+        const [result] = await db.execute('UPDATE Configuraciones_Sistema SET valor = ? WHERE clave = ?', [String(valor), clave]);
+        
+        if (result.affectedRows === 0) {
+            // Si no existía, lo insertamos
+            await db.execute('INSERT INTO Configuraciones_Sistema (clave, valor, tipo) VALUES (?, ?, ?)', [clave, String(valor), 'general']);
+        }
         
         res.json({
             success: true,
