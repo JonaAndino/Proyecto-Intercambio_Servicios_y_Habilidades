@@ -100,7 +100,7 @@ router.post('/registro', async (req, res) => {
 
         if (rolesCount > 0) {
             // Buscar el rol por defecto en configuraciones
-            const [configRows] = await pool.execute('SELECT valor FROM configuraciones WHERE clave = ?', ['rol_defecto_registro']);
+            const [configRows] = await pool.execute('SELECT valor FROM Configuraciones_Sistema WHERE clave = ?', ['rol_defecto_registro']);
             if (configRows.length > 0 && configRows[0].valor) {
                 const rolPorDefecto = parseInt(configRows[0].valor);
                 // Validar que el rol existe
