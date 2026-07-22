@@ -486,6 +486,57 @@ router.put('/roles/:id/permisos', verificarPermiso('rolesPermisos:editar'), asyn
     }
 });
 
+// Asignar rol masivamente a usuarios sin rol (POST /configuraciones/roles/:id/asignar-masivo)
+router.post('/roles/:id/asignar-masivo', verificarPermiso('rolesPermisos:editar'), async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+        return res.status(400).json({ success: false, message: 'ID de rol no válido' });
+    }
+    
+    try {
+        // Verificar que el rol existe
+        const [roles] = await db.execute('SELECT id_rol FROM Roles WHERE id_rol = ?', [id]);
+        if (roles.length === 0) {
+            return res.status(404).json({ success: false, message: 'El rol no existe' });
+        }
+
+        // Obtener todos los usuarios que NO están en la tabla d_usuarios_roles
+        const [usuariosSinRol] = await db.execute(`
+            SELECT u.id_usuario 
+            FROM Usuarios u 
+            LEFT JOIN d_usuarios_roles ur ON u.id_usuario = ur.usuario_id 
+            WHERE ur.usuario_id IS NULL
+        `);
+
+        // Excluir al admin actual por seguridad
+        const idAdminActual = req.user && req.user.usuarioId ? parseInt(req.user.usuarioId) : -1;
+        const usuariosAAsignar = usuariosSinRol.filter(u => parseInt(u.id_usuario) !== idAdminActual);
+
+        if (usuariosAAsignar.length === 0) {
+            return res.json({ success: true, message: 'No hay usuarios sin rol para asignar.', count: 0 });
+        }
+
+        // Hacer la inserción masiva
+        const valores = [];
+        const placeholders = [];
+        for (const u of usuariosAAsignar) {
+            placeholders.push('(?, ?)');
+            valores.push(u.id_usuario, id);
+        }
+
+        await db.execute(
+            `INSERT INTO d_usuarios_roles (usuario_id, rol_id) VALUES ${placeholders.join(', ')}`,
+            valores
+        );
+
+        res.json({ success: true, message: `Rol asignado correctamente a ${usuariosAAsignar.length} usuarios sin rol.`, count: usuariosAAsignar.length });
+    } catch (error) {
+        console.error('Error al asignar rol masivamente:', error.message);
+        res.status(500).json({ success: false, error: 'Error del servidor al asignar rol masivamente' });
+    }
+});
+
+
 // ====================================================
 // ENDPOINTS PARA GESTIÓN DE VARIABLES DE ENTORNO
 // ====================================================
