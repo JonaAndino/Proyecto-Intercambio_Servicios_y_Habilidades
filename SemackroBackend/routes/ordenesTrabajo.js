@@ -50,7 +50,7 @@ function normalizarEstadoOT(valor) {
         const [cols] = await db.query(`SHOW COLUMNS FROM OrdenesTrabajo LIKE 'max_postulantes'`);
         if (cols.length === 0) {
             await db.query(`ALTER TABLE OrdenesTrabajo ADD COLUMN max_postulantes INT NOT NULL DEFAULT 1`);
-            console.log('✅ Columna max_postulantes agregada a OrdenesTrabajo.');
+            console.log('Columna max_postulantes agregada a OrdenesTrabajo.');
         }
 
         await db.query(`
@@ -71,24 +71,24 @@ function normalizarEstadoOT(valor) {
         const [colsPortafolio] = await db.query(`SHOW COLUMNS FROM PostulacionesOrdenes LIKE 'portafolio_url'`);
         if (colsPortafolio.length === 0) {
             await db.query(`ALTER TABLE PostulacionesOrdenes ADD COLUMN portafolio_url VARCHAR(512) DEFAULT NULL`);
-            console.log('✅ Columna portafolio_url agregada a PostulacionesOrdenes.');
+            console.log('Columna portafolio_url agregada a PostulacionesOrdenes.');
         }
 
         // Agregar linkedin_url si no existe
         const [colsLinkedin] = await db.query(`SHOW COLUMNS FROM PostulacionesOrdenes LIKE 'linkedin_url'`);
         if (colsLinkedin.length === 0) {
             await db.query(`ALTER TABLE PostulacionesOrdenes ADD COLUMN linkedin_url VARCHAR(512) DEFAULT NULL`);
-            console.log('✅ Columna linkedin_url agregada a PostulacionesOrdenes.');
+            console.log('Columna linkedin_url agregada a PostulacionesOrdenes.');
         }
 
         // Agregar restringir_por_ubicacion si no existe (filtro de visibilidad por ubicación)
         const [colsRestr] = await db.query(`SHOW COLUMNS FROM OrdenesTrabajo LIKE 'restringir_por_ubicacion'`);
         if (colsRestr.length === 0) {
             await db.query(`ALTER TABLE OrdenesTrabajo ADD COLUMN restringir_por_ubicacion TINYINT(1) NOT NULL DEFAULT 0`);
-            console.log('✅ Columna restringir_por_ubicacion agregada a OrdenesTrabajo.');
+            console.log('Columna restringir_por_ubicacion agregada a OrdenesTrabajo.');
         }
 
-        console.log('✅ Tablas OrdenesTrabajo y PostulacionesOrdenes listas.');
+        console.log('Tablas OrdenesTrabajo y PostulacionesOrdenes listas.');
 
         // ──────────────────────────────────────────────────────────────
         // Extensión de conversaciones para grupos de órdenes de trabajo
@@ -102,11 +102,11 @@ function normalizarEstadoOT(valor) {
                     if (colInfo.length > 0 && colInfo[0].Null === 'NO') {
                         const colType = colInfo[0].Type;
                         await db.query(`ALTER TABLE conversaciones MODIFY COLUMN \`${colName}\` ${colType} NULL DEFAULT NULL`);
-                        console.log(`✅ ${colName} en conversaciones ahora es nullable.`);
+                        console.log(`${colName} en conversaciones ahora es nullable.`);
                     } else if (colInfo.length === 0) {
                         // columna no existe, no es problema
                     } else {
-                        console.log(`ℹ️  ${colName} ya es nullable.`);
+                        console.log(` ${colName} ya es nullable.`);
                     }
                 } catch (e) { console.warn(`⚠️  No se pudo modificar ${colName}:`, e.message); }
             }
@@ -117,26 +117,26 @@ function normalizarEstadoOT(valor) {
                 if (colRec.length > 0 && colRec[0].Null === 'NO') {
                     const recType = colRec[0].Type;
                     await db.query(`ALTER TABLE mensajes MODIFY COLUMN id_persona_recibe ${recType} NULL DEFAULT NULL`);
-                    console.log('✅ id_persona_recibe en mensajes ahora es nullable.');
+                    console.log('id_persona_recibe en mensajes ahora es nullable.');
                 } else {
-                    console.log('ℹ️  id_persona_recibe ya es nullable.');
+                    console.log(' id_persona_recibe ya es nullable.');
                 }
             } catch (e) { console.warn('⚠️  No se pudo modificar id_persona_recibe en mensajes:', e.message); }
 
             const [colTipo]   = await db.query(`SHOW COLUMNS FROM conversaciones LIKE 'tipo'`);
             if (colTipo.length === 0) {
                 await db.query(`ALTER TABLE conversaciones ADD COLUMN tipo ENUM('directo','grupo') NOT NULL DEFAULT 'directo'`);
-                console.log('✅ Columna tipo agregada a conversaciones.');
+                console.log('Columna tipo agregada a conversaciones.');
             }
             const [colNombre] = await db.query(`SHOW COLUMNS FROM conversaciones LIKE 'nombre_grupo'`);
             if (colNombre.length === 0) {
                 await db.query(`ALTER TABLE conversaciones ADD COLUMN nombre_grupo VARCHAR(255) NULL`);
-                console.log('✅ Columna nombre_grupo agregada a conversaciones.');
+                console.log('Columna nombre_grupo agregada a conversaciones.');
             }
             const [colOrden]  = await db.query(`SHOW COLUMNS FROM conversaciones LIKE 'id_orden'`);
             if (colOrden.length === 0) {
                 await db.query(`ALTER TABLE conversaciones ADD COLUMN id_orden INT NULL`);
-                console.log('✅ Columna id_orden agregada a conversaciones.');
+                console.log('Columna id_orden agregada a conversaciones.');
             }
 
             // Obtener el tipo exacto de id_conversacion para evitar incompatibilidades en FK
@@ -158,7 +158,7 @@ function normalizarEstadoOT(valor) {
                     INDEX idx_perfil (id_Perfil_Persona)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
             `);
-            console.log(`✅ Tabla conversaciones_miembros lista (id_conversacion tipo: ${colTypeConv}).`);
+            console.log(`Tabla conversaciones_miembros lista (id_conversacion tipo: ${colTypeConv}).`);
 
             // ── Migración retroactiva: crear grupos para órdenes con postulantes aceptados ──
             try {
@@ -228,14 +228,14 @@ function normalizarEstadoOT(valor) {
                                  VALUES (?, ?, NULL, ?, CURRENT_TIMESTAMP, 0, 0, 0)`,
                                 [convId, pOwner.id_Perfil_Persona, `📋 Grupo creado para la orden de trabajo: "${ord.titulo}"`]
                             );
-                            console.log(`   ✅ Grupo creado para orden ${ord.id_orden}: "${ord.titulo}" (conv #${convId})`);
+                            console.log(`   Grupo creado para orden ${ord.id_orden}: "${ord.titulo}" (conv #${convId})`);
                         } catch (eOrd) {
                             console.warn(`   ⚠️  Error migrando orden ${ord.id_orden}:`, eOrd.message);
                         }
                     }
-                    console.log('✅ Migración de grupos retroactiva completada.');
+                    console.log('Migración de grupos retroactiva completada.');
                 } else {
-                    console.log('ℹ️  No hay órdenes pendientes de migración de grupos.');
+                    console.log(' No hay órdenes pendientes de migración de grupos.');
                 }
 
                 // ── Reparar grupos existentes: agregar miembros aceptados que falten ──────────
@@ -286,7 +286,7 @@ function normalizarEstadoOT(valor) {
                         console.warn(`   ⚠️  Reparación grupo conv ${grp.id_conversacion}:`, eRep.message);
                     }
                 }
-                if (gruposExistentes.length > 0) console.log(`✅ Reparación de ${gruposExistentes.length} grupo(s) completada.`);
+                if (gruposExistentes.length > 0) console.log(`Reparación de ${gruposExistentes.length} grupo(s) completada.`);
 
             } catch (eMig) {
                 console.warn('⚠️  Migración retroactiva de grupos (no crítica):', eMig.message);
@@ -801,7 +801,7 @@ router.patch('/:id/postulaciones/:postId', verificarPermiso(['aceptarIntercambio
                 await db.query(
                     `INSERT INTO mensajes (id_conversacion, id_persona_envia, id_persona_recibe, contenido, fecha_envio, leido, borrado_por_emisor, borrado_por_receptor)
                      VALUES (?, ?, NULL, ?, CURRENT_TIMESTAMP, 0, 0, 0)`,
-                    [idConversacion, pOwner.id_Perfil_Persona, `✅ ${nombrePost} se ha sumado al equipo.`]
+                    [idConversacion, pOwner.id_Perfil_Persona, `${nombrePost} se ha sumado al equipo.`]
                 );
 
                 // Notificar vía socket al nuevo miembro (tiempo real)
