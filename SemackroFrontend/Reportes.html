@@ -7986,6 +7986,8 @@ async function cargarYRenderizarRolesConfig() {
                                 <button type="button" onclick="seleccionarTodoGlobal(true)" class="hover:text-slate-900 dark:hover:text-white transition-colors text-slate-700 dark:text-slate-400">Todo</button>
                                 <span class="text-slate-200 dark:text-gray-700">|</span>
                                 <button type="button" onclick="seleccionarTodoGlobal(false)" class="hover:text-slate-900 dark:hover:text-white transition-colors text-slate-400 dark:text-slate-500">Nada</button>
+                                <span class="text-slate-200 dark:text-gray-700">|</span>
+                                <button type="button" onclick="seleccionarBasico()" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-blue-500 font-bold">Básico</button>
                             </div>
                             <div class="flex items-center gap-2 px-5 py-3 border border-slate-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-2xl text-[13px] font-bold whitespace-nowrap shadow-sm shrink-0">
                                 <span class="iconify text-emerald-500 dark:text-emerald-400 text-base" data-icon="mdi:check-all"></span>
@@ -8094,6 +8096,19 @@ async function cargarYRenderizarRolesConfig() {
                     if (finalMaster === masterName) {
                         if (seleccionar) window.permisosSeleccionados.add(p.clave);
                         else window.permisosSeleccionados.delete(p.clave);
+                    }
+                });
+                window.renderizarModalPermisos();
+            };
+
+            window.seleccionarBasico = () => {
+                window.permisosSeleccionados.clear();
+                const subsBasicos = ['Descubrir', 'Mi perfil', 'Postulaciones en Formato de Lista', 'Mensajes', 'Solicitudes de trabajo', 'Mis favoritos', 'Historial'];
+                
+                todosLosPermisosDisponibles.forEach(p => {
+                    const mapeo = window.MAPEO_AVANZADO[p.clave];
+                    if (mapeo && subsBasicos.includes(mapeo.sub)) {
+                        window.permisosSeleccionados.add(p.clave);
                     }
                 });
                 window.renderizarModalPermisos();
