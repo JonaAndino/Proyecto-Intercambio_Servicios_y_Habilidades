@@ -6509,7 +6509,7 @@ async function cargarYRenderizarRolesConfig() {
                                     </button>
                                     ` : ''}
                                     ${puedeEditarRol ? `
-                                    <button onclick="asignarRolMasivo(${rol.id_rol}, '${escapeHtml(rol.nombre_rol)}')" class="p-2 rounded-xl bg-purple-50 dark:bg-purple-900/30 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-600 dark:text-purple-400 transition-all cursor-pointer" title="Asignar a todos los usuarios sin rol">
+                                    <button onclick="abrirModalAsignarMasivo(${rol.id_rol}, '${escapeHtml(rol.nombre_rol)}')" class="p-2 rounded-xl bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 transition-all cursor-pointer" title="Asignar a todos los usuarios sin rol">
                                         <span class="iconify text-[18px]" data-icon="mdi:account-group-outline"></span>
                                     </button>
                                     ` : ''}
@@ -6623,26 +6623,44 @@ async function cargarYRenderizarRolesConfig() {
             setTimeout(() => { document.getElementById('crearRolCard').classList.remove('scale-95', 'opacity-0'); }, 10);
         };
 
-        window.asignarRolMasivo = async function(idRol, nombreRol) {
-            if (!confirm(`¿Estás seguro de que deseas asignar el rol "${nombreRol}" a TODOS los usuarios que actualmente no tienen rol? Esta acción no afectará a tu usuario ni a los usuarios que ya tienen un rol asignado.`)) return;
+        window.abrirModalAsignarMasivo = function(idRol, nombreRol) {
+            document.getElementById('confirmAsignarMasivoTitle').textContent = `¿Asignar "${nombreRol}" masivamente?`;
+            
+            const btnConfirmar = document.getElementById('btnConfirmarAsignarMasivo');
+            btnConfirmar.onclick = async function() {
+                const textoOriginal = btnConfirmar.innerHTML;
+                btnConfirmar.innerHTML = '<span class="iconify animate-spin text-lg" data-icon="mdi:loading"></span> Procesando...';
+                btnConfirmar.disabled = true;
 
-            try {
-                Toast.info('Procesando...', 'Asignando el rol a los usuarios...');
-                const res = await authFetch(`${ROLES_API}/${idRol}/asignar-masivo`, { method: 'POST' });
-                const json = await res.json();
-                
-                if (!res.ok || !json.success) throw new Error(json.error || 'Error al asignar rol masivamente');
-                
-                Toast.success('Asignación Completa', json.message);
-                
-                // Refrescar si es necesario el directorio
-                if (typeof cargarTecnicosDirectorio === 'function') {
-                    cargarTecnicosDirectorio();
+                try {
+                    Toast.info('Procesando...', 'Asignando el rol a los usuarios...');
+                    const res = await authFetch(`${ROLES_API}/${idRol}/asignar-masivo`, { method: 'POST' });
+                    const json = await res.json();
+                    
+                    if (!res.ok || !json.success) throw new Error(json.error || 'Error al asignar rol masivamente');
+                    
+                    Toast.success('Asignación Completa', json.message);
+                    
+                    if (typeof cargarTecnicosDirectorio === 'function') {
+                        cargarTecnicosDirectorio();
+                    }
+                } catch (err) {
+                    console.error('[asignarRolMasivo]', err);
+                    Toast.error('Error', err.message || 'No se pudo completar la asignación masiva.');
+                } finally {
+                    btnConfirmar.innerHTML = textoOriginal;
+                    btnConfirmar.disabled = false;
+                    cerrarModalAsignarMasivo();
                 }
-            } catch (err) {
-                console.error('[asignarRolMasivo]', err);
-                Toast.error('Error', err.message || 'No se pudo completar la asignación masiva.');
-            }
+            };
+
+            document.getElementById('confirmAsignarMasivoModalRoot').style.display = 'flex';
+            setTimeout(() => { document.getElementById('confirmAsignarMasivoCard').classList.remove('scale-95', 'opacity-0'); }, 10);
+        };
+
+        window.cerrarModalAsignarMasivo = function() {
+            document.getElementById('confirmAsignarMasivoCard').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { document.getElementById('confirmAsignarMasivoModalRoot').style.display = 'none'; }, 200);
         };
 
         // --- LÓGICA DEL MODAL DE CONFIRMACIÓN DE ELIMINACIÓN DE ROLES ---
@@ -8562,6 +8580,36 @@ async function cargarYRenderizarRolesConfig() {
                 <div class="flex flex-col sm:flex-row gap-3 w-full">
                     <button onclick="cerrarModalConfirmarEliminarRol()" class="flex-1 px-4 py-2.5 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-200 font-semibold rounded-xl hover:bg-slate-100 dark:hover:bg-gray-600 transition-colors">Cancelar</button>
                     <button id="btnConfirmarEliminarRolAccion" class="flex-1 px-4 py-2.5 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 active:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-red-500/30">Sí, eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PERSONALIZADO: Confirmar Asignación Masiva -->
+    <div id="confirmAsignarMasivoModalRoot" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+        <div id="confirmAsignarMasivoBackdrop" class="fixed inset-0 bg-transparent transition-opacity" onclick="cerrarModalAsignarMasivo()"></div>
+        <div id="confirmAsignarMasivoCard" class="relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md shadow-2xl border border-slate-100 dark:border-gray-700 flex flex-col mt-8 z-10 transition-all transform scale-95 opacity-0">
+            <div class="h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-2">
+                <button onclick="cerrarModalAsignarMasivo()" class="absolute top-2 right-4 text-white hover:scale-110 transition-transform z-20 cursor-pointer" aria-label="Cerrar modal">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <div class="absolute -top-6 inset-x-0 flex justify-center items-end pointer-events-none">
+                    <div class="w-12 h-12 bg-blue-500 rounded-2xl shadow-lg flex items-center justify-center border-2 border-white transform translate-y-2">
+                        <span class="iconify text-2xl text-white" data-icon="mdi:account-group"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 text-center mt-4">
+                <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2" id="confirmAsignarMasivoTitle">¿Asignar masivamente?</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    Esta acción asignará este rol a TODOS los usuarios que actualmente <span class="font-bold text-gray-700 dark:text-gray-200">no tienen ningún rol</span>. No afectará a usuarios que ya tengan un rol asignado. ¿Deseas continuar?
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-3 w-full">
+                    <button onclick="cerrarModalAsignarMasivo()" class="flex-1 px-4 py-2.5 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 text-slate-700 dark:text-gray-200 font-semibold rounded-xl hover:bg-slate-100 dark:hover:bg-gray-600 transition-colors">Cancelar</button>
+                    <button id="btnConfirmarAsignarMasivo" class="flex-1 px-4 py-2.5 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 active:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-blue-500/30">
+                        Sí, Asignar
+                    </button>
                 </div>
             </div>
         </div>
