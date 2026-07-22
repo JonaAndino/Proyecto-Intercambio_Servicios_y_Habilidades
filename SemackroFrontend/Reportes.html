@@ -8589,18 +8589,11 @@ async function cargarYRenderizarRolesConfig() {
     <div id="confirmAsignarMasivoModalRoot" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
         <div id="confirmAsignarMasivoBackdrop" class="fixed inset-0 bg-transparent transition-opacity" onclick="cerrarModalAsignarMasivo()"></div>
         <div id="confirmAsignarMasivoCard" class="relative bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md shadow-2xl border border-slate-100 dark:border-gray-700 flex flex-col mt-8 z-10 transition-all transform scale-95 opacity-0">
-            <div class="h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-t-3xl relative overflow-visible flex items-end justify-center pb-2">
-                <button onclick="cerrarModalAsignarMasivo()" class="absolute top-2 right-4 text-white hover:scale-110 transition-transform z-20 cursor-pointer" aria-label="Cerrar modal">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-                <div class="absolute -top-6 inset-x-0 flex justify-center items-end pointer-events-none">
-                    <div class="w-12 h-12 bg-blue-500 rounded-2xl shadow-lg flex items-center justify-center border-2 border-white transform translate-y-2">
-                        <span class="iconify text-2xl text-white" data-icon="mdi:account-group"></span>
-                    </div>
+            <div class="p-6 text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-4">
+                    <span class="iconify text-blue-500 text-3xl" data-icon="mdi:account-group"></span>
                 </div>
-            </div>
-            <div class="p-6 text-center mt-4">
-                <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2" id="confirmAsignarMasivoTitle">¿Asignar masivamente?</h3>
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2" id="confirmAsignarMasivoTitle">¿Asignar masivamente?</h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
                     Esta acción asignará este rol a TODOS los usuarios que actualmente <span class="font-bold text-gray-700 dark:text-gray-200">no tienen ningún rol</span>. No afectará a usuarios que ya tengan un rol asignado. ¿Deseas continuar?
                 </p>
