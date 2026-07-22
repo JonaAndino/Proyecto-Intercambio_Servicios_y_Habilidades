@@ -9544,7 +9544,7 @@ window.addEventListener("beforeunload", () => {
 
       // Get text first to debug and handle potential non-JSON responses or multiple JSONs
       const rawText = await response.text();
-      console.log("🤖 Raw AI Response:", rawText);
+      console.log("Raw AI Response:", rawText);
 
       let aiResponse = "";
 
@@ -9814,7 +9814,7 @@ window.addEventListener("beforeunload", () => {
     }
   });
 
-  console.log("✅ AI Chat Assistant initialized");
+  console.log("AI Chat Assistant initialized");
 })();
 
 // =============================================================================
