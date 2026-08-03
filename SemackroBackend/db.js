@@ -23,8 +23,8 @@ const poolConfig = {
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
-    enableKeepAlive: false,
-    keepAliveInitialDelay: 0
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 10000
 };
 
 // Configuraciones adicionales SOLO para desarrollo (no afecta producción)
