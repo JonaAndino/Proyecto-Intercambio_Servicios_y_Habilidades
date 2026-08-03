@@ -280,11 +280,11 @@ router.get('/recibidas/:id', async (req, res) => {
                 si.modalidad,
                 si.id_habilidad_solicitada,
                 si.id_habilidad_ofrecida,
-                p_sol.nombre_Persona AS nombre_solicitante,
-                p_sol.apellido_Persona AS apellido_solicitante,
+                COALESCE(p_sol.nombre_Persona, 'Usuario') AS nombre_solicitante,
+                COALESCE(p_sol.apellido_Persona, '') AS apellido_solicitante,
                 p_sol.imagenUrl_Persona AS foto_solicitante
             FROM solicitudes_intercambio si
-            INNER JOIN Personas p_sol ON si.id_persona_solicitante = p_sol.id_Perfil_Persona
+            LEFT JOIN Personas p_sol ON si.id_persona_solicitante = p_sol.id_Perfil_Persona
             WHERE si.id_persona_receptor = ? AND si.estado = 'Pendiente' AND si.id_persona_solicitante != ?
             ORDER BY si.fecha_solicitud DESC`,
             [personaId, personaId]
@@ -356,12 +356,12 @@ router.get('/enviadas/:id', async (req, res) => {
                 si.estado,
                 si.fecha_solicitud,
                 
-                p_rec.nombre_Persona AS nombre_receptor,
-                p_rec.apellido_Persona AS apellido_receptor,
+                COALESCE(p_rec.nombre_Persona, 'Usuario') AS nombre_receptor,
+                COALESCE(p_rec.apellido_Persona, '') AS apellido_receptor,
                 p_rec.imagenUrl_Persona AS imagenUrl_receptor
                 
             FROM solicitudes_intercambio si
-            INNER JOIN Personas p_rec ON si.id_persona_receptor = p_rec.id_Perfil_Persona
+            LEFT JOIN Personas p_rec ON si.id_persona_receptor = p_rec.id_Perfil_Persona
             WHERE si.id_persona_solicitante = ?
               AND si.estado = 'Pendiente'
             ORDER BY si.fecha_solicitud DESC`,
